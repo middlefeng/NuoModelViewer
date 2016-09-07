@@ -19,6 +19,16 @@ NuoMaterial::NuoMaterial() : id(-1)
 NuoMaterial::NuoMaterial(const tinyobj::material_t& material) :
     id(0),
 
+    ambient { material.ambient[0], material.ambient[1], material.ambient[2] },
+    diffuse { material.diffuse[0], material.diffuse[1], material.diffuse[2] },
+    specular { material.specular[0], material.specular[1], material.specular[2] },
+    transmittance { material.transmittance[0], material.transmittance[1], material.transmittance[2] },
+    emission { material.emission[0], material.emission[1], material.emission[2] },
+    shininess(material.shininess),
+    ior(material.ior),
+    dissolve(material.dissolve),
+    illum(material.illum),
+
     ambient_texname(material.ambient_texname),
     diffuse_texname(material.diffuse_texname),
     specular_texname(material.specular_texname),

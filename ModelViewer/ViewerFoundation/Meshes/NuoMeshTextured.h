@@ -14,7 +14,7 @@
 @interface NuoMeshTextured : NuoMesh
 
 
-@property (nonatomic, readonly) id<MTLTexture> diffuseTex;
+@property (nonatomic, strong) id<MTLTexture> diffuseTex;
 @property (nonatomic, readonly) id<MTLSamplerState> samplerState;
 
 @property (nonatomic, readonly) bool hasTransparency;
@@ -25,6 +25,10 @@
          withCheckTransparency:(BOOL)check
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength;
+
+- (id<MTLTexture>)texture2DWithImageNamed:(NSString *)imagePath
+                                mipmapped:(BOOL)mipmapped
+                        checkTransparency:(BOOL)checkTransparency;
 
 
 @end

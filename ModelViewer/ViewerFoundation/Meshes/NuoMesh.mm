@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "NuoMeshTextured.h"
+#import "NuoMeshTexMatieraled.h"
 
 
 
@@ -156,6 +157,19 @@ NuoMesh* CreateMesh(NSString* type,
                                             withLength:model->Length()
                                            withIndices:model->IndicesPtr()
                                             withLength:model->IndicesLength()];
+    }
+    else if (typeStr == kNuoModelType_Textured_Materialed)
+    {
+        NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePath().c_str()];
+        BOOL checkTransparency = YES;
+        
+        return [[NuoMeshTexMatieraled alloc] initWithDevice:device
+                                            withTexutrePath:modelTexturePath
+                                      withCheckTransparency:checkTransparency
+                                         withVerticesBuffer:model->Ptr()
+                                                 withLength:model->Length()
+                                                withIndices:model->IndicesPtr()
+                                                 withLength:model->IndicesLength()];
     }
     
     return nil;

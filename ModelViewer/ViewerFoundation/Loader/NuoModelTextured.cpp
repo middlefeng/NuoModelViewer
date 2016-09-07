@@ -40,3 +40,9 @@ std::string NuoModelTextured::TypeName()
     else
         return kNuoModelType_Textured;
 }
+
+
+
+void NuoModelTextured::AddMaterial(const NuoMaterial& material)
+{
+}

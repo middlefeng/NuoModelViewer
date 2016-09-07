@@ -47,6 +47,7 @@ public:
     virtual void AddPosition(size_t sourceIndex, const std::vector<float>& positionsBuffer) = 0;
     virtual void AddNormal(size_t sourceIndex, const std::vector<float>& normalBuffer) = 0;
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) = 0;
+    virtual void AddMaterial(const NuoMaterial& material) = 0;
     
     virtual void SetTexturePath(const std::string texPath) = 0;
     virtual std::string GetTexturePath() = 0;
@@ -69,7 +70,7 @@ public:
 
 
 template <class ItemBase>
-class NuoModelCommon : public NuoModelBase
+class NuoModelCommon : virtual public NuoModelBase
 {
 protected:
     std::vector<ItemBase> _buffer;
@@ -111,6 +112,7 @@ public:
     NuoModelSimple();
     
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
+    virtual void AddMaterial(const NuoMaterial& material) override;
     
     virtual void SetTexturePath(const std::string texPath) override;
     virtual std::string GetTexturePath() override;
@@ -202,6 +204,8 @@ void NuoModelCommon<ItemBase>::AddPosition(size_t sourceIndex, const std::vector
     size_t sourceOffset = sourceIndex * 3;
     
     ItemBase newItem;
+    
+    printf("Item Size. %lu.\n", sizeof(ItemBase));
     
     newItem._position.x = positionsBuffer[sourceOffset];
     newItem._position.y = positionsBuffer[sourceOffset + 1];
