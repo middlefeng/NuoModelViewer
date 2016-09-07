@@ -17,6 +17,7 @@ extern "C" {
     
 const extern char* kNuoModelType_Simple;
 const extern char* kNuoModelType_Textured;
+const extern char* kNuoModelType_Textured_Transparency;
     
     
 #if __cplusplus

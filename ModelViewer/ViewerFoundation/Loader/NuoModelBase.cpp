@@ -20,11 +20,19 @@ std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& m
         type = kNuoModelType_Simple;
     
     if (type == kNuoModelType_Simple)
+    {
         return std::make_shared<NuoModelSimple>();
-    else if (type == kNuoModelType_Textured)
-        return std::make_shared<NuoModelTextured>();
+    }
+    else if (type == kNuoModelType_Textured || type == kNuoModelType_Textured_Transparency)
+    {
+        auto model = std::make_shared<NuoModelTextured>();
+        model->SetCheckTransparency(type == kNuoModelType_Textured_Transparency);
+        return model;
+    }
     else
+    {
         return std::shared_ptr<NuoModelBase>();
+    }
 }
 
 

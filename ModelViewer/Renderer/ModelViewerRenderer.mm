@@ -153,9 +153,16 @@ static const NSInteger InFlightBufferCount = 3;
     
     [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
 
-    for (NuoMesh* mesh : _mesh)
-        [mesh drawMesh:renderPass];
-
+    for (uint8 renderPassStep = 0; renderPassStep < 2; ++renderPassStep)
+    {
+        for (NuoMesh* mesh : _mesh)
+        {
+            if (((renderPassStep == 0) && ![mesh hasTransparency]) /* first pass for opaque */ ||
+                ((renderPassStep == 1) && [mesh hasTransparency])  /* second pass for transparent */)
+                [mesh drawMesh:renderPass];
+        }
+    }
+    
     [renderPass endEncoding];
 
     [commandBuffer presentDrawable:view.currentDrawable];

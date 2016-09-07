@@ -118,6 +118,12 @@
 }
 
 
+- (BOOL)hasTransparency
+{
+    return NO;
+}
+
+
 @end
 
 
@@ -138,12 +144,14 @@ NuoMesh* CreateMesh(NSString* type,
                                    withIndices:model->IndicesPtr()
                                     withLength:model->IndicesLength()];
     }
-    else if (typeStr == kNuoModelType_Textured)
+    else if (typeStr == kNuoModelType_Textured || typeStr == kNuoModelType_Textured_Transparency)
     {
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePath().c_str()];
+        BOOL checkTransparency = (typeStr == kNuoModelType_Textured_Transparency);
         
         return [[NuoMeshTextured alloc] initWithDevice:device
                                        withTexutrePath:modelTexturePath
+                                 withCheckTransparency:checkTransparency
                                     withVerticesBuffer:model->Ptr()
                                             withLength:model->Length()
                                            withIndices:model->IndicesPtr()

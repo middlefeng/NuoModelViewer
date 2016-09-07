@@ -41,7 +41,7 @@
 - (void)viewResizing
 {
     NSRect viewRect = [self frame];
-    NSSize popupSize = NSMakeSize(100, 25);
+    NSSize popupSize = NSMakeSize(150, 25);
     NSSize popupMargin = NSMakeSize(10, 10);
     NSPoint popupOrigin = NSMakePoint(viewRect.size.width - popupMargin.width - popupSize.width,
                                       viewRect.size.height - popupMargin.height - popupSize.height);
@@ -64,7 +64,7 @@
     self.delegate = _render;
     
     _renderMode = [NSPopUpButton new];
-    [_renderMode addItemsWithTitles:@[@"Simple", @"Texture"]];
+    [_renderMode addItemsWithTitles:@[@"Simple", @"Texture", @"Texture with Transparency"]];
     [self addSubview:_renderMode];
 }
 
@@ -98,6 +98,8 @@
         renderMode =  [NSString stringWithUTF8String:kNuoModelType_Simple];
     else if ([selectedItem isEqualToString:@"Texture"])
         renderMode = [NSString stringWithUTF8String:kNuoModelType_Textured];
+    else if ([selectedItem isEqualToString:@"Texture with Transparency"])
+        renderMode = [NSString stringWithUTF8String:kNuoModelType_Textured_Transparency];
     
     return renderMode;
 }

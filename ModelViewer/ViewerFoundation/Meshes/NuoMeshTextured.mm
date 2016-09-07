@@ -17,13 +17,15 @@
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
                withTexutrePath:(NSString*)texPath
+         withCheckTransparency:(BOOL)check
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength
 {
     if ((self = [super initWithDevice:device withVerticesBuffer:buffer withLength:length
                           withIndices:indices withLength:indicesLength]))
     {
-        [self makePipelineState:texPath];
+        _hasTransparency = NO;
+        [self makePipelineState:texPath checkTransparency:check];
     }
     
     return self;
@@ -53,15 +55,27 @@
 
 
 
-- (void)makePipelineState:(NSString*)texPath
+- (void)makePipelineState:(NSString*)texPath checkTransparency:(BOOL)check
 {
+    _diffuseTex = [self texture2DWithImageNamed:texPath mipmapped:NO checkTransparency:check];
+    
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_textured"];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_textured"];
-    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    
+    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
+    MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
+    if (_hasTransparency)
+    {
+        colorAttachment.blendingEnabled = YES;
+        colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
+        colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
+        colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+        colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+    }
     
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];
     vertexDescriptor.attributes[0].format = MTLVertexFormatFloat4;
@@ -88,8 +102,6 @@
     depthStencilDescriptor.depthWriteEnabled = YES;
     self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
     
-    _diffuseTex = [self texture2DWithImageNamed:texPath mipmapped:NO];
-    
     // create sampler state
     MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
     samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
@@ -102,7 +114,7 @@
 
 
 
-- (uint8_t *)dataForImage:(CIImage *)image
+- (uint8_t *)dataForImage:(CIImage *)image checkTransparency:(BOOL)checkTransparency
 {
     CIContext* ciContext = [CIContext contextWithOptions:nil];
     CGImageRef imageRef = [ciContext createCGImage:image fromRect:image.extent];
@@ -128,13 +140,39 @@
     
     CGContextRelease(context);
     
+    if (checkTransparency)
+        _hasTransparency = [self checkTransparency:rawData withWidth:width withHeight:height];
+    
     return rawData;
+}
+
+
+
+- (BOOL)checkTransparency:(uint8_t *)dataForImage withWidth:(size_t)width withHeight:(size_t)height
+{
+    const NSUInteger bytesPerPixel = 4;
+    const NSUInteger bytesPerRow = bytesPerPixel * width;
+    
+    for (size_t row = 0; row < height; ++row)
+    {
+        uint8_t* rowPtr = dataForImage + row * bytesPerRow;
+        
+        for (size_t col = 0; col < width; ++col)
+        {
+            uint8_t* pixel = rowPtr + col * bytesPerPixel;
+            if (pixel[3] < 250)
+                return YES;
+        }
+    }
+    
+    return NO;
 }
 
 
 
 - (id<MTLTexture>)texture2DWithImageNamed:(NSString *)imagePath
                                 mipmapped:(BOOL)mipmapped
+                        checkTransparency:(BOOL)checkTransparency
 {
     CIImage *image = [[CIImage alloc] initWithContentsOfURL:[NSURL fileURLWithPath:imagePath]];
     
@@ -146,7 +184,7 @@
     NSSize imageSize = image.extent.size;
     const NSUInteger bytesPerPixel = 4;
     const NSUInteger bytesPerRow = bytesPerPixel * imageSize.width;
-    uint8_t *imageData = [self dataForImage:image];
+    uint8_t *imageData = [self dataForImage:image checkTransparency:checkTransparency];
     
     MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
                                                                                                  width:imageSize.width

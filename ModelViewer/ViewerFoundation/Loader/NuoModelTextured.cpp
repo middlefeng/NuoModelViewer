@@ -35,5 +35,8 @@ bool NuoItemTextured::operator == (const NuoItemTextured& i2)
 
 std::string NuoModelTextured::TypeName()
 {
-    return kNuoModelType_Textured;
+    if (_checkTransparency)
+        return kNuoModelType_Textured_Transparency;
+    else
+        return kNuoModelType_Textured;
 }

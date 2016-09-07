@@ -40,6 +40,7 @@
 
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass;
+- (BOOL)hasTransparency;
 
 
 @end

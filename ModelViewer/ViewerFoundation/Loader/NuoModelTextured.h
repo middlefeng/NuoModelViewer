@@ -31,6 +31,7 @@ class NuoModelTextureBase : public NuoModelCommon<ItemBase>
 {
 protected:
     std::string _texPath;
+    bool _checkTransparency;
     
 public:
     
@@ -39,6 +40,7 @@ public:
     virtual void SetTexturePath(const std::string texPath) override;
     virtual std::string GetTexturePath() override;
     
+    void SetCheckTransparency(bool check);
 };
 
 
@@ -67,6 +69,12 @@ template <class ItemBase>
 void NuoModelTextureBase<ItemBase>::SetTexturePath(const std::string texPath)
 {
     _texPath = texPath;
+}
+
+template <class ItemBase>
+void NuoModelTextureBase<ItemBase>::SetCheckTransparency(bool check)
+{
+    _checkTransparency = check;
 }
 
 

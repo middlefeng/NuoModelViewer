@@ -17,9 +17,12 @@
 @property (nonatomic, readonly) id<MTLTexture> diffuseTex;
 @property (nonatomic, readonly) id<MTLSamplerState> samplerState;
 
+@property (nonatomic, readonly) bool hasTransparency;
+
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
                withTexutrePath:(NSString*)texPath
+         withCheckTransparency:(BOOL)check
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength;
 
