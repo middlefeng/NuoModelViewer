@@ -18,21 +18,6 @@ constant Light light = {
     .specularColor = { 0.5, 0.5, 0.5 }
 };
 
-struct Material
-{
-    float3 ambientColor;
-    float3 diffuseColor;
-    float3 specularColor;
-    float specularPower;
-};
-
-constant Material material = {
-    .ambientColor = { 0.6, 0.6, 0.6 },
-    .diffuseColor = { 0.6, 0.6, 0.6 },
-    .specularColor = { 1, 1, 1 },
-    .specularPower = 100
-};
-
 struct Uniforms
 {
     float4x4 modelViewProjectionMatrix;
@@ -58,6 +43,11 @@ struct ProjectedVertex
     float3 eye;
     float3 normal;
     float2 texCoord;
+    
+    float3 ambientColor;
+    float3 diffuseColor;
+    float3 specularColor;
+    float specularPower;
 };
 
 vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[buffer(0)]],
@@ -69,6 +59,11 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
     outVert.eye =  -(uniforms.modelViewMatrix * vertices[vid].position).xyz;
     outVert.normal = uniforms.normalMatrix * vertices[vid].normal.xyz;
     outVert.texCoord = vertices[vid].texCoord;
+    
+    outVert.ambientColor = vertices[vid].ambientColor;
+    outVert.diffuseColor = vertices[vid].diffuseColor;
+    outVert.specularColor = vertices[vid].specularColor;
+    outVert.specularPower = vertices[vid].specularPower;
 
     return outVert;
 }
@@ -80,7 +75,7 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     float3 diffuseColor = diffuseTexel.rgb;
     
-    float3 ambientTerm = light.ambientColor * material.ambientColor;
+    float3 ambientTerm = light.ambientColor * vert.ambientColor;
     
     float3 normal = normalize(vert.normal);
     float diffuseIntensity = saturate(dot(normal, light.direction));
@@ -91,8 +86,8 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
     {
         float3 eyeDirection = normalize(vert.eye);
         float3 halfway = normalize(light.direction + eyeDirection);
-        float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower);
-        specularTerm = light.specularColor * material.specularColor * specularFactor;
+        float specularFactor = pow(saturate(dot(normal, halfway)), vert.specularPower);
+        specularTerm = light.specularColor * vert.specularColor * specularFactor;
     }
     
     return float4(ambientTerm + diffuseTerm + specularTerm, diffuseTexel.a);
