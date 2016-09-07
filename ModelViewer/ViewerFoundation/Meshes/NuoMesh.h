@@ -47,24 +47,6 @@
 
 
 
-@interface NuoMeshTextured : NuoMesh
-
-
-@property (nonatomic, readonly) id<MTLTexture> diffuseTex;
-@property (nonatomic, readonly) id<MTLSamplerState> samplerState;
-
-
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-               withTexutrePath:(NSString*)texPath
-            withVerticesBuffer:(void*)buffer withLength:(size_t)length
-                   withIndices:(void*)indices withLength:(size_t)indicesLength;
-
-
-@end
-
-
-
-
 class NuoModelBase;
 
 NuoMesh* CreateMesh(NSString* type,

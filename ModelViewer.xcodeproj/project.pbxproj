@@ -24,6 +24,7 @@
 		2C9D9AAD1D658F0800283E46 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAC1D658F0800283E46 /* main.m */; };
 		2C9D9AAF1D658F0800283E46 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAE1D658F0800283E46 /* Assets.xcassets */; };
 		2CAF2E851D691AC90074E402 /* tiny_obj_loader.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */; };
+		2CE2CA221D804EC5005509EE /* NuoMeshTextured.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2CA211D804EC5005509EE /* NuoMeshTextured.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,6 +60,8 @@
 		2C9D9AB31D658F0800283E46 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_obj_loader.cc; sourceTree = "<group>"; };
 		2CAF2E841D691AC90074E402 /* tiny_obj_loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tiny_obj_loader.h; sourceTree = "<group>"; };
+		2CE2CA201D804EC5005509EE /* NuoMeshTextured.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoMeshTextured.h; sourceTree = "<group>"; };
+		2CE2CA211D804EC5005509EE /* NuoMeshTextured.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoMeshTextured.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +92,8 @@
 			children = (
 				2C5DDAC91D6590DB00A9DC9A /* NuoMesh.h */,
 				2C5DDACA1D6590DB00A9DC9A /* NuoMesh.mm */,
+				2CE2CA201D804EC5005509EE /* NuoMeshTextured.h */,
+				2CE2CA211D804EC5005509EE /* NuoMeshTextured.mm */,
 			);
 			path = Meshes;
 			sourceTree = "<group>";
@@ -252,6 +257,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2CE2CA221D804EC5005509EE /* NuoMeshTextured.mm in Sources */,
 				2C9D9AAD1D658F0800283E46 /* main.m in Sources */,
 				2C5B92B71D7157EA00722936 /* ModelView.m in Sources */,
 				2C5DDADD1D6594FD00A9DC9A /* Shaders.metal in Sources */,
