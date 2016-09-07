@@ -89,24 +89,5 @@
 }
 
 
-/*- (void)drawMesh:(id<MTLRenderCommandEncoder>) renderPass
-{
-    [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
-    [renderPass setCullMode:MTLCullModeBack];
-    
-    [renderPass setRenderPipelineState:self.renderPipelineState];
-    [renderPass setDepthStencilState:self.depthStencilState];
-    
-    [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
-    [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
-    
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[self.indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:self.indexBuffer
-                    indexBufferOffset:0];
-}*/
-
 
 @end
