@@ -125,7 +125,7 @@ static const NSInteger InFlightBufferCount = 3;
     
     const vector_float3 cameraTranslation =
     {
-        0, 0,
+        _transX, _transY,
         (modelNearest - modelSpan) + _zoom * modelSpan / 20.0f
     };
 

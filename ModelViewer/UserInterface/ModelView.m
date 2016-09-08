@@ -80,6 +80,16 @@
 
 
 
+- (void)scrollWheel:(NSEvent *)event
+{
+   ModelRenderer* renderer = (ModelRenderer*)_render;
+    renderer.transX += event.deltaX * 0.1;
+    renderer.transY -= event.deltaY * 0.1;
+    [self render];
+}
+
+
+
 - (NSString*)renderMode
 {
     NSString* renderMode = [NSString stringWithUTF8String:kNuoModelType_Simple];
