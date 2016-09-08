@@ -78,6 +78,27 @@
 }
 
 
+- (void)viewDidMoveToSuperview
+{
+    [self viewResizing];
+}
+
+
+
+
+- (void)resizeSubviewsWithOldSize:(NSSize)oldSize
+{
+    [self viewResizing];
+}
+
+
+
+- (void)viewResizing
+{
+}
+
+
+
 - (void)setFrame:(CGRect)frame
 {
     [super setFrame:frame];

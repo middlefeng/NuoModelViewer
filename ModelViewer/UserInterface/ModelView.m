@@ -22,21 +22,6 @@
 
 
 
-- (void)viewDidMoveToSuperview
-{
-    [self viewResizing];
-}
-
-
-
-
-- (void)resizeSubviewsWithOldSize:(NSSize)oldSize
-{
-    [self viewResizing];
-}
-
-
-
 
 - (void)viewResizing
 {
@@ -49,6 +34,13 @@
     NSRect popupRect;
     popupRect.origin = popupOrigin;
     popupRect.size = popupSize;
+    
+    if (!_renderMode)
+    {
+        _renderMode = [NSPopUpButton new];
+        [_renderMode addItemsWithTitles:@[@"Simple", @"Texture", @"Texture with Transparency",
+                                          @"Texture and Material", @"Material"]];
+    }
     
     [_renderMode setFrame:popupRect];
     [_renderMode setTarget:self];
@@ -63,9 +55,6 @@
     _render = [ModelRenderer new];
     self.delegate = _render;
     
-    _renderMode = [NSPopUpButton new];
-    [_renderMode addItemsWithTitles:@[@"Simple", @"Texture", @"Texture with Transparency",
-                                      @"Texture and Material", @"Material"]];
     [self addSubview:_renderMode];
 }
 
@@ -127,7 +116,7 @@
                 if (result == NSFileHandlingPanelOKButton)
                 {
                     NSString* path = openPanel.URL.path;
-                    [_render loadMesh:path withType:[NSString stringWithUTF8String:kNuoModelType_Simple]];
+                    [_render loadMesh:path withType:nil];
                     [self render];
                 }
             }];

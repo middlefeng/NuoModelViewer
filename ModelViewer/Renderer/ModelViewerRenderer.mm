@@ -5,6 +5,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <simd/simd.h>
 
+#include "NuoTypes.h"
 #include "NuoMesh.h"
 #include "NuoMathUtilities.h"
 #include "NuoModelBase.h"
@@ -26,6 +27,7 @@ static const NSInteger InFlightBufferCount = 3;
 @property (strong) NSString* modelFilePath;
 
 @property (nonatomic, assign) matrix_float4x4 rotationMatrix;
+@property (nonatomic, strong) NSString* renderType;
 
 @end
 
@@ -40,6 +42,7 @@ static const NSInteger InFlightBufferCount = 3;
         _commandQueue = [self.device newCommandQueue];
         [self makeResources];
         
+        _renderType = [NSString stringWithUTF8String:kNuoModelType_Simple];
         _rotationMatrix = matrix_identity_float4x4;
     }
 
@@ -50,7 +53,7 @@ static const NSInteger InFlightBufferCount = 3;
 {
     NuoModelLoader* loader = [NuoModelLoader new];
     _mesh = [loader loadModelObjects:path
-                            withType:type
+                            withType:type ? type : _renderType
                           withDevice:_device];
     
     _modelFilePath = path;
@@ -59,9 +62,14 @@ static const NSInteger InFlightBufferCount = 3;
 - (void)setType:(NSString *)type
 {
     NuoModelLoader* loader = [NuoModelLoader new];
-    _mesh = [loader loadModelObjects:_modelFilePath
-                            withType:type
-                          withDevice:_device];
+    _renderType = type;
+    
+    if (_modelFilePath)
+    {
+        _mesh = [loader loadModelObjects:_modelFilePath
+                                withType:_renderType
+                              withDevice:_device];
+    }
 }
 
 - (void)makeResources

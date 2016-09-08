@@ -27,6 +27,8 @@
 
 - (void)commonInit;
 
+- (void)viewResizing;
+
 
 /**
  *  Notify the view to render the model/scene (i.e. in turn notifying the delegate)
