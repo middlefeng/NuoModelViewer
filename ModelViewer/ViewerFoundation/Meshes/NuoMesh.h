@@ -38,6 +38,8 @@
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength;
 
+- (void)makePipelineState;
+
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass;
 - (BOOL)hasTransparency;

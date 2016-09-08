@@ -171,6 +171,14 @@ NuoMesh* CreateMesh(NSString* type,
                                                 withIndices:model->IndicesPtr()
                                                  withLength:model->IndicesLength()];
     }
+    else if (typeStr == kNuoModelType_Materialed)
+    {
+        return [[NuoMeshMatieraled alloc] initWithDevice:device
+                                      withVerticesBuffer:model->Ptr()
+                                              withLength:model->Length()
+                                             withIndices:model->IndicesPtr()
+                                              withLength:model->IndicesLength()];
+    }
     
     return nil;
 }

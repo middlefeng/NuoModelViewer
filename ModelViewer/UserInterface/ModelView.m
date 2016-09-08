@@ -65,7 +65,7 @@
     
     _renderMode = [NSPopUpButton new];
     [_renderMode addItemsWithTitles:@[@"Simple", @"Texture", @"Texture with Transparency",
-                                      @"Texture and Material"]];
+                                      @"Texture and Material", @"Material"]];
     [self addSubview:_renderMode];
 }
 
@@ -103,6 +103,8 @@
         renderMode = [NSString stringWithUTF8String:kNuoModelType_Textured_Transparency];
     else if ([selectedItem isEqualToString:@"Texture and Material"])
         renderMode = [NSString stringWithUTF8String:kNuoModelType_Textured_Materialed];
+    else if ([selectedItem isEqualToString:@"Material"])
+    renderMode = [NSString stringWithUTF8String:kNuoModelType_Materialed];
     
     return renderMode;
 }

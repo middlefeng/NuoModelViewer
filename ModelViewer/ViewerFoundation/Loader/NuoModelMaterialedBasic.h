@@ -56,6 +56,37 @@ public:
 
 
 
+
+struct NuoItemMaterialedBasic
+{
+    vector_float4 _position;
+    vector_float4 _normal;
+    
+    vector_float3 _diffuse;
+    vector_float3 _ambient;
+    vector_float3 _specular;
+    float _shiness;
+    
+    NuoItemMaterialedBasic();
+    
+    bool operator == (const NuoItemMaterialedBasic& other);
+};
+
+
+
+class NuoModelMaterialed : public NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>
+{
+public:
+    virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
+    
+    virtual void SetTexturePath(const std::string texPath) override;
+    virtual std::string GetTexturePath() override;
+    
+    virtual std::string TypeName() override;
+};
+
+
+
 template <class ItemBase>
 void NuoModelMaterialedBasicBase<ItemBase>::AddMaterial(const NuoMaterial& material)
 {
