@@ -147,4 +147,11 @@ std::string NuoModelSimple::TypeName()
 
 
 
+bool NuoModelSimple::HasTransparent()
+{
+    return false;
+}
+
+
+
 

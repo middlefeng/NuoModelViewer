@@ -21,9 +21,14 @@
 template <class ItemBase>
 class NuoModelMaterialedBasicBase : virtual public NuoModelCommon<ItemBase>
 {
+
+private:
+    bool _hasTransparent;
+    
 public:
     
     virtual void AddMaterial(const NuoMaterial& material) override;
+    virtual bool HasTransparent() override;
     
 };
 
@@ -38,7 +43,7 @@ struct NuoItemMaterialedTexturedBasic
     vector_float3 _diffuse;
     vector_float3 _ambient;
     vector_float3 _specular;
-    float _shiness;
+    vector_float2 _shinessDisolve;
     
     NuoItemMaterialedTexturedBasic();
     
@@ -65,7 +70,7 @@ struct NuoItemMaterialedBasic
     vector_float3 _diffuse;
     vector_float3 _ambient;
     vector_float3 _specular;
-    float _shiness;
+    vector_float2 _shinessDisolve;
     
     NuoItemMaterialedBasic();
     
@@ -76,6 +81,7 @@ struct NuoItemMaterialedBasic
 
 class NuoModelMaterialed : public NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>
 {
+
 public:
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
     
@@ -104,7 +110,18 @@ void NuoModelMaterialedBasicBase<ItemBase>::AddMaterial(const NuoMaterial& mater
     NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.y = material.specular[1];
     NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.z = material.specular[2];
     
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._shiness = material.shininess;
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.x = material.shininess;
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.y = material.dissolve;
+    
+    if (material.dissolve - 1.0 < -1e-3)
+        _hasTransparent = true;
+}
+
+
+template <class ItemBase>
+bool NuoModelMaterialedBasicBase<ItemBase>::HasTransparent()
+{
+    return _hasTransparent;
 }
 
 

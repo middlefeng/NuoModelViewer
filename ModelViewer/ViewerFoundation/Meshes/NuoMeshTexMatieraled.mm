@@ -64,7 +64,7 @@
     vertexDescriptor.attributes[5].format = MTLVertexFormatFloat3;
     vertexDescriptor.attributes[5].offset = 80;
     vertexDescriptor.attributes[5].bufferIndex = 0;
-    vertexDescriptor.attributes[6].format = MTLVertexFormatFloat;
+    vertexDescriptor.attributes[6].format = MTLVertexFormatFloat2;
     vertexDescriptor.attributes[6].offset = 96;
     vertexDescriptor.attributes[6].bufferIndex = 0;
     
@@ -88,6 +88,9 @@
 
 
 @implementation NuoMeshMatieraled
+{
+    BOOL _hasTransparent;
+}
 
 
 
@@ -140,7 +143,7 @@
     vertexDescriptor.attributes[4].format = MTLVertexFormatFloat3;
     vertexDescriptor.attributes[4].offset = 64;
     vertexDescriptor.attributes[4].bufferIndex = 0;
-    vertexDescriptor.attributes[5].format = MTLVertexFormatFloat;
+    vertexDescriptor.attributes[5].format = MTLVertexFormatFloat2;
     vertexDescriptor.attributes[5].offset = 80;
     vertexDescriptor.attributes[5].bufferIndex = 0;
     
@@ -151,6 +154,20 @@
     pipelineDescriptor.vertexDescriptor = vertexDescriptor;
     
     return pipelineDescriptor;
+}
+
+
+
+- (BOOL)hasTransparency
+{
+    return _hasTransparent;
+}
+
+
+
+- (void)setTransparency:(BOOL)transparent
+{
+    _hasTransparent = transparent;
 }
 
 

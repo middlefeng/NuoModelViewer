@@ -34,7 +34,7 @@ struct Vertex
     float3 diffuseColor;
     float3 ambientColor;
     float3 specularColor;
-    float specularPower;
+    float2 specularPowerDisolve;
 };
 
 struct ProjectedVertex
@@ -47,7 +47,7 @@ struct ProjectedVertex
     float3 diffuseColor;
     float3 ambientColor;
     float3 specularColor;
-    float specularPower;
+    float2 specularPowerDisolve;
 };
 
 vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[buffer(0)]],
@@ -63,7 +63,7 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
     outVert.ambientColor = vertices[vid].ambientColor;
     outVert.diffuseColor = vertices[vid].diffuseColor;
     outVert.specularColor = vertices[vid].specularColor;
-    outVert.specularPower = vertices[vid].specularPower;
+    outVert.specularPowerDisolve = vertices[vid].specularPowerDisolve;
 
     return outVert;
 }
@@ -86,9 +86,9 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
     {
         float3 eyeDirection = normalize(vert.eye);
         float3 halfway = normalize(light.direction + eyeDirection);
-        float specularFactor = pow(saturate(dot(normal, halfway)), vert.specularPower);
+        float specularFactor = pow(saturate(dot(normal, halfway)), vert.specularPowerDisolve.x);
         specularTerm = light.specularColor * vert.specularColor * specularFactor;
     }
     
-    return float4(ambientTerm + diffuseTerm + specularTerm, diffuseTexel.a);
+    return float4(ambientTerm + diffuseTerm + specularTerm, diffuseTexel.a * vert.specularPowerDisolve.y);
 }

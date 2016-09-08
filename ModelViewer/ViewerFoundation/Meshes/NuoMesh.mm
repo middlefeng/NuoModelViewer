@@ -131,6 +131,11 @@
 }
 
 
+- (void)setTransparency:(BOOL)transparent
+{
+}
+
+
 @end
 
 
@@ -187,6 +192,9 @@ NuoMesh* CreateMesh(NSString* type,
         [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
         [mesh makeDepthStencilState];
         
+        if (model->HasTransparent())
+            [mesh setTransparency:YES];
+        
         return mesh;
     }
     else if (typeStr == kNuoModelType_Materialed)
@@ -199,6 +207,9 @@ NuoMesh* CreateMesh(NSString* type,
         
         [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
         [mesh makeDepthStencilState];
+        
+        if (model->HasTransparent())
+            [mesh setTransparency:YES];
         
         return mesh;
     }

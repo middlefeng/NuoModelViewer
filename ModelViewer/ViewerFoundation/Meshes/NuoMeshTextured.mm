@@ -66,6 +66,7 @@
     _samplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 
+
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
@@ -137,6 +138,13 @@
         _hasTransparency = [self checkTransparency:rawData withWidth:width withHeight:height];
     
     return rawData;
+}
+
+
+
+- (void)setTransparency:(BOOL)transparent
+{
+    _hasTransparency = transparent;
 }
 
 

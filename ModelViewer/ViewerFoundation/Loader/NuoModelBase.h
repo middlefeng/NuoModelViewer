@@ -65,6 +65,7 @@ public:
     virtual size_t IndicesLength();
     
     virtual std::string TypeName() = 0;
+    virtual bool HasTransparent() = 0;
 };
 
 
@@ -118,6 +119,7 @@ public:
     virtual std::string GetTexturePath() override;
     
     virtual std::string TypeName() override;
+    virtual bool HasTransparent() override;
 };
 
 

@@ -42,6 +42,12 @@ std::string NuoModelTextured::TypeName()
 }
 
 
+bool NuoModelTextured::HasTransparent()
+{
+    return false;
+}
+
+
 
 void NuoModelTextured::AddMaterial(const NuoMaterial& material)
 {
