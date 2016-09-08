@@ -61,17 +61,17 @@ void NuoModelMaterialedBasicBase<ItemBase>::AddMaterial(const NuoMaterial& mater
 {
     size_t targetOffset = NuoModelCommon<ItemBase>::_buffer.size() - 1;
     
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._diffuse[0] = material.diffuse[0];
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._diffuse[1] = material.diffuse[1];
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._diffuse[2] = material.diffuse[2];
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._diffuse.x = material.diffuse[0];
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._diffuse.y = material.diffuse[1];
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._diffuse.z = material.diffuse[2];
     
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._ambient[0] = material.ambient[0];
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._ambient[1] = material.ambient[1];
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._ambient[2] = material.ambient[2];
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._ambient.x = material.ambient[0];
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._ambient.y = material.ambient[1];
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._ambient.z = material.ambient[2];
     
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular[0] = material.specular[0];
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular[1] = material.specular[1];
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular[2] = material.specular[2];
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.x = material.specular[0];
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.y = material.specular[1];
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.z = material.specular[2];
     
     NuoModelCommon<ItemBase>::_buffer[targetOffset]._shiness = material.shininess;
 }

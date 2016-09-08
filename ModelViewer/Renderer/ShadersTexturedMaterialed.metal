@@ -31,8 +31,8 @@ struct Vertex
     float4 normal;
     float2 texCoord;
     
-    float3 ambientColor;
     float3 diffuseColor;
+    float3 ambientColor;
     float3 specularColor;
     float specularPower;
 };
@@ -44,8 +44,8 @@ struct ProjectedVertex
     float3 normal;
     float2 texCoord;
     
-    float3 ambientColor;
     float3 diffuseColor;
+    float3 ambientColor;
     float3 specularColor;
     float specularPower;
 };
@@ -73,7 +73,7 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
                                               sampler samplr [[sampler(0)]])
 {
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
-    float3 diffuseColor = diffuseTexel.rgb;
+    float3 diffuseColor = diffuseTexel.rgb * vert.diffuseColor;
     
     float3 ambientTerm = light.ambientColor * vert.ambientColor;
     
