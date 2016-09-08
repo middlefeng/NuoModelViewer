@@ -64,9 +64,9 @@
     vertexDescriptor.attributes[5].format = MTLVertexFormatFloat3;
     vertexDescriptor.attributes[5].offset = 80;
     vertexDescriptor.attributes[5].bufferIndex = 0;
-    vertexDescriptor.attributes[5].format = MTLVertexFormatFloat;
-    vertexDescriptor.attributes[5].offset = 96;
-    vertexDescriptor.attributes[5].bufferIndex = 0;
+    vertexDescriptor.attributes[6].format = MTLVertexFormatFloat;
+    vertexDescriptor.attributes[6].offset = 96;
+    vertexDescriptor.attributes[6].bufferIndex = 0;
     
     vertexDescriptor.layouts[0].stride = 112;
     vertexDescriptor.layouts[0].stepRate = 1;

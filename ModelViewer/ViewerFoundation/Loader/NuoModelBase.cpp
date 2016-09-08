@@ -21,7 +21,7 @@ std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& m
     {
         if (type == kNuoModelType_Textured_Materialed)
             type = kNuoModelType_Materialed;
-        else
+        else if (type != kNuoModelType_Materialed)
             type = kNuoModelType_Simple;
     }
     
