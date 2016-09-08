@@ -30,6 +30,8 @@ public:
     float _spanX;
     float _spanY;
     float _spanZ;
+    
+    float GetNearest(const matrix_float4x4& matrix);
 };
 
 

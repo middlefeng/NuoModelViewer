@@ -5,6 +5,8 @@
 #import <QuartzCore/QuartzCore.h>
 #import <simd/simd.h>
 
+#include <map>
+
 #include "NuoTypes.h"
 #include "NuoMesh.h"
 #include "NuoMathUtilities.h"
@@ -161,14 +163,36 @@ static const NSInteger InFlightBufferCount = 3;
     
     [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
 
-    for (uint8 renderPassStep = 0; renderPassStep < 2; ++renderPassStep)
+    for (NuoMesh* mesh : _mesh)
     {
-        for (NuoMesh* mesh : _mesh)
+        if (![mesh hasTransparency]) /* first pass for opaque */
+            [mesh drawMesh:renderPass];
+    }
+    
+    std::multimap<uint8_t, NuoMesh*> meshOrdered;
+    
+    for (NuoMesh* mesh : _mesh)
+    {
+        if ([mesh hasTransparency]) /* first pass for opaque */
         {
-            if (((renderPassStep == 0) && ![mesh hasTransparency]) /* first pass for opaque */ ||
-                ((renderPassStep == 1) && [mesh hasTransparency])  /* second pass for transparent */)
-                [mesh drawMesh:renderPass];
+            NuoBox boundingBox;
+            NuoMeshBox* meshBounding = mesh.boundingBox;
+            
+            boundingBox._spanX = meshBounding.spanX;
+            boundingBox._spanY = meshBounding.spanY;
+            boundingBox._spanZ = meshBounding.spanZ;
+            boundingBox._centerX = meshBounding.centerX;
+            boundingBox._centerY = meshBounding.centerY;
+            boundingBox._centerZ = meshBounding.centerZ;
+            
+            float z = boundingBox.GetNearest(self.rotationMatrix);
+            meshOrdered.insert(std::make_pair(-z, mesh));
         }
+    }
+    
+    for (auto itr = meshOrdered.begin(); itr != meshOrdered.end(); ++itr)
+    {
+        [itr->second drawMesh:renderPass];
     }
     
     [renderPass endEncoding];

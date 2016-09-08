@@ -14,6 +14,33 @@
 
 
 
+float NuoBox::GetNearest(const matrix_float4x4& matrix)
+{
+    vector_float4 vertices[8];
+    
+    vertices[0] = { _centerX - (_spanX / 2.0f), _centerY - (_spanY / 2.0f), _centerZ - (_spanZ / 2.0f), 1.0f };
+    vertices[1] = { _centerX + (_spanX / 2.0f), _centerY - (_spanY / 2.0f), _centerZ - (_spanZ / 2.0f), 1.0f };
+    vertices[2] = { _centerX - (_spanX / 2.0f), _centerY + (_spanY / 2.0f), _centerZ - (_spanZ / 2.0f), 1.0f };
+    vertices[3] = { _centerX + (_spanX / 2.0f), _centerY + (_spanY / 2.0f), _centerZ - (_spanZ / 2.0f), 1.0f };
+    vertices[4] = { _centerX - (_spanX / 2.0f), _centerY - (_spanY / 2.0f), _centerZ + (_spanZ / 2.0f), 1.0f };
+    vertices[5] = { _centerX + (_spanX / 2.0f), _centerY - (_spanY / 2.0f), _centerZ + (_spanZ / 2.0f), 1.0f };
+    vertices[6] = { _centerX - (_spanX / 2.0f), _centerY + (_spanY / 2.0f), _centerZ + (_spanZ / 2.0f), 1.0f };
+    vertices[7] = { _centerX + (_spanX / 2.0f), _centerY + (_spanY / 2.0f), _centerZ + (_spanZ / 2.0f), 1.0f };
+    
+    vector_float4 vertex = matrix_multiply(matrix, vertices[0]);
+    float z = vertex.z;
+    
+    for (uint8_t i = 1; i < 8; ++i)
+    {
+        vertex = matrix_multiply(matrix, vertices[i]);
+        if (vertex.z > z)
+            z = vertex.z;
+    }
+    
+    return z;
+}
+
+
 
 std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& material)
 {
