@@ -74,8 +74,7 @@
 - (void)magnifyWithEvent:(NSEvent *)event
 {
     ModelRenderer* renderer = (ModelRenderer*)_render;
-    
-    renderer.zoom += 0.01 * event.deltaZ;
+    renderer.zoom += 10 * event.magnification;
     [self render];
 }
 
