@@ -95,6 +95,7 @@
 
 - (void)viewResizing
 {
+    [self updateDrawableSize];
 }
 
 

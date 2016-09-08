@@ -25,6 +25,8 @@
 
 - (void)viewResizing
 {
+    [super viewResizing];
+    
     NSRect viewRect = [self frame];
     NSSize popupSize = NSMakeSize(150, 25);
     NSSize popupMargin = NSMakeSize(10, 10);
