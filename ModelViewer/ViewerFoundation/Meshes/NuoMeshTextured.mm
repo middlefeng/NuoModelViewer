@@ -16,8 +16,6 @@
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
-               withTexutrePath:(NSString*)texPath
-         withCheckTransparency:(BOOL)check
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength
 {
@@ -25,7 +23,6 @@
                           withIndices:indices withLength:indicesLength]))
     {
         _hasTransparency = NO;
-        [self makePipelineState:texPath checkTransparency:check];
     }
     
     return self;
@@ -55,10 +52,22 @@
 
 
 
-- (void)makePipelineState:(NSString*)texPath checkTransparency:(BOOL)check
+- (void)makeTexture:(NSString*)texPath checkTransparency:(BOOL)check
 {
     _diffuseTex = [self texture2DWithImageNamed:texPath mipmapped:NO checkTransparency:check];
     
+    // create sampler state
+    MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
+    samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
+    samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
+    samplerDesc.minFilter = MTLSamplerMinMagFilterNearest;
+    samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
+    samplerDesc.mipFilter = MTLSamplerMipFilterLinear;
+    _samplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
+}
+
+- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
+{
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
@@ -93,23 +102,7 @@
     
     pipelineDescriptor.vertexDescriptor = vertexDescriptor;
     
-    NSError *error = nil;
-    self.renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineDescriptor
-                                                                           error:&error];
-    
-    MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
-    depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLess;
-    depthStencilDescriptor.depthWriteEnabled = YES;
-    self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
-    
-    // create sampler state
-    MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
-    samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
-    samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
-    samplerDesc.minFilter = MTLSamplerMinMagFilterNearest;
-    samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
-    samplerDesc.mipFilter = MTLSamplerMipFilterLinear;
-    _samplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
+    return pipelineDescriptor;
 }
 
 

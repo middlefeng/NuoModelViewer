@@ -16,8 +16,6 @@
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
-               withTexutrePath:(NSString*)texPath
-         withCheckTransparency:(BOOL)check
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength;
 

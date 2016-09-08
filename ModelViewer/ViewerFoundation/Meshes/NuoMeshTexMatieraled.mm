@@ -14,30 +14,21 @@
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
-               withTexutrePath:(NSString*)texPath
-         withCheckTransparency:(BOOL)check
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength
 {
     self = [super initWithDevice:device
-                 withTexutrePath:texPath
-           withCheckTransparency:YES
               withVerticesBuffer:buffer
                       withLength:length
                      withIndices:indices
                       withLength:indicesLength];
-    
-    if (self)
-    {
-        [self makePipelineState:texPath];
-    }
     
     return self;
 }
 
 
 
-- (void)makePipelineState:(NSString*)texPath
+- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
@@ -83,10 +74,9 @@
     
     pipelineDescriptor.vertexDescriptor = vertexDescriptor;
     
-    NSError *error = nil;
-    self.renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineDescriptor
-                                                                           error:&error];
+    return pipelineDescriptor;
 }
+
 
 
 
@@ -111,21 +101,14 @@
                      withIndices:indices
                       withLength:indicesLength];
     
-    if (self)
-    {
-        [self makePipelineState];
-    }
-    
     return self;
 }
 
 
 
 
-- (void)makePipelineState
+- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    [super makePipelineState];
-    
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
@@ -168,9 +151,7 @@
     
     pipelineDescriptor.vertexDescriptor = vertexDescriptor;
     
-    NSError *error = nil;
-    self.renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineDescriptor
-                                                                           error:&error];
+    return pipelineDescriptor;
 }
 
 
