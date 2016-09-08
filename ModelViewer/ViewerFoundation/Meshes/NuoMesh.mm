@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "NuoMeshTextured.h"
+#import "NuoMeshTexMatieraled.h"
 
 
 
@@ -70,8 +71,6 @@
                                            length:indicesLength
                                           options:MTLResourceOptionCPUCacheModeDefault];
         _device = device;
-        
-        [self makePipelineState];
     }
     
     return self;
@@ -79,7 +78,7 @@
 
 
 
-- (void)makePipelineState
+- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
@@ -89,10 +88,18 @@
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
+    return pipelineDescriptor;
+}
+
+- (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor
+{
     NSError *error = nil;
     _renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineDescriptor
                                                                        error:&error];
-    
+}
+
+- (void)makeDepthStencilState
+{
     MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
     depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLess;
     depthStencilDescriptor.depthWriteEnabled = YES;
@@ -138,24 +145,62 @@ NuoMesh* CreateMesh(NSString* type,
     
     if (typeStr == kNuoModelType_Simple)
     {
-        return [[NuoMesh alloc] initWithDevice:device
-                            withVerticesBuffer:model->Ptr()
-                                    withLength:model->Length()
-                                   withIndices:model->IndicesPtr()
-                                    withLength:model->IndicesLength()];
+        NuoMesh* mesh = [[NuoMesh alloc] initWithDevice:device
+                                     withVerticesBuffer:model->Ptr()
+                                             withLength:model->Length()
+                                            withIndices:model->IndicesPtr()
+                                             withLength:model->IndicesLength()];
+        
+        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
+        [mesh makeDepthStencilState];
+        return mesh;
     }
     else if (typeStr == kNuoModelType_Textured || typeStr == kNuoModelType_Textured_Transparency)
     {
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePath().c_str()];
         BOOL checkTransparency = (typeStr == kNuoModelType_Textured_Transparency);
         
-        return [[NuoMeshTextured alloc] initWithDevice:device
-                                       withTexutrePath:modelTexturePath
-                                 withCheckTransparency:checkTransparency
-                                    withVerticesBuffer:model->Ptr()
-                                            withLength:model->Length()
-                                           withIndices:model->IndicesPtr()
-                                            withLength:model->IndicesLength()];
+        NuoMeshTextured* mesh = [[NuoMeshTextured alloc] initWithDevice:device
+                                                     withVerticesBuffer:model->Ptr()
+                                                             withLength:model->Length()
+                                                            withIndices:model->IndicesPtr()
+                                                             withLength:model->IndicesLength()];
+        
+        [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency];
+        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
+        [mesh makeDepthStencilState];
+        
+        return mesh;
+    }
+    else if (typeStr == kNuoModelType_Textured_Materialed)
+    {
+        NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePath().c_str()];
+        BOOL checkTransparency = YES;
+        
+        NuoMeshTexMatieraled* mesh = [[NuoMeshTexMatieraled alloc] initWithDevice:device
+                                         withVerticesBuffer:model->Ptr()
+                                                 withLength:model->Length()
+                                                withIndices:model->IndicesPtr()
+                                                 withLength:model->IndicesLength()];
+        
+        [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency];
+        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
+        [mesh makeDepthStencilState];
+        
+        return mesh;
+    }
+    else if (typeStr == kNuoModelType_Materialed)
+    {
+        NuoMeshMatieraled* mesh = [[NuoMeshMatieraled alloc] initWithDevice:device
+                                                         withVerticesBuffer:model->Ptr()
+                                                                 withLength:model->Length()
+                                                                withIndices:model->IndicesPtr()
+                                                                 withLength:model->IndicesLength()];
+        
+        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
+        [mesh makeDepthStencilState];
+        
+        return mesh;
     }
     
     return nil;

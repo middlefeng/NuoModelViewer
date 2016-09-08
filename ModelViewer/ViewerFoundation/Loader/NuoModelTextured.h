@@ -27,7 +27,7 @@ struct NuoItemTextured
 
 
 template <class ItemBase>
-class NuoModelTextureBase : public NuoModelCommon<ItemBase>
+class NuoModelTextureBase : virtual public NuoModelCommon<ItemBase>
 {
 protected:
     std::string _texPath;
@@ -35,7 +35,7 @@ protected:
     
 public:
     
-    void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
+    virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
     
     virtual void SetTexturePath(const std::string texPath) override;
     virtual std::string GetTexturePath() override;
@@ -49,6 +49,7 @@ public:
 class NuoModelTextured : public NuoModelTextureBase<NuoItemTextured>
 {
 public:
+    virtual void AddMaterial(const NuoMaterial& material) override;
     virtual std::string TypeName() override;
 };
 

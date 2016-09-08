@@ -8,6 +8,7 @@
 
 #include "NuoModelBase.h"
 #include "NuoModelTextured.h"
+#include "NuoModelMaterialedBasic.h"
 #include "NuoTypes.h"
 #include "NuoMaterial.h"
 
@@ -17,7 +18,12 @@
 std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& material)
 {
     if (!material.HasDiffuseTexture())
-        type = kNuoModelType_Simple;
+    {
+        if (type == kNuoModelType_Textured_Materialed)
+            type = kNuoModelType_Materialed;
+        else
+            type = kNuoModelType_Simple;
+    }
     
     if (type == kNuoModelType_Simple)
     {
@@ -28,6 +34,16 @@ std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& m
         auto model = std::make_shared<NuoModelTextured>();
         model->SetCheckTransparency(type == kNuoModelType_Textured_Transparency);
         return model;
+    }
+    else if (type == kNuoModelType_Textured_Materialed)
+    {
+        auto model = std::make_shared<NuoModelMaterialedTextured>();
+        model->SetCheckTransparency(true);
+        return model;
+    }
+    else if (type == kNuoModelType_Materialed)
+    {
+        return std::make_shared<NuoModelMaterialed>();
     }
     else
     {
@@ -102,6 +118,11 @@ NuoModelSimple::NuoModelSimple()
 
 void NuoModelSimple::AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer)
 {    
+}
+
+
+void NuoModelSimple::AddMaterial(const NuoMaterial& material)
+{
 }
 
 

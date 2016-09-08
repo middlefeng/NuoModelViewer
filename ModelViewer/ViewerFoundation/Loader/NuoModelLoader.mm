@@ -207,6 +207,13 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
                 modelBase->AddNormal(index.normal_index, attrib.normals);
             if (material.HasDiffuseTexture())
                 modelBase->AddTexCoord(index.texcoord_index, attrib.texcoords);
+            
+            int materialID = shape.mesh.material_ids[i / 3];
+            if (materialID >= 0)
+            {
+                NuoMaterial vertexMaterial(materials[materialID]);
+                modelBase->AddMaterial(vertexMaterial);
+            }
         }
         
         modelBase->GenerateIndices();
