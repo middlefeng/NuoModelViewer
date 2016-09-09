@@ -28,7 +28,7 @@
     [super viewResizing];
     
     NSRect viewRect = [self frame];
-    NSSize popupSize = NSMakeSize(150, 25);
+    NSSize popupSize = NSMakeSize(200, 25);
     NSSize popupMargin = NSMakeSize(10, 10);
     NSPoint popupOrigin = NSMakePoint(viewRect.size.width - popupMargin.width - popupSize.width,
                                       viewRect.size.height - popupMargin.height - popupSize.height);
