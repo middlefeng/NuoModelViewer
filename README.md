@@ -2,7 +2,7 @@
 
 A simple Wavefront OBJ viewer.
 
-# Screenshots on Development
+## Screenshots on Development
 
 <p align="left">
   <img width="600" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/2016-0908-ModelViewer.jpg"/>
