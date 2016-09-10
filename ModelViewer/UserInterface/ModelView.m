@@ -58,6 +58,8 @@
     self.delegate = _render;
     
     [self addSubview:_renderMode];
+    
+    [self registerForDraggedTypes:@[@"public.data"]];
 }
 
 
@@ -82,11 +84,77 @@
 
 - (void)scrollWheel:(NSEvent *)event
 {
-   ModelRenderer* renderer = (ModelRenderer*)_render;
+    ModelRenderer* renderer = (ModelRenderer*)_render;
     renderer.transX += event.deltaX * 0.1;
     renderer.transY -= event.deltaY * 0.1;
     [self render];
 }
+
+
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender
+{
+    NSPasteboard* paste = [sender draggingPasteboard];
+    NSArray *draggedFilePaths = [paste propertyListForType:NSFilenamesPboardType];
+    
+    if (draggedFilePaths.count > 0)
+    {
+        NSString* path = draggedFilePaths[0];
+        if ([path hasSuffix:@".obj"])
+        {
+            return NSDragOperationGeneric;
+        }
+        else
+        {
+            NSFileManager* manager = [NSFileManager defaultManager];
+            BOOL isDir = false;
+            
+            [manager fileExistsAtPath:path isDirectory:&isDir];
+            if (isDir)
+            {
+                NSString* name = [path lastPathComponent];
+                name = [name stringByAppendingString:@".obj"];
+                
+                NSString* filePath = [path stringByAppendingPathComponent:name];
+                return [manager fileExistsAtPath:filePath];
+            }
+        }
+    }
+    
+    return NSDragOperationNone;
+}
+
+
+- (BOOL)prepareForDragOperation:(id<NSDraggingInfo>)sender
+{
+    return YES;
+}
+
+
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)sender
+{
+    ModelRenderer* renderer = (ModelRenderer*)_render;
+    
+    NSPasteboard* paste = [sender draggingPasteboard];
+    NSArray *draggedFilePaths = [paste propertyListForType:NSFilenamesPboardType];
+    NSString* path = draggedFilePaths[0];
+    
+    NSFileManager* manager = [NSFileManager defaultManager];
+    BOOL isDir = false;
+    
+    [manager fileExistsAtPath:path isDirectory:&isDir];
+    if (isDir)
+    {
+        NSString* name = [path lastPathComponent];
+        name = [name stringByAppendingString:@".obj"];
+        path = [path stringByAppendingPathComponent:name];
+    }
+    
+    [renderer loadMesh:path withType:nil];
+    [self render];
+    return YES;
+}
+
+
 
 
 
