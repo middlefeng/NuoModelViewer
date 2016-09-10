@@ -90,5 +90,5 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
         specularTerm = light.specularColor * vert.specularColor * specularFactor;
     }
     
-    return float4(ambientTerm + diffuseTerm + specularTerm, diffuseTexel.a * vert.specularPowerDisolve.y);
+    return float4(ambientTerm + diffuseTerm + specularTerm, /*diffuseTexel.a * */vert.specularPowerDisolve.y);
 }

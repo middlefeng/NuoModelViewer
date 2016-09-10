@@ -162,7 +162,7 @@
         {
             uint8_t* pixel = rowPtr + col * bytesPerPixel;
             if (pixel[3] < 250)
-                return YES;
+                return NO;
         }
     }
     
