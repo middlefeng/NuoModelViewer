@@ -160,10 +160,10 @@ NuoMesh* CreateMesh(NSString* type,
         [mesh makeDepthStencilState];
         return mesh;
     }
-    else if (typeStr == kNuoModelType_Textured || typeStr == kNuoModelType_Textured_Transparency)
+    else if (typeStr == kNuoModelType_Textured || typeStr == kNuoModelType_Textured_A)
     {
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePath().c_str()];
-        BOOL checkTransparency = (typeStr == kNuoModelType_Textured_Transparency);
+        BOOL checkTransparency = (typeStr == kNuoModelType_Textured_A);
         
         NuoMeshTextured* mesh = [[NuoMeshTextured alloc] initWithDevice:device
                                                      withVerticesBuffer:model->Ptr()
@@ -177,7 +177,7 @@ NuoMesh* CreateMesh(NSString* type,
         
         return mesh;
     }
-    else if (typeStr == kNuoModelType_Textured_Materialed)
+    else if (typeStr == kNuoModelType_Textured_A_Materialed)
     {
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePath().c_str()];
         BOOL checkTransparency = YES;

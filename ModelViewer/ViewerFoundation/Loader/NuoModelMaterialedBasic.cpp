@@ -76,7 +76,7 @@ bool NuoItemMaterialedBasic::operator == (const NuoItemMaterialedBasic& i2)
 
 std::string NuoModelMaterialedTextured::TypeName()
 {
-    return kNuoModelType_Textured_Materialed;
+    return kNuoModelType_Textured_A_Materialed;
 }
 
 
