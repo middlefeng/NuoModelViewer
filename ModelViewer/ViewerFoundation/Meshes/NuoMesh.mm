@@ -193,7 +193,11 @@ NuoMesh* CreateMesh(NSString* type,
         [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency];
         [mesh makePipelineState:[mesh makePipelineStateDescriptor:ignoreTextureAlpha]];
         [mesh makeDepthStencilState];
-        [mesh setTransparency:model->HasTransparent()];
+        
+        if (model->HasTransparent())
+            [mesh setTransparency:YES];
+        else if (ignoreTextureAlpha)
+            [mesh setTransparency:NO];
         
         return mesh;
     }
