@@ -68,13 +68,35 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
     return outVert;
 }
 
+
+
+float4 fragment_light_tex_materialed_common(ProjectedVertex vert [[stage_in]],
+                                            float4 diffuseTexel);
+
+
+fragment float4 fragment_light_tex_a_materialed(ProjectedVertex vert [[stage_in]],
+                                                texture2d<float> diffuseTexture [[texture(0)]],
+                                                sampler samplr [[sampler(0)]])
+{
+    float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
+    return fragment_light_tex_materialed_common(vert, diffuseTexel);
+}
+
+
 fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
                                               texture2d<float> diffuseTexture [[texture(0)]],
                                               sampler samplr [[sampler(0)]])
 {
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
+    diffuseTexel.a = 1.0;
+    return fragment_light_tex_materialed_common(vert, diffuseTexel);
+}
+
+
+float4 fragment_light_tex_materialed_common(ProjectedVertex vert [[stage_in]],
+                                            float4 diffuseTexel)
+{
     float3 diffuseColor = diffuseTexel.rgb * vert.diffuseColor;
-    
     float3 ambientTerm = light.ambientColor * vert.ambientColor;
     
     float3 normal = normalize(vert.normal);

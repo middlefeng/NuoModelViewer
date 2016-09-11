@@ -73,10 +73,25 @@ bool NuoItemMaterialedBasic::operator == (const NuoItemMaterialedBasic& i2)
 
 
 
+NuoModelMaterialedTextured::NuoModelMaterialedTextured() :
+    _ignoreTextureTransparency(false)
+{
+}
+
+
+void NuoModelMaterialedTextured::SetIgnoreTextureTransparency(bool ignore)
+{
+    _ignoreTextureTransparency = ignore;
+}
+
+
 
 std::string NuoModelMaterialedTextured::TypeName()
 {
-    return kNuoModelType_Textured_A_Materialed;
+    if (_ignoreTextureTransparency)
+        return kNuoModelType_Textured_Materialed;
+    else
+        return kNuoModelType_Textured_A_Materialed;
 }
 
 

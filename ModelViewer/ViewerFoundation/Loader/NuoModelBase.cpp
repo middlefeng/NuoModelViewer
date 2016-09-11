@@ -19,7 +19,8 @@ std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& m
 {
     if (!material.HasDiffuseTexture())
     {
-        if (type == kNuoModelType_Textured_A_Materialed)
+        if (type == kNuoModelType_Textured_A_Materialed ||
+            type == kNuoModelType_Textured_Materialed)
             type = kNuoModelType_Materialed;
         else if (type != kNuoModelType_Materialed)
             type = kNuoModelType_Simple;
@@ -35,10 +36,12 @@ std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& m
         model->SetCheckTransparency(type == kNuoModelType_Textured_A);
         return model;
     }
-    else if (type == kNuoModelType_Textured_A_Materialed)
+    else if (type == kNuoModelType_Textured_A_Materialed ||
+             type == kNuoModelType_Textured_Materialed)
     {
         auto model = std::make_shared<NuoModelMaterialedTextured>();
         model->SetCheckTransparency(true);
+        model->SetIgnoreTextureTransparency(type == kNuoModelType_Textured_Materialed);
         return model;
     }
     else if (type == kNuoModelType_Materialed)

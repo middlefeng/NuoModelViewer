@@ -23,7 +23,7 @@ class NuoModelMaterialedBasicBase : virtual public NuoModelCommon<ItemBase>
 {
 
 private:
-    bool _hasTransparent;
+    bool _hasTransparent { false };
     
 public:
     
@@ -55,7 +55,13 @@ struct NuoItemMaterialedTexturedBasic
 class NuoModelMaterialedTextured : virtual public NuoModelTextureBase<NuoItemMaterialedTexturedBasic>,
                                            public NuoModelMaterialedBasicBase<NuoItemMaterialedTexturedBasic>
 {
+private:
+    bool _ignoreTextureTransparency;
+
 public:
+    NuoModelMaterialedTextured();
+    
+    void SetIgnoreTextureTransparency(bool ignore);
     virtual std::string TypeName() override;
 };
 
