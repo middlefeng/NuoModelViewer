@@ -95,13 +95,13 @@ std::string NuoModelMaterialedTextured::TypeName()
 }
 
 
-void NuoModelMaterialed::SetTexturePath(const std::string texPath)
+void NuoModelMaterialed::SetTexturePathDiffuse(const std::string texPath)
 {
 }
 
 
 
-std::string NuoModelMaterialed::GetTexturePath()
+std::string NuoModelMaterialed::GetTexturePathDiffuse()
 {
     return "";
 }

@@ -225,7 +225,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
             NSString* diffuseTexName = [NSString stringWithUTF8String:material.diffuse_texname.c_str()];
             NSString* diffuseTexPath = [basePath stringByAppendingPathComponent:diffuseTexName];
             
-            modelBase->SetTexturePath(diffuseTexPath.UTF8String);
+            modelBase->SetTexturePathDiffuse(diffuseTexPath.UTF8String);
         }
         
         models.push_back(modelBase);

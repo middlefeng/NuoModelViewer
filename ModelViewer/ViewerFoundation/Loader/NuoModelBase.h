@@ -49,8 +49,8 @@ public:
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) = 0;
     virtual void AddMaterial(const NuoMaterial& material) = 0;
     
-    virtual void SetTexturePath(const std::string texPath) = 0;
-    virtual std::string GetTexturePath() = 0;
+    virtual void SetTexturePathDiffuse(const std::string texPath) = 0;
+    virtual std::string GetTexturePathDiffuse() = 0;
     
     virtual void GenerateIndices() = 0;
     virtual void GenerateNormals() = 0;
@@ -115,8 +115,8 @@ public:
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
     virtual void AddMaterial(const NuoMaterial& material) override;
     
-    virtual void SetTexturePath(const std::string texPath) override;
-    virtual std::string GetTexturePath() override;
+    virtual void SetTexturePathDiffuse(const std::string texPath) override;
+    virtual std::string GetTexturePathDiffuse() override;
     
     virtual std::string TypeName() override;
     virtual bool HasTransparent() override;

@@ -162,7 +162,7 @@ NuoMesh* CreateMesh(NSString* type,
     }
     else if (typeStr == kNuoModelType_Textured || typeStr == kNuoModelType_Textured_A)
     {
-        NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePath().c_str()];
+        NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
         BOOL checkTransparency = (typeStr == kNuoModelType_Textured_A);
         
         NuoMeshTextured* mesh = [[NuoMeshTextured alloc] initWithDevice:device
@@ -180,7 +180,7 @@ NuoMesh* CreateMesh(NSString* type,
     else if (typeStr == kNuoModelType_Textured_A_Materialed ||
              typeStr == kNuoModelType_Textured_Materialed)
     {
-        NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePath().c_str()];
+        NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
         BOOL checkTransparency = (typeStr == kNuoModelType_Textured_A_Materialed);
         BOOL ignoreTextureAlpha = (typeStr == kNuoModelType_Textured_Materialed);
         

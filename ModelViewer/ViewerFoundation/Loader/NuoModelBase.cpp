@@ -130,13 +130,13 @@ void NuoModelSimple::AddMaterial(const NuoMaterial& material)
 
 
 
-void NuoModelSimple::SetTexturePath(const std::string texPath)
+void NuoModelSimple::SetTexturePathDiffuse(const std::string texPath)
 {
 }
 
 
 
-std::string NuoModelSimple::GetTexturePath()
+std::string NuoModelSimple::GetTexturePathDiffuse()
 {
     return std::string();
 }

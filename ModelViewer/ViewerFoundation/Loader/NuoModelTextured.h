@@ -30,15 +30,15 @@ template <class ItemBase>
 class NuoModelTextureBase : virtual public NuoModelCommon<ItemBase>
 {
 protected:
-    std::string _texPath;
+    std::string _texPathDiffuse;
     bool _checkTransparency;
     
 public:
     
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
     
-    virtual void SetTexturePath(const std::string texPath) override;
-    virtual std::string GetTexturePath() override;
+    virtual void SetTexturePathDiffuse(const std::string texPath) override;
+    virtual std::string GetTexturePathDiffuse() override;
     
     void SetCheckTransparency(bool check);
 };
@@ -68,9 +68,9 @@ void NuoModelTextureBase<ItemBase>::AddTexCoord(size_t sourceIndex, const std::v
 
 
 template <class ItemBase>
-void NuoModelTextureBase<ItemBase>::SetTexturePath(const std::string texPath)
+void NuoModelTextureBase<ItemBase>::SetTexturePathDiffuse(const std::string texPath)
 {
-    _texPath = texPath;
+    _texPathDiffuse = texPath;
 }
 
 template <class ItemBase>
@@ -82,9 +82,9 @@ void NuoModelTextureBase<ItemBase>::SetCheckTransparency(bool check)
 
 
 template <class ItemBase>
-std::string NuoModelTextureBase<ItemBase>::GetTexturePath()
+std::string NuoModelTextureBase<ItemBase>::GetTexturePathDiffuse()
 {
-    return _texPath;
+    return _texPathDiffuse;
 }
 
 

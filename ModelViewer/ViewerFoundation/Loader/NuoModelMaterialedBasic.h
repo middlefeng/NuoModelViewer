@@ -91,8 +91,8 @@ class NuoModelMaterialed : public NuoModelMaterialedBasicBase<NuoItemMaterialedB
 public:
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
     
-    virtual void SetTexturePath(const std::string texPath) override;
-    virtual std::string GetTexturePath() override;
+    virtual void SetTexturePathDiffuse(const std::string texPath) override;
+    virtual std::string GetTexturePathDiffuse() override;
     
     virtual std::string TypeName() override;
 };
