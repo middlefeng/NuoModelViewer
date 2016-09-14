@@ -13,6 +13,7 @@
 
 const char* kNuoModelType_Simple = "model_simple";
 const char* kNuoModelType_Textured = "model_textured";
-const char* kNuoModelType_Textured_Transparency = "model_textured_transparency";
+const char* kNuoModelType_Textured_A = "model_textured_a";
+const char* kNuoModelType_Textured_A_Materialed = "model_textured_a_materialed";
 const char* kNuoModelType_Textured_Materialed = "model_textured_materialed";
 const char* kNuoModelType_Materialed = "model_materialed";

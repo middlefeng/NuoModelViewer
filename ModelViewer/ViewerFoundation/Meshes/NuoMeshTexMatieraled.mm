@@ -11,6 +11,9 @@
 
 
 @implementation NuoMeshTexMatieraled
+{
+    id<MTLTexture> _textureOpacity;
+}
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
@@ -28,14 +31,33 @@
 
 
 
-- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
+- (void)makeTextureOpacity:(NSString*)texPath
+{
+    _textureOpacity = [self texture2DWithImageNamed:texPath mipmapped:NO checkTransparency:NO];
+}
+
+
+
+- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor:(BOOL)ignoreTextureAlpha
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
-    pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_tex_materialed"];
-    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed"];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    
+    pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_tex_materialed"];
+    if (ignoreTextureAlpha)
+    {
+        if (_textureOpacity)
+            pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed_tex_opacity"];
+        else
+            pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed"];
+    }
+    else
+    {
+        pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_a_materialed"];
+    }
+    
     
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
@@ -75,6 +97,29 @@
     pipelineDescriptor.vertexDescriptor = vertexDescriptor;
     
     return pipelineDescriptor;
+}
+
+
+- (void)drawMesh:(id<MTLRenderCommandEncoder>) renderPass
+{
+    [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
+    [renderPass setCullMode:MTLCullModeBack];
+    
+    [renderPass setRenderPipelineState:self.renderPipelineState];
+    [renderPass setDepthStencilState:self.depthStencilState];
+    
+    [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
+    [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
+    
+    [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
+    if (_textureOpacity)
+        [renderPass setFragmentTexture:_textureOpacity atIndex:1];
+    
+    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                           indexCount:[self.indexBuffer length] / sizeof(uint32_t)
+                            indexType:MTLIndexTypeUInt32
+                          indexBuffer:self.indexBuffer
+                    indexBufferOffset:0];
 }
 
 

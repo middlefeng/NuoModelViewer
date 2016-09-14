@@ -19,6 +19,10 @@
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength;
 
+- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor:(BOOL)ignoreTextureAlpha;
+
+- (void)makeTextureOpacity:(NSString*)texPath;
+
 
 @end
 

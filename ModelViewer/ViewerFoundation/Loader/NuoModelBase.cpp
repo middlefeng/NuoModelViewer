@@ -17,9 +17,10 @@
 
 std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& material)
 {
-    if (!material.HasDiffuseTexture())
+    if (!material.HasTextureDiffuse())
     {
-        if (type == kNuoModelType_Textured_Materialed)
+        if (type == kNuoModelType_Textured_A_Materialed ||
+            type == kNuoModelType_Textured_Materialed)
             type = kNuoModelType_Materialed;
         else if (type != kNuoModelType_Materialed)
             type = kNuoModelType_Simple;
@@ -29,16 +30,18 @@ std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& m
     {
         return std::make_shared<NuoModelSimple>();
     }
-    else if (type == kNuoModelType_Textured || type == kNuoModelType_Textured_Transparency)
+    else if (type == kNuoModelType_Textured || type == kNuoModelType_Textured_A)
     {
         auto model = std::make_shared<NuoModelTextured>();
-        model->SetCheckTransparency(type == kNuoModelType_Textured_Transparency);
+        model->SetCheckTransparency(type == kNuoModelType_Textured_A);
         return model;
     }
-    else if (type == kNuoModelType_Textured_Materialed)
+    else if (type == kNuoModelType_Textured_A_Materialed ||
+             type == kNuoModelType_Textured_Materialed)
     {
         auto model = std::make_shared<NuoModelMaterialedTextured>();
         model->SetCheckTransparency(true);
+        model->SetIgnoreTextureTransparency(type == kNuoModelType_Textured_Materialed);
         return model;
     }
     else if (type == kNuoModelType_Materialed)
@@ -127,13 +130,24 @@ void NuoModelSimple::AddMaterial(const NuoMaterial& material)
 
 
 
-void NuoModelSimple::SetTexturePath(const std::string texPath)
+void NuoModelSimple::SetTexturePathDiffuse(const std::string texPath)
 {
 }
 
 
 
-std::string NuoModelSimple::GetTexturePath()
+std::string NuoModelSimple::GetTexturePathDiffuse()
+{
+    return std::string();
+}
+
+
+void NuoModelSimple::SetTexturePathOpacity(const std::string texPath)
+{
+}
+
+
+std::string NuoModelSimple::GetTexturePathOpacity()
 {
     return std::string();
 }

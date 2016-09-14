@@ -160,10 +160,10 @@ NuoMesh* CreateMesh(NSString* type,
         [mesh makeDepthStencilState];
         return mesh;
     }
-    else if (typeStr == kNuoModelType_Textured || typeStr == kNuoModelType_Textured_Transparency)
+    else if (typeStr == kNuoModelType_Textured || typeStr == kNuoModelType_Textured_A)
     {
-        NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePath().c_str()];
-        BOOL checkTransparency = (typeStr == kNuoModelType_Textured_Transparency);
+        NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
+        BOOL checkTransparency = (typeStr == kNuoModelType_Textured_A);
         
         NuoMeshTextured* mesh = [[NuoMeshTextured alloc] initWithDevice:device
                                                      withVerticesBuffer:model->Ptr()
@@ -177,10 +177,12 @@ NuoMesh* CreateMesh(NSString* type,
         
         return mesh;
     }
-    else if (typeStr == kNuoModelType_Textured_Materialed)
+    else if (typeStr == kNuoModelType_Textured_A_Materialed ||
+             typeStr == kNuoModelType_Textured_Materialed)
     {
-        NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePath().c_str()];
-        BOOL checkTransparency = YES;
+        NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
+        BOOL checkTransparency = (typeStr == kNuoModelType_Textured_A_Materialed);
+        BOOL ignoreTextureAlpha = (typeStr == kNuoModelType_Textured_Materialed);
         
         NuoMeshTexMatieraled* mesh = [[NuoMeshTexMatieraled alloc] initWithDevice:device
                                          withVerticesBuffer:model->Ptr()
@@ -189,11 +191,20 @@ NuoMesh* CreateMesh(NSString* type,
                                                  withLength:model->IndicesLength()];
         
         [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency];
-        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
+        
+        NSString* modelTexturePathOpacity = [NSString stringWithUTF8String:model->GetTexturePathOpacity().c_str()];
+        if ([modelTexturePathOpacity isEqualToString:@""])
+            modelTexturePathOpacity = nil;
+        if (modelTexturePathOpacity)
+            [mesh makeTextureOpacity:modelTexturePathOpacity];
+        
+        [mesh makePipelineState:[mesh makePipelineStateDescriptor:ignoreTextureAlpha]];
         [mesh makeDepthStencilState];
         
-        if (model->HasTransparent())
+        if (model->HasTransparent() || modelTexturePathOpacity)
             [mesh setTransparency:YES];
+        else if (ignoreTextureAlpha)
+            [mesh setTransparency:NO];
         
         return mesh;
     }
@@ -207,9 +218,7 @@ NuoMesh* CreateMesh(NSString* type,
         
         [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
         [mesh makeDepthStencilState];
-        
-        if (model->HasTransparent())
-            [mesh setTransparency:YES];
+        [mesh setTransparency:model->HasTransparent()];
         
         return mesh;
     }

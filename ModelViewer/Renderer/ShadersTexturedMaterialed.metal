@@ -13,7 +13,7 @@ struct Light
 
 constant Light light = {
     .direction = { 0.13, 0.72, 0.68 },
-    .ambientColor = { 0.05, 0.05, 0.05 },
+    .ambientColor = { 0.25, 0.25, 0.25 },
     .diffuseColor = { 1, 1, 1 },
     .specularColor = { 0.5, 0.5, 0.5 }
 };
@@ -68,13 +68,49 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
     return outVert;
 }
 
+
+
+float4 fragment_light_tex_materialed_common(ProjectedVertex vert [[stage_in]],
+                                            float4 diffuseTexel);
+
+
+fragment float4 fragment_light_tex_a_materialed(ProjectedVertex vert [[stage_in]],
+                                                texture2d<float> diffuseTexture [[texture(0)]],
+                                                sampler samplr [[sampler(0)]])
+{
+    float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
+    return fragment_light_tex_materialed_common(vert, diffuseTexel);
+}
+
+
 fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
                                               texture2d<float> diffuseTexture [[texture(0)]],
                                               sampler samplr [[sampler(0)]])
 {
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
+    if (diffuseTexel.a < 1e-9)
+        diffuseTexel.rgb = float3(1.0);
+    diffuseTexel.a = 1.0;
+    return fragment_light_tex_materialed_common(vert, diffuseTexel);
+}
+
+
+fragment float4 fragment_light_tex_materialed_tex_opacity(ProjectedVertex vert [[stage_in]],
+                                                          texture2d<float> diffuseTexture [[texture(0)]],
+                                                          texture2d<float> opacityTexture [[texture(1)]],
+                                                          sampler samplr [[sampler(0)]])
+{
+    float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
+    float4 opacityTexel = opacityTexture.sample(samplr, vert.texCoord);
+    diffuseTexel.a = opacityTexel.a;
+    return fragment_light_tex_materialed_common(vert, diffuseTexel);
+}
+
+
+float4 fragment_light_tex_materialed_common(ProjectedVertex vert [[stage_in]],
+                                            float4 diffuseTexel)
+{
     float3 diffuseColor = diffuseTexel.rgb * vert.diffuseColor;
-    
     float3 ambientTerm = light.ambientColor * vert.ambientColor;
     
     float3 normal = normalize(vert.normal);
@@ -92,3 +128,4 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
     
     return float4(ambientTerm + diffuseTerm + specularTerm, diffuseTexel.a * vert.specularPowerDisolve.y);
 }
+

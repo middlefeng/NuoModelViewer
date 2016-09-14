@@ -58,7 +58,8 @@ public:
     
     bool operator < (const NuoMaterial& other) const;
     
-    bool HasDiffuseTexture() const;
+    bool HasTextureDiffuse() const;
+    bool HasTextureOpacity() const;
 };
 
 

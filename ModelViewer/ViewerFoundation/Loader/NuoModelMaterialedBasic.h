@@ -23,7 +23,7 @@ class NuoModelMaterialedBasicBase : virtual public NuoModelCommon<ItemBase>
 {
 
 private:
-    bool _hasTransparent;
+    bool _hasTransparent { false };
     
 public:
     
@@ -55,8 +55,18 @@ struct NuoItemMaterialedTexturedBasic
 class NuoModelMaterialedTextured : virtual public NuoModelTextureBase<NuoItemMaterialedTexturedBasic>,
                                            public NuoModelMaterialedBasicBase<NuoItemMaterialedTexturedBasic>
 {
+private:
+    bool _ignoreTextureTransparency;
+    std::string _textureOpacity;
+
 public:
+    NuoModelMaterialedTextured();
+    
+    void SetIgnoreTextureTransparency(bool ignore);
     virtual std::string TypeName() override;
+    
+    virtual void SetTexturePathOpacity(const std::string texPath) override;
+    virtual std::string GetTexturePathOpacity() override;
 };
 
 
@@ -85,8 +95,10 @@ class NuoModelMaterialed : public NuoModelMaterialedBasicBase<NuoItemMaterialedB
 public:
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
     
-    virtual void SetTexturePath(const std::string texPath) override;
-    virtual std::string GetTexturePath() override;
+    virtual void SetTexturePathDiffuse(const std::string texPath) override;
+    virtual std::string GetTexturePathDiffuse() override;
+    virtual void SetTexturePathOpacity(const std::string texPath) override;
+    virtual std::string GetTexturePathOpacity() override;
     
     virtual std::string TypeName() override;
 };

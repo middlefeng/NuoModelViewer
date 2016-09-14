@@ -205,7 +205,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
             modelBase->AddPosition(index.vertex_index, attrib.vertices);
             if (attrib.normals.size())
                 modelBase->AddNormal(index.normal_index, attrib.normals);
-            if (material.HasDiffuseTexture())
+            if (material.HasTextureDiffuse())
                 modelBase->AddTexCoord(index.texcoord_index, attrib.texcoords);
             
             int materialID = shape.mesh.material_ids[i / 3];
@@ -220,12 +220,20 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
         if (!attrib.normals.size())
             modelBase->GenerateNormals();
         
-        if (material.HasDiffuseTexture())
+        if (material.HasTextureDiffuse())
         {
             NSString* diffuseTexName = [NSString stringWithUTF8String:material.diffuse_texname.c_str()];
             NSString* diffuseTexPath = [basePath stringByAppendingPathComponent:diffuseTexName];
             
-            modelBase->SetTexturePath(diffuseTexPath.UTF8String);
+            modelBase->SetTexturePathDiffuse(diffuseTexPath.UTF8String);
+        }
+        
+        if (material.HasTextureOpacity())
+        {
+            NSString* opacityTexName = [NSString stringWithUTF8String:material.alpha_texname.c_str()];
+            NSString* opacityTexPath = [basePath stringByAppendingPathComponent:opacityTexName];
+            
+            modelBase->SetTexturePathOpacity(opacityTexPath.UTF8String);
         }
         
         models.push_back(modelBase);
