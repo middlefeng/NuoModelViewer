@@ -74,10 +74,17 @@ bool NuoMaterial::operator < (const NuoMaterial& other) const
 }
 
 
-bool NuoMaterial::HasDiffuseTexture() const
+bool NuoMaterial::HasTextureDiffuse() const
 {
     return !diffuse_texname.empty();
 }
+
+
+bool NuoMaterial::HasTextureOpacity() const
+{
+    return !alpha_texname.empty();
+}
+
 
 
 

@@ -17,7 +17,7 @@
 
 std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& material)
 {
-    if (!material.HasDiffuseTexture())
+    if (!material.HasTextureDiffuse())
     {
         if (type == kNuoModelType_Textured_A_Materialed ||
             type == kNuoModelType_Textured_Materialed)
@@ -137,6 +137,17 @@ void NuoModelSimple::SetTexturePathDiffuse(const std::string texPath)
 
 
 std::string NuoModelSimple::GetTexturePathDiffuse()
+{
+    return std::string();
+}
+
+
+void NuoModelSimple::SetTexturePathOpacity(const std::string texPath)
+{
+}
+
+
+std::string NuoModelSimple::GetTexturePathOpacity()
 {
     return std::string();
 }

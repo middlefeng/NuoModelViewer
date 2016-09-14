@@ -33,6 +33,19 @@ bool NuoItemTextured::operator == (const NuoItemTextured& i2)
 
 
 
+void NuoModelTextured::SetTexturePathOpacity(const std::string texPath)
+{
+}
+
+
+
+std::string NuoModelTextured::GetTexturePathOpacity()
+{
+    return std::string();
+}
+
+
+
 std::string NuoModelTextured::TypeName()
 {
     if (_checkTransparency)

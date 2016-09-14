@@ -95,6 +95,19 @@ std::string NuoModelMaterialedTextured::TypeName()
 }
 
 
+void NuoModelMaterialedTextured::SetTexturePathOpacity(const std::string texPath)
+{
+    _textureOpacity = texPath;
+}
+
+
+
+std::string NuoModelMaterialedTextured::GetTexturePathOpacity()
+{
+    return _textureOpacity;
+}
+
+
 void NuoModelMaterialed::SetTexturePathDiffuse(const std::string texPath)
 {
 }
@@ -104,6 +117,18 @@ void NuoModelMaterialed::SetTexturePathDiffuse(const std::string texPath)
 std::string NuoModelMaterialed::GetTexturePathDiffuse()
 {
     return "";
+}
+
+
+void NuoModelMaterialed::SetTexturePathOpacity(const std::string texPath)
+{
+}
+
+
+
+std::string NuoModelMaterialed::GetTexturePathOpacity()
+{
+    return std::string();
 }
 
 
