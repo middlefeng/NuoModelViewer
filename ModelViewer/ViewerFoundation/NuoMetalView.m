@@ -4,11 +4,8 @@
 
 @interface NuoMetalView ()
 
-@property (strong) id<CAMetalDrawable> currentDrawable;
 @property (strong) id<MTLTexture> depthTexture;
-
 @property (nonatomic, readonly) CAMetalLayer *metalLayer;
-
 
 @property (nonatomic, strong) id<NuoMetalViewDelegate> renderer;
 
@@ -143,20 +140,7 @@
 
 - (void)render
 {
-    self.currentDrawable = [self.metalLayer nextDrawable];
-    
-    if (self.currentDrawable &&     // null drawable happens if the window is covered
-        [self.delegate respondsToSelector:@selector(drawInView:)])
-    {
-        [self.delegate drawInView:self];
-    }
-    else
-    {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^
-        {
-            [self render];
-        });
-    }
+    [self.delegate drawInView:self];
 }
 
 - (void)makeDepthTexture
@@ -180,8 +164,10 @@
 
 - (MTLRenderPassDescriptor *)currentRenderPassDescriptor
 {
+    _currentDrawable = [self.metalLayer nextDrawable];
+    
     MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
-
+    
     passDescriptor.colorAttachments[0].texture = [self.currentDrawable texture];
     passDescriptor.colorAttachments[0].clearColor = self.clearColor;
     passDescriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
