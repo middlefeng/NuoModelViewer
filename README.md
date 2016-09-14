@@ -15,6 +15,15 @@ Better handling to material opacity.
 <p align="left">
   <img width="600" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/2016-0908-ModelViewer.jpg"/>
 </p>
+
+
+## TODO
+
+* Bump texture.
+* Postion and intensity of light source.
+* Selectable list of object.
+* Shadow (to model and to ground).
+* Cull mode.
   
 
 ## Early Screenshots
