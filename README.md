@@ -2,7 +2,7 @@
 
 A simple Wavefront OBJ viewer.
 
-# Latest Update
+## Latest Update
 
 Better handling to material opacity.
 
