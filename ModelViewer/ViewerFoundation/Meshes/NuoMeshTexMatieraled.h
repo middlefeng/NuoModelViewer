@@ -21,6 +21,8 @@
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor:(BOOL)ignoreTextureAlpha;
 
+- (void)makeTextureOpacity:(NSString*)texPath;
+
 
 @end
 

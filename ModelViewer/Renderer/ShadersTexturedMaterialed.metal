@@ -95,6 +95,18 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
 }
 
 
+fragment float4 fragment_light_tex_materialed_tex_opacity(ProjectedVertex vert [[stage_in]],
+                                                          texture2d<float> diffuseTexture [[texture(0)]],
+                                                          texture2d<float> opacityTexture [[texture(1)]],
+                                                          sampler samplr [[sampler(0)]])
+{
+    float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
+    float4 opacityTexel = opacityTexture.sample(samplr, vert.texCoord);
+    diffuseTexel.a = opacityTexel.a;
+    return fragment_light_tex_materialed_common(vert, diffuseTexel);
+}
+
+
 float4 fragment_light_tex_materialed_common(ProjectedVertex vert [[stage_in]],
                                             float4 diffuseTexel)
 {
@@ -116,3 +128,4 @@ float4 fragment_light_tex_materialed_common(ProjectedVertex vert [[stage_in]],
     
     return float4(ambientTerm + diffuseTerm + specularTerm, diffuseTexel.a * vert.specularPowerDisolve.y);
 }
+
