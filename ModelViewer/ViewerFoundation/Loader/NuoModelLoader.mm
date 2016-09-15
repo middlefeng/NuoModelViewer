@@ -167,26 +167,37 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
 
 
 @implementation NuoModelLoader
+{
+    NSString* _basePath;
+    
+    tinyobj::attrib_t _attrib;
+    std::vector<tinyobj::shape_t> _shapes;
+    std::vector<tinyobj::material_t> _materials;
+}
 
 
 
--(NSArray<NuoMesh*>*)loadModelObjects:(NSString*)objPath
-                             withType:(NSString*)type
-                           withDevice:(id<MTLDevice>)device
+- (void)loadModel:(NSString*)path
+{
+    std::string err;
+    
+    _basePath = [path stringByDeletingLastPathComponent];
+    _basePath = [_basePath stringByAppendingString:@"/"];
+    
+    _shapes.clear();
+    _materials.clear();
+    
+    tinyobj::LoadObj(&_attrib, &_shapes, &_materials, &err, path.UTF8String, _basePath.UTF8String);
+}
+
+
+
+- (NSArray<NuoMesh*>*)createMeshsWithType:(NSString*)type
+                               withDevice:(id<MTLDevice>)device
 {
     typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
     
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string err;
-    
-    NSString* basePath = [objPath stringByDeletingLastPathComponent];
-    basePath = [basePath stringByAppendingString:@"/"];
-    
-    tinyobj::LoadObj(&attrib, &shapes, &materials, &err, objPath.UTF8String, basePath.UTF8String);
-    
-    PShapeMapByMaterial shapeMap = GetShapeVectorByMaterial(shapes, materials);
+    PShapeMapByMaterial shapeMap = GetShapeVectorByMaterial(_shapes, _materials);
     
     std::vector<PNuoModelBase> models;
     std::vector<uint32> indices;
@@ -202,28 +213,28 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
         {
             tinyobj::index_t index = shape.mesh.indices[i];
             
-            modelBase->AddPosition(index.vertex_index, attrib.vertices);
-            if (attrib.normals.size())
-                modelBase->AddNormal(index.normal_index, attrib.normals);
+            modelBase->AddPosition(index.vertex_index, _attrib.vertices);
+            if (_attrib.normals.size())
+                modelBase->AddNormal(index.normal_index, _attrib.normals);
             if (material.HasTextureDiffuse())
-                modelBase->AddTexCoord(index.texcoord_index, attrib.texcoords);
+                modelBase->AddTexCoord(index.texcoord_index, _attrib.texcoords);
             
             int materialID = shape.mesh.material_ids[i / 3];
             if (materialID >= 0)
             {
-                NuoMaterial vertexMaterial(materials[materialID]);
+                NuoMaterial vertexMaterial(_materials[materialID]);
                 modelBase->AddMaterial(vertexMaterial);
             }
         }
         
         modelBase->GenerateIndices();
-        if (!attrib.normals.size())
+        if (!_attrib.normals.size())
             modelBase->GenerateNormals();
         
         if (material.HasTextureDiffuse())
         {
             NSString* diffuseTexName = [NSString stringWithUTF8String:material.diffuse_texname.c_str()];
-            NSString* diffuseTexPath = [basePath stringByAppendingPathComponent:diffuseTexName];
+            NSString* diffuseTexPath = [_basePath stringByAppendingPathComponent:diffuseTexName];
             
             modelBase->SetTexturePathDiffuse(diffuseTexPath.UTF8String);
         }
@@ -231,7 +242,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
         if (material.HasTextureOpacity())
         {
             NSString* opacityTexName = [NSString stringWithUTF8String:material.alpha_texname.c_str()];
-            NSString* opacityTexPath = [basePath stringByAppendingPathComponent:opacityTexName];
+            NSString* opacityTexPath = [_basePath stringByAppendingPathComponent:opacityTexName];
             
             modelBase->SetTexturePathOpacity(opacityTexPath.UTF8String);
         }

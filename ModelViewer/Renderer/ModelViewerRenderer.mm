@@ -24,7 +24,7 @@ static const NSInteger InFlightBufferCount = 3;
 @property (strong) dispatch_semaphore_t displaySemaphore;
 @property (assign) NSInteger bufferIndex;
 
-@property (strong) NSString* modelFilePath;
+@property (strong) NuoModelLoader* modelLoader;
 
 @property (nonatomic, assign) matrix_float4x4 rotationMatrix;
 @property (nonatomic, strong) NSString* renderType;
@@ -51,24 +51,20 @@ static const NSInteger InFlightBufferCount = 3;
 
 - (void)loadMesh:(NSString*)path withType:(NSString*)type
 {
-    NuoModelLoader* loader = [NuoModelLoader new];
-    _mesh = [loader loadModelObjects:path
-                            withType:type ? type : _renderType
-                          withDevice:_device];
-    
-    _modelFilePath = path;
+    _modelLoader = [NuoModelLoader new];
+    [_modelLoader loadModel:path];
+    _mesh = [_modelLoader createMeshsWithType:type ? type : _renderType
+                                   withDevice:_device];
 }
 
 - (void)setType:(NSString *)type
 {
-    NuoModelLoader* loader = [NuoModelLoader new];
     _renderType = type;
     
-    if (_modelFilePath)
+    if (_modelLoader)
     {
-        _mesh = [loader loadModelObjects:_modelFilePath
-                                withType:_renderType
-                              withDevice:_device];
+        _mesh = [_modelLoader createMeshsWithType:_renderType
+                                       withDevice:_device];
     }
 }
 
