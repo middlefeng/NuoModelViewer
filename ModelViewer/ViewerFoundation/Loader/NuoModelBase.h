@@ -13,6 +13,7 @@
 #include <string>
 
 #include <simd/simd.h>
+#include "NuoTypes.h"
 
 
 
@@ -34,7 +35,18 @@ public:
 
 
 
-std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& material);
+class NuoModelOption
+{
+public:
+    bool _textured;
+    NuoModelTextureAlphaType _textureAlphaType;
+    
+    bool _basicMaterialized;
+};
+
+
+
+std::shared_ptr<NuoModelBase> CreateModel(const NuoModelOption& options, const NuoMaterial& material);
 
 
 

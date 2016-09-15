@@ -21,7 +21,12 @@ const extern char* kNuoModelType_Textured_A;
 const extern char* kNuoModelType_Textured_A_Materialed;
 const extern char* kNuoModelType_Textured_Materialed;
 const extern char* kNuoModelType_Materialed;
-    
+
+enum NuoModelTextureAlphaType
+{
+    kNuoModelTextureAlpha_Embedded,
+    kNuoModelTextureAlpha_Sided
+};
     
 #if __cplusplus
 }

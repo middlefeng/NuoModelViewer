@@ -7,16 +7,27 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "NuoTypes.h"
 
 
 @class NuoMesh;
 
 
+@interface NuoModelLoadOption : NSObject
+
+@property (nonatomic, assign) BOOL textured;
+@property (nonatomic, assign) NuoModelTextureAlphaType textureType;
+
+@property (nonatomic, assign) BOOL basicMaterialized;
+
+@end
+
+
 @interface NuoModelLoader : NSObject
 
 - (void)loadModel:(NSString*)path;
-- (NSArray<NuoMesh*>*)createMeshsWithType:(NSString*)type
-                               withDevice:(id<MTLDevice>)device;
+- (NSArray<NuoMesh*>*)createMeshsWithOptions:(NuoModelLoadOption*)loadOption
+                                  withDevice:(id<MTLDevice>)device;
 
 
 @end

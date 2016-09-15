@@ -165,6 +165,12 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
 
 
 
+@implementation NuoModelLoadOption
+
+@end
+
+
+
 
 @implementation NuoModelLoader
 {
@@ -192,8 +198,8 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
 
 
 
-- (NSArray<NuoMesh*>*)createMeshsWithType:(NSString*)type
-                               withDevice:(id<MTLDevice>)device
+- (NSArray<NuoMesh*>*)createMeshsWithOptions:(NuoModelLoadOption*)loadOption
+                                  withDevice:(id<MTLDevice>)device
 {
     typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
     
@@ -207,7 +213,12 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
         const NuoMaterial material(shapeItr.first);
         const tinyobj::shape_t& shape = shapeItr.second;
         
-        PNuoModelBase modelBase = CreateModel(type.UTF8String, material);
+        NuoModelOption options;
+        options._textured = loadOption.textured;
+        options._textureAlphaType = loadOption.textureType;
+        options._basicMaterialized = loadOption.basicMaterialized;
+        
+        PNuoModelBase modelBase = CreateModel(options, material);
         
         for (size_t i = 0; i < shape.mesh.indices.size(); ++i)
         {

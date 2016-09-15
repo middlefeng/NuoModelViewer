@@ -27,7 +27,7 @@ static const NSInteger InFlightBufferCount = 3;
 @property (strong) NuoModelLoader* modelLoader;
 
 @property (nonatomic, assign) matrix_float4x4 rotationMatrix;
-@property (nonatomic, strong) NSString* renderType;
+@property (nonatomic, strong) NuoModelLoadOption* modelOptions;
 
 @end
 
@@ -42,29 +42,72 @@ static const NSInteger InFlightBufferCount = 3;
         _commandQueue = [self.device newCommandQueue];
         [self makeResources];
         
-        _renderType = [NSString stringWithUTF8String:kNuoModelType_Simple];
+        _modelOptions = [NuoModelLoadOption new];
         _rotationMatrix = matrix_identity_float4x4;
     }
 
     return self;
 }
 
+
+- (NuoModelLoadOption*)loadOptionsFromType:(NSString*)type
+{
+    NuoModelLoadOption* options = [NuoModelLoadOption new];
+    std::string typeStr (type.UTF8String);
+    
+    if (typeStr == kNuoModelType_Simple)
+    {
+        options.basicMaterialized = NO;
+        options.textured = NO;
+    }
+    
+    if (typeStr == kNuoModelType_Textured ||
+        typeStr == kNuoModelType_Textured_A ||
+        typeStr == kNuoModelType_Textured_A_Materialed ||
+        typeStr == kNuoModelType_Textured_Materialed)
+    {
+        options.textured = YES;
+    }
+
+    if (typeStr == kNuoModelType_Textured_A ||
+        typeStr == kNuoModelType_Textured_A_Materialed)
+    {
+        options.textureType = kNuoModelTextureAlpha_Embedded;
+    }
+    
+    if (typeStr == kNuoModelType_Textured_Materialed)
+        options.textureType = kNuoModelTextureAlpha_Sided;
+    
+    if (typeStr == kNuoModelType_Materialed ||
+        typeStr == kNuoModelType_Textured_Materialed ||
+        typeStr == kNuoModelType_Textured_A_Materialed)
+        options.basicMaterialized = YES;
+    
+    return options;
+}
+
+
 - (void)loadMesh:(NSString*)path withType:(NSString*)type
 {
     _modelLoader = [NuoModelLoader new];
     [_modelLoader loadModel:path];
-    _mesh = [_modelLoader createMeshsWithType:type ? type : _renderType
-                                   withDevice:_device];
+    
+    if (type)
+        _modelOptions = [self loadOptionsFromType:type];
+    
+    _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
+                                      withDevice:_device];
 }
 
 - (void)setType:(NSString *)type
 {
-    _renderType = type;
+    if (type)
+        _modelOptions = [self loadOptionsFromType:type];
     
     if (_modelLoader)
     {
-        _mesh = [_modelLoader createMeshsWithType:_renderType
-                                       withDevice:_device];
+        _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
+                                          withDevice:_device];
     }
 }
 

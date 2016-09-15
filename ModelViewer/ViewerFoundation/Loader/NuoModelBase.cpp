@@ -9,42 +9,36 @@
 #include "NuoModelBase.h"
 #include "NuoModelTextured.h"
 #include "NuoModelMaterialedBasic.h"
-#include "NuoTypes.h"
 #include "NuoMaterial.h"
 
 
 
 
-std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& material)
+std::shared_ptr<NuoModelBase> CreateModel(const NuoModelOption& options, const NuoMaterial& material)
 {
-    if (!material.HasTextureDiffuse())
-    {
-        if (type == kNuoModelType_Textured_A_Materialed ||
-            type == kNuoModelType_Textured_Materialed)
-            type = kNuoModelType_Materialed;
-        else if (type != kNuoModelType_Materialed)
-            type = kNuoModelType_Simple;
-    }
+    NuoModelOption actingOptions = options;
     
-    if (type == kNuoModelType_Simple)
+    if (!material.HasTextureDiffuse())
+        actingOptions._textured = false;
+    
+    if (!actingOptions._textured && !actingOptions._basicMaterialized)
     {
         return std::make_shared<NuoModelSimple>();
     }
-    else if (type == kNuoModelType_Textured || type == kNuoModelType_Textured_A)
+    else if (actingOptions._textured && !actingOptions._basicMaterialized)
     {
         auto model = std::make_shared<NuoModelTextured>();
-        model->SetCheckTransparency(type == kNuoModelType_Textured_A);
+        model->SetCheckTransparency(actingOptions._textureAlphaType == kNuoModelTextureAlpha_Embedded);
         return model;
     }
-    else if (type == kNuoModelType_Textured_A_Materialed ||
-             type == kNuoModelType_Textured_Materialed)
+    else if (actingOptions._textured && actingOptions._basicMaterialized)
     {
         auto model = std::make_shared<NuoModelMaterialedTextured>();
         model->SetCheckTransparency(true);
-        model->SetIgnoreTextureTransparency(type == kNuoModelType_Textured_Materialed);
+        model->SetIgnoreTextureTransparency(actingOptions._textureAlphaType == kNuoModelTextureAlpha_Sided);
         return model;
     }
-    else if (type == kNuoModelType_Materialed)
+    else if (actingOptions._basicMaterialized)
     {
         return std::make_shared<NuoModelMaterialed>();
     }
