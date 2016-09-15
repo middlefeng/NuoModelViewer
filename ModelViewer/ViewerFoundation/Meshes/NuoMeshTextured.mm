@@ -11,6 +11,12 @@
 
 
 
+
+static CIContext* sCIContext = nil;
+
+
+
+
 @implementation NuoMeshTextured
 
 
@@ -110,8 +116,10 @@
 
 - (uint8_t *)dataForImage:(CIImage *)image checkTransparency:(BOOL)checkTransparency
 {
-    CIContext* ciContext = [CIContext contextWithOptions:nil];
-    CGImageRef imageRef = [ciContext createCGImage:image fromRect:image.extent];
+    if (!sCIContext)
+        sCIContext = [CIContext contextWithOptions:nil];
+    
+    CGImageRef imageRef = [sCIContext createCGImage:image fromRect:image.extent];
     
     // Create a suitable bitmap context for extracting the bits of the image
     const NSUInteger width = CGImageGetWidth(imageRef);
