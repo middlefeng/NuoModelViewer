@@ -133,6 +133,7 @@
     CGContextDrawImage(context, imageRect, imageRef);
     
     CGContextRelease(context);
+    CGImageRelease(imageRef);
     
     if (checkTransparency)
         _hasTransparency = [self checkTransparency:rawData withWidth:width withHeight:height];
