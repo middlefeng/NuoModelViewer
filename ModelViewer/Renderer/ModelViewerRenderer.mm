@@ -27,7 +27,6 @@ static const NSInteger InFlightBufferCount = 3;
 @property (strong) NuoModelLoader* modelLoader;
 
 @property (nonatomic, assign) matrix_float4x4 rotationMatrix;
-@property (nonatomic, strong) NuoMeshOption* modelOptions;
 
 @end
 
@@ -100,6 +99,19 @@ static const NSInteger InFlightBufferCount = 3;
     _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
                                       withDevice:_device];
 }
+
+
+- (void)setModelOptions:(NuoMeshOption *)modelOptions
+{
+    _modelOptions = modelOptions;
+    
+    if (_modelLoader)
+    {
+        _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
+                                          withDevice:_device];
+    }
+}
+
 
 - (void)setType:(NSString *)type
 {

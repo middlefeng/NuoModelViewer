@@ -42,12 +42,6 @@
 
 
 
-@implementation NuoMeshOption
-
-@end
-
-
-
 
 @implementation NuoMesh
 

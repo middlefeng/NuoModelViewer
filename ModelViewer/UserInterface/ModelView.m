@@ -8,8 +8,16 @@
 
 #import "ModelView.h"
 #import "ModelViewerRenderer.h"
+#import "ModelOperationPanel.h"
 
-#include "NuoTypes.h"
+#include "NuoMeshOptions.h"
+
+
+
+@interface ModelView() <ModelOptionUpdate>
+
+@end
+
 
 
 
@@ -18,8 +26,61 @@
     ModelRenderer* _render;
     
     NSPopUpButton* _renderMode;
+    ModelOperationPanel* _panel;
 }
 
+
+
+- (NSRect)operationPanelLocation
+{
+    NSRect viewRect = [self frame];
+    NSSize panelSize = NSMakeSize(215, 131);
+    NSSize panelMargin = NSMakeSize(10, 10);
+    NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
+                                      viewRect.size.height - panelMargin.height - panelSize.height);
+    
+    NSRect panelRect;
+    panelRect.origin = panelOrigin;
+    panelRect.size = panelSize;
+    
+    return panelRect;
+}
+
+
+
+- (void)addOperationPanel
+{
+    NSRect panelRect = [self operationPanelLocation];
+    
+    _panel = [ModelOperationPanel new];
+    _panel.frame = panelRect;
+    _panel.layer.opacity = 0.8f;
+    _panel.layer.backgroundColor = [NSColor colorWithWhite:1.0 alpha:1.0].CGColor;
+    
+    [_panel addCheckbox];
+    [_panel setOptionUpdateDelegate:self];
+    
+    [self addSubview:_panel];
+    
+    _renderMode = [NSPopUpButton new];
+    [_renderMode addItemsWithTitles:@[@"Simple", @"Texture",
+                                      @"Texture with Transparency",
+                                      @"Texture (Opaque) and Material",
+                                      @"Texture and Material", @"Material"]];
+}
+
+
+
+- (void)modelOptionUpdate:(ModelOperationPanel *)panel
+{
+    NuoMeshOption* options = [NuoMeshOption new];
+    [options setBasicMaterialized:[panel basicMaterialized]];
+    [options setTextured:[panel textured]];
+    [options setTextureType:[panel textureAlphaType]];
+    
+    [_render setModelOptions:options];
+    [self render];
+}
 
 
 
@@ -39,16 +100,14 @@
     
     if (!_renderMode)
     {
-        _renderMode = [NSPopUpButton new];
-        [_renderMode addItemsWithTitles:@[@"Simple", @"Texture",
-                                          @"Texture with Transparency",
-                                          @"Texture (Opaque) and Material",
-                                          @"Texture and Material", @"Material"]];
+        [self addOperationPanel];
     }
     
     [_renderMode setFrame:popupRect];
     [_renderMode setTarget:self];
     [_renderMode setAction:@selector(renderModeSelected:)];
+    
+    [_panel setFrame:[self operationPanelLocation]];
 }
 
 
@@ -58,8 +117,6 @@
     [super commonInit];
     _render = [ModelRenderer new];
     self.delegate = _render;
-    
-    [self addSubview:_renderMode];
     
     [self registerForDraggedTypes:@[@"public.data"]];
 }

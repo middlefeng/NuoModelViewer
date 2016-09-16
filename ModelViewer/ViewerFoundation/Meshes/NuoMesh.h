@@ -2,7 +2,7 @@
 #import <Metal/Metal.h>
 
 #include <memory>
-#include "NuoTypes.h"
+#include "NuoMeshOptions.h"
 
 
 
@@ -17,17 +17,6 @@
 @property (nonatomic, assign) float spanZ;
 
 - (NuoMeshBox*)unionWith:(NuoMeshBox*)other;
-
-@end
-
-
-
-@interface NuoMeshOption : NSObject
-
-@property (nonatomic, assign) BOOL textured;
-@property (nonatomic, assign) NuoModelTextureAlphaType textureType;
-
-@property (nonatomic, assign) BOOL basicMaterialized;
 
 @end
 
