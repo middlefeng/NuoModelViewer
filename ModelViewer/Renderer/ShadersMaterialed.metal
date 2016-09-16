@@ -65,8 +65,7 @@ vertex ProjectedVertex vertex_project_materialed(device Vertex *vertices [[buffe
     return outVert;
 }
 
-fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
-                                          texture2d<float> diffuseTexture [[texture(0)]])
+fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]])
 {
     float3 diffuseColor = vert.diffuseColor;
     float3 ambientTerm = light.ambientColor * vert.ambientColor;
@@ -84,5 +83,6 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
         specularTerm = light.specularColor * vert.specularColor * specularFactor;
     }
     
-    return float4(ambientTerm + diffuseTerm + specularTerm, vert.specularPowerDisolve.y);
+    float4 resultColor = float4(ambientTerm + diffuseTerm + specularTerm, 1.0);
+    return resultColor * vert.specularPowerDisolve.y;
 }

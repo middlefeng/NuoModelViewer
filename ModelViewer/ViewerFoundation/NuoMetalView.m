@@ -68,7 +68,7 @@
 - (void)commonInit
 {
     _preferredFramesPerSecond = 60;
-    _clearColor = MTLClearColorMake(1, 1, 1, 1);
+    _clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
     
     [self setWantsLayer:YES];
     self.metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;

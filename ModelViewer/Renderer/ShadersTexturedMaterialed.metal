@@ -110,7 +110,7 @@ fragment float4 fragment_light_tex_materialed_tex_opacity(ProjectedVertex vert [
 float4 fragment_light_tex_materialed_common(ProjectedVertex vert [[stage_in]],
                                             float4 diffuseTexel)
 {
-    float3 diffuseColor = diffuseTexel.rgb * vert.diffuseColor;
+    float3 diffuseColor = diffuseTexel.rgb / diffuseTexel.a * vert.diffuseColor;
     float3 ambientTerm = light.ambientColor * vert.ambientColor;
     
     float3 normal = normalize(vert.normal);
@@ -126,6 +126,7 @@ float4 fragment_light_tex_materialed_common(ProjectedVertex vert [[stage_in]],
         specularTerm = light.specularColor * vert.specularColor * specularFactor;
     }
     
-    return float4(ambientTerm + diffuseTerm + specularTerm, diffuseTexel.a * vert.specularPowerDisolve.y);
+    float4 resultColor = float4(ambientTerm + diffuseTerm + specularTerm, 1.0);
+    return resultColor * diffuseTexel.a * vert.specularPowerDisolve.y;
 }
 

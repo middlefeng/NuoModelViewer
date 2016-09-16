@@ -73,7 +73,7 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
                                         sampler samplr [[sampler(0)]])
 {
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
-    float3 diffuseColor = diffuseTexel.rgb;
+    float3 diffuseColor = diffuseTexel.rgb / diffuseTexel.a;
     
     float3 ambientTerm = light.ambientColor * material.ambientColor;
     
@@ -90,5 +90,6 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
         specularTerm = light.specularColor * material.specularColor * specularFactor;
     }
     
-    return float4(ambientTerm + diffuseTerm + specularTerm, diffuseTexel.a);
+    float4 resultColor = float4(ambientTerm + diffuseTerm + specularTerm, 1.0);
+    return resultColor * diffuseTexel.a;
 }
