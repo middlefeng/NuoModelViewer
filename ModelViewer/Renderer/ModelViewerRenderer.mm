@@ -27,7 +27,7 @@ static const NSInteger InFlightBufferCount = 3;
 @property (strong) NuoModelLoader* modelLoader;
 
 @property (nonatomic, assign) matrix_float4x4 rotationMatrix;
-@property (nonatomic, strong) NuoModelLoadOption* modelOptions;
+@property (nonatomic, strong) NuoMeshOption* modelOptions;
 
 @end
 
@@ -42,7 +42,7 @@ static const NSInteger InFlightBufferCount = 3;
         _commandQueue = [self.device newCommandQueue];
         [self makeResources];
         
-        _modelOptions = [NuoModelLoadOption new];
+        _modelOptions = [NuoMeshOption new];
         _rotationMatrix = matrix_identity_float4x4;
     }
 
@@ -50,9 +50,11 @@ static const NSInteger InFlightBufferCount = 3;
 }
 
 
-- (NuoModelLoadOption*)loadOptionsFromType:(NSString*)type
+- (NuoMeshOption*)loadOptionsFromType:(NSString*)type
 {
-    NuoModelLoadOption* options = [NuoModelLoadOption new];
+    NuoMeshOption* options = [NuoMeshOption new];
+    options.textureType = kNuoModelTextureAlpha_Ignored;
+    
     std::string typeStr (type.UTF8String);
     
     if (typeStr == kNuoModelType_Simple)

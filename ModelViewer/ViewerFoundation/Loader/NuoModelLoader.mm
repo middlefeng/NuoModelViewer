@@ -165,12 +165,6 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
 
 
 
-@implementation NuoModelLoadOption
-
-@end
-
-
-
 
 @implementation NuoModelLoader
 {
@@ -198,7 +192,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
 
 
 
-- (NSArray<NuoMesh*>*)createMeshsWithOptions:(NuoModelLoadOption*)loadOption
+- (NSArray<NuoMesh*>*)createMeshsWithOptions:(NuoMeshOption*)loadOption
                                   withDevice:(id<MTLDevice>)device
 {
     typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
@@ -206,6 +200,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
     PShapeMapByMaterial shapeMap = GetShapeVectorByMaterial(_shapes, _materials);
     
     std::vector<PNuoModelBase> models;
+    std::map<PNuoModelBase, NuoModelOption> modelOptions;
     std::vector<uint32> indices;
     
     for (const auto& shapeItr : (*shapeMap))
@@ -259,6 +254,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
         }
         
         models.push_back(modelBase);
+        modelOptions.insert(std::make_pair(modelBase, options));
     }
     
     NSMutableArray<NuoMesh*>* result = [[NSMutableArray<NuoMesh*> alloc] init];
@@ -267,8 +263,8 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
     {
         NuoBox boundingBox = model->GetBoundingBox();
         
-        NSString* modelType = [NSString stringWithUTF8String:model->TypeName().c_str()];
-        NuoMesh* mesh = CreateMesh(modelType, device, model);
+        NuoModelOption options = modelOptions[model];
+        NuoMesh* mesh = CreateMesh(options, device, model);
         
         NuoMeshBox* meshBounding = [[NuoMeshBox alloc] init];
         meshBounding.spanX = boundingBox._spanX;

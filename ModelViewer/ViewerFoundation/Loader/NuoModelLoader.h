@@ -11,22 +11,13 @@
 
 
 @class NuoMesh;
-
-
-@interface NuoModelLoadOption : NSObject
-
-@property (nonatomic, assign) BOOL textured;
-@property (nonatomic, assign) NuoModelTextureAlphaType textureType;
-
-@property (nonatomic, assign) BOOL basicMaterialized;
-
-@end
+@class NuoMeshOption;
 
 
 @interface NuoModelLoader : NSObject
 
 - (void)loadModel:(NSString*)path;
-- (NSArray<NuoMesh*>*)createMeshsWithOptions:(NuoModelLoadOption*)loadOption
+- (NSArray<NuoMesh*>*)createMeshsWithOptions:(NuoMeshOption*)loadOption
                                   withDevice:(id<MTLDevice>)device;
 
 

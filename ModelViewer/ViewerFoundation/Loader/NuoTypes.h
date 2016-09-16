@@ -24,6 +24,7 @@ const extern char* kNuoModelType_Materialed;
 
 enum NuoModelTextureAlphaType
 {
+    kNuoModelTextureAlpha_Ignored,
     kNuoModelTextureAlpha_Embedded,
     kNuoModelTextureAlpha_Sided
 };
