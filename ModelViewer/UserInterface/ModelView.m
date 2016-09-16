@@ -24,8 +24,6 @@
 @implementation ModelView
 {
     ModelRenderer* _render;
-    
-    NSPopUpButton* _renderMode;
     ModelOperationPanel* _panel;
 }
 
@@ -61,12 +59,6 @@
     [_panel setOptionUpdateDelegate:self];
     
     [self addSubview:_panel];
-    
-    _renderMode = [NSPopUpButton new];
-    [_renderMode addItemsWithTitles:@[@"Simple", @"Texture",
-                                      @"Texture with Transparency",
-                                      @"Texture (Opaque) and Material",
-                                      @"Texture and Material", @"Material"]];
 }
 
 
@@ -98,14 +90,10 @@
     popupRect.origin = popupOrigin;
     popupRect.size = popupSize;
     
-    if (!_renderMode)
+    if (!_panel)
     {
         [self addOperationPanel];
     }
-    
-    [_renderMode setFrame:popupRect];
-    [_renderMode setTarget:self];
-    [_renderMode setAction:@selector(renderModeSelected:)];
     
     [_panel setFrame:[self operationPanelLocation]];
 }
@@ -208,42 +196,9 @@
         path = [path stringByAppendingPathComponent:name];
     }
     
-    [renderer loadMesh:path withType:nil];
+    [renderer loadMesh:path];
     [self render];
     return YES;
-}
-
-
-
-
-
-- (NSString*)renderMode
-{
-    NSString* renderMode = [NSString stringWithUTF8String:kNuoModelType_Simple];
-    
-    NSString* selectedItem = [_renderMode titleOfSelectedItem];
-    if ([selectedItem isEqualToString:@"Simple"])
-        renderMode =  [NSString stringWithUTF8String:kNuoModelType_Simple];
-    else if ([selectedItem isEqualToString:@"Texture"])
-        renderMode = [NSString stringWithUTF8String:kNuoModelType_Textured];
-    else if ([selectedItem isEqualToString:@"Texture with Transparency"])
-        renderMode = [NSString stringWithUTF8String:kNuoModelType_Textured_A];
-    else if ([selectedItem isEqualToString:@"Texture and Material"])
-        renderMode = [NSString stringWithUTF8String:kNuoModelType_Textured_A_Materialed];
-    else if ([selectedItem isEqualToString:@"Texture (Opaque) and Material"])
-        renderMode = [NSString stringWithUTF8String:kNuoModelType_Textured_Materialed];
-    else if ([selectedItem isEqualToString:@"Material"])
-        renderMode = [NSString stringWithUTF8String:kNuoModelType_Materialed];
-    
-    return renderMode;
-}
-
-
-
-- (void)renderModeSelected:(id)sender
-{
-    [_render setType:[self renderMode]];
-    [self render];
 }
 
 
@@ -256,7 +211,7 @@
                 if (result == NSFileHandlingPanelOKButton)
                 {
                     NSString* path = openPanel.URL.path;
-                    [_render loadMesh:path withType:nil];
+                    [_render loadMesh:path];
                     [self render];
                 }
             }];

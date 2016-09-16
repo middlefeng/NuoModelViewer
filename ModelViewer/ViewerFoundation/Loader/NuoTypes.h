@@ -15,13 +15,6 @@ extern "C" {
 #endif
     
     
-const extern char* kNuoModelType_Simple;
-const extern char* kNuoModelType_Textured;
-const extern char* kNuoModelType_Textured_A;
-const extern char* kNuoModelType_Textured_A_Materialed;
-const extern char* kNuoModelType_Textured_Materialed;
-const extern char* kNuoModelType_Materialed;
-
 enum NuoModelTextureAlphaType
 {
     kNuoModelTextureAlpha_Ignored,

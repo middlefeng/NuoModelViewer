@@ -49,52 +49,10 @@ static const NSInteger InFlightBufferCount = 3;
 }
 
 
-- (NuoMeshOption*)loadOptionsFromType:(NSString*)type
-{
-    NuoMeshOption* options = [NuoMeshOption new];
-    options.textureType = kNuoModelTextureAlpha_Ignored;
-    
-    std::string typeStr (type.UTF8String);
-    
-    if (typeStr == kNuoModelType_Simple)
-    {
-        options.basicMaterialized = NO;
-        options.textured = NO;
-    }
-    
-    if (typeStr == kNuoModelType_Textured ||
-        typeStr == kNuoModelType_Textured_A ||
-        typeStr == kNuoModelType_Textured_A_Materialed ||
-        typeStr == kNuoModelType_Textured_Materialed)
-    {
-        options.textured = YES;
-    }
-
-    if (typeStr == kNuoModelType_Textured_A ||
-        typeStr == kNuoModelType_Textured_A_Materialed)
-    {
-        options.textureType = kNuoModelTextureAlpha_Embedded;
-    }
-    
-    if (typeStr == kNuoModelType_Textured_Materialed)
-        options.textureType = kNuoModelTextureAlpha_Sided;
-    
-    if (typeStr == kNuoModelType_Materialed ||
-        typeStr == kNuoModelType_Textured_Materialed ||
-        typeStr == kNuoModelType_Textured_A_Materialed)
-        options.basicMaterialized = YES;
-    
-    return options;
-}
-
-
-- (void)loadMesh:(NSString*)path withType:(NSString*)type
+- (void)loadMesh:(NSString*)path
 {
     _modelLoader = [NuoModelLoader new];
     [_modelLoader loadModel:path];
-    
-    if (type)
-        _modelOptions = [self loadOptionsFromType:type];
     
     _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
                                       withDevice:_device];
@@ -112,18 +70,6 @@ static const NSInteger InFlightBufferCount = 3;
     }
 }
 
-
-- (void)setType:(NSString *)type
-{
-    if (type)
-        _modelOptions = [self loadOptionsFromType:type];
-    
-    if (_modelLoader)
-    {
-        _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
-                                          withDevice:_device];
-    }
-}
 
 - (void)makeResources
 {
