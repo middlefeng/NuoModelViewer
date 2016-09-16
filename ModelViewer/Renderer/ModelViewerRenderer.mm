@@ -146,8 +146,6 @@ static const NSInteger InFlightBufferCount = 3;
 {
     dispatch_semaphore_wait(self.displaySemaphore, DISPATCH_TIME_FOREVER);
 
-    view.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
-
     [self updateUniformsForView:view];
 
     id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
