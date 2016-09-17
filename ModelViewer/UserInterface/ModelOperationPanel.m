@@ -15,9 +15,7 @@
 
 @property (nonatomic, strong) NSButton* checkMaterial;
 @property (nonatomic, strong) NSButton* checkTexture;
-@property (nonatomic, strong) NSButton* ignoreTextureAlpha;
-@property (nonatomic, strong) NSButton* checkTextureAlpha;
-@property (nonatomic, strong) NSButton* checkTextureAlphaSide;
+@property (nonatomic, strong) NSButton* checkTextureEmbedTrans;
 
 @end
 
@@ -32,7 +30,6 @@
     
     if (self)
     {
-        _textureAlphaType = kNuoModelTextureAlpha_Ignored;
     }
     
     return self;
@@ -59,47 +56,22 @@
     [self addSubview:checkTexture];
     _checkTexture = checkTexture;
     
-    NSButton* ignoreTextureAlpha = [NSButton new];
-    [ignoreTextureAlpha setTag:kNuoModelTextureAlpha_Ignored];
-    [ignoreTextureAlpha setButtonType:NSRadioButton];
-    [ignoreTextureAlpha setControlSize:NSControlSizeSmall];
-    [ignoreTextureAlpha setTitle:@"Alpha Ignored"];
-    [ignoreTextureAlpha setFrame:[self buttonLoactionAtRow:2 withLeading:30]];
-    [ignoreTextureAlpha setTarget:self];
-    [ignoreTextureAlpha setAction:@selector(textureAlphaTypeChanged:)];
-    [ignoreTextureAlpha setEnabled:NO];
-    [self addSubview:ignoreTextureAlpha];
-    _ignoreTextureAlpha = ignoreTextureAlpha;
-    
-    NSButton* checkTextureAlpha = [NSButton new];
-    [checkTextureAlpha setTag:kNuoModelTextureAlpha_Embedded];
-    [checkTextureAlpha setButtonType:NSRadioButton];
-    [checkTextureAlpha setControlSize:NSControlSizeSmall];
-    [checkTextureAlpha setTitle:@"Alpha Embedded"];
-    [checkTextureAlpha setFrame:[self buttonLoactionAtRow:3 withLeading:30]];
-    [checkTextureAlpha setTarget:self];
-    [checkTextureAlpha setAction:@selector(textureAlphaTypeChanged:)];
-    [checkTextureAlpha setEnabled:NO];
-    [self addSubview:checkTextureAlpha];
-    _checkTextureAlpha = checkTextureAlpha;
-    
-    NSButton* checkTextureAlphaSide = [NSButton new];
-    [checkTextureAlphaSide setTag:kNuoModelTextureAlpha_Sided];
-    [checkTextureAlphaSide setButtonType:NSRadioButton];
-    [checkTextureAlphaSide setControlSize:NSControlSizeSmall];
-    [checkTextureAlphaSide setTitle:@"Alpha in Side File"];
-    [checkTextureAlphaSide setFrame:[self buttonLoactionAtRow:4 withLeading:30]];
-    [checkTextureAlphaSide setTarget:self];
-    [checkTextureAlphaSide setAction:@selector(textureAlphaTypeChanged:)];
-    [checkTextureAlphaSide setEnabled:NO];
-    [self addSubview:checkTextureAlphaSide];
-    _checkTextureAlphaSide = checkTextureAlphaSide;
+    NSButton* checkTextureEmbedTrans = [NSButton new];
+    [checkTextureEmbedTrans setButtonType:NSSwitchButton];
+    [checkTextureEmbedTrans setTitle:@"Texture Alpha as Transparency"];
+    [checkTextureEmbedTrans setFrame:[self buttonLoactionAtRow:2 withLeading:0]];
+    [checkTextureEmbedTrans setTarget:self];
+    [checkTextureEmbedTrans setAction:@selector(textureEmbedTransChanged:)];
+    [checkTextureEmbedTrans setEnabled:NO];
+    [self addSubview:checkTextureEmbedTrans];
+    _checkTextureEmbedTrans = checkTextureEmbedTrans;
 }
 
 
 - (void)basicMaterializedChanged:(id)sender
 {
     _basicMaterialized = [_checkMaterial state] == NSOnState;
+    [self updateControls];
     
     [_optionUpdateDelegate modelOptionUpdate:self];
 }
@@ -114,10 +86,9 @@
 }
 
 
-- (void)textureAlphaTypeChanged:(id)sender
+- (void)textureEmbedTransChanged:(id)sender
 {
-    NSButton* alphaType = (NSButton*)sender;
-    _textureAlphaType = (enum NuoModelTextureAlphaType)[alphaType tag];
+    _textureEmbeddingMaterialTransparency = [_checkTextureEmbedTrans state] == NSOnState;
     
     [_optionUpdateDelegate modelOptionUpdate:self];
 }
@@ -125,24 +96,7 @@
 
 - (void)updateControls
 {
-    [_checkTextureAlphaSide setEnabled:[_checkTexture state]];
-    [_checkTextureAlpha setEnabled:[_checkTexture state]];
-    [_ignoreTextureAlpha setEnabled:[_checkTexture state]];
-    
-    switch (_textureAlphaType)
-    {
-        case kNuoModelTextureAlpha_Ignored:
-            [_ignoreTextureAlpha setState:NSOnState];
-            break;
-        case kNuoModelTextureAlpha_Embedded:
-            [_checkTextureAlpha setState:NSOnState];
-            break;
-        case kNuoModelTextureAlpha_Sided:
-            [_checkTextureAlphaSide setState:NSOnState];
-            
-        default:
-            break;
-    }
+    [_checkTextureEmbedTrans setEnabled:[_checkTexture state]];
 }
 
 
@@ -153,7 +107,7 @@
     float parentWidth = parentBounds.size.width;
     
     float buttonHeight = 18;
-    float overhead = 8;
+    float overhead = 12;
     float spacing = 6;
     
     float originalY = parentHeight - overhead - row * spacing - (row + 1) * buttonHeight;

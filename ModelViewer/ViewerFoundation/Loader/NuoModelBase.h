@@ -39,7 +39,7 @@ class NuoModelOption
 {
 public:
     bool _textured;
-    NuoModelTextureAlphaType _textureAlphaType;
+    bool _textureEmbedMaterialTransparency;
     
     bool _basicMaterialized;
 };

@@ -28,9 +28,9 @@
 @interface ModelOperationPanel : NuoRoundedView
 
 
-@property (nonatomic, assign) enum NuoModelTextureAlphaType textureAlphaType;
-@property (nonatomic, assign) BOOL basicMaterialized;
 @property (nonatomic, assign) BOOL textured;
+@property (nonatomic, assign) BOOL textureEmbeddingMaterialTransparency;
+@property (nonatomic, assign) BOOL basicMaterialized;
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 

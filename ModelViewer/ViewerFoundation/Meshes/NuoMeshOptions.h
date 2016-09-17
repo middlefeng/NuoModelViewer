@@ -14,7 +14,7 @@
 @interface NuoMeshOption : NSObject
 
 @property (nonatomic, assign) BOOL textured;
-@property (nonatomic, assign) enum NuoModelTextureAlphaType textureType;
+@property (nonatomic, assign) BOOL textureEmbeddingMaterialTransparency;
 
 @property (nonatomic, assign) BOOL basicMaterialized;
 

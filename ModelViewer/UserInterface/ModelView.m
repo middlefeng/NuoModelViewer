@@ -32,8 +32,8 @@
 - (NSRect)operationPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize panelSize = NSMakeSize(215, 131);
-    NSSize panelMargin = NSMakeSize(10, 10);
+    NSSize panelSize = NSMakeSize(225, 95);
+    NSSize panelMargin = NSMakeSize(10, 35);
     NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
                                       viewRect.size.height - panelMargin.height - panelSize.height);
     
@@ -68,7 +68,7 @@
     NuoMeshOption* options = [NuoMeshOption new];
     [options setBasicMaterialized:[panel basicMaterialized]];
     [options setTextured:[panel textured]];
-    [options setTextureType:[panel textureAlphaType]];
+    [options setTextureEmbeddingMaterialTransparency:[panel textureEmbeddingMaterialTransparency]];
     
     [_render setModelOptions:options];
     [self render];

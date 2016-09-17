@@ -26,14 +26,14 @@ std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMate
     else if (options._textured && !options._basicMaterialized)
     {
         auto model = std::make_shared<NuoModelTextured>();
-        model->SetCheckTransparency(options._textureAlphaType == kNuoModelTextureAlpha_Embedded);
+        model->SetCheckTransparency(options._textureEmbedMaterialTransparency);
         return model;
     }
     else if (options._textured && options._basicMaterialized)
     {
         auto model = std::make_shared<NuoModelMaterialedTextured>();
         model->SetCheckTransparency(true);
-        model->SetIgnoreTextureTransparency(options._textureAlphaType == kNuoModelTextureAlpha_Sided);
+        model->SetIgnoreTextureTransparency(!options._textureEmbedMaterialTransparency);
         return model;
     }
     else if (options._basicMaterialized)

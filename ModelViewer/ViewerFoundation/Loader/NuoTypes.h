@@ -13,14 +13,8 @@
 #if __cplusplus
 extern "C" {
 #endif
-    
-    
-enum NuoModelTextureAlphaType
-{
-    kNuoModelTextureAlpha_Ignored,
-    kNuoModelTextureAlpha_Embedded,
-    kNuoModelTextureAlpha_Sided
-};
+
+// lightweight type define shared amongst
     
 #if __cplusplus
 }

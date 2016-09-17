@@ -210,7 +210,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
         
         NuoModelOption options;
         options._textured = loadOption.textured;
-        options._textureAlphaType = loadOption.textureType;
+        options._textureEmbedMaterialTransparency = loadOption.textureEmbeddingMaterialTransparency;
         options._basicMaterialized = loadOption.basicMaterialized;
         
         PNuoModelBase modelBase = CreateModel(options, material);

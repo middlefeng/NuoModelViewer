@@ -160,7 +160,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
     else if (options._textured && !options._basicMaterialized)
     {
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
-        BOOL checkTransparency = (options._textureAlphaType == kNuoModelTextureAlpha_Embedded);
+        BOOL checkTransparency = options._textureEmbedMaterialTransparency;
         
         NuoMeshTextured* mesh = [[NuoMeshTextured alloc] initWithDevice:device
                                                      withVerticesBuffer:model->Ptr()
@@ -177,7 +177,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
     else if (options._textured && options._basicMaterialized)
     {
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
-        BOOL embeddedAlpha = (options._textureAlphaType == kNuoModelTextureAlpha_Embedded);
+        BOOL embeddedAlpha = options._textureEmbedMaterialTransparency;
         
         NuoMeshTexMatieraled* mesh = [[NuoMeshTexMatieraled alloc] initWithDevice:device
                                          withVerticesBuffer:model->Ptr()
