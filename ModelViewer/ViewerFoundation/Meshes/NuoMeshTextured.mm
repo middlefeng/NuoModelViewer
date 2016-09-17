@@ -89,6 +89,7 @@ static CIContext* sCIContext = nil;
         colorAttachment.blendingEnabled = YES;
         colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
         colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
+        colorAttachment.sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
         colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
         colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
     }
