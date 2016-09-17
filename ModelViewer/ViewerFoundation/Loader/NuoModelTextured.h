@@ -50,7 +50,6 @@ class NuoModelTextured : public NuoModelTextureBase<NuoItemTextured>
 {
 public:
     virtual void AddMaterial(const NuoMaterial& material) override;
-    virtual std::string TypeName() override;
     virtual bool HasTransparent() override;
     
     virtual void SetTexturePathOpacity(const std::string texPath) override;

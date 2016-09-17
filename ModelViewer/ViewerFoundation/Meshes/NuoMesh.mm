@@ -43,7 +43,6 @@
 
 
 
-
 @implementation NuoMesh
 
 
@@ -142,13 +141,11 @@
 
 
 
-NuoMesh* CreateMesh(NSString* type,
+NuoMesh* CreateMesh(const NuoModelOption& options,
                     id<MTLDevice> device,
                     const std::shared_ptr<NuoModelBase> model)
 {
-    std::string typeStr(type.UTF8String);
-    
-    if (typeStr == kNuoModelType_Simple)
+    if (!options._textured && !options._basicMaterialized)
     {
         NuoMesh* mesh = [[NuoMesh alloc] initWithDevice:device
                                      withVerticesBuffer:model->Ptr()
@@ -160,10 +157,10 @@ NuoMesh* CreateMesh(NSString* type,
         [mesh makeDepthStencilState];
         return mesh;
     }
-    else if (typeStr == kNuoModelType_Textured || typeStr == kNuoModelType_Textured_A)
+    else if (options._textured && !options._basicMaterialized)
     {
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
-        BOOL checkTransparency = (typeStr == kNuoModelType_Textured_A);
+        BOOL checkTransparency = options._textureEmbedMaterialTransparency;
         
         NuoMeshTextured* mesh = [[NuoMeshTextured alloc] initWithDevice:device
                                                      withVerticesBuffer:model->Ptr()
@@ -177,12 +174,10 @@ NuoMesh* CreateMesh(NSString* type,
         
         return mesh;
     }
-    else if (typeStr == kNuoModelType_Textured_A_Materialed ||
-             typeStr == kNuoModelType_Textured_Materialed)
+    else if (options._textured && options._basicMaterialized)
     {
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
-        BOOL checkTransparency = (typeStr == kNuoModelType_Textured_A_Materialed);
-        BOOL ignoreTextureAlpha = (typeStr == kNuoModelType_Textured_Materialed);
+        BOOL embeddedAlpha = options._textureEmbedMaterialTransparency;
         
         NuoMeshTexMatieraled* mesh = [[NuoMeshTexMatieraled alloc] initWithDevice:device
                                          withVerticesBuffer:model->Ptr()
@@ -190,7 +185,7 @@ NuoMesh* CreateMesh(NSString* type,
                                                 withIndices:model->IndicesPtr()
                                                  withLength:model->IndicesLength()];
         
-        [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency];
+        [mesh makeTexture:modelTexturePath checkTransparency:embeddedAlpha];
         
         NSString* modelTexturePathOpacity = [NSString stringWithUTF8String:model->GetTexturePathOpacity().c_str()];
         if ([modelTexturePathOpacity isEqualToString:@""])
@@ -198,17 +193,17 @@ NuoMesh* CreateMesh(NSString* type,
         if (modelTexturePathOpacity)
             [mesh makeTextureOpacity:modelTexturePathOpacity];
         
-        [mesh makePipelineState:[mesh makePipelineStateDescriptor:ignoreTextureAlpha]];
+        [mesh makePipelineState:[mesh makePipelineStateDescriptor:!embeddedAlpha]];
         [mesh makeDepthStencilState];
         
         if (model->HasTransparent() || modelTexturePathOpacity)
             [mesh setTransparency:YES];
-        else if (ignoreTextureAlpha)
+        else if (!embeddedAlpha)
             [mesh setTransparency:NO];
         
         return mesh;
     }
-    else if (typeStr == kNuoModelType_Materialed)
+    else if (!options._textured && options._basicMaterialized)
     {
         NuoMeshMatieraled* mesh = [[NuoMeshMatieraled alloc] initWithDevice:device
                                                          withVerticesBuffer:model->Ptr()

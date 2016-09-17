@@ -7,16 +7,18 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "NuoTypes.h"
 
 
 @class NuoMesh;
+@class NuoMeshOption;
 
 
 @interface NuoModelLoader : NSObject
 
 - (void)loadModel:(NSString*)path;
-- (NSArray<NuoMesh*>*)createMeshsWithType:(NSString*)type
-                               withDevice:(id<MTLDevice>)device;
+- (NSArray<NuoMesh*>*)createMeshsWithOptions:(NuoMeshOption*)loadOption
+                                  withDevice:(id<MTLDevice>)device;
 
 
 @end

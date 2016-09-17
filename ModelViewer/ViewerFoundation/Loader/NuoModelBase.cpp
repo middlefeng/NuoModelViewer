@@ -9,42 +9,34 @@
 #include "NuoModelBase.h"
 #include "NuoModelTextured.h"
 #include "NuoModelMaterialedBasic.h"
-#include "NuoTypes.h"
 #include "NuoMaterial.h"
 
 
 
 
-std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& material)
+std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMaterial& material)
 {
     if (!material.HasTextureDiffuse())
-    {
-        if (type == kNuoModelType_Textured_A_Materialed ||
-            type == kNuoModelType_Textured_Materialed)
-            type = kNuoModelType_Materialed;
-        else if (type != kNuoModelType_Materialed)
-            type = kNuoModelType_Simple;
-    }
+        options._textured = false;
     
-    if (type == kNuoModelType_Simple)
+    if (!options._textured && !options._basicMaterialized)
     {
         return std::make_shared<NuoModelSimple>();
     }
-    else if (type == kNuoModelType_Textured || type == kNuoModelType_Textured_A)
+    else if (options._textured && !options._basicMaterialized)
     {
         auto model = std::make_shared<NuoModelTextured>();
-        model->SetCheckTransparency(type == kNuoModelType_Textured_A);
+        model->SetCheckTransparency(options._textureEmbedMaterialTransparency);
         return model;
     }
-    else if (type == kNuoModelType_Textured_A_Materialed ||
-             type == kNuoModelType_Textured_Materialed)
+    else if (options._textured && options._basicMaterialized)
     {
         auto model = std::make_shared<NuoModelMaterialedTextured>();
         model->SetCheckTransparency(true);
-        model->SetIgnoreTextureTransparency(type == kNuoModelType_Textured_Materialed);
+        model->SetIgnoreTextureTransparency(!options._textureEmbedMaterialTransparency);
         return model;
     }
-    else if (type == kNuoModelType_Materialed)
+    else if (options._basicMaterialized)
     {
         return std::make_shared<NuoModelMaterialed>();
     }
@@ -150,13 +142,6 @@ void NuoModelSimple::SetTexturePathOpacity(const std::string texPath)
 std::string NuoModelSimple::GetTexturePathOpacity()
 {
     return std::string();
-}
-
-
-
-std::string NuoModelSimple::TypeName()
-{
-    return kNuoModelType_Simple;
 }
 
 

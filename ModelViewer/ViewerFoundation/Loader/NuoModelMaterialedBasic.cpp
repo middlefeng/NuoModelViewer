@@ -86,15 +86,6 @@ void NuoModelMaterialedTextured::SetIgnoreTextureTransparency(bool ignore)
 
 
 
-std::string NuoModelMaterialedTextured::TypeName()
-{
-    if (_ignoreTextureTransparency)
-        return kNuoModelType_Textured_Materialed;
-    else
-        return kNuoModelType_Textured_A_Materialed;
-}
-
-
 void NuoModelMaterialedTextured::SetTexturePathOpacity(const std::string texPath)
 {
     _textureOpacity = texPath;
@@ -134,11 +125,5 @@ std::string NuoModelMaterialed::GetTexturePathOpacity()
 
 void NuoModelMaterialed::AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer)
 {
-}
-
-
-std::string NuoModelMaterialed::TypeName()
-{
-    return kNuoModelType_Materialed;
 }
 

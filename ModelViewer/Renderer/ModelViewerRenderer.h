@@ -2,6 +2,10 @@
 
 
 
+@class NuoMeshOption;
+
+
+
 @interface ModelRenderer : NSObject <NuoMetalViewDelegate>
 
 
@@ -14,9 +18,10 @@
 @property (nonatomic, assign) float transX;
 @property (nonatomic, assign) float transY;
 
+@property (nonatomic, strong) NuoMeshOption* modelOptions;
 
 
-- (void)loadMesh:(NSString*)path withType:(NSString*)type;
-- (void)setType:(NSString*)type;
+- (void)loadMesh:(NSString*)path;
+
 
 @end

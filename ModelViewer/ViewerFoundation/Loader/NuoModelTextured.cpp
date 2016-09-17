@@ -46,15 +46,6 @@ std::string NuoModelTextured::GetTexturePathOpacity()
 
 
 
-std::string NuoModelTextured::TypeName()
-{
-    if (_checkTransparency)
-        return kNuoModelType_Textured_A;
-    else
-        return kNuoModelType_Textured;
-}
-
-
 bool NuoModelTextured::HasTransparent()
 {
     return false;

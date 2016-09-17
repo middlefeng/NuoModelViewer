@@ -2,6 +2,7 @@
 #import <Metal/Metal.h>
 
 #include <memory>
+#include "NuoMeshOptions.h"
 
 
 
@@ -54,8 +55,9 @@
 
 
 class NuoModelBase;
+class NuoModelOption;
 
-NuoMesh* CreateMesh(NSString* type,
+NuoMesh* CreateMesh(const NuoModelOption& options,
                     id<MTLDevice> device,
                     const std::shared_ptr<NuoModelBase> model);
 

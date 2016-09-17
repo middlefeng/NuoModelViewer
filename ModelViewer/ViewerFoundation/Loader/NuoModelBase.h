@@ -13,6 +13,7 @@
 #include <string>
 
 #include <simd/simd.h>
+#include "NuoTypes.h"
 
 
 
@@ -34,7 +35,18 @@ public:
 
 
 
-std::shared_ptr<NuoModelBase> CreateModel(std::string type, const NuoMaterial& material);
+class NuoModelOption
+{
+public:
+    bool _textured;
+    bool _textureEmbedMaterialTransparency;
+    
+    bool _basicMaterialized;
+};
+
+
+
+std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMaterial& material);
 
 
 
@@ -66,7 +78,6 @@ public:
     virtual void* IndicesPtr();
     virtual size_t IndicesLength();
     
-    virtual std::string TypeName() = 0;
     virtual bool HasTransparent() = 0;
 };
 
@@ -122,7 +133,6 @@ public:
     virtual void SetTexturePathOpacity(const std::string texPath) override;
     virtual std::string GetTexturePathOpacity() override;
     
-    virtual std::string TypeName() override;
     virtual bool HasTransparent() override;
 };
 

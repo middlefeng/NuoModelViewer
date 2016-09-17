@@ -27,7 +27,6 @@ static const NSInteger InFlightBufferCount = 3;
 @property (strong) NuoModelLoader* modelLoader;
 
 @property (nonatomic, assign) matrix_float4x4 rotationMatrix;
-@property (nonatomic, strong) NSString* renderType;
 
 @end
 
@@ -42,31 +41,35 @@ static const NSInteger InFlightBufferCount = 3;
         _commandQueue = [self.device newCommandQueue];
         [self makeResources];
         
-        _renderType = [NSString stringWithUTF8String:kNuoModelType_Simple];
+        _modelOptions = [NuoMeshOption new];
         _rotationMatrix = matrix_identity_float4x4;
     }
 
     return self;
 }
 
-- (void)loadMesh:(NSString*)path withType:(NSString*)type
+
+- (void)loadMesh:(NSString*)path
 {
     _modelLoader = [NuoModelLoader new];
     [_modelLoader loadModel:path];
-    _mesh = [_modelLoader createMeshsWithType:type ? type : _renderType
-                                   withDevice:_device];
+    
+    _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
+                                      withDevice:_device];
 }
 
-- (void)setType:(NSString *)type
+
+- (void)setModelOptions:(NuoMeshOption *)modelOptions
 {
-    _renderType = type;
+    _modelOptions = modelOptions;
     
     if (_modelLoader)
     {
-        _mesh = [_modelLoader createMeshsWithType:_renderType
-                                       withDevice:_device];
+        _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
+                                          withDevice:_device];
     }
 }
+
 
 - (void)makeResources
 {
