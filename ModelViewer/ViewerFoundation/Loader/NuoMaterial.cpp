@@ -50,27 +50,28 @@ NuoMaterial::NuoMaterial(const tinyobj::material_t& material) :
 
 bool NuoMaterial::operator < (const NuoMaterial& other) const
 {
-    if (id < other.id)
-        return true;
+#define compare_element(a) \
+            if (a < other.a) return true; \
+            if (a > other.a) return false;
     
-    if (id > other.id)
-        return false;
+    compare_element(id)
+    compare_element(ambient_texname)
+    compare_element(diffuse_texname)
+    compare_element(specular_texname)
+    compare_element(specular_highlight_texname)
+    compare_element(bump_texname)
+    compare_element(displacement_texname)
+    compare_element(alpha_texname)
     
-    return
-        (ambient_texname < other.ambient_texname             ||
-         diffuse_texname < other.diffuse_texname             ||
-         specular_texname < other.specular_texname           ||
-         specular_highlight_texname < other.specular_texname ||
-         bump_texname < other.bump_texname                   ||
-         displacement_texname < other.displacement_texname   ||
-         alpha_texname < other.alpha_texname                 ||
     
-         // PBR extension
-         roughness_texname < other.roughness_texname         ||
-         metallic_texname < other.metallic_texname           ||
-         sheen_texname < other.sheen_texname                 ||
-         emissive_texname < other.emissive_texname           ||
-         normal_texname < other.normal_texname);
+    // PBR extension
+    compare_element(roughness_texname)
+    compare_element(metallic_texname)
+    compare_element(sheen_texname)
+    compare_element(emissive_texname)
+    compare_element(normal_texname)
+    
+    return false;
 }
 
 
