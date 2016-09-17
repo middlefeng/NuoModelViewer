@@ -90,6 +90,6 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
         specularTerm = light.specularColor * material.specularColor * specularFactor;
     }
     
-    float4 resultColor = float4(ambientTerm + diffuseTerm + specularTerm, 1.0);
-    return resultColor * diffuseTexel.a;
+    return float4(ambientTerm + diffuseTerm + specularTerm, diffuseTexel.a);
 }
+
