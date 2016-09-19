@@ -132,8 +132,8 @@
 - (void)scrollWheel:(NSEvent *)event
 {
     ModelRenderer* renderer = (ModelRenderer*)_render;
-    renderer.transX += event.deltaX * 0.1;
-    renderer.transY -= event.deltaY * 0.1;
+    renderer.transX -= event.deltaX;
+    renderer.transY += event.deltaY;
     [self render];
 }
 

@@ -120,12 +120,18 @@ static const NSInteger InFlightBufferCount = 3;
     float modelSpan = std::max(bounding.spanZ, bounding.spanX);
     modelSpan = std::max(bounding.spanY, modelSpan);
     
-    float modelNearest = - modelSpan / 2.0;
+    const float modelNearest = - modelSpan / 2.0;
+    const float bilateralFactor = 1 / 750.0f;
+    const float cameraDefaultDistance = (modelNearest - modelSpan);
+    const float cameraDistance = cameraDefaultDistance + _zoom * modelSpan / 20.0f;
+    
+    const float doTransX = _transX * cameraDistance * bilateralFactor;
+    const float doTransY = _transY * cameraDistance * bilateralFactor;
     
     const vector_float3 cameraTranslation =
     {
-        _transX, _transY,
-        (modelNearest - modelSpan) + _zoom * modelSpan / 20.0f
+        doTransX, doTransY,
+        cameraDistance
     };
 
     const matrix_float4x4 viewMatrix = matrix_float4x4_translation(cameraTranslation);
