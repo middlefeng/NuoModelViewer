@@ -165,6 +165,8 @@
 - (MTLRenderPassDescriptor *)currentRenderPassDescriptor
 {
     _currentDrawable = [self.metalLayer nextDrawable];
+    if (!_currentDrawable)
+        return nil;
     
     MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
     
