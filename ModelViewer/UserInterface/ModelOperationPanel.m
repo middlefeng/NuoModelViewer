@@ -17,6 +17,8 @@
 @property (nonatomic, strong) NSButton* checkTexture;
 @property (nonatomic, strong) NSButton* checkTextureEmbedTrans;
 
+@property (nonatomic, strong) NSButton* cull;
+
 @end
 
 
@@ -30,6 +32,7 @@
     
     if (self)
     {
+        _cullEnabled = YES;
     }
     
     return self;
@@ -65,6 +68,16 @@
     [checkTextureEmbedTrans setEnabled:NO];
     [self addSubview:checkTextureEmbedTrans];
     _checkTextureEmbedTrans = checkTextureEmbedTrans;
+    
+    NSButton* cull = [NSButton new];
+    [cull setButtonType:NSSwitchButton];
+    [cull setTitle:@"Enable Culling"];
+    [cull setFrame:[self buttonLoactionAtRow:3.2 withLeading:0]];
+    [cull setTarget:self];
+    [cull setAction:@selector(cullChanged:)];
+    [cull setState:NSOnState];
+    [self addSubview:cull];
+    _cull = cull;
 }
 
 
@@ -94,13 +107,21 @@
 }
 
 
+- (void)cullChanged:(id)sender
+{
+    _cullEnabled = [_cull state] == NSOnState;
+    
+    [_optionUpdateDelegate modelOptionUpdate:self];
+}
+
+
 - (void)updateControls
 {
     [_checkTextureEmbedTrans setEnabled:[_checkTexture state]];
 }
 
 
-- (NSRect)buttonLoactionAtRow:(uint)row withLeading:(float)leading
+- (NSRect)buttonLoactionAtRow:(float)row withLeading:(float)leading
 {
     NSRect parentBounds = [self bounds];
     float parentHeight = parentBounds.size.height;

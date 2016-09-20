@@ -41,6 +41,7 @@ static const NSInteger InFlightBufferCount = 3;
         _commandQueue = [self.device newCommandQueue];
         [self makeResources];
         
+        _cullEnabled = YES;
         _modelOptions = [NuoMeshOption new];
         _rotationMatrix = matrix_identity_float4x4;
     }
@@ -120,12 +121,18 @@ static const NSInteger InFlightBufferCount = 3;
     float modelSpan = std::max(bounding.spanZ, bounding.spanX);
     modelSpan = std::max(bounding.spanY, modelSpan);
     
-    float modelNearest = - modelSpan / 2.0;
+    const float modelNearest = - modelSpan / 2.0;
+    const float bilateralFactor = 1 / 750.0f;
+    const float cameraDefaultDistance = (modelNearest - modelSpan);
+    const float cameraDistance = cameraDefaultDistance + _zoom * modelSpan / 20.0f;
+    
+    const float doTransX = _transX * cameraDistance * bilateralFactor;
+    const float doTransY = _transY * cameraDistance * bilateralFactor;
     
     const vector_float3 cameraTranslation =
     {
-        _transX, _transY,
-        (modelNearest - modelSpan) + _zoom * modelSpan / 20.0f
+        doTransX, doTransY,
+        cameraDistance
     };
 
     const matrix_float4x4 viewMatrix = matrix_float4x4_translation(cameraTranslation);
@@ -133,7 +140,7 @@ static const NSInteger InFlightBufferCount = 3;
     const CGSize drawableSize = view.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
     const float fov = (2 * M_PI) / 8;
-    const float near = 0.1;
+    const float near = 0.01;
     const float far = -(modelNearest - modelSpan) + modelSpan * 2.0f - _zoom * modelSpan / 20.0f;
     const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, fov, near, far);
 
@@ -147,16 +154,23 @@ static const NSInteger InFlightBufferCount = 3;
 
 - (void)drawInView:(NuoMetalView *)view
 {
+    MTLRenderPassDescriptor *passDescriptor = [view currentRenderPassDescriptor];
+    if (!passDescriptor)
+        return;
+    
     dispatch_semaphore_wait(self.displaySemaphore, DISPATCH_TIME_FOREVER);
 
     [self updateUniformsForView:view];
 
     id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
-
-    MTLRenderPassDescriptor *passDescriptor = [view currentRenderPassDescriptor];
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     
     [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
+    
+    if (_cullEnabled)
+        [renderPass setCullMode:MTLCullModeBack];
+    else
+        [renderPass setCullMode:MTLCullModeNone];
 
     for (uint8 renderPassStep = 0; renderPassStep < 2; ++renderPassStep)
     {

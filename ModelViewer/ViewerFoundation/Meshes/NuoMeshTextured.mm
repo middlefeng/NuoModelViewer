@@ -39,8 +39,6 @@ static CIContext* sCIContext = nil;
 - (void)drawMesh:(id<MTLRenderCommandEncoder>) renderPass
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
-    [renderPass setCullMode:MTLCullModeBack];
-    
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
     

@@ -32,6 +32,8 @@
 @property (nonatomic, assign) BOOL textureEmbeddingMaterialTransparency;
 @property (nonatomic, assign) BOOL basicMaterialized;
 
+@property (nonatomic, assign) BOOL cullEnabled;
+
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 
 

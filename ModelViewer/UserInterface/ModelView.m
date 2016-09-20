@@ -32,8 +32,8 @@
 - (NSRect)operationPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize panelSize = NSMakeSize(225, 95);
-    NSSize panelMargin = NSMakeSize(10, 35);
+    NSSize panelSize = NSMakeSize(225, 125);
+    NSSize panelMargin = NSMakeSize(15, 25);
     NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
                                       viewRect.size.height - panelMargin.height - panelSize.height);
     
@@ -70,6 +70,7 @@
     [options setTextured:[panel textured]];
     [options setTextureEmbeddingMaterialTransparency:[panel textureEmbeddingMaterialTransparency]];
     
+    [_render setCullEnabled:[panel cullEnabled]];
     [_render setModelOptions:options];
     [self render];
 }
@@ -132,8 +133,8 @@
 - (void)scrollWheel:(NSEvent *)event
 {
     ModelRenderer* renderer = (ModelRenderer*)_render;
-    renderer.transX += event.deltaX * 0.1;
-    renderer.transY -= event.deltaY * 0.1;
+    renderer.transX -= event.deltaX;
+    renderer.transY += event.deltaY;
     [self render];
 }
 
