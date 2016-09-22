@@ -44,6 +44,7 @@
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    pipelineDescriptor.sampleCount = sSampleCount;
     
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_tex_materialed"];
     if (ignoreTextureAlpha)
@@ -162,6 +163,7 @@
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_materialed"];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_materialed"];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    pipelineDescriptor.sampleCount = sSampleCount;
     
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];

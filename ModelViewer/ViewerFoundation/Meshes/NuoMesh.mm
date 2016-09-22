@@ -84,6 +84,7 @@
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project"];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light"];
+    pipelineDescriptor.sampleCount = sSampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     

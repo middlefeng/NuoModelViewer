@@ -79,6 +79,7 @@ static CIContext* sCIContext = nil;
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_textured"];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_textured"];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    pipelineDescriptor.sampleCount = sSampleCount;
     
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];

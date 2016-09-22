@@ -9,3 +9,4 @@
 #include "NuoTypes.h"
 
 
+const unsigned int sSampleCount {8};

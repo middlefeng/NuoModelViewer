@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-// lightweight type define shared amongst
+extern const unsigned int sSampleCount;
     
 #if __cplusplus
 }

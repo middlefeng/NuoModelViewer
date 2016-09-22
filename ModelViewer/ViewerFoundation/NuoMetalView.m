@@ -1,9 +1,12 @@
 
 #import "NuoMetalView.h"
 
+#import "NuoTypes.h"
+
 
 @interface NuoMetalView ()
 
+@property (strong) id<MTLTexture> sampleTexture;
 @property (strong) id<MTLTexture> depthTexture;
 @property (nonatomic, readonly) CAMetalLayer *metalLayer;
 
@@ -117,7 +120,7 @@
 
     self.metalLayer.drawableSize = drawableSize;
 
-    [self makeDepthTexture];
+    [self makeTextures];
     [self render];
 }
 
@@ -143,7 +146,7 @@
     [self.delegate drawInView:self];
 }
 
-- (void)makeDepthTexture
+- (void)makeTextures
 {
     CGSize drawableSize = self.metalLayer.drawableSize;
 
@@ -154,26 +157,40 @@
                                                                                         width:drawableSize.width
                                                                                        height:drawableSize.height
                                                                                     mipmapped:NO];
+        desc.sampleCount = sSampleCount;
+        desc.textureType = MTLTextureType2DMultisample;
         desc.resourceOptions = MTLResourceStorageModePrivate;
         desc.usage = MTLTextureUsageRenderTarget;
 
         self.depthTexture = [self.metalLayer.device newTextureWithDescriptor:desc];
+        
+        MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                                              width:drawableSize.width
+                                                                                             height:drawableSize.height
+                                                                                          mipmapped:NO];
+        sampleDesc.sampleCount = sSampleCount;
+        sampleDesc.textureType = MTLTextureType2DMultisample;
+        sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
+        sampleDesc.usage = MTLTextureUsageRenderTarget;
+        
+        self.sampleTexture = [self.metalLayer.device newTextureWithDescriptor:sampleDesc];
     }
 }
 
 
 - (MTLRenderPassDescriptor *)currentRenderPassDescriptor
 {
+    MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+    
     _currentDrawable = [self.metalLayer nextDrawable];
     if (!_currentDrawable)
         return nil;
     
-    MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
-    
-    passDescriptor.colorAttachments[0].texture = [self.currentDrawable texture];
+    passDescriptor.colorAttachments[0].texture = _sampleTexture;
     passDescriptor.colorAttachments[0].clearColor = self.clearColor;
-    passDescriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
     passDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[0].storeAction = MTLStoreActionMultisampleResolve;
+    passDescriptor.colorAttachments[0].resolveTexture = [_currentDrawable texture];
 
     passDescriptor.depthAttachment.texture = self.depthTexture;
     passDescriptor.depthAttachment.clearDepth = 1.0;
