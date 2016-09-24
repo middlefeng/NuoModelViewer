@@ -28,8 +28,6 @@
 @property (strong) CIContext* CIContext;
 @property (weak) id<MTLDevice> device;
 
-@property (assign) BOOL hasTransparency;
-
 @property (strong) NSMutableDictionary<NSString*, NuoTexture*>* texturePool;
 
 
@@ -66,43 +64,60 @@ static NuoTextureBase* sInstance;
 {
     NuoTexture* result = [_texturePool objectForKey:imagePath];
     if (result)
-        return result;
-    
-    CIImage *image = [[CIImage alloc] initWithContentsOfURL:[NSURL fileURLWithPath:imagePath]];
-    
-    if (image == nil)
     {
-        return nil;
+        goto handleTransparency;
     }
     
-    NSSize imageSize = image.extent.size;
-    const NSUInteger bytesPerPixel = 4;
-    const NSUInteger bytesPerRow = bytesPerPixel * imageSize.width;
-    uint8_t *imageData = [self dataForImage:image checkTransparency:checkTransparency];
+    {
+        CIImage *image = [[CIImage alloc] initWithContentsOfURL:[NSURL fileURLWithPath:imagePath]];
+        
+        if (image == nil)
+        {
+            return nil;
+        }
+        
+        BOOL hasTransparency = NO;
+        
+        NSSize imageSize = image.extent.size;
+        const NSUInteger bytesPerPixel = 4;
+        const NSUInteger bytesPerRow = bytesPerPixel * imageSize.width;
+        uint8_t *imageData = [self dataForImage:image hasTransparent:&hasTransparency];
+        
+        MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
+                                                                                                     width:imageSize.width
+                                                                                                    height:imageSize.height
+                                                                                                 mipmapped:mipmapped];
+        id<MTLTexture> texture = [self.device newTextureWithDescriptor:textureDescriptor];
+        
+        MTLRegion region = MTLRegionMake2D(0, 0, imageSize.width, imageSize.height);
+        [texture replaceRegion:region mipmapLevel:0 withBytes:imageData bytesPerRow:bytesPerRow];
+        
+        free(imageData);
+        
+        result = [NuoTexture new];
+        result.texture = texture;
+        result.hasTransparency = hasTransparency;
+        
+        [_texturePool setObject:result forKey:imagePath];
+    }
     
-    MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
-                                                                                                 width:imageSize.width
-                                                                                                height:imageSize.height
-                                                                                             mipmapped:mipmapped];
-    id<MTLTexture> texture = [self.device newTextureWithDescriptor:textureDescriptor];
-    
-    MTLRegion region = MTLRegionMake2D(0, 0, imageSize.width, imageSize.height);
-    [texture replaceRegion:region mipmapLevel:0 withBytes:imageData bytesPerRow:bytesPerRow];
-    
-    free(imageData);
-    
-    NuoTexture* nuoTexture = [NuoTexture new];
-    nuoTexture.texture = texture;
-    nuoTexture.hasTransparency = _hasTransparency;
-    
-    [_texturePool setObject:nuoTexture forKey:imagePath];
-    
-    return nuoTexture;
+handleTransparency:
+    if (!checkTransparency)
+    {
+        NuoTexture* opaque = [NuoTexture new];
+        opaque.texture = result.texture;
+        opaque.hasTransparency = NO;
+        return opaque;
+    }
+    else
+    {
+        return result;
+    }
 }
 
 
 
-- (uint8_t *)dataForImage:(CIImage *)image checkTransparency:(BOOL)checkTransparency
+- (uint8_t *)dataForImage:(CIImage *)image hasTransparent:(BOOL*)hasTransparency
 {
     if (!_CIContext)
         _CIContext = [CIContext contextWithOptions:nil];
@@ -131,8 +146,7 @@ static NuoTextureBase* sInstance;
     CGContextRelease(context);
     CGImageRelease(imageRef);
     
-    if (checkTransparency)
-        _hasTransparency = [self checkTransparency:rawData withWidth:width withHeight:height];
+    *hasTransparency = [self checkTransparency:rawData withWidth:width withHeight:height];
     
     return rawData;
 }
