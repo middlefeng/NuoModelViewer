@@ -40,6 +40,9 @@ static void DoSplitShapes(const PShapeVector result, const tinyobj::shape_t shap
         int material1 = mesh.material_ids[i];
         int material2 = mesh.material_ids[i+1];
         
+        assert(numPerFace1 == 3);
+        assert(numPerFace2 == 3);
+        
         if (numPerFace1 != numPerFace2 || material1 != material2)
         {
             tinyobj::shape_t splitShape;

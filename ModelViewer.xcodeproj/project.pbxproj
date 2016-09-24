@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2C1B28081D95FF17009F5912 /* NuoTextureBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C1B28061D95FF17009F5912 /* NuoTextureBase.m */; };
 		2C3D9A9C1D7DF5C3002C1226 /* NuoModelTextured.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9A1D7DF5C3002C1226 /* NuoModelTextured.cpp */; };
 		2C3D9A9E1D7DFC43002C1226 /* ShadersTextured.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9D1D7DFC43002C1226 /* ShadersTextured.metal */; };
 		2C3D9AA11D7E344F002C1226 /* NuoTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9F1D7E344F002C1226 /* NuoTypes.cpp */; };
@@ -35,6 +36,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2C1B28061D95FF17009F5912 /* NuoTextureBase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoTextureBase.m; sourceTree = "<group>"; };
+		2C1B28071D95FF17009F5912 /* NuoTextureBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoTextureBase.h; sourceTree = "<group>"; };
 		2C3D9A9A1D7DF5C3002C1226 /* NuoModelTextured.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoModelTextured.cpp; sourceTree = "<group>"; };
 		2C3D9A9B1D7DF5C3002C1226 /* NuoModelTextured.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoModelTextured.h; sourceTree = "<group>"; };
 		2C3D9A9D1D7DFC43002C1226 /* ShadersTextured.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ShadersTextured.metal; sourceTree = "<group>"; };
@@ -147,8 +150,10 @@
 		2C5DDAD71D6591B800A9DC9A /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				2C5DDAD41D6591B000A9DC9A /* NuoMathUtilities.cpp */,
+				2C1B28071D95FF17009F5912 /* NuoTextureBase.h */,
+				2C1B28061D95FF17009F5912 /* NuoTextureBase.m */,
 				2C5DDAD51D6591B000A9DC9A /* NuoMathUtilities.h */,
+				2C5DDAD41D6591B000A9DC9A /* NuoMathUtilities.cpp */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -289,6 +294,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2CE2CA221D804EC5005509EE /* NuoMeshTextured.mm in Sources */,
+				2C1B28081D95FF17009F5912 /* NuoTextureBase.m in Sources */,
 				2C9D9AAD1D658F0800283E46 /* main.m in Sources */,
 				2CC5EDEE1D8A62B100419168 /* NuoRoundedView.m in Sources */,
 				98DA56611D80EF8C006D0D9C /* ShadersMaterialed.metal in Sources */,

@@ -26,9 +26,5 @@
 
 - (void)makeTexture:(NSString*)texPath checkTransparency:(BOOL)check;
 
-- (id<MTLTexture>)texture2DWithImageNamed:(NSString *)imagePath
-                                mipmapped:(BOOL)mipmapped
-                        checkTransparency:(BOOL)checkTransparency;
-
 
 @end

@@ -7,7 +7,7 @@
 //
 
 #import "NuoMeshTexMatieraled.h"
-
+#import "NuoTextureBase.h"
 
 
 @implementation NuoMeshTexMatieraled
@@ -33,7 +33,9 @@
 
 - (void)makeTextureOpacity:(NSString*)texPath
 {
-    _textureOpacity = [self texture2DWithImageNamed:texPath mipmapped:NO checkTransparency:NO];
+    NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.device];
+    NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:NO checkTransparency:NO];
+    _textureOpacity = texture.texture;
 }
 
 
