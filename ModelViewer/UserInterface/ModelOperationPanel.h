@@ -33,6 +33,7 @@
 @property (nonatomic, assign) BOOL basicMaterialized;
 
 @property (nonatomic, assign) BOOL cullEnabled;
+@property (nonatomic, assign) BOOL combineShapes;
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 

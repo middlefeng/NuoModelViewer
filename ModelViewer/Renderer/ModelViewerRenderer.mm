@@ -41,7 +41,6 @@ static const NSInteger InFlightBufferCount = 3;
         _commandQueue = [self.device newCommandQueue];
         [self makeResources];
         
-        _cullEnabled = YES;
         _modelOptions = [NuoMeshOption new];
         _rotationMatrix = matrix_identity_float4x4;
     }
@@ -167,7 +166,7 @@ static const NSInteger InFlightBufferCount = 3;
     
     [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
     
-    if (_cullEnabled)
+    if (_modelOptions.cullEnabled)
         [renderPass setCullMode:MTLCullModeBack];
     else
         [renderPass setCullMode:MTLCullModeNone];

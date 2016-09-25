@@ -54,7 +54,7 @@ public:
     
 public:
     NuoMaterial();
-    NuoMaterial(const tinyobj::material_t& material);
+    NuoMaterial(const tinyobj::material_t& material, bool unique);
     
     bool operator < (const NuoMaterial& other) const;
     

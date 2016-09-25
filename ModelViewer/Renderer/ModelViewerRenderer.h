@@ -19,7 +19,6 @@
 @property (nonatomic, assign) float transY;
 
 @property (nonatomic, strong) NuoMeshOption* modelOptions;
-@property (nonatomic, assign) bool cullEnabled;
 
 
 - (void)loadMesh:(NSString*)path;

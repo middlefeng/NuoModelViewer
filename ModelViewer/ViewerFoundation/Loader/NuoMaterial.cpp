@@ -15,8 +15,10 @@ NuoMaterial::NuoMaterial() : id(-1)
 }
 
 
+static int last_id { 0 };
 
-NuoMaterial::NuoMaterial(const tinyobj::material_t& material) :
+
+NuoMaterial::NuoMaterial(const tinyobj::material_t& material, bool unique) :
     id(0),
 
     ambient { material.ambient[0], material.ambient[1], material.ambient[2] },
@@ -44,6 +46,8 @@ NuoMaterial::NuoMaterial(const tinyobj::material_t& material) :
     emissive_texname(material.emissive_texname),
     normal_texname(material.normal_texname)
 {
+    if (unique)
+        id = last_id++;
 }
 
 

@@ -18,6 +18,7 @@
 @property (nonatomic, strong) NSButton* checkTextureEmbedTrans;
 
 @property (nonatomic, strong) NSButton* cull;
+@property (nonatomic, strong) NSButton* combine;
 
 @end
 
@@ -33,6 +34,7 @@
     if (self)
     {
         _cullEnabled = YES;
+        _combineShapes = YES;
     }
     
     return self;
@@ -78,6 +80,16 @@
     [cull setState:NSOnState];
     [self addSubview:cull];
     _cull = cull;
+    
+    NSButton* combine = [NSButton new];
+    [combine setButtonType:NSSwitchButton];
+    [combine setTitle:@"Combine Shapes by Material"];
+    [combine setFrame:[self buttonLoactionAtRow:4.2 withLeading:0]];
+    [combine setTarget:self];
+    [combine setAction:@selector(combineChanged:)];
+    [combine setState:NSOnState];
+    [self addSubview:combine];
+    _combine = combine;
 }
 
 
@@ -110,6 +122,14 @@
 - (void)cullChanged:(id)sender
 {
     _cullEnabled = [_cull state] == NSOnState;
+    
+    [_optionUpdateDelegate modelOptionUpdate:self];
+}
+
+
+- (void)combineChanged:(id)sender
+{
+    _combineShapes = [_combine state] == NSOnState;
     
     [_optionUpdateDelegate modelOptionUpdate:self];
 }

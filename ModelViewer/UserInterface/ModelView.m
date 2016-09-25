@@ -32,7 +32,7 @@
 - (NSRect)operationPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize panelSize = NSMakeSize(225, 125);
+    NSSize panelSize = NSMakeSize(225, 142);
     NSSize panelMargin = NSMakeSize(15, 25);
     NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
                                       viewRect.size.height - panelMargin.height - panelSize.height);
@@ -69,8 +69,9 @@
     [options setBasicMaterialized:[panel basicMaterialized]];
     [options setTextured:[panel textured]];
     [options setTextureEmbeddingMaterialTransparency:[panel textureEmbeddingMaterialTransparency]];
+    [options setCullEnabled:[panel cullEnabled]];
+    [options setCombineShapes:[panel combineShapes]];
     
-    [_render setCullEnabled:[panel cullEnabled]];
     [_render setModelOptions:options];
     [self render];
 }

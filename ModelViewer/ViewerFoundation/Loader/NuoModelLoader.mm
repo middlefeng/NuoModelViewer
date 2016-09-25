@@ -113,7 +113,9 @@ static tinyobj::shape_t DoMergeShapes(std::vector<tinyobj::shape_t> shapes)
 
 
 
-static PShapeMapByMaterial DoMergeShapesInVector(const PShapeVector result, std::vector<tinyobj::material_t>& materials)
+static PShapeMapByMaterial DoMergeShapesInVector(const PShapeVector result,
+                                                 std::vector<tinyobj::material_t>& materials,
+                                                 bool combineMaterial)
 {
     typedef std::map<NuoMaterial, std::vector<tinyobj::shape_t>> ShapeMap;
     ShapeMap shapesMap;
@@ -132,7 +134,7 @@ static PShapeMapByMaterial DoMergeShapesInVector(const PShapeVector result, std:
         else
         {
             tinyobj::material_t material = materials[(size_t)shapeMaterial];
-            NuoMaterial materialIndex(material);
+            NuoMaterial materialIndex(material, !combineMaterial);
             shapesMap[materialIndex].push_back(shape);
         }
     }
@@ -154,14 +156,16 @@ static PShapeMapByMaterial DoMergeShapesInVector(const PShapeVector result, std:
 
 
 
-static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::vector<tinyobj::material_t> &materials)
+static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
+                                                    std::vector<tinyobj::material_t> &materials,
+                                                    bool combineMaterial)
 {
     PShapeVector result = std::make_shared<ShapeVector>();
     for (const auto& shape : shapes)
         DoSplitShapes(result, shape);
     
     PShapeMapByMaterial shapeMap;
-    shapeMap = DoMergeShapesInVector(result, materials);
+    shapeMap = DoMergeShapesInVector(result, materials, combineMaterial);
     
     return shapeMap;
 }
@@ -200,7 +204,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
 {
     typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
     
-    PShapeMapByMaterial shapeMap = GetShapeVectorByMaterial(_shapes, _materials);
+    PShapeMapByMaterial shapeMap = GetShapeVectorByMaterial(_shapes, _materials, loadOption.combineShapes);
     
     std::vector<PNuoModelBase> models;
     std::map<PNuoModelBase, NuoModelOption> modelOptions;
@@ -231,7 +235,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes, std::ve
             int materialID = shape.mesh.material_ids[i / 3];
             if (materialID >= 0)
             {
-                NuoMaterial vertexMaterial(_materials[materialID]);
+                NuoMaterial vertexMaterial(_materials[materialID], false /* ignored */);
                 modelBase->AddMaterial(vertexMaterial);
             }
         }
