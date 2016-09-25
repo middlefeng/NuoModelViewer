@@ -18,6 +18,7 @@
 
 @protocol ModelOptionUpdate
 
+- (void)modelUpdate:(ModelOperationPanel*)panel;
 - (void)modelOptionUpdate:(ModelOperationPanel*)panel;
 
 @end
@@ -34,6 +35,8 @@
 
 @property (nonatomic, assign) BOOL cullEnabled;
 @property (nonatomic, assign) BOOL combineShapes;
+
+@property (nonatomic, assign) float fieldOfViewRadian;
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 

@@ -18,6 +18,9 @@
 @property (nonatomic, assign) float transX;
 @property (nonatomic, assign) float transY;
 
+@property (nonatomic, assign) BOOL cullEnabled;
+@property (nonatomic, assign) float fieldOfView;
+
 @property (nonatomic, strong) NuoMeshOption* modelOptions;
 
 

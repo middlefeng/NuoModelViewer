@@ -20,6 +20,8 @@
 @property (nonatomic, strong) NSButton* cull;
 @property (nonatomic, strong) NSButton* combine;
 
+@property (nonatomic, assign) NSSlider* fieldOfView;
+
 @end
 
 
@@ -35,6 +37,7 @@
     {
         _cullEnabled = YES;
         _combineShapes = YES;
+        _fieldOfViewRadian = (2 * M_PI) / 8;
     }
     
     return self;
@@ -90,6 +93,24 @@
     [combine setState:NSOnState];
     [self addSubview:combine];
     _combine = combine;
+    
+    NSTextField* labelFOV = [NSTextField new];
+    [labelFOV setEditable:NO];
+    [labelFOV setSelectable:NO];
+    [labelFOV setBordered:NO];
+    [labelFOV setStringValue:@"Field of View:"];
+    [labelFOV setFrame:[self buttonLoactionAtRow:5.4 withLeading:0]];
+    [self addSubview:labelFOV];
+    
+    NSSlider* fieldOfView = [NSSlider new];
+    [fieldOfView setFrame:[self buttonLoactionAtRow:6.2 withLeading:6]];
+    [fieldOfView setMaxValue:_fieldOfViewRadian];
+    [fieldOfView setMinValue:1e-6];
+    [fieldOfView setFloatValue:_fieldOfViewRadian];
+    [fieldOfView setTarget:self];
+    [fieldOfView setAction:@selector(fieldOfViewChanged:)];
+    [self addSubview:fieldOfView];
+    _fieldOfView = fieldOfView;
 }
 
 
@@ -98,7 +119,7 @@
     _basicMaterialized = [_checkMaterial state] == NSOnState;
     [self updateControls];
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelUpdate:self];
 }
 
 
@@ -107,7 +128,7 @@
     _textured = [_checkTexture state] == NSOnState;
     [self updateControls];
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelUpdate:self];
 }
 
 
@@ -115,7 +136,7 @@
 {
     _textureEmbeddingMaterialTransparency = [_checkTextureEmbedTrans state] == NSOnState;
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelUpdate:self];
 }
 
 
@@ -130,6 +151,14 @@
 - (void)combineChanged:(id)sender
 {
     _combineShapes = [_combine state] == NSOnState;
+    
+    [_optionUpdateDelegate modelUpdate:self];
+}
+
+
+- (void)fieldOfViewChanged:(id)sender
+{
+    _fieldOfViewRadian = [_fieldOfView floatValue];
     
     [_optionUpdateDelegate modelOptionUpdate:self];
 }
@@ -154,7 +183,7 @@
     float originalY = parentHeight - overhead - row * spacing - (row + 1) * buttonHeight;
     
     NSRect result = NSMakeRect(overhead + leading, originalY,
-                               parentWidth - overhead * 2.0 - leading, buttonHeight);
+                               parentWidth - overhead * 2.0 - leading * 2.0, buttonHeight);
     return result;
 }
 

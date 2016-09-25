@@ -43,6 +43,9 @@ static const NSInteger InFlightBufferCount = 3;
         
         _modelOptions = [NuoMeshOption new];
         _rotationMatrix = matrix_identity_float4x4;
+        
+        _cullEnabled = YES;
+        _fieldOfView = (2 * M_PI) / 8;
     }
 
     return self;
@@ -138,10 +141,9 @@ static const NSInteger InFlightBufferCount = 3;
 
     const CGSize drawableSize = view.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
-    const float fov = (2 * M_PI) / 8;
-    const float near = 0.01;
+    const float near = std::max(- _zoom * modelSpan / 20.0f * 0.8, std::max(0.1, 0.001 * modelSpan));
     const float far = -(modelNearest - modelSpan) + modelSpan * 2.0f - _zoom * modelSpan / 20.0f;
-    const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, fov, near, far);
+    const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, _fieldOfView, near, far);
 
     ModelUniforms uniforms;
     uniforms.modelViewMatrix = matrix_multiply(viewMatrix, modelMatrix);
@@ -166,7 +168,7 @@ static const NSInteger InFlightBufferCount = 3;
     
     [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
     
-    if (_modelOptions.cullEnabled)
+    if (_cullEnabled)
         [renderPass setCullMode:MTLCullModeBack];
     else
         [renderPass setCullMode:MTLCullModeNone];
