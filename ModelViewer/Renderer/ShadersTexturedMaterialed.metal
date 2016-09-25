@@ -5,14 +5,16 @@ using namespace metal;
 
 struct Light
 {
-    float3 direction;
+    float3 direction1;
+    float3 direction2;
     float3 ambientColor;
     float3 diffuseColor;
     float3 specularColor;
 };
 
 constant Light light = {
-    .direction = { 0.13, 0.72, 0.68 },
+    .direction1 = { 0.13, 0.72, 0.68 },
+    .direction2 = { 0.13, -0.72, 0.68 },
     .ambientColor = { 0.28, 0.28, 0.28 },
     .diffuseColor = { 1, 1, 1 },
     .specularColor = { 0.5, 0.5, 0.5 }
@@ -119,17 +121,31 @@ float4 fragment_light_tex_materialed_common(ProjectedVertex vert [[stage_in]],
     float3 ambientTerm = light.ambientColor * vert.ambientColor;
     
     float3 normal = normalize(vert.normal);
-    float diffuseIntensity = saturate(dot(normal, light.direction));
-    float3 diffuseTerm = light.diffuseColor * diffuseColor * diffuseIntensity;
+    float diffuseIntensity1 = saturate(dot(normal, light.direction1));
+    float diffuseIntensity2 = saturate(dot(normal, light.direction2));
     
-    float3 specularTerm(0);
-    if (diffuseIntensity > 0)
+    float3 diffuseTerm1 = light.diffuseColor * diffuseColor * diffuseIntensity1;
+    float3 diffuseTerm2 = light.diffuseColor * diffuseColor * diffuseIntensity2;
+    float3 diffuseTerm = diffuseTerm1 + diffuseTerm2;
+    
+    float3 specularTerm1(0), specularTerm2(0);
+    if (diffuseIntensity1 > 0)
     {
         float3 eyeDirection = normalize(vert.eye);
-        float3 halfway = normalize(light.direction + eyeDirection);
-        float specularFactor = pow(saturate(dot(normal, halfway)), vert.specularPowerDisolve.x);
-        specularTerm = light.specularColor * vert.specularColor * specularFactor;
+        float3 halfway1 = normalize(light.direction1 + eyeDirection);
+        float specularFactor1 = pow(saturate(dot(normal, halfway1)), vert.specularPowerDisolve.x);
+        specularTerm1 = light.specularColor * vert.specularColor * specularFactor1;
     }
+    
+    if (diffuseIntensity2 > 00)
+    {
+        float3 eyeDirection = normalize(vert.eye);
+        float3 halfway2 = normalize(light.direction2 + eyeDirection);
+        float specularFactor2 = pow(saturate(dot(normal, halfway2)), vert.specularPowerDisolve.x);
+        specularTerm2 = light.specularColor * vert.specularColor * specularFactor2;
+    }
+    
+    float3 specularTerm = specularTerm1 + specularTerm2;
     
     return float4(ambientTerm + diffuseTerm + specularTerm, diffuseTexel.a * vert.specularPowerDisolve.y);
 }
