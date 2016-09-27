@@ -141,7 +141,7 @@ static const NSInteger InFlightBufferCount = 3;
 
     const CGSize drawableSize = view.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
-    const float near = std::max(- _zoom * modelSpan / 20.0f * 0.8, std::max(0.1, 0.001 * modelSpan));
+    const float near = - _zoom * modelSpan / 20.0f + 0.01;
     const float far = -(modelNearest - modelSpan) + modelSpan * 2.0f - _zoom * modelSpan / 20.0f;
     const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, _fieldOfView, near, far);
 
