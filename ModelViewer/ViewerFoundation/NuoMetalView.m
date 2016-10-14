@@ -158,7 +158,7 @@
                                                                                        height:drawableSize.height
                                                                                     mipmapped:NO];
         desc.sampleCount = sSampleCount;
-        desc.textureType = MTLTextureType2DMultisample;
+        desc.textureType = (sSampleCount == 1) ? MTLTextureType2D : MTLTextureType2DMultisample;
         desc.resourceOptions = MTLResourceStorageModePrivate;
         desc.usage = MTLTextureUsageRenderTarget;
 
@@ -168,12 +168,16 @@
                                                                                               width:drawableSize.width
                                                                                              height:drawableSize.height
                                                                                           mipmapped:NO];
-        sampleDesc.sampleCount = sSampleCount;
-        sampleDesc.textureType = MTLTextureType2DMultisample;
-        sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
-        sampleDesc.usage = MTLTextureUsageRenderTarget;
         
-        self.sampleTexture = [self.metalLayer.device newTextureWithDescriptor:sampleDesc];
+        if (sSampleCount > 1)
+        {
+            sampleDesc.sampleCount = sSampleCount;
+            sampleDesc.textureType = MTLTextureType2DMultisample;
+            sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
+            sampleDesc.usage = MTLTextureUsageRenderTarget;
+            
+            self.sampleTexture = [self.metalLayer.device newTextureWithDescriptor:sampleDesc];
+        }
     }
 }
 
@@ -186,11 +190,12 @@
     if (!_currentDrawable)
         return nil;
     
-    passDescriptor.colorAttachments[0].texture = _sampleTexture;
+    passDescriptor.colorAttachments[0].texture = (sSampleCount == 1) ? [_currentDrawable texture] : _sampleTexture;
     passDescriptor.colorAttachments[0].clearColor = self.clearColor;
     passDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
-    passDescriptor.colorAttachments[0].storeAction = MTLStoreActionMultisampleResolve;
-    passDescriptor.colorAttachments[0].resolveTexture = [_currentDrawable texture];
+    passDescriptor.colorAttachments[0].storeAction = (sSampleCount == 1) ? MTLStoreActionStore : MTLStoreActionMultisampleResolve;
+    if (sSampleCount > 1)
+        passDescriptor.colorAttachments[0].resolveTexture = [_currentDrawable texture];
 
     passDescriptor.depthAttachment.texture = self.depthTexture;
     passDescriptor.depthAttachment.clearDepth = 1.0;
