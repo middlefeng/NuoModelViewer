@@ -102,7 +102,9 @@
 {
     MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
     depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLess;
-    depthStencilDescriptor.depthWriteEnabled = YES;
+    
+    depthStencilDescriptor.depthWriteEnabled = !self.hasTransparency;
+    
     _depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
 }
 
@@ -192,13 +194,13 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         if (modelTexturePathOpacity)
             [mesh makeTextureOpacity:modelTexturePathOpacity];
         
-        [mesh makePipelineState:[mesh makePipelineStateDescriptor:!embeddedAlpha]];
-        [mesh makeDepthStencilState];
-        
         if (model->HasTransparent() || modelTexturePathOpacity)
             [mesh setTransparency:YES];
         else if (!embeddedAlpha)
             [mesh setTransparency:NO];
+        
+        [mesh makePipelineState:[mesh makePipelineStateDescriptor:!embeddedAlpha]];
+        [mesh makeDepthStencilState];
         
         return mesh;
     }
