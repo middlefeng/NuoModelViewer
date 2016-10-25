@@ -125,6 +125,12 @@
     renderer.rotationXDelta = -0.01 * M_PI * theEvent.deltaY;
     renderer.rotationYDelta = -0.01 * M_PI * theEvent.deltaX;
     [self render];
+    
+    NSPoint mouseLoc = [theEvent locationInWindow];
+    NSLog(@"Mouse Screen X, Y: %f, %f.", mouseLoc.x, mouseLoc.y);
+    mouseLoc = [self convertPoint:mouseLoc fromView:nil];
+    NSLog(@"Mouse View X, Y: %f, %f.", mouseLoc.x, mouseLoc.y);
+    
 }
 
 
