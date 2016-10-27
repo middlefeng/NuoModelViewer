@@ -127,10 +127,15 @@
     [self render];
     
     NSPoint mouseLoc = [theEvent locationInWindow];
-    NSLog(@"Mouse Screen X, Y: %f, %f.", mouseLoc.x, mouseLoc.y);
+    // NSLog(@"Mouse Screen X, Y: %f, %f.", mouseLoc.x, mouseLoc.y);
     mouseLoc = [self convertPoint:mouseLoc fromView:nil];
-    NSLog(@"Mouse View X, Y: %f, %f.", mouseLoc.x, mouseLoc.y);
+    // NSLog(@"Mouse View X, Y: %f, %f.", mouseLoc.x, mouseLoc.y);
     
+    CGSize drawableSize = [self bounds].size;
+    CGPoint normalizedLoc = CGPointMake(mouseLoc.x / drawableSize.width, mouseLoc.y / drawableSize.height);
+    // NSLog(@"Normalized X, Y: %f, %f.", normalizedLoc.x, normalizedLoc.y);
+    
+    [_render setLightDirection:normalizedLoc];
 }
 
 

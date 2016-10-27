@@ -26,5 +26,7 @@
 
 - (void)loadMesh:(NSString*)path;
 
+- (void)setLightDirection:(CGPoint)normalizedOnView;
+
 
 @end

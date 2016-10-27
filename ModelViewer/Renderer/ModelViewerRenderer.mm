@@ -74,6 +74,18 @@ static const NSInteger InFlightBufferCount = 3;
 }
 
 
+- (void)setLightDirection:(CGPoint)normalizedOnView
+{
+    CGPoint normalizedOnViewPort;
+    float viewPortEdges[4] = { -1, -1, 1, 1 };
+    
+    normalizedOnViewPort.x = normalizedOnView.x * (viewPortEdges[2] - viewPortEdges[0]) + viewPortEdges[0];
+    normalizedOnViewPort.y = normalizedOnView.y * (viewPortEdges[3] - viewPortEdges[1]) + viewPortEdges[1];
+    
+    NSLog(@"Normalized X, Y: %f, %f", normalizedOnViewPort.x, normalizedOnViewPort.y);
+}
+
+
 - (void)makeResources
 {
     id<MTLBuffer> buffers[InFlightBufferCount];
