@@ -29,6 +29,7 @@ void NuoModelArrow::CreateBuffer()
 {
     CreateEndSurface();
     CreateBodySurface();
+    GenerateIndices();
 }
 
 
@@ -88,18 +89,18 @@ void NuoModelArrow::CreateEndSurface()
         bufferPosition[0] = endCenter.x;
         bufferPosition[1] = endCenter.y;
         bufferPosition[2] = endCenter.z;
-        bufferPosition[3] = edgeVertex1.x;
-        bufferPosition[4] = edgeVertex1.y;
-        bufferPosition[5] = edgeVertex1.z;
-        bufferPosition[6] = edgeVertex2.x;
-        bufferPosition[7] = edgeVertex2.y;
-        bufferPosition[8] = edgeVertex2.z;
+        bufferPosition[3] = edgeVertex2.x;
+        bufferPosition[4] = edgeVertex2.y;
+        bufferPosition[5] = edgeVertex2.z;
+        bufferPosition[6] = edgeVertex1.x;
+        bufferPosition[7] = edgeVertex1.y;
+        bufferPosition[8] = edgeVertex1.z;
         
         AddPosition(0, bufferPosition);
         AddNormal(0, bufferNormal);
-        AddPosition(3, bufferPosition);
+        AddPosition(1, bufferPosition);
         AddNormal(0, bufferNormal);
-        AddPosition(6, bufferPosition);
+        AddPosition(2, bufferPosition);
         AddNormal(0, bufferNormal);
     }
 }
@@ -107,7 +108,7 @@ void NuoModelArrow::CreateEndSurface()
 
 void NuoModelArrow::CreateBodySurface()
 {
-    std::vector<float> bufferPosition(18), bufferNormal;
+    std::vector<float> bufferPosition(18), bufferNormal(18);
     
     for (size_t index = 0; index < kNumOfFins; ++ index)
     {
@@ -151,29 +152,29 @@ void NuoModelArrow::CreateBodySurface()
         bufferPosition[16] = endVertex2.y;
         bufferPosition[17] = endVertex2.z;
         
-        bufferNormal[0] = normal2.x;
-        bufferNormal[1] = normal2.y;
-        bufferNormal[2] = normal2.z;
-        bufferNormal[3] = normal1.x;
-        bufferNormal[4] = normal1.y;
-        bufferNormal[5] = normal1.z;
-        bufferNormal[6] = normal2.x;
-        bufferNormal[7] = normal2.y;
-        bufferNormal[8] = normal2.z;
+        bufferNormal[9] = normal2.x;
+        bufferNormal[10] = normal2.y;
+        bufferNormal[11] = normal2.z;
+        bufferNormal[12] = normal1.x;
+        bufferNormal[13] = normal1.y;
+        bufferNormal[14] = normal1.z;
+        bufferNormal[15] = normal2.x;
+        bufferNormal[16] = normal2.y;
+        bufferNormal[17] = normal2.z;
         
         AddPosition(0, bufferPosition);
         AddNormal(0, bufferNormal);
+        AddPosition(1, bufferPosition);
+        AddNormal(1, bufferNormal);
+        AddPosition(2, bufferPosition);
+        AddNormal(2, bufferNormal);
+        
         AddPosition(3, bufferPosition);
         AddNormal(3, bufferNormal);
-        AddPosition(6, bufferPosition);
-        AddNormal(6, bufferNormal);
-        
-        AddPosition(9, bufferPosition);
-        AddNormal(9, bufferNormal);
-        AddPosition(12, bufferPosition);
-        AddNormal(12, bufferNormal);
-        AddPosition(15, bufferPosition);
-        AddNormal(15, bufferNormal);
+        AddPosition(4, bufferPosition);
+        AddNormal(4, bufferNormal);
+        AddPosition(5, bufferPosition);
+        AddNormal(5, bufferNormal);
     }
 }
 

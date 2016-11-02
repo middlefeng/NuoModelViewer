@@ -41,5 +41,8 @@ private:
 };
 
 
+typedef std::shared_ptr<NuoModelArrow> PNuoModelArrow;
+
+
 
 #endif /* NuoModelArrow_hpp */
