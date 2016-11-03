@@ -29,7 +29,21 @@ void NuoModelArrow::CreateBuffer()
 {
     CreateEndSurface();
     CreateBodySurface();
+    CreateMiddleSurface();
     GenerateIndices();
+}
+
+
+vector_float4 NuoModelArrow::GetMiddleSurfaceVertex(size_t index, size_t type)
+{
+    float arc = ((float)index / (float)kNumOfFins) * 2 * 3.1416;
+    float radius = (1 - type) * _bodyRadius + type * _headRadius;
+    
+    float x = cos(arc) * radius;
+    float y = sin(arc) * radius;
+    float z = _bodyLength;
+    
+    return vector_float4 {x, y, z, 1.0};
 }
 
 
@@ -175,6 +189,60 @@ void NuoModelArrow::CreateBodySurface()
         AddNormal(4, bufferNormal);
         AddPosition(5, bufferPosition);
         AddNormal(5, bufferNormal);
+    }
+}
+
+
+void NuoModelArrow::CreateMiddleSurface()
+{
+    std::vector<float> bufferPosition(18), bufferNormal(3);
+    
+    bufferNormal[0] = 0;
+    bufferNormal[1] = 0;
+    bufferNormal[2] = -1.0;
+    
+    for (size_t index = 0; index < kNumOfFins; ++ index)
+    {
+        vector_float4 innerVertex1 = GetMiddleSurfaceVertex(index, 0);
+        vector_float4 innerVertex2 = GetMiddleSurfaceVertex(index + 1, 0);
+        vector_float4 outterVertex1 = GetMiddleSurfaceVertex(index, 1);
+        vector_float4 outterVertex2 = GetMiddleSurfaceVertex(index + 1, 1);
+        
+        // triangle 1
+        bufferPosition[0] = innerVertex1.x;
+        bufferPosition[1] = innerVertex1.y;
+        bufferPosition[2] = innerVertex1.z;
+        bufferPosition[3] = outterVertex2.x;
+        bufferPosition[4] = outterVertex2.y;
+        bufferPosition[5] = outterVertex2.z;
+        bufferPosition[6] = outterVertex1.x;
+        bufferPosition[7] = outterVertex1.y;
+        bufferPosition[8] = outterVertex1.z;
+        
+        // triangle 2
+        bufferPosition[9] = innerVertex2.x;
+        bufferPosition[10] = innerVertex2.y;
+        bufferPosition[11] = innerVertex2.z;
+        bufferPosition[12] = outterVertex2.x;
+        bufferPosition[13] = outterVertex2.y;
+        bufferPosition[14] = outterVertex2.z;
+        bufferPosition[15] = innerVertex1.x;
+        bufferPosition[16] = innerVertex1.y;
+        bufferPosition[17] = innerVertex1.z;
+        
+        AddPosition(0, bufferPosition);
+        AddNormal(0, bufferNormal);
+        AddPosition(1, bufferPosition);
+        AddNormal(0, bufferNormal);
+        AddPosition(2, bufferPosition);
+        AddNormal(0, bufferNormal);
+        
+        AddPosition(3, bufferPosition);
+        AddNormal(0, bufferNormal);
+        AddPosition(4, bufferPosition);
+        AddNormal(0, bufferNormal);
+        AddPosition(5, bufferPosition);
+        AddNormal(0, bufferNormal);
     }
 }
 
