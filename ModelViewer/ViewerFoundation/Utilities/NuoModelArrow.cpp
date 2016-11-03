@@ -30,6 +30,7 @@ void NuoModelArrow::CreateBuffer()
     CreateEndSurface();
     CreateBodySurface();
     CreateMiddleSurface();
+    CreateHeadSurface();
     GenerateIndices();
 }
 
@@ -75,14 +76,23 @@ vector_float4 NuoModelArrow::GetEndVertex(size_t type)
 }
 
 
-vector_float4 NuoModelArrow::GetHeadVertex(size_t index)
+
+vector_float4 NuoModelArrow::GetHeadNormal(size_t index)
 {
-    float arc = ((float)index / (float)kNumOfFins) * 2 * 3.1416;
-    float x = cos(arc) * _headRadius;
-    float y = sin(arc) * _headRadius;
-    float z = _bodyLength;
+    vector_float4 outward4 = GetBodyNormal(index);
+    vector_float4 middleVertex = GetMiddleSurfaceVertex(index, 1);
+    vector_float4 headVertex = vector_float4 { 0, 0, _bodyLength + _headLength, 1 };
     
-    return vector_float4 {x, y, z, 1.0};
+    vector_float3 bodyVector = vector_float3 { headVertex.x - middleVertex.x,
+                                               headVertex.y - middleVertex.y,
+                                               headVertex.z - middleVertex.z };
+    vector_float3 outward = vector_float3 { outward4.x, outward4.y, outward4.z };
+    
+    vector_float3 tangentVector = vector_cross(outward, bodyVector);
+    vector_float3 normal = vector_cross(bodyVector, tangentVector);
+    normal = vector_normalize(normal);
+    
+    return vector_float4 { normal.x, normal.y, normal.z, 1.0 };
 }
 
 
@@ -243,6 +253,50 @@ void NuoModelArrow::CreateMiddleSurface()
         AddNormal(0, bufferNormal);
         AddPosition(5, bufferPosition);
         AddNormal(0, bufferNormal);
+    }
+}
+
+
+void NuoModelArrow::CreateHeadSurface()
+{
+    std::vector<float> bufferPosition(9), bufferNormal(9);
+    
+    for (size_t index = 0; index < kNumOfFins; ++ index)
+    {
+        vector_float4 vertex1 = GetMiddleSurfaceVertex(index, 1);
+        vector_float4 vertex2 = GetMiddleSurfaceVertex(index + 1, 1);
+        vector_float4 headVertex = vector_float4 { 0, 0, _bodyLength + _headLength, 1 };
+        
+        bufferPosition[0] = headVertex.x;
+        bufferPosition[1] = headVertex.y;
+        bufferPosition[2] = headVertex.z;
+        bufferPosition[3] = vertex1.x;
+        bufferPosition[4] = vertex1.y;
+        bufferPosition[5] = vertex1.z;
+        bufferPosition[6] = vertex2.x;
+        bufferPosition[7] = vertex2.y;
+        bufferPosition[8] = vertex2.z;
+        
+        vector_float4 normal1 = GetHeadNormal(index);
+        vector_float4 normal2 = GetHeadNormal(index + 1);
+        vector_float4 normalHead = vector_normalize(normal1 + normal2);
+        
+        bufferNormal[0] = normal1.x;
+        bufferNormal[1] = normal1.y;
+        bufferNormal[2] = normal1.z;
+        bufferNormal[3] = normal1.x;
+        bufferNormal[4] = normal1.y;
+        bufferNormal[5] = normal1.z;
+        bufferNormal[6] = normal2.x;
+        bufferNormal[7] = normal2.y;
+        bufferNormal[8] = normal2.z;
+     
+        AddPosition(0, bufferPosition);
+        AddNormal(0, bufferNormal);
+        AddPosition(1, bufferPosition);
+        AddNormal(1, bufferNormal);
+        AddPosition(2, bufferPosition);
+        AddNormal(2, bufferNormal);
     }
 }
 
