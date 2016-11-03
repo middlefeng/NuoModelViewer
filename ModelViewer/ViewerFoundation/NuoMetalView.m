@@ -10,8 +10,6 @@
 @property (strong) id<MTLTexture> depthTexture;
 @property (nonatomic, readonly) CAMetalLayer *metalLayer;
 
-@property (nonatomic, strong) id<NuoMetalViewDelegate> renderer;
-
 @end
 
 
