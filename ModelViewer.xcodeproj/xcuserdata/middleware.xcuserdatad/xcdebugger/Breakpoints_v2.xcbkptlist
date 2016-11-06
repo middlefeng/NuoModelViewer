@@ -135,94 +135,156 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "ModelViewer/ViewerFoundation/Loader/NuoModelTextured.h"
-            timestampString = "494834245.841194"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "69"
-            endingLineNumber = "69"
-            landmarkName = "SetTexturePath(const std::string texPath)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "ModelViewer/ViewerFoundation/Loader/NuoModelLoader.mm"
-            timestampString = "494837395.348323"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "189"
-            endingLineNumber = "189"
-            landmarkName = "-loadModelObjects:withType:withDevice:"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "ModelViewer/ViewerFoundation/Loader/NuoModelLoader.mm"
-            timestampString = "494837428.96319"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "196"
-            endingLineNumber = "196"
-            landmarkName = "-loadModelObjects:withType:withDevice:"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
             filePath = "ModelViewer/ViewerFoundation/Loader/NuoModelBase.h"
             timestampString = "494837725.771047"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "172"
             endingLineNumber = "172"
-            landmarkName = "GenerateNormals()"
-            landmarkType = "7">
+            landmarkName = "GenerateIndices()"
+            landmarkType = "9">
             <Locations>
                <Location
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "NuoModelCommon&lt;NuoItemSimple&gt;::GenerateNormals()"
+                  symbolName = "NuoModelCommon&lt;NuoItemSimple&gt;::GenerateIndices()"
                   moduleName = "ModelViewer"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/middleware/UserData/Source/Graphics/sample-code-master/objc/ModelViewer/ModelViewer/ViewerFoundation/Loader/NuoModelBase.h"
-                  timestampString = "494920361.620544"
+                  urlString = "file:///Users/middleware/UserData/Source/NuoModelViewer/ModelViewer/ViewerFoundation/Loader/NuoModelBase.h"
+                  timestampString = "500110599.4343"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "172"
-                  endingLineNumber = "172"
-                  offsetFromSymbolStart = "147">
+                  startingLineNumber = "173"
+                  endingLineNumber = "173"
+                  offsetFromSymbolStart = "3797">
                </Location>
                <Location
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "NuoModelCommon&lt;NuoItemTextured&gt;::GenerateNormals()"
+                  symbolName = "NuoModelCommon&lt;NuoItemMaterialedTexturedBasic&gt;::GenerateIndices()"
                   moduleName = "ModelViewer"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/middleware/UserData/Source/Graphics/sample-code-master/objc/ModelViewer/ModelViewer/ViewerFoundation/Loader/NuoModelBase.h"
-                  timestampString = "494920361.620666"
+                  urlString = "file:///Users/middleware/UserData/Source/NuoModelViewer/ModelViewer/ViewerFoundation/Loader/NuoModelBase.h"
+                  timestampString = "500110599.436215"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "172"
-                  endingLineNumber = "172"
-                  offsetFromSymbolStart = "147">
+                  startingLineNumber = "173"
+                  endingLineNumber = "173"
+                  offsetFromSymbolStart = "3874">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "NuoModelCommon&lt;NuoItemMaterialedBasic&gt;::GenerateIndices()"
+                  moduleName = "ModelViewer"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/middleware/UserData/Source/NuoModelViewer/ModelViewer/ViewerFoundation/Loader/NuoModelBase.h"
+                  timestampString = "500110599.438177"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "173"
+                  endingLineNumber = "173"
+                  offsetFromSymbolStart = "3874">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "NuoModelCommon&lt;NuoItemTextured&gt;::GenerateIndices()"
+                  moduleName = "ModelViewer"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/middleware/UserData/Source/NuoModelViewer/ModelViewer/ViewerFoundation/Loader/NuoModelBase.h"
+                  timestampString = "500110599.440081"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "173"
+                  endingLineNumber = "173"
+                  offsetFromSymbolStart = "3874">
                </Location>
             </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ModelViewer/Renderer/ModelViewerRenderer.mm"
+            timestampString = "500110195.630359"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "208"
+            endingLineNumber = "208"
+            landmarkName = "-drawInView:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ModelViewer/Renderer/ModelViewerRenderer.mm"
+            timestampString = "500110195.630359"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "195"
+            endingLineNumber = "195"
+            landmarkName = "-drawInView:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ModelViewer/ViewerFoundation/Meshes/NuoTextureMesh.mm"
+            timestampString = "500109083.663726"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "36"
+            endingLineNumber = "36"
+            landmarkName = "-initWithDevice:withTexture:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ModelViewer/Renderer/ModelViewerRenderer.mm"
+            timestampString = "500110195.630359"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "81"
+            endingLineNumber = "81"
+            landmarkName = "-makeResources"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ModelViewer/ViewerFoundation/NuoMetalView.m"
+            timestampString = "500109913.060582"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "149"
+            endingLineNumber = "149"
+            landmarkName = "-makeTextures"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

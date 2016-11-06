@@ -24,6 +24,9 @@
 @property (nonatomic, strong) NuoMeshOption* modelOptions;
 
 
+- (instancetype)init;
+
+
 - (void)loadMesh:(NSString*)path;
 
 

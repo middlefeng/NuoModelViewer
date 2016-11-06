@@ -24,10 +24,14 @@
 
 @property (nonatomic, readonly) CGSize drawableSize;
 
+@property (strong) id<MTLTexture> debugTexture;
+
 
 - (void)commonInit;
 
 - (void)viewResizing;
+
+- (CAMetalLayer *)metalLayer;
 
 
 /**

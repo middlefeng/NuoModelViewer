@@ -111,7 +111,7 @@
 - (void)commonInit
 {
     [super commonInit];
-    _render = [ModelRenderer new];
+    _render = [[ModelRenderer alloc] init];
     self.delegate = _render;
     
     [self registerForDraggedTypes:@[@"public.data"]];

@@ -172,9 +172,14 @@
             sampleDesc.sampleCount = sSampleCount;
             sampleDesc.textureType = MTLTextureType2DMultisample;
             sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
-            sampleDesc.usage = MTLTextureUsageRenderTarget;
+            sampleDesc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
             
             self.sampleTexture = [self.metalLayer.device newTextureWithDescriptor:sampleDesc];
+            
+            sampleDesc.sampleCount = 1;
+            sampleDesc.textureType = MTLTextureType2D;
+            
+            self.debugTexture = [self.metalLayer.device newTextureWithDescriptor:sampleDesc];
         }
     }
 }
@@ -193,7 +198,7 @@
     passDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
     passDescriptor.colorAttachments[0].storeAction = (sSampleCount == 1) ? MTLStoreActionStore : MTLStoreActionMultisampleResolve;
     if (sSampleCount > 1)
-        passDescriptor.colorAttachments[0].resolveTexture = [_currentDrawable texture];
+        passDescriptor.colorAttachments[0].resolveTexture = self.debugTexture; // [_currentDrawable texture];
 
     passDescriptor.depthAttachment.texture = self.depthTexture;
     passDescriptor.depthAttachment.clearDepth = 1.0;

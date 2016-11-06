@@ -11,6 +11,8 @@
 #include "NuoModelBase.h"
 #include "NuoModelLoader.h"
 
+#include "NuoTextureMesh.h"
+
 static const NSInteger InFlightBufferCount = 3;
 
 @interface ModelRenderer ()
@@ -184,6 +186,29 @@ static const NSInteger InFlightBufferCount = 3;
     }
     
     [renderPass endEncoding];
+    
+    NuoTextureMesh* texture = [[NuoTextureMesh alloc] initWithDevice:self.device withTexture:view.debugTexture];
+    [texture makePipelineAndSampler];
+    
+    MTLRenderPassDescriptor *debugPassDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+    
+    id<CAMetalDrawable> nextDrawable = view.currentDrawable;
+    if (!nextDrawable)
+        return;
+    
+    debugPassDescriptor.colorAttachments[0].texture = [nextDrawable texture];
+    debugPassDescriptor.colorAttachments[0].clearColor = view.clearColor;
+    debugPassDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
+    debugPassDescriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
+    debugPassDescriptor.depthAttachment.clearDepth = 1.0;
+    debugPassDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
+    debugPassDescriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
+    
+    id<MTLRenderCommandEncoder> debugRenderPass = [commandBuffer renderCommandEncoderWithDescriptor:debugPassDescriptor];
+    [texture drawMesh:debugRenderPass];
+    
+    [debugRenderPass endEncoding];
+    
 
     [commandBuffer presentDrawable:view.currentDrawable];
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
