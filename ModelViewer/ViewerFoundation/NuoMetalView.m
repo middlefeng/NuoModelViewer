@@ -2,8 +2,8 @@
 #import "NuoMetalView.h"
 
 #import "NuoTypes.h"
-#import "NuoRenderTarget.h"
-#import "NuoNotationRenderer.h"
+#import "NuoRenderPass.h"
+#import "NuoRenderPassTarget.h"
 
 
 @interface NuoMetalView ()
@@ -70,20 +70,6 @@
 {
     _preferredFramesPerSecond = 60;
     
-    _modelRenderTarget = [NuoRenderTarget new];
-    _modelRenderTarget.device = self.metalLayer.device;
-    _modelRenderTarget.sampleCount = sSampleCount;
-    _modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
-    _modelRenderTarget.manageTargetTexture = YES;
-    
-    _notationRenderTarget = [NuoRenderTarget new];
-    _notationRenderTarget.device = self.metalLayer.device;
-    _notationRenderTarget.sampleCount = 1;
-    _notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
-    
-    _notationRenderer = [[NuoNotationRenderer alloc] initWithDevice:self.metalLayer.device];
-    _notationRenderer.manageTargetTexture = NO;
-    
     _commandQueue = [self.metalLayer.device newCommandQueue];
     
     [self setWantsLayer:YES];
@@ -133,8 +119,12 @@
 
     self.metalLayer.drawableSize = drawableSize;
     
-    [_modelRenderTarget setDrawableSize:drawableSize];
-    [_notationRenderTarget setDrawableSize:drawableSize];
+    for (size_t i = 0; i < [_renderPasses count]; ++i)
+    {
+        NuoRenderPass* render = _renderPasses[i];
+        NuoRenderPassTarget* target = render.renderTarget;
+        [target setDrawableSize:drawableSize];
+    }
     
     [self render];
 }
@@ -163,14 +153,34 @@
     _currentDrawable = [self.metalLayer nextDrawable];
     if (!_currentDrawable)
         return;
-
-    [_notationRenderer setSourceTexture:_modelRenderTarget.targetTexture];
-    [_notationRenderTarget setTargetTexture:[_currentDrawable texture]];
     
+    for (size_t i = 0; i < [_renderPasses count]; ++i)
+    {
+        NuoRenderPass* render1 = [_renderPasses objectAtIndex:i];
+        NuoRenderPass* render2 = nil;
+        
+        if (i < [_renderPasses count] - 1)
+            render2 = [_renderPasses objectAtIndex:i + 1];
+        
+        if (render2)
+        {
+            NuoRenderPassTarget* interResult = render1.renderTarget;
+            [render2 setSourceTexture:interResult.targetTexture];
+        }
+        else
+        {
+            NuoRenderPassTarget* finalResult = render1.renderTarget;
+            [finalResult setTargetTexture:[_currentDrawable texture]];
+        }
+    }
+
     id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
     
-    [self.delegate drawToTarget:_modelRenderTarget withCommandBuffer:commandBuffer];
-    [self.notationRenderer drawToTarget:_notationRenderTarget withCommandBuffer:commandBuffer];
+    for (size_t i = 0; i < [_renderPasses count]; ++i)
+    {
+        NuoRenderPass* render = [_renderPasses objectAtIndex:i];
+        [render drawWithCommandBuffer:commandBuffer];
+    }
     
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
         [_currentDrawable present];

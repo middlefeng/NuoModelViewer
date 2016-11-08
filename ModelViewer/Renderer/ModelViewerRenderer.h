@@ -1,4 +1,6 @@
+
 #import "ModelView.h"
+#import "NuoRenderPass.h"
 
 
 
@@ -6,7 +8,7 @@
 
 
 
-@interface ModelRenderer : NSObject <NuoMetalViewDelegate>
+@interface ModelRenderer : NuoRenderPass
 
 
 @property (nonatomic, assign) float zoom;

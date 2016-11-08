@@ -2,36 +2,24 @@
 #import <Metal/Metal.h>
 #import <Quartz/Quartz.h>
 
-@protocol NuoMetalViewDelegate;
-@class NuoRenderTarget;
-@class NuoNotationRenderer;
+@class NuoRenderPassTarget;
+@class NuoRenderPass;
 
 
 
 @interface NuoMetalView : NSView
 
 /**
- *  The delegate of this view, responsible for maintain the model/scene state,
- *  and the rendering
+ *  The passes of the view's rendering, responsible for maintain the model/scene state,
+ *  and the rendering.
  */
-@property (nonatomic, weak) id<NuoMetalViewDelegate> delegate;
-
-/**
- *  The renderer for the overlay notations. Overlay notations are UI elements rendered
- *  as 3D objects, but not interfere with the original scene depth.
- */
-@property (nonatomic, strong) NuoNotationRenderer* notationRenderer;
-
-
+@property (nonatomic, weak) NSArray<NuoRenderPass*>* renderPasses;
 
 @property (nonatomic) NSInteger preferredFramesPerSecond;
 
 @property (nonatomic) MTLPixelFormat colorPixelFormat;
 
 @property (nonatomic, readonly) id<CAMetalDrawable> currentDrawable;
-
-@property (nonatomic, readonly) NuoRenderTarget* modelRenderTarget;
-@property (nonatomic, readonly) NuoRenderTarget* notationRenderTarget;
 
 @property (strong) id<MTLTexture> debugTexture;
 
@@ -50,10 +38,3 @@
 
 @end
 
-
-
-@protocol NuoMetalViewDelegate <NSObject>
-
-- (void)drawToTarget:(NuoRenderTarget *)target withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
-
-@end

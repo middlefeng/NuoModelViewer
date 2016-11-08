@@ -6,11 +6,11 @@
 //  Copyright © 2016 middleware. All rights reserved.
 //
 
-#import "NuoRenderTarget.h"
+#import "NuoRenderPassTarget.h"
 
 
 
-@interface NuoRenderTarget()
+@interface NuoRenderPassTarget()
 
 @property (nonatomic, strong) id<MTLTexture> sampleTexture;
 @property (nonatomic, strong) id<MTLTexture> depthTexture;
@@ -20,7 +20,7 @@
 
 
 
-@implementation NuoRenderTarget
+@implementation NuoRenderPassTarget
 
 
 - (void)setDrawableSize:(CGSize)drawableSize

@@ -7,8 +7,10 @@
 //
 
 #import "ModelView.h"
-#import "ModelViewerRenderer.h"
 #import "ModelOperationPanel.h"
+
+#import "ModelViewerRenderer.h"
+#import "NuoIntermediateRenderPass.h" // TODO: should be a subclass
 
 #include "NuoMeshOptions.h"
 
@@ -23,7 +25,10 @@
 
 @implementation ModelView
 {
-    ModelRenderer* _render;
+    ModelRenderer* _modelRender;
+    NuoIntermediateRenderPass* _notationRender;
+    NSArray<NuoRenderPass*>* _renders;
+    
     ModelOperationPanel* _panel;
 }
 
@@ -70,15 +75,15 @@
     [options setTextureEmbeddingMaterialTransparency:[panel textureEmbeddingMaterialTransparency]];
     [options setCombineShapes:[panel combineShapes]];
     
-    [_render setModelOptions:options];
+    [_modelRender setModelOptions:options];
     [self render];
 }
 
 
 - (void)modelOptionUpdate:(ModelOperationPanel *)panel
 {
-    [_render setCullEnabled:[panel cullEnabled]];
-    [_render setFieldOfView:[panel fieldOfViewRadian]];
+    [_modelRender setCullEnabled:[panel cullEnabled]];
+    [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
     [self render];
 }
 
@@ -111,8 +116,28 @@
 - (void)commonInit
 {
     [super commonInit];
-    _render = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
-    self.delegate = _render;
+    
+    _modelRender = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
+    _notationRender = [[NuoIntermediateRenderPass alloc] initWithDevice:self.metalLayer.device];
+    _renders = [[NSArray alloc] initWithObjects:_modelRender, _notationRender, nil];
+    
+    NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
+    modelRenderTarget.device = self.metalLayer.device;
+    modelRenderTarget.sampleCount = sSampleCount;
+    modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+    modelRenderTarget.manageTargetTexture = YES;
+    
+    [_modelRender setRenderTarget:modelRenderTarget];
+    
+    NuoRenderPassTarget* notationRenderTarget = [NuoRenderPassTarget new];
+    notationRenderTarget.device = self.metalLayer.device;
+    notationRenderTarget.sampleCount = 1;
+    notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+    notationRenderTarget.manageTargetTexture = NO;
+    
+    [_notationRender setRenderTarget:notationRenderTarget];
+    
+    self.renderPasses = _renders;
     
     [self registerForDraggedTypes:@[@"public.data"]];
 }
@@ -120,18 +145,15 @@
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-    ModelRenderer* renderer = (ModelRenderer*)_render;
-    
-    renderer.rotationXDelta = -0.01 * M_PI * theEvent.deltaY;
-    renderer.rotationYDelta = -0.01 * M_PI * theEvent.deltaX;
+    _modelRender.rotationXDelta = -0.01 * M_PI * theEvent.deltaY;
+    _modelRender.rotationYDelta = -0.01 * M_PI * theEvent.deltaX;
     [self render];
 }
 
 
 - (void)magnifyWithEvent:(NSEvent *)event
 {
-    ModelRenderer* renderer = (ModelRenderer*)_render;
-    renderer.zoom += 10 * event.magnification;
+    _modelRender.zoom += 10 * event.magnification;
     [self render];
 }
 
@@ -139,9 +161,8 @@
 
 - (void)scrollWheel:(NSEvent *)event
 {
-    ModelRenderer* renderer = (ModelRenderer*)_render;
-    renderer.transX -= event.deltaX;
-    renderer.transY += event.deltaY;
+    _modelRender.transX -= event.deltaX;
+    _modelRender.transY += event.deltaY;
     [self render];
 }
 
@@ -187,8 +208,6 @@
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender
 {
-    ModelRenderer* renderer = (ModelRenderer*)_render;
-    
     NSPasteboard* paste = [sender draggingPasteboard];
     NSArray *draggedFilePaths = [paste propertyListForType:NSFilenamesPboardType];
     NSString* path = draggedFilePaths[0];
@@ -204,7 +223,7 @@
         path = [path stringByAppendingPathComponent:name];
     }
     
-    [renderer loadMesh:path];
+    [_modelRender loadMesh:path];
     [self render];
     return YES;
 }
@@ -219,7 +238,7 @@
                 if (result == NSFileHandlingPanelOKButton)
                 {
                     NSString* path = openPanel.URL.path;
-                    [_render loadMesh:path];
+                    [_modelRender loadMesh:path];
                     [self render];
                 }
             }];

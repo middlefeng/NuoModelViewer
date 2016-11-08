@@ -6,11 +6,11 @@
 //  Copyright © 2016 middleware. All rights reserved.
 //
 
-#import "NuoNotationRenderer.h"
+#import "NuoIntermediateRenderPass.h"
 #import "NuoTextureMesh.h"
 
 
-@interface NuoNotationRenderer()
+@interface NuoIntermediateRenderPass()
 
 @property (nonatomic, strong) NuoTextureMesh* textureMesh;
 
@@ -19,7 +19,7 @@
 
 
 
-@implementation NuoNotationRenderer
+@implementation NuoIntermediateRenderPass
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
@@ -36,11 +36,11 @@
 }
 
 
-- (void)drawToTarget:(NuoRenderTarget *)target withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
-    [_textureMesh setModelTexture:_sourceTexture];
+    [_textureMesh setModelTexture:self.sourceTexture];
     
-    MTLRenderPassDescriptor *renderPassDesc = [target currentRenderPassDescriptor];
+    MTLRenderPassDescriptor *renderPassDesc = [self.renderTarget currentRenderPassDescriptor];
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDesc];
     [_textureMesh drawMesh:renderPass];
     

@@ -10,12 +10,15 @@
 #import <Metal/Metal.h>
 
 #import "NuoMetalView.h"
-#import "NuoRenderTarget.h"
+#import "NuoRenderPass.h"
 
+/**
+ *  an intermeidate render pass takes the result from its immediate previous
+ *  pass, draw it on the background, and leave its subclass draw method to
+ *  add additional objects
+ */
 
-@interface NuoNotationRenderer : NuoRenderTarget <NuoMetalViewDelegate>
-
-@property (nonatomic, weak) id<MTLTexture> sourceTexture;
+@interface NuoIntermediateRenderPass : NuoRenderPass
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 

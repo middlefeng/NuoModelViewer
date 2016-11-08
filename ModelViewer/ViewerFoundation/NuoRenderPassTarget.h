@@ -12,14 +12,23 @@
 
 
 
-@interface NuoRenderTarget : NSObject
+@interface NuoRenderPassTarget : NSObject
 
 
 @property (nonatomic, weak) id<MTLDevice> device;
 
 @property (nonatomic, assign) uint sampleCount;
 @property (nonatomic, assign) CGSize drawableSize;
+
+/**
+ *  the texture that holds the rendered pixels of the current pass
+ */
 @property (nonatomic, strong) id<MTLTexture> targetTexture;
+
+/**
+ *  whether the target texture is managed by the render-pass itself
+ *  or by external (e.g. the drawable of a Metal view)
+ */
 @property (nonatomic, assign) BOOL manageTargetTexture;
 
 @property (nonatomic, assign) MTLClearColor clearColor;

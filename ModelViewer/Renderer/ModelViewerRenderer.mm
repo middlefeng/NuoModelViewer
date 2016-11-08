@@ -7,7 +7,7 @@
 
 #include "NuoTypes.h"
 #include "NuoMesh.h"
-#include "NuoRenderTarget.h"
+#include "NuoRenderPassTarget.h"
 #include "NuoMathUtilities.h"
 #include "NuoModelBase.h"
 #include "NuoModelLoader.h"
@@ -16,7 +16,6 @@
 
 @interface ModelRenderer ()
 
-@property (strong) id<MTLDevice> device;
 @property (strong) NSArray<NuoMesh*>* mesh;
 @property (strong) NSArray<id<MTLBuffer>>* uniformBuffers;
 @property (strong) id<MTLRenderPipelineState> renderPipelineState;
@@ -35,7 +34,7 @@
 {
     if ((self = [super init]))
     {
-        _device = device;
+        self.device = device;
         
         [self makeResources];
         
@@ -56,7 +55,7 @@
     [_modelLoader loadModel:path];
     
     _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
-                                      withDevice:_device];
+                                      withDevice:self.device];
 }
 
 
@@ -67,7 +66,7 @@
     if (_modelLoader)
     {
         _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
-                                          withDevice:_device];
+                                          withDevice:self.device];
     }
 }
 
@@ -87,7 +86,7 @@
     _uniformBuffers = [[NSArray alloc] initWithObjects:buffers[0], buffers[1], buffers[2], nil];
 }
 
-- (void)updateUniformsForView:(NuoRenderTarget*)target
+- (void)updateUniformsForView:(NuoRenderPassTarget*)target
 {
     {
         float scaleFactor = 1;
@@ -149,13 +148,13 @@
     memcpy([self.uniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
 
-- (void)drawToTarget:(NuoRenderTarget *)target withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
-    MTLRenderPassDescriptor *passDescriptor = [target currentRenderPassDescriptor];
+    MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
     if (!passDescriptor)
         return;
     
-    [self updateUniformsForView:target];
+    [self updateUniformsForView:self.renderTarget];
 
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     
