@@ -35,11 +35,11 @@ static const NSInteger InFlightBufferCount = 3;
 
 @implementation ModelRenderer
 
-- (instancetype)init
+- (instancetype)initWithDevice:(id<MTLDevice>)device
 {
     if ((self = [super init]))
     {
-        _device = MTLCreateSystemDefaultDevice();
+        _device = device;
         _displaySemaphore = dispatch_semaphore_create(InFlightBufferCount);
         _commandQueue = [self.device newCommandQueue];
         [self makeResources];
@@ -140,7 +140,7 @@ static const NSInteger InFlightBufferCount = 3;
 
     const matrix_float4x4 viewMatrix = matrix_float4x4_translation(cameraTranslation);
     
-    NuoRenderTarget* renderTarget = viewBase.renderTarget;
+    NuoRenderTarget* renderTarget = viewBase.modelRenderTarget;
 
     const CGSize drawableSize = renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
@@ -158,7 +158,7 @@ static const NSInteger InFlightBufferCount = 3;
 
 - (void)drawInView:(NuoMetalView *)view
 {
-    MTLRenderPassDescriptor *passDescriptor = [view.renderTarget currentRenderPassDescriptor];
+    MTLRenderPassDescriptor *passDescriptor = [view.modelRenderTarget currentRenderPassDescriptor];
     if (!passDescriptor)
         return;
     
@@ -188,27 +188,14 @@ static const NSInteger InFlightBufferCount = 3;
     
     [renderPass endEncoding];
     
-    NuoTextureMesh* texture = [[NuoTextureMesh alloc] initWithDevice:self.device withTexture:view.renderTarget.targetTexture];
+    NuoTextureMesh* texture = [[NuoTextureMesh alloc] initWithDevice:self.device withTexture:view.modelRenderTarget.targetTexture];
     [texture makePipelineAndSampler];
     
-    MTLRenderPassDescriptor *debugPassDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+    MTLRenderPassDescriptor *notationPassDescriptor = [view.notationRenderTarget currentRenderPassDescriptor];
+    id<MTLRenderCommandEncoder> notationRenderPass = [commandBuffer renderCommandEncoderWithDescriptor:notationPassDescriptor];
+    [texture drawMesh:notationRenderPass];
     
-    id<CAMetalDrawable> nextDrawable = view.currentDrawable;
-    if (!nextDrawable)
-        return;
-    
-    debugPassDescriptor.colorAttachments[0].texture = [nextDrawable texture];
-    debugPassDescriptor.colorAttachments[0].clearColor = view.renderTarget.clearColor;
-    debugPassDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
-    debugPassDescriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
-    debugPassDescriptor.depthAttachment.clearDepth = 1.0;
-    debugPassDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
-    debugPassDescriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
-    
-    id<MTLRenderCommandEncoder> debugRenderPass = [commandBuffer renderCommandEncoderWithDescriptor:debugPassDescriptor];
-    [texture drawMesh:debugRenderPass];
-    
-    [debugRenderPass endEncoding];
+    [notationRenderPass endEncoding];
     
 
     [commandBuffer presentDrawable:view.currentDrawable];

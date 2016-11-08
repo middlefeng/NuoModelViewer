@@ -111,7 +111,7 @@
 - (void)commonInit
 {
     [super commonInit];
-    _render = [[ModelRenderer alloc] init];
+    _render = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
     self.delegate = _render;
     
     [self registerForDraggedTypes:@[@"public.data"]];

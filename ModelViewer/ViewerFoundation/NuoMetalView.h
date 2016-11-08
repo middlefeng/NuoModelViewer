@@ -4,6 +4,7 @@
 
 @protocol NuoMetalViewDelegate;
 @class NuoRenderTarget;
+@class NuoNotationRenderer;
 
 
 
@@ -15,13 +16,22 @@
  */
 @property (nonatomic, weak) id<NuoMetalViewDelegate> delegate;
 
+/**
+ *  The renderer for the overlay notations. Overlay notations are UI elements rendered
+ *  as 3D objects, but not interfere with the original scene depth.
+ */
+@property (nonatomic, weak) NuoNotationRenderer* notationRenderer;
+
+
+
 @property (nonatomic) NSInteger preferredFramesPerSecond;
 
 @property (nonatomic) MTLPixelFormat colorPixelFormat;
 
 @property (nonatomic, readonly) id<CAMetalDrawable> currentDrawable;
 
-@property (nonatomic, readonly) NuoRenderTarget* renderTarget;
+@property (nonatomic, readonly) NuoRenderTarget* modelRenderTarget;
+@property (nonatomic, readonly) NuoRenderTarget* notationRenderTarget;
 
 @property (strong) id<MTLTexture> debugTexture;
 

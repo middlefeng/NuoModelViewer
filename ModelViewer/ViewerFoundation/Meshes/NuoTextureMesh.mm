@@ -55,7 +55,7 @@
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_texutre"];
     pipelineDescriptor.sampleCount = 1;
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
-    pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
+    pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];
     vertexDescriptor.attributes[0].format = MTLVertexFormatFloat4;

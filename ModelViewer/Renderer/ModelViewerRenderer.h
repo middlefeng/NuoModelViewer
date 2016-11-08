@@ -24,7 +24,7 @@
 @property (nonatomic, strong) NuoMeshOption* modelOptions;
 
 
-- (instancetype)init;
+- (instancetype)initWithDevice:(id<MTLDevice>)device;
 
 
 - (void)loadMesh:(NSString*)path;

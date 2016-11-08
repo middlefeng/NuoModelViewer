@@ -34,7 +34,7 @@
 - (void)awakeFromNib
 {
     [self setWantsLayer:YES];
-    
+
     self.metalLayer.device = MTLCreateSystemDefaultDevice();
     
     [self commonInit];
@@ -69,10 +69,16 @@
 - (void)commonInit
 {
     _preferredFramesPerSecond = 60;
-    _renderTarget = [NuoRenderTarget new];
-    _renderTarget.device = self.metalLayer.device;
-    _renderTarget.sampleCount = sSampleCount;
-    _renderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+    
+    _modelRenderTarget = [NuoRenderTarget new];
+    _modelRenderTarget.device = self.metalLayer.device;
+    _modelRenderTarget.sampleCount = sSampleCount;
+    _modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+    
+    _notationRenderTarget = [NuoRenderTarget new];
+    _notationRenderTarget.device = self.metalLayer.device;
+    _notationRenderTarget.sampleCount = 1;
+    _notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
     
     [self setWantsLayer:YES];
     self.metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
@@ -121,12 +127,11 @@
 
     self.metalLayer.drawableSize = drawableSize;
     
-    [_renderTarget setDrawableSize:drawableSize];
-    [_renderTarget makeTextures];
+    [_modelRenderTarget setDrawableSize:drawableSize];
+    [_modelRenderTarget makeTextures];
     
-    
-    if ([_renderTarget.targetTexture width] != drawableSize.width ||
-        [_renderTarget.targetTexture height] != drawableSize.height)
+    if ([_modelRenderTarget.targetTexture width] != drawableSize.width ||
+        [_modelRenderTarget.targetTexture height] != drawableSize.height)
     {
         MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                                               width:drawableSize.width
@@ -137,8 +142,11 @@
         sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
         sampleDesc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
         
-        _renderTarget.targetTexture = [self.metalLayer.device newTextureWithDescriptor:sampleDesc];
+        _modelRenderTarget.targetTexture = [self.metalLayer.device newTextureWithDescriptor:sampleDesc];
     }
+    
+    [_notationRenderTarget setDrawableSize:drawableSize];
+    [_notationRenderTarget makeTextures];
     
     [self render];
 }
@@ -166,7 +174,7 @@
     if (!_currentDrawable)
         return;
 
-    //_renderTarget.targetTexture = [_currentDrawable texture];
+    [_notationRenderTarget setTargetTexture:[_currentDrawable texture]];
     
     [self.delegate drawInView:self];
 }
