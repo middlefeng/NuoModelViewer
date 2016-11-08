@@ -182,11 +182,12 @@
         [render drawWithCommandBuffer:commandBuffer];
     }
     
-    [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
-        [_currentDrawable present];
+    [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer)
+     {
         dispatch_semaphore_signal(self.displaySemaphore);
-    }];
+     }];
     
+    [commandBuffer presentDrawable:_currentDrawable];
     [commandBuffer commit];
 }
 
