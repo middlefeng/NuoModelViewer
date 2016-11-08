@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2C1B28081D95FF17009F5912 /* NuoTextureBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C1B28061D95FF17009F5912 /* NuoTextureBase.m */; };
+		2C2A58B01DD1457200E9F9BC /* NuoRenderTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2A58AF1DD1457200E9F9BC /* NuoRenderTarget.m */; };
 		2C3D9A9C1D7DF5C3002C1226 /* NuoModelTextured.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9A1D7DF5C3002C1226 /* NuoModelTextured.cpp */; };
 		2C3D9A9E1D7DFC43002C1226 /* ShadersTextured.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9D1D7DFC43002C1226 /* ShadersTextured.metal */; };
 		2C3D9AA11D7E344F002C1226 /* NuoTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9F1D7E344F002C1226 /* NuoTypes.cpp */; };
@@ -40,6 +41,8 @@
 /* Begin PBXFileReference section */
 		2C1B28061D95FF17009F5912 /* NuoTextureBase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoTextureBase.m; sourceTree = "<group>"; };
 		2C1B28071D95FF17009F5912 /* NuoTextureBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoTextureBase.h; sourceTree = "<group>"; };
+		2C2A58AE1DD1457200E9F9BC /* NuoRenderTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRenderTarget.h; sourceTree = "<group>"; };
+		2C2A58AF1DD1457200E9F9BC /* NuoRenderTarget.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoRenderTarget.m; sourceTree = "<group>"; };
 		2C3D9A9A1D7DF5C3002C1226 /* NuoModelTextured.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoModelTextured.cpp; sourceTree = "<group>"; };
 		2C3D9A9B1D7DF5C3002C1226 /* NuoModelTextured.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoModelTextured.h; sourceTree = "<group>"; };
 		2C3D9A9D1D7DFC43002C1226 /* ShadersTextured.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ShadersTextured.metal; sourceTree = "<group>"; };
@@ -183,6 +186,8 @@
 		2C840D0B1D7001A5000D2956 /* ViewerFoundation */ = {
 			isa = PBXGroup;
 			children = (
+				2C2A58AE1DD1457200E9F9BC /* NuoRenderTarget.h */,
+				2C2A58AF1DD1457200E9F9BC /* NuoRenderTarget.m */,
 				2C840D0C1D7001C2000D2956 /* NuoMetalView.h */,
 				2C840D0D1D7001C2000D2956 /* NuoMetalView.m */,
 				2CC5EDEC1D8A62B100419168 /* NuoRoundedView.h */,
@@ -306,6 +311,7 @@
 				2C1B28081D95FF17009F5912 /* NuoTextureBase.m in Sources */,
 				2C9D9AAD1D658F0800283E46 /* main.m in Sources */,
 				2CC5EDEE1D8A62B100419168 /* NuoRoundedView.m in Sources */,
+				2C2A58B01DD1457200E9F9BC /* NuoRenderTarget.m in Sources */,
 				98DA56611D80EF8C006D0D9C /* ShadersMaterialed.metal in Sources */,
 				2C5B92B71D7157EA00722936 /* ModelView.m in Sources */,
 				2C5DDADD1D6594FD00A9DC9A /* Shaders.metal in Sources */,

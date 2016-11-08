@@ -7,6 +7,7 @@
 
 #include "NuoTypes.h"
 #include "NuoMesh.h"
+#include "NuoRenderTarget.h"
 #include "NuoMathUtilities.h"
 #include "NuoModelBase.h"
 #include "NuoModelLoader.h"
@@ -93,8 +94,6 @@ static const NSInteger InFlightBufferCount = 3;
 
 - (void)updateUniformsForView:(NuoMetalView *)viewBase
 {
-    ModelView* view = (ModelView*)viewBase;
-    
     {
         float scaleFactor = 1;
         const vector_float3 xAxis = { 1, 0, 0 };
@@ -140,8 +139,10 @@ static const NSInteger InFlightBufferCount = 3;
     };
 
     const matrix_float4x4 viewMatrix = matrix_float4x4_translation(cameraTranslation);
+    
+    NuoRenderTarget* renderTarget = viewBase.renderTarget;
 
-    const CGSize drawableSize = view.drawableSize;
+    const CGSize drawableSize = renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
     const float near = -cameraDistance - modelSpan / 2.0 + 0.01;
     const float far = near + modelSpan + 0.02;
@@ -157,7 +158,7 @@ static const NSInteger InFlightBufferCount = 3;
 
 - (void)drawInView:(NuoMetalView *)view
 {
-    MTLRenderPassDescriptor *passDescriptor = [view currentRenderPassDescriptor];
+    MTLRenderPassDescriptor *passDescriptor = [view.renderTarget currentRenderPassDescriptor];
     if (!passDescriptor)
         return;
     
@@ -187,7 +188,7 @@ static const NSInteger InFlightBufferCount = 3;
     
     [renderPass endEncoding];
     
-    NuoTextureMesh* texture = [[NuoTextureMesh alloc] initWithDevice:self.device withTexture:view.debugTexture];
+    NuoTextureMesh* texture = [[NuoTextureMesh alloc] initWithDevice:self.device withTexture:view.renderTarget.targetTexture];
     [texture makePipelineAndSampler];
     
     MTLRenderPassDescriptor *debugPassDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
@@ -197,7 +198,7 @@ static const NSInteger InFlightBufferCount = 3;
         return;
     
     debugPassDescriptor.colorAttachments[0].texture = [nextDrawable texture];
-    debugPassDescriptor.colorAttachments[0].clearColor = view.clearColor;
+    debugPassDescriptor.colorAttachments[0].clearColor = view.renderTarget.clearColor;
     debugPassDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
     debugPassDescriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
     debugPassDescriptor.depthAttachment.clearDepth = 1.0;

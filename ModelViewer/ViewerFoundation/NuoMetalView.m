@@ -2,12 +2,11 @@
 #import "NuoMetalView.h"
 
 #import "NuoTypes.h"
+#import "NuoRenderTarget.h"
 
 
 @interface NuoMetalView ()
 
-@property (strong) id<MTLTexture> sampleTexture;
-@property (strong) id<MTLTexture> depthTexture;
 @property (nonatomic, readonly) CAMetalLayer *metalLayer;
 
 @end
@@ -35,9 +34,10 @@
 - (void)awakeFromNib
 {
     [self setWantsLayer:YES];
-    [self commonInit];
+    
     self.metalLayer.device = MTLCreateSystemDefaultDevice();
     
+    [self commonInit];
     [self updateDrawableSize];
 }
 
@@ -69,7 +69,10 @@
 - (void)commonInit
 {
     _preferredFramesPerSecond = 60;
-    _clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+    _renderTarget = [NuoRenderTarget new];
+    _renderTarget.device = self.metalLayer.device;
+    _renderTarget.sampleCount = sSampleCount;
+    _renderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
     
     [self setWantsLayer:YES];
     self.metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
@@ -117,8 +120,26 @@
     drawableSize.height *= scale;
 
     self.metalLayer.drawableSize = drawableSize;
-
-    [self makeTextures];
+    
+    [_renderTarget setDrawableSize:drawableSize];
+    [_renderTarget makeTextures];
+    
+    
+    if ([_renderTarget.targetTexture width] != drawableSize.width ||
+        [_renderTarget.targetTexture height] != drawableSize.height)
+    {
+        MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                                              width:drawableSize.width
+                                                                                             height:drawableSize.height
+                                                                                          mipmapped:NO];
+        sampleDesc.sampleCount = 1;
+        sampleDesc.textureType = MTLTextureType2D;
+        sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
+        sampleDesc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
+        
+        _renderTarget.targetTexture = [self.metalLayer.device newTextureWithDescriptor:sampleDesc];
+    }
+    
     [self render];
 }
 
@@ -141,71 +162,14 @@
 
 - (void)render
 {
+    _currentDrawable = [self.metalLayer nextDrawable];
+    if (!_currentDrawable)
+        return;
+
+    //_renderTarget.targetTexture = [_currentDrawable texture];
+    
     [self.delegate drawInView:self];
 }
 
-- (void)makeTextures
-{
-    CGSize drawableSize = self.metalLayer.drawableSize;
-
-    if ([self.depthTexture width] != drawableSize.width ||
-        [self.depthTexture height] != drawableSize.height)
-    {
-        MTLTextureDescriptor *desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float
-                                                                                        width:drawableSize.width
-                                                                                       height:drawableSize.height
-                                                                                    mipmapped:NO];
-        desc.sampleCount = sSampleCount;
-        desc.textureType = (sSampleCount == 1) ? MTLTextureType2D : MTLTextureType2DMultisample;
-        desc.resourceOptions = MTLResourceStorageModePrivate;
-        desc.usage = MTLTextureUsageRenderTarget;
-
-        self.depthTexture = [self.metalLayer.device newTextureWithDescriptor:desc];
-        
-        MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                                              width:drawableSize.width
-                                                                                             height:drawableSize.height
-                                                                                          mipmapped:NO];
-        
-        if (sSampleCount > 1)
-        {
-            sampleDesc.sampleCount = sSampleCount;
-            sampleDesc.textureType = MTLTextureType2DMultisample;
-            sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
-            sampleDesc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
-            
-            self.sampleTexture = [self.metalLayer.device newTextureWithDescriptor:sampleDesc];
-            
-            sampleDesc.sampleCount = 1;
-            sampleDesc.textureType = MTLTextureType2D;
-            
-            self.debugTexture = [self.metalLayer.device newTextureWithDescriptor:sampleDesc];
-        }
-    }
-}
-
-
-- (MTLRenderPassDescriptor *)currentRenderPassDescriptor
-{
-    MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
-    
-    _currentDrawable = [self.metalLayer nextDrawable];
-    if (!_currentDrawable)
-        return nil;
-    
-    passDescriptor.colorAttachments[0].texture = (sSampleCount == 1) ? [_currentDrawable texture] : _sampleTexture;
-    passDescriptor.colorAttachments[0].clearColor = self.clearColor;
-    passDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
-    passDescriptor.colorAttachments[0].storeAction = (sSampleCount == 1) ? MTLStoreActionStore : MTLStoreActionMultisampleResolve;
-    if (sSampleCount > 1)
-        passDescriptor.colorAttachments[0].resolveTexture = self.debugTexture; // [_currentDrawable texture];
-
-    passDescriptor.depthAttachment.texture = self.depthTexture;
-    passDescriptor.depthAttachment.clearDepth = 1.0;
-    passDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
-    passDescriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
-
-    return passDescriptor;
-}
 
 @end

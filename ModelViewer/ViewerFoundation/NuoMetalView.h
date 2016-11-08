@@ -3,6 +3,7 @@
 #import <Quartz/Quartz.h>
 
 @protocol NuoMetalViewDelegate;
+@class NuoRenderTarget;
 
 
 
@@ -17,12 +18,10 @@
 @property (nonatomic) NSInteger preferredFramesPerSecond;
 
 @property (nonatomic) MTLPixelFormat colorPixelFormat;
-@property (nonatomic, assign) MTLClearColor clearColor;
 
 @property (nonatomic, readonly) id<CAMetalDrawable> currentDrawable;
-@property (nonatomic, readonly) MTLRenderPassDescriptor *currentRenderPassDescriptor;
 
-@property (nonatomic, readonly) CGSize drawableSize;
+@property (nonatomic, readonly) NuoRenderTarget* renderTarget;
 
 @property (strong) id<MTLTexture> debugTexture;
 
