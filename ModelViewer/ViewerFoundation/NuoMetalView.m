@@ -8,6 +8,7 @@
 @interface NuoMetalView ()
 
 @property (nonatomic, readonly) CAMetalLayer *metalLayer;
+@property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
 
 @end
 
@@ -79,6 +80,8 @@
     _notationRenderTarget.device = self.metalLayer.device;
     _notationRenderTarget.sampleCount = 1;
     _notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+    
+    _commandQueue = [self.metalLayer.device newCommandQueue];
     
     [self setWantsLayer:YES];
     self.metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
@@ -176,7 +179,12 @@
 
     [_notationRenderTarget setTargetTexture:[_currentDrawable texture]];
     
-    [self.delegate drawInView:self];
+    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
+    
+    [self.delegate drawInView:self withCommandBuffer:commandBuffer];
+    
+    [commandBuffer presentDrawable:_currentDrawable];
+    [commandBuffer commit];
 }
 
 

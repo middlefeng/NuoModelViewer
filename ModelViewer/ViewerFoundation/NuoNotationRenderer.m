@@ -29,7 +29,7 @@
 }
 
 
-- (void)drawInView:(NuoMetalView *)view
+- (void)drawInView:(NuoMetalView *)view withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
     
 }

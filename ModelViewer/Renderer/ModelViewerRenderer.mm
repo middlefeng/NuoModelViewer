@@ -21,7 +21,6 @@ static const NSInteger InFlightBufferCount = 3;
 @property (strong) id<MTLDevice> device;
 @property (strong) NSArray<NuoMesh*>* mesh;
 @property (strong) NSArray<id<MTLBuffer>>* uniformBuffers;
-@property (strong) id<MTLCommandQueue> commandQueue;
 @property (strong) id<MTLRenderPipelineState> renderPipelineState;
 @property (strong) id<MTLDepthStencilState> depthStencilState;
 @property (strong) dispatch_semaphore_t displaySemaphore;
@@ -41,7 +40,7 @@ static const NSInteger InFlightBufferCount = 3;
     {
         _device = device;
         _displaySemaphore = dispatch_semaphore_create(InFlightBufferCount);
-        _commandQueue = [self.device newCommandQueue];
+
         [self makeResources];
         
         _modelOptions = [NuoMeshOption new];
@@ -156,7 +155,7 @@ static const NSInteger InFlightBufferCount = 3;
     memcpy([self.uniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
 
-- (void)drawInView:(NuoMetalView *)view
+- (void)drawInView:(NuoMetalView *)view withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
     MTLRenderPassDescriptor *passDescriptor = [view.modelRenderTarget currentRenderPassDescriptor];
     if (!passDescriptor)
@@ -166,7 +165,6 @@ static const NSInteger InFlightBufferCount = 3;
 
     [self updateUniformsForView:view];
 
-    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     
     [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
@@ -196,15 +194,11 @@ static const NSInteger InFlightBufferCount = 3;
     [texture drawMesh:notationRenderPass];
     
     [notationRenderPass endEncoding];
-    
 
-    [commandBuffer presentDrawable:view.currentDrawable];
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
         self.bufferIndex = (self.bufferIndex + 1) % InFlightBufferCount;
         dispatch_semaphore_signal(self.displaySemaphore);
     }];
-    
-    [commandBuffer commit];
 }
 
 @end
