@@ -10,6 +10,7 @@
 
 @property (nonatomic, readonly) CAMetalLayer *metalLayer;
 @property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
+@property (strong) dispatch_semaphore_t displaySemaphore;
 
 @end
 
@@ -48,6 +49,7 @@
 {
     if ((self = [super initWithCoder:aDecoder]))
     {
+        _displaySemaphore = dispatch_semaphore_create(InFlightBufferCount);
     }
 
     return self;
@@ -172,6 +174,8 @@
 
 - (void)render
 {
+    dispatch_semaphore_wait(self.displaySemaphore, DISPATCH_TIME_FOREVER);
+    
     _currentDrawable = [self.metalLayer nextDrawable];
     if (!_currentDrawable)
         return;
@@ -184,7 +188,11 @@
     [self.delegate drawToTarget:_modelRenderTarget withCommandBuffer:commandBuffer];
     [self.notationRenderer drawToTarget:_notationRenderTarget withCommandBuffer:commandBuffer];
     
-    [commandBuffer presentDrawable:_currentDrawable];
+    [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
+        [_currentDrawable present];
+        dispatch_semaphore_signal(self.displaySemaphore);
+    }];
+    
     [commandBuffer commit];
 }
 

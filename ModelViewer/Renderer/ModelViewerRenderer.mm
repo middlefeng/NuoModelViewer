@@ -14,8 +14,6 @@
 
 #include "NuoTextureMesh.h"
 
-static const NSInteger InFlightBufferCount = 3;
-
 @interface ModelRenderer ()
 
 @property (strong) id<MTLDevice> device;
@@ -23,7 +21,6 @@ static const NSInteger InFlightBufferCount = 3;
 @property (strong) NSArray<id<MTLBuffer>>* uniformBuffers;
 @property (strong) id<MTLRenderPipelineState> renderPipelineState;
 @property (strong) id<MTLDepthStencilState> depthStencilState;
-@property (strong) dispatch_semaphore_t displaySemaphore;
 @property (assign) NSInteger bufferIndex;
 
 @property (strong) NuoModelLoader* modelLoader;
@@ -39,8 +36,7 @@ static const NSInteger InFlightBufferCount = 3;
     if ((self = [super init]))
     {
         _device = device;
-        _displaySemaphore = dispatch_semaphore_create(InFlightBufferCount);
-
+        
         [self makeResources];
         
         _modelOptions = [NuoMeshOption new];
@@ -159,8 +155,6 @@ static const NSInteger InFlightBufferCount = 3;
     if (!passDescriptor)
         return;
     
-    dispatch_semaphore_wait(self.displaySemaphore, DISPATCH_TIME_FOREVER);
-
     [self updateUniformsForView:target];
 
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
@@ -186,7 +180,6 @@ static const NSInteger InFlightBufferCount = 3;
     
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
         self.bufferIndex = (self.bufferIndex + 1) % InFlightBufferCount;
-        dispatch_semaphore_signal(self.displaySemaphore);
     }];
 }
 

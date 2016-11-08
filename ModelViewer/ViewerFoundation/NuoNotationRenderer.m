@@ -29,6 +29,7 @@
     {
         self.device = device;
         _textureMesh = [[NuoTextureMesh alloc] initWithDevice:device];
+        [_textureMesh makePipelineAndSampler];
     }
     
     return self;
@@ -38,7 +39,6 @@
 - (void)drawToTarget:(NuoRenderTarget *)target withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
     [_textureMesh setModelTexture:_sourceTexture];
-    [_textureMesh makePipelineAndSampler];
     
     MTLRenderPassDescriptor *renderPassDesc = [target currentRenderPassDescriptor];
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDesc];

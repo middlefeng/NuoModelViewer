@@ -10,3 +10,4 @@
 
 
 const unsigned int sSampleCount {8};
+const unsigned int InFlightBufferCount = 3;
