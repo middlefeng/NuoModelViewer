@@ -1,7 +1,6 @@
 
 #import <Metal/Metal.h>
 
-#include <memory>
 #include "NuoMeshOptions.h"
 
 
@@ -52,6 +51,9 @@
 @end
 
 
+#if __cplusplus
+
+#include <memory>
 
 
 class NuoModelBase;
@@ -60,5 +62,7 @@ class NuoModelOption;
 NuoMesh* CreateMesh(const NuoModelOption& options,
                     id<MTLDevice> device,
                     const std::shared_ptr<NuoModelBase> model);
+
+#endif
 
 

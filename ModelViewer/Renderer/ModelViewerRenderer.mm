@@ -91,7 +91,7 @@ static const NSInteger InFlightBufferCount = 3;
     _uniformBuffers = [[NSArray alloc] initWithObjects:buffers[0], buffers[1], buffers[2], nil];
 }
 
-- (void)updateUniformsForView:(NuoMetalView *)viewBase
+- (void)updateUniformsForView:(NuoRenderTarget*)target
 {
     {
         float scaleFactor = 1;
@@ -139,9 +139,7 @@ static const NSInteger InFlightBufferCount = 3;
 
     const matrix_float4x4 viewMatrix = matrix_float4x4_translation(cameraTranslation);
     
-    NuoRenderTarget* renderTarget = viewBase.modelRenderTarget;
-
-    const CGSize drawableSize = renderTarget.drawableSize;
+    const CGSize drawableSize = target.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
     const float near = -cameraDistance - modelSpan / 2.0 + 0.01;
     const float far = near + modelSpan + 0.02;
@@ -155,15 +153,15 @@ static const NSInteger InFlightBufferCount = 3;
     memcpy([self.uniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
 
-- (void)drawInView:(NuoMetalView *)view withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)drawToTarget:(NuoRenderTarget *)target withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
-    MTLRenderPassDescriptor *passDescriptor = [view.modelRenderTarget currentRenderPassDescriptor];
+    MTLRenderPassDescriptor *passDescriptor = [target currentRenderPassDescriptor];
     if (!passDescriptor)
         return;
     
     dispatch_semaphore_wait(self.displaySemaphore, DISPATCH_TIME_FOREVER);
 
-    [self updateUniformsForView:view];
+    [self updateUniformsForView:target];
 
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     
@@ -186,15 +184,6 @@ static const NSInteger InFlightBufferCount = 3;
     
     [renderPass endEncoding];
     
-    NuoTextureMesh* texture = [[NuoTextureMesh alloc] initWithDevice:self.device withTexture:view.modelRenderTarget.targetTexture];
-    [texture makePipelineAndSampler];
-    
-    MTLRenderPassDescriptor *notationPassDescriptor = [view.notationRenderTarget currentRenderPassDescriptor];
-    id<MTLRenderCommandEncoder> notationRenderPass = [commandBuffer renderCommandEncoderWithDescriptor:notationPassDescriptor];
-    [texture drawMesh:notationRenderPass];
-    
-    [notationRenderPass endEncoding];
-
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
         self.bufferIndex = (self.bufferIndex + 1) % InFlightBufferCount;
         dispatch_semaphore_signal(self.displaySemaphore);

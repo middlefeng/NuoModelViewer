@@ -15,7 +15,8 @@
 
 @interface NuoNotationRenderer : NuoRenderTarget <NuoMetalViewDelegate>
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-              withDrawableSize:(CGSize)drawableSize;
+@property (nonatomic, weak) id<MTLTexture> sourceTexture;
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device;
 
 @end

@@ -11,8 +11,11 @@
 
 @interface NuoTextureMesh : NuoMesh
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-                   withTexture:(id<MTLTexture>)texture;
+
+@property (nonatomic, weak) id<MTLTexture> modelTexture;
+
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device;
 
 - (void)makePipelineAndSampler;
 

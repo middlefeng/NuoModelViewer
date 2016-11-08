@@ -3,6 +3,7 @@
 
 #import "NuoTypes.h"
 #import "NuoRenderTarget.h"
+#import "NuoNotationRenderer.h"
 
 
 @interface NuoMetalView ()
@@ -11,10 +12,6 @@
 @property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
 
 @end
-
-
-
-
 
 
 
@@ -80,6 +77,8 @@
     _notationRenderTarget.device = self.metalLayer.device;
     _notationRenderTarget.sampleCount = 1;
     _notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+    
+    _notationRenderer = [[NuoNotationRenderer alloc] initWithDevice:self.metalLayer.device];
     
     _commandQueue = [self.metalLayer.device newCommandQueue];
     
@@ -177,11 +176,13 @@
     if (!_currentDrawable)
         return;
 
+    [_notationRenderer setSourceTexture:_modelRenderTarget.targetTexture];
     [_notationRenderTarget setTargetTexture:[_currentDrawable texture]];
     
     id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
     
-    [self.delegate drawInView:self withCommandBuffer:commandBuffer];
+    [self.delegate drawToTarget:_modelRenderTarget withCommandBuffer:commandBuffer];
+    [self.notationRenderer drawToTarget:_notationRenderTarget withCommandBuffer:commandBuffer];
     
     [commandBuffer presentDrawable:_currentDrawable];
     [commandBuffer commit];

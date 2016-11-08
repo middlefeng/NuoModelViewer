@@ -7,8 +7,14 @@
 //
 
 #import "NuoNotationRenderer.h"
+#import "NuoTextureMesh.h"
 
 
+@interface NuoNotationRenderer()
+
+@property (nonatomic, strong) NuoTextureMesh* textureMesh;
+
+@end
 
 
 
@@ -16,22 +22,29 @@
 @implementation NuoNotationRenderer
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device withDrawableSize:(CGSize)drawableSize
+- (instancetype)initWithDevice:(id<MTLDevice>)device
 {
     self = [super init];
     if (self)
     {
         self.device = device;
-        self.drawableSize = drawableSize;
+        _textureMesh = [[NuoTextureMesh alloc] initWithDevice:device];
     }
     
     return self;
 }
 
 
-- (void)drawInView:(NuoMetalView *)view withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)drawToTarget:(NuoRenderTarget *)target withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
+    [_textureMesh setModelTexture:_sourceTexture];
+    [_textureMesh makePipelineAndSampler];
     
+    MTLRenderPassDescriptor *renderPassDesc = [target currentRenderPassDescriptor];
+    id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDesc];
+    [_textureMesh drawMesh:renderPass];
+    
+    [renderPass endEncoding];
 }
 
 

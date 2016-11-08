@@ -11,13 +11,11 @@
 
 @implementation NuoTextureMesh
 {
-    id<MTLTexture> _texture;
     id<MTLSamplerState> _samplerState;
 }
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
-                   withTexture:(id<MTLTexture>)texture
 {
     float vertices[] =
     {
@@ -39,7 +37,6 @@
     
     if (self)
     {
-        _texture = texture;
     }
     
     return self;
@@ -89,7 +86,7 @@
     [renderPass setRenderPipelineState:self.renderPipelineState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setFragmentTexture:_texture atIndex:0];
+    [renderPass setFragmentTexture:_modelTexture atIndex:0];
     [renderPass setFragmentSamplerState:_samplerState atIndex:0];
     
     [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle

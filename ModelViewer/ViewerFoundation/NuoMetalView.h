@@ -20,7 +20,7 @@
  *  The renderer for the overlay notations. Overlay notations are UI elements rendered
  *  as 3D objects, but not interfere with the original scene depth.
  */
-@property (nonatomic, weak) NuoNotationRenderer* notationRenderer;
+@property (nonatomic, strong) NuoNotationRenderer* notationRenderer;
 
 
 
@@ -54,6 +54,6 @@
 
 @protocol NuoMetalViewDelegate <NSObject>
 
-- (void)drawInView:(NuoMetalView *)view withCommandBuffer:(id<MTLCommandBuffer>) commandBuffer;
+- (void)drawToTarget:(NuoRenderTarget *)target withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
 
 @end
