@@ -74,6 +74,7 @@
     _modelRenderTarget.device = self.metalLayer.device;
     _modelRenderTarget.sampleCount = sSampleCount;
     _modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+    _modelRenderTarget.manageTargetTexture = YES;
     
     _notationRenderTarget = [NuoRenderTarget new];
     _notationRenderTarget.device = self.metalLayer.device;
@@ -81,6 +82,7 @@
     _notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
     
     _notationRenderer = [[NuoNotationRenderer alloc] initWithDevice:self.metalLayer.device];
+    _notationRenderer.manageTargetTexture = NO;
     
     _commandQueue = [self.metalLayer.device newCommandQueue];
     
@@ -132,25 +134,7 @@
     self.metalLayer.drawableSize = drawableSize;
     
     [_modelRenderTarget setDrawableSize:drawableSize];
-    [_modelRenderTarget makeTextures];
-    
-    if ([_modelRenderTarget.targetTexture width] != drawableSize.width ||
-        [_modelRenderTarget.targetTexture height] != drawableSize.height)
-    {
-        MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                                              width:drawableSize.width
-                                                                                             height:drawableSize.height
-                                                                                          mipmapped:NO];
-        sampleDesc.sampleCount = 1;
-        sampleDesc.textureType = MTLTextureType2D;
-        sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
-        sampleDesc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
-        
-        _modelRenderTarget.targetTexture = [self.metalLayer.device newTextureWithDescriptor:sampleDesc];
-    }
-    
     [_notationRenderTarget setDrawableSize:drawableSize];
-    [_notationRenderTarget makeTextures];
     
     [self render];
 }

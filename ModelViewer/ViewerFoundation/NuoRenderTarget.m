@@ -23,6 +23,14 @@
 @implementation NuoRenderTarget
 
 
+- (void)setDrawableSize:(CGSize)drawableSize
+{
+    _drawableSize = drawableSize;
+    
+    [self makeTextures];
+}
+
+
 - (void)makeTextures
 {
     if ([_depthTexture width] != [self drawableSize].width ||
@@ -52,6 +60,16 @@
             sampleDesc.usage = MTLTextureUsageRenderTarget;
             
             self.sampleTexture = [_device newTextureWithDescriptor:sampleDesc];
+        }
+        
+        if (_manageTargetTexture)
+        {
+            sampleDesc.sampleCount = 1;
+            sampleDesc.textureType = MTLTextureType2D;
+            sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
+            sampleDesc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
+            
+            _targetTexture = [_device newTextureWithDescriptor:sampleDesc];
         }
     }
 }

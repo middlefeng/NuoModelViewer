@@ -15,19 +15,16 @@
 @interface NuoRenderTarget : NSObject
 
 
-@property (nonatomic, assign) uint sampleCount;
 @property (nonatomic, weak) id<MTLDevice> device;
+
+@property (nonatomic, assign) uint sampleCount;
 @property (nonatomic, assign) CGSize drawableSize;
 @property (nonatomic, strong) id<MTLTexture> targetTexture;
-
-@property (strong) id<MTLTexture> debugTexture;
+@property (nonatomic, assign) BOOL manageTargetTexture;
 
 @property (nonatomic, assign) MTLClearColor clearColor;
 
-
 - (void)makeTextures;
 - (MTLRenderPassDescriptor *)currentRenderPassDescriptor;
-
-
 
 @end
