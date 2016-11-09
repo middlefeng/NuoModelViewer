@@ -84,7 +84,7 @@
     _uniformBuffers = [[NSArray alloc] initWithObjects:buffers[0], buffers[1], buffers[2], nil];
 }
 
-- (void)updateUniformsForView:(NuoRenderPassTarget*)target
+- (void)updateUniformsForView
 {
     {
         float scaleFactor = 1;
@@ -132,7 +132,7 @@
 
     const matrix_float4x4 viewMatrix = matrix_float4x4_translation(cameraTranslation);
     
-    const CGSize drawableSize = target.drawableSize;
+    const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
     const float near = -cameraDistance - modelSpan / 2.0 + 0.01;
     const float far = near + modelSpan + 0.02;
@@ -152,7 +152,7 @@
     if (!passDescriptor)
         return;
     
-    [self updateUniformsForView:self.renderTarget];
+    [self updateUniformsForView];
 
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     

@@ -69,6 +69,12 @@
     
     [self makePipelineState:pipelineDescriptor];
     
+    MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
+    depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLess;
+    depthStencilDescriptor.depthWriteEnabled = NO;
+    
+    self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
+    
     // create sampler state
     MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
     samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
@@ -84,6 +90,7 @@
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
+    [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
     [renderPass setFragmentTexture:_modelTexture atIndex:0];
