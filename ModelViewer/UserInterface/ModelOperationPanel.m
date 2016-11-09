@@ -22,6 +22,8 @@
 
 @property (nonatomic, assign) NSSlider* fieldOfView;
 
+@property (nonatomic, strong) NSButton* lightSettings;
+
 @end
 
 
@@ -38,6 +40,7 @@
         _cullEnabled = YES;
         _combineShapes = YES;
         _fieldOfViewRadian = (2 * M_PI) / 8;
+        _showLightSettings = NO;
     }
     
     return self;
@@ -111,6 +114,16 @@
     [fieldOfView setAction:@selector(fieldOfViewChanged:)];
     [self addSubview:fieldOfView];
     _fieldOfView = fieldOfView;
+    
+    NSButton* lightSettings = [NSButton new];
+    [lightSettings setButtonType:NSSwitchButton];
+    [lightSettings setTitle:@"Light Settings"];
+    [lightSettings setFrame:[self buttonLoactionAtRow:7.6 withLeading:0]];
+    [lightSettings setTarget:self];
+    [lightSettings setAction:@selector(lightSettingsChanged:)];
+    [lightSettings setState:NSOffState];
+    [self addSubview:lightSettings];
+    _lightSettings = lightSettings;
 }
 
 
@@ -159,6 +172,14 @@
 - (void)fieldOfViewChanged:(id)sender
 {
     _fieldOfViewRadian = [_fieldOfView floatValue];
+    
+    [_optionUpdateDelegate modelOptionUpdate:self];
+}
+
+
+- (void)lightSettingsChanged:(id)sender
+{
+    _showLightSettings = [_lightSettings state] == NSOnState;
     
     [_optionUpdateDelegate modelOptionUpdate:self];
 }

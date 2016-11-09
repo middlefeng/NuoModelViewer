@@ -37,7 +37,7 @@
 - (NSRect)operationPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize panelSize = NSMakeSize(225, 192);
+    NSSize panelSize = NSMakeSize(225, 226);
     NSSize panelMargin = NSMakeSize(15, 25);
     NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
                                       viewRect.size.height - panelMargin.height - panelSize.height);
@@ -84,6 +84,7 @@
 {
     [_modelRender setCullEnabled:[panel cullEnabled]];
     [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
+    [self setupPipelineSettings];
     [self render];
 }
 
@@ -119,27 +120,52 @@
     
     _modelRender = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
     _notationRender = [[NuoIntermediateRenderPass alloc] initWithDevice:self.metalLayer.device];
-    _renders = [[NSArray alloc] initWithObjects:_modelRender, _notationRender, nil];
     
-    NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
-    modelRenderTarget.device = self.metalLayer.device;
-    modelRenderTarget.sampleCount = sSampleCount;
-    modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
-    modelRenderTarget.manageTargetTexture = YES;
-    
-    [_modelRender setRenderTarget:modelRenderTarget];
-    
-    NuoRenderPassTarget* notationRenderTarget = [NuoRenderPassTarget new];
-    notationRenderTarget.device = self.metalLayer.device;
-    notationRenderTarget.sampleCount = 1;
-    notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
-    notationRenderTarget.manageTargetTexture = NO;
-    
-    [_notationRender setRenderTarget:notationRenderTarget];
-    
-    self.renderPasses = _renders;
+    [self setupPipelineSettings];
     
     [self registerForDraggedTypes:@[@"public.data"]];
+}
+
+
+- (void)setupPipelineSettings
+{
+    if (_panel.showLightSettings)
+    {
+        _renders = [[NSArray alloc] initWithObjects:_modelRender, _notationRender, nil];
+        
+        NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
+        modelRenderTarget.device = self.metalLayer.device;
+        modelRenderTarget.sampleCount = sSampleCount;
+        modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+        modelRenderTarget.manageTargetTexture = YES;
+        
+        [_modelRender setRenderTarget:modelRenderTarget];
+        
+        NuoRenderPassTarget* notationRenderTarget = [NuoRenderPassTarget new];
+        notationRenderTarget.device = self.metalLayer.device;
+        notationRenderTarget.sampleCount = 1;
+        notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+        notationRenderTarget.manageTargetTexture = NO;
+        
+        [_notationRender setRenderTarget:notationRenderTarget];
+    }
+    else
+    {
+        _renders = [[NSArray alloc] initWithObjects:_modelRender, nil];
+        
+        NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
+        modelRenderTarget.device = self.metalLayer.device;
+        modelRenderTarget.sampleCount = sSampleCount;
+        modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+        modelRenderTarget.manageTargetTexture = NO;
+        
+        [_modelRender setRenderTarget:modelRenderTarget];
+    }
+    
+    [self setRenderPasses:_renders];
+    [self viewResizing];
+    
+    
 }
 
 
