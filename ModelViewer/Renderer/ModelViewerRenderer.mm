@@ -18,8 +18,6 @@
 
 @property (strong) NSArray<NuoMesh*>* mesh;
 @property (strong) NSArray<id<MTLBuffer>>* uniformBuffers;
-@property (strong) id<MTLRenderPipelineState> renderPipelineState;
-@property (strong) id<MTLDepthStencilState> depthStencilState;
 @property (assign) NSInteger bufferIndex;
 
 @property (strong) NuoModelLoader* modelLoader;

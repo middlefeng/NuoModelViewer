@@ -10,7 +10,7 @@
 #import "ModelOperationPanel.h"
 
 #import "ModelViewerRenderer.h"
-#import "NuoIntermediateRenderPass.h" // TODO: should be a subclass
+#import "NotationRenderer.h"
 
 #include "NuoMeshOptions.h"
 
@@ -26,7 +26,7 @@
 @implementation ModelView
 {
     ModelRenderer* _modelRender;
-    NuoIntermediateRenderPass* _notationRender;
+    NotationRenderer* _notationRender;
     NSArray<NuoRenderPass*>* _renders;
     
     ModelOperationPanel* _panel;
@@ -119,7 +119,7 @@
     [super commonInit];
     
     _modelRender = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
-    _notationRender = [[NuoIntermediateRenderPass alloc] initWithDevice:self.metalLayer.device];
+    _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
     
     [self setupPipelineSettings];
     
