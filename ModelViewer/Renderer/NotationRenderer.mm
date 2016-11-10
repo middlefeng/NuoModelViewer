@@ -96,7 +96,7 @@
         - bounding.centerZ
     };
     
-    float zoom = 3.0;
+    float zoom = 0.0;
     
     const matrix_float4x4 modelCenteringMatrix = matrix_float4x4_translation(translationToCenter);
     const matrix_float4x4 modelMatrix = modelCenteringMatrix;
@@ -142,6 +142,18 @@
     
     id<MTLRenderCommandEncoder> renderPass = self.lastRenderPass;
     self.lastRenderPass = nil;
+    
+    CGSize drawableSize = self.renderTarget.drawableSize;
+    MTLViewport viewPort;
+    viewPort.originX = drawableSize.width / 2.0;
+    viewPort.originY = drawableSize.height / 2.0;
+    viewPort.width = drawableSize.width / 2.0;
+    viewPort.height = drawableSize.height / 2.0;
+    viewPort.znear = 0.0;
+    viewPort.zfar = 1.0;
+    
+    
+    [renderPass setViewport:viewPort];
     
     [self updateUniformsForView];
     [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
