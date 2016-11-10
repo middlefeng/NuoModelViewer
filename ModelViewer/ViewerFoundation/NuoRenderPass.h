@@ -24,6 +24,8 @@
 @property (nonatomic, weak) id<MTLTexture> sourceTexture;
 @property (nonatomic, strong) NuoRenderPassTarget* renderTarget;
 
+@property (nonatomic, strong) id<MTLRenderCommandEncoder> lastRenderPass;
+
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
 
