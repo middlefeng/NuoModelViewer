@@ -171,8 +171,20 @@
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-    _modelRender.rotationXDelta = -0.01 * M_PI * theEvent.deltaY;
-    _modelRender.rotationYDelta = -0.01 * M_PI * theEvent.deltaX;
+    float deltaX = -0.01 * M_PI * theEvent.deltaY;
+    float deltaY = -0.01 * M_PI * theEvent.deltaX;
+    
+    if (_panel.showLightSettings)
+    {
+        _notationRender.rotateX += deltaX;
+        _notationRender.rotateY += deltaY;
+    }
+    else
+    {
+        _modelRender.rotationXDelta = deltaX;
+        _modelRender.rotationYDelta = deltaY;
+    }
+    
     [self render];
 }
 

@@ -87,6 +87,21 @@
 
 - (void)updateUniformsForView
 {
+    matrix_float4x4 rotationMatrix;
+    {
+        const vector_float3 xAxis = { 1, 0, 0 };
+        const vector_float3 yAxis = { 0, 1, 0 };
+        const matrix_float4x4 xRot = matrix_float4x4_rotation(xAxis, _rotateX);
+        const matrix_float4x4 yRot = matrix_float4x4_rotation(yAxis, _rotateY);
+        
+        const vector_float4 xAxis4 = { 1, 0, 0, 0 };
+        const vector_float4 xAxisP4 = matrix_multiply(xAxis4, yRot);
+        const vector_float3 xAxisP = { xAxisP4.x, xAxisP4.y, xAxisP4.z };
+        //const matrix_float4x4 xRot = matrix_float4x4_rotation(xAxisP, _rotateX);
+        
+        rotationMatrix = matrix_multiply(xRot, yRot);
+    }
+    
     NuoMeshBox* bounding = _lightVector.boundingBox;
     
     const vector_float3 translationToCenter =
@@ -96,10 +111,10 @@
         - bounding.centerZ
     };
     
-    float zoom = 0.0;
+    float zoom = -50.0;
     
     const matrix_float4x4 modelCenteringMatrix = matrix_float4x4_translation(translationToCenter);
-    const matrix_float4x4 modelMatrix = modelCenteringMatrix;
+    const matrix_float4x4 modelMatrix = matrix_multiply(rotationMatrix, modelCenteringMatrix);
     
     float modelSpan = std::max(bounding.spanZ, bounding.spanX);
     modelSpan = std::max(bounding.spanY, modelSpan);
@@ -124,7 +139,7 @@
     const float aspect = drawableSize.width / drawableSize.height;
     const float near = -cameraDistance - modelSpan / 2.0 + 0.01;
     const float far = near + modelSpan + 0.02;
-    const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, (2 * M_PI) / 8, near, far);
+    const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, (2 * M_PI) / 16, near, far);
     
     ModelUniforms uniforms;
     uniforms.modelViewMatrix = matrix_multiply(viewMatrix, modelMatrix);
