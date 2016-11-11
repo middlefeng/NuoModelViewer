@@ -103,6 +103,7 @@
 		9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoMeshTexMatieraled.mm; sourceTree = "<group>"; };
 		98CA11B61DD2B00900440C53 /* NotationRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotationRenderer.h; sourceTree = "<group>"; };
 		98CA11B71DD2B00900440C53 /* NotationRenderer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NotationRenderer.mm; sourceTree = "<group>"; };
+		98CA11F91DD67BBB00440C53 /* ShadersCommon.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShadersCommon.h; sourceTree = "<group>"; };
 		98DA56601D80EF8C006D0D9C /* ShadersMaterialed.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ShadersMaterialed.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -185,6 +186,7 @@
 		2C65E57A1D77F30000FE77C5 /* Renderer */ = {
 			isa = PBXGroup;
 			children = (
+				98CA11F91DD67BBB00440C53 /* ShadersCommon.h */,
 				2C5DDADB1D6594FD00A9DC9A /* Shaders.metal */,
 				2C3D9A9D1D7DFC43002C1226 /* ShadersTextured.metal */,
 				98DA56601D80EF8C006D0D9C /* ShadersMaterialed.metal */,

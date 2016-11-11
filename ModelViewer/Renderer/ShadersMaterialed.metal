@@ -1,5 +1,5 @@
-#include <metal_stdlib>
-#include <metal_matrix>
+
+#include "ShadersCommon.h"
 
 using namespace metal;
 
@@ -16,13 +16,6 @@ constant Light light = {
     .ambientColor = { 0.05, 0.05, 0.05 },
     .diffuseColor = { 1, 1, 1 },
     .specularColor = { 0.5, 0.5, 0.5 }
-};
-
-struct Uniforms
-{
-    float4x4 modelViewProjectionMatrix;
-    float4x4 modelViewMatrix;
-    float3x3 normalMatrix;
 };
 
 struct Vertex
