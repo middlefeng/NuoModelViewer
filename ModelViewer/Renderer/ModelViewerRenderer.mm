@@ -17,7 +17,9 @@
 @interface ModelRenderer ()
 
 @property (strong) NSArray<NuoMesh*>* mesh;
+
 @property (strong) NSArray<id<MTLBuffer>>* uniformBuffers;
+@property (strong) NSArray<id<MTLBuffer>>* lightingBuffers;
 @property (assign) NSInteger bufferIndex;
 
 @property (strong) NuoModelLoader* modelLoader;
@@ -72,6 +74,8 @@
 - (void)makeResources
 {
     id<MTLBuffer> buffers[InFlightBufferCount];
+    id<MTLBuffer> lightingBuffers[InFlightBufferCount];
+    
     for (size_t i = 0; i < InFlightBufferCount; ++i)
     {
         id<MTLBuffer> uniformBuffer = [self.device newBufferWithLength:sizeof(ModelUniforms)
@@ -80,8 +84,14 @@
         
         NSString* label = [NSString stringWithFormat:@"Uniforms %lu", i];
         [uniformBuffer setLabel:label];
+        
+        id<MTLBuffer> lightingBuffer = [self.device newBufferWithLength:sizeof(LightingUniforms)
+                                                                options:MTLResourceOptionCPUCacheModeDefault];
+        lightingBuffers[i] = lightingBuffer;
     }
+    
     _uniformBuffers = [[NSArray alloc] initWithObjects:buffers[0], buffers[1], buffers[2], nil];
+    _lightingBuffers = [[NSArray alloc] initWithObjects:lightingBuffers[0], lightingBuffers[1], lightingBuffers[2], nil];
 }
 
 - (void)updateUniformsForView
@@ -144,6 +154,27 @@
     uniforms.normalMatrix = matrix_float4x4_extract_linear(uniforms.modelViewMatrix);
 
     memcpy([self.uniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
+    
+    vector_float4 unitVec = { 0, 0, 1, 0 };
+    unitVec = matrix_multiply(unitVec, uniforms.modelViewMatrix);
+    
+    //NSLog(@"Model Vector: %f, %f, %f, %f.", unitVec.x, unitVec.y, unitVec.z, unitVec.w);
+    
+    LightingUniforms lighting;
+    {
+        vector_float4 lightVector { 0, 0, 1, 0 };
+        const vector_float3 xAxis = { 1, 0, 0 };
+        const vector_float3 yAxis = { 0, 1, 0 };
+        const matrix_float4x4 xRot = matrix_float4x4_rotation(xAxis, self.lightingRotationX);
+        const matrix_float4x4 yRot = matrix_float4x4_rotation(yAxis, self.lightingRotationY);
+        const matrix_float4x4 rotationMatrix = matrix_multiply(xRot, yRot);
+        
+        lightVector = matrix_multiply(rotationMatrix, lightVector);
+        lighting.lightVector = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
+        
+        //NSLog(@"Light Vector: %f, %f, %f, %f.", lightVector.x, lightVector.y, lightVector.z, lightVector.w);
+    }
+    memcpy([self.lightingBuffers[self.bufferIndex] contents], &lighting, sizeof(LightingUniforms));
 }
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
@@ -157,6 +188,7 @@
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     
     [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:self.lightingBuffers[self.bufferIndex] offset:0 atIndex:2];
     
     if (_cullEnabled)
         [renderPass setCullMode:MTLCullModeBack];

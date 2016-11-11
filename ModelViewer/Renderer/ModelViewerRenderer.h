@@ -11,6 +11,10 @@
 @interface ModelRenderer : NuoRenderPass
 
 
+@property (nonatomic, assign) float lightingRotationX;
+@property (nonatomic, assign) float lightingRotationY;
+
+
 @property (nonatomic, assign) float zoom;
 
 

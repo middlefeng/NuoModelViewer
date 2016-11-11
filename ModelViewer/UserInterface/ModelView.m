@@ -178,6 +178,8 @@
     {
         _notationRender.rotateX += deltaX;
         _notationRender.rotateY += deltaY;
+        _modelRender.lightingRotationX = _notationRender.rotateX;
+        _modelRender.lightingRotationY = _notationRender.rotateY;
     }
     else
     {

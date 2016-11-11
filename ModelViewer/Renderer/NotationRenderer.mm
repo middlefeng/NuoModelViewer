@@ -94,13 +94,10 @@
         const matrix_float4x4 xRot = matrix_float4x4_rotation(xAxis, _rotateX);
         const matrix_float4x4 yRot = matrix_float4x4_rotation(yAxis, _rotateY);
         
-        const vector_float4 xAxis4 = { 1, 0, 0, 0 };
-        const vector_float4 xAxisP4 = matrix_multiply(xAxis4, yRot);
-        const vector_float3 xAxisP = { xAxisP4.x, xAxisP4.y, xAxisP4.z };
-        //const matrix_float4x4 xRot = matrix_float4x4_rotation(xAxisP, _rotateX);
-        
         rotationMatrix = matrix_multiply(xRot, yRot);
     }
+    
+    NSLog(@"Rotate X, Y: %f, %f.", _rotateX, _rotateY);
     
     NuoMeshBox* bounding = _lightVector.boundingBox;
     
@@ -146,6 +143,14 @@
     uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
     uniforms.normalMatrix = matrix_float4x4_extract_linear(uniforms.modelViewMatrix);
     
+    /*
+    vector_float4 unitVec = { 0, 0, 1, 0 };
+    unitVec = matrix_multiply(uniforms.modelViewMatrix, unitVec);
+    //unitVec = matrix_multiply(unitVec, uniforms.modelViewMatrix);
+    
+    NSLog(@"Unit  Vector: %f, %f, %f, %f.", unitVec.x, unitVec.y, unitVec.z, unitVec.w);
+     */
+    
     memcpy([self.uniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
 
@@ -166,8 +171,6 @@
     viewPort.height = drawableSize.height / 2.0;
     viewPort.znear = 0.0;
     viewPort.zfar = 1.0;
-    
-    
     [renderPass setViewport:viewPort];
     
     [self updateUniformsForView];

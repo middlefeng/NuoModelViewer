@@ -279,7 +279,6 @@ void NuoModelArrow::CreateHeadSurface()
         
         vector_float4 normal1 = GetHeadNormal(index);
         vector_float4 normal2 = GetHeadNormal(index + 1);
-        vector_float4 normalHead = vector_normalize(normal1 + normal2);
         
         bufferNormal[0] = normal1.x;
         bufferNormal[1] = normal1.y;
