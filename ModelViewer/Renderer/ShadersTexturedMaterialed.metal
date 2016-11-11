@@ -3,24 +3,6 @@
 
 using namespace metal;
 
-struct LightUniform
-{
-    float4 direction;
-};
-
-struct Light
-{
-    float3 ambientColor;
-    float3 diffuseColor;
-    float3 specularColor;
-};
-
-constant Light light = {
-    .ambientColor = { 0.28, 0.28, 0.28 },
-    .diffuseColor = { 1, 1, 1 },
-    .specularColor = { 0.5, 0.5, 0.5 }
-};
-
 struct Vertex
 {
     float4 position;

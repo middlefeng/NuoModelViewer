@@ -21,6 +21,7 @@
 @interface NotationRenderer()
 
 @property (nonatomic, strong) NSArray<id<MTLBuffer>>* uniformBuffers;
+@property (nonatomic, strong) id<MTLBuffer> lightBuffer;
 @property (nonatomic, assign) NSInteger bufferIndex;
 
 @property (nonatomic, strong) NuoMesh* lightVector;
@@ -81,7 +82,16 @@
         NSString* label = [NSString stringWithFormat:@"Uniforms %lu", i];
         [uniformBuffer setLabel:label];
     }
+    
     _uniformBuffers = [[NSArray alloc] initWithObjects:buffers[0], buffers[1], buffers[2], nil];
+    
+    LightingUniforms lightUniform;
+    lightUniform.lightVector = {  0.13, 0.72, 0.68, 0.0 };
+    
+    _lightBuffer = [self.device newBufferWithLength:sizeof(LightingUniforms)
+                                            options:MTLResourceOptionCPUCacheModeDefault];
+    
+    memcpy([_lightBuffer contents], &lightUniform, sizeof(LightingUniforms));
 }
 
 
@@ -155,6 +165,7 @@
     
     [self updateUniformsForView];
     [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:self.lightBuffer offset:0 atIndex:2];
     
     [_lightVector drawMesh:renderPass];
     [renderPass endEncoding];
