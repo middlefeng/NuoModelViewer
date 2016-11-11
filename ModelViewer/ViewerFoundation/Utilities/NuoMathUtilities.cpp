@@ -75,3 +75,16 @@ matrix_float3x3 matrix_float4x4_extract_linear(matrix_float4x4 m)
     matrix_float3x3 l = { X, Y, Z };
     return l;
 }
+
+
+matrix_float4x4 matrix_rotate(vector_float4 startVec, float rotationX, float rotationY)
+{
+    const vector_float3 xAxis = { 1, 0, 0 };
+    const vector_float3 yAxis = { 0, 1, 0 };
+    const matrix_float4x4 xRot = matrix_float4x4_rotation(xAxis, rotationX);
+    const matrix_float4x4 yRot = matrix_float4x4_rotation(yAxis, rotationY);
+    
+    return matrix_multiply(xRot, yRot);
+}
+
+

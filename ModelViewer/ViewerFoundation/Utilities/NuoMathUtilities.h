@@ -23,6 +23,8 @@ matrix_float4x4 matrix_float4x4_perspective(float aspect, float fovy, float near
 
 matrix_float3x3 matrix_float4x4_extract_linear(matrix_float4x4);    
     
+matrix_float4x4 matrix_rotate(vector_float4 startVec, float rotationX, float rotationY);
+    
     
 #if __cplusplus
 } // extern "C"
