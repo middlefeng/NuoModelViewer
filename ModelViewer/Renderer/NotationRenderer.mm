@@ -87,17 +87,8 @@
 
 - (void)updateUniformsForView
 {
-    matrix_float4x4 rotationMatrix;
-    {
-        const vector_float3 xAxis = { 1, 0, 0 };
-        const vector_float3 yAxis = { 0, 1, 0 };
-        const matrix_float4x4 xRot = matrix_float4x4_rotation(xAxis, _rotateX);
-        const matrix_float4x4 yRot = matrix_float4x4_rotation(yAxis, _rotateY);
-        
-        rotationMatrix = matrix_multiply(xRot, yRot);
-    }
-    
-    NSLog(@"Rotate X, Y: %f, %f.", _rotateX, _rotateY);
+    const vector_float4 startVec = { 0, 0, 1, 0 };
+    matrix_float4x4 rotationMatrix = matrix_rotate(startVec, _rotateX, _rotateY);
     
     NuoMeshBox* bounding = _lightVector.boundingBox;
     
@@ -108,7 +99,7 @@
         - bounding.centerZ
     };
     
-    float zoom = -50.0;
+    float zoom = -60.0;
     
     const matrix_float4x4 modelCenteringMatrix = matrix_float4x4_translation(translationToCenter);
     const matrix_float4x4 modelMatrix = matrix_multiply(rotationMatrix, modelCenteringMatrix);
@@ -117,17 +108,12 @@
     modelSpan = std::max(bounding.spanY, modelSpan);
     
     const float modelNearest = - modelSpan / 2.0;
-    // const float bilateralFactor = 1 / 750.0f;
     const float cameraDefaultDistance = (modelNearest - modelSpan);
     const float cameraDistance = cameraDefaultDistance + zoom * modelSpan / 20.0f;
     
-    const float doTransX = 0; //_transX * cameraDistance * bilateralFactor;
-    const float doTransY = 0; // _transY * cameraDistance * bilateralFactor;
-    
     const vector_float3 cameraTranslation =
     {
-        doTransX, doTransY,
-        cameraDistance
+        0, 0, cameraDistance
     };
     
     const matrix_float4x4 viewMatrix = matrix_float4x4_translation(cameraTranslation);
@@ -136,20 +122,12 @@
     const float aspect = drawableSize.width / drawableSize.height;
     const float near = -cameraDistance - modelSpan / 2.0 + 0.01;
     const float far = near + modelSpan + 0.02;
-    const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, (2 * M_PI) / 16, near, far);
+    const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, (2 * M_PI) / 32, near, far);
     
     ModelUniforms uniforms;
     uniforms.modelViewMatrix = matrix_multiply(viewMatrix, modelMatrix);
     uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
     uniforms.normalMatrix = matrix_float4x4_extract_linear(uniforms.modelViewMatrix);
-    
-    /*
-    vector_float4 unitVec = { 0, 0, 1, 0 };
-    unitVec = matrix_multiply(uniforms.modelViewMatrix, unitVec);
-    //unitVec = matrix_multiply(unitVec, uniforms.modelViewMatrix);
-    
-    NSLog(@"Unit  Vector: %f, %f, %f, %f.", unitVec.x, unitVec.y, unitVec.z, unitVec.w);
-     */
     
     memcpy([self.uniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
@@ -163,12 +141,14 @@
     id<MTLRenderCommandEncoder> renderPass = self.lastRenderPass;
     self.lastRenderPass = nil;
     
+    const float lightSettingAreaFactor = 0.2;
+    
     CGSize drawableSize = self.renderTarget.drawableSize;
     MTLViewport viewPort;
-    viewPort.originX = drawableSize.width / 2.0;
-    viewPort.originY = drawableSize.height / 2.0;
-    viewPort.width = drawableSize.width / 2.0;
-    viewPort.height = drawableSize.height / 2.0;
+    viewPort.originX = drawableSize.width * (1 - lightSettingAreaFactor);
+    viewPort.originY = drawableSize.height * (1 - lightSettingAreaFactor);
+    viewPort.width = drawableSize.width * lightSettingAreaFactor;
+    viewPort.height = drawableSize.height * lightSettingAreaFactor;
     viewPort.znear = 0.0;
     viewPort.zfar = 1.0;
     [renderPass setViewport:viewPort];

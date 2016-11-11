@@ -30,6 +30,8 @@
     NSArray<NuoRenderPass*>* _renders;
     
     ModelOperationPanel* _panel;
+    
+    BOOL _trackingLighting;
 }
 
 
@@ -164,8 +166,36 @@
     
     [self setRenderPasses:_renders];
     [self viewResizing];
-    
-    
+}
+
+
+- (void)mouseDown:(NSEvent *)event
+{
+    if (_panel.showLightSettings)
+    {
+        NSPoint location = event.locationInWindow;
+        location = [self convertPoint:location fromView:nil];
+        
+        if (location.x > self.bounds.size.width * 0.8 &&
+            location.y < self.bounds.size.height * 0.2)
+        {
+            _trackingLighting = YES;
+        }
+        else
+        {
+            _trackingLighting = NO;
+        }
+    }
+    else
+    {
+        _trackingLighting = NO;
+    }
+}
+
+
+- (void)mouseUp:(NSEvent *)event
+{
+    _trackingLighting = NO;
 }
 
 
@@ -174,7 +204,7 @@
     float deltaX = -0.01 * M_PI * theEvent.deltaY;
     float deltaY = -0.01 * M_PI * theEvent.deltaX;
     
-    if (_panel.showLightSettings)
+    if (_trackingLighting)
     {
         _notationRender.rotateX += deltaX;
         _notationRender.rotateY += deltaY;
