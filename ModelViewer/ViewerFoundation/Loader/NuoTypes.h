@@ -14,7 +14,8 @@
 extern "C" {
 #endif
 
-extern const unsigned int sSampleCount;
+extern const unsigned int kSampleCount;
+extern const unsigned int kInFlightBufferCount;
     
 #if __cplusplus
 }

@@ -7,22 +7,17 @@
 
 #include "NuoTypes.h"
 #include "NuoMesh.h"
+#include "NuoRenderPassTarget.h"
 #include "NuoMathUtilities.h"
 #include "NuoModelBase.h"
 #include "NuoModelLoader.h"
 
-static const NSInteger InFlightBufferCount = 3;
-
 @interface ModelRenderer ()
 
-@property (strong) id<MTLDevice> device;
 @property (strong) NSArray<NuoMesh*>* mesh;
-@property (strong) NSArray<id<MTLBuffer>>* uniformBuffers;
-@property (strong) id<MTLCommandQueue> commandQueue;
-@property (strong) id<MTLRenderPipelineState> renderPipelineState;
-@property (strong) id<MTLDepthStencilState> depthStencilState;
-@property (strong) dispatch_semaphore_t displaySemaphore;
-@property (assign) NSInteger bufferIndex;
+
+@property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
+@property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
 
 @property (strong) NuoModelLoader* modelLoader;
 
@@ -32,13 +27,12 @@ static const NSInteger InFlightBufferCount = 3;
 
 @implementation ModelRenderer
 
-- (instancetype)init
+- (instancetype)initWithDevice:(id<MTLDevice>)device
 {
     if ((self = [super init]))
     {
-        _device = MTLCreateSystemDefaultDevice();
-        _displaySemaphore = dispatch_semaphore_create(InFlightBufferCount);
-        _commandQueue = [self.device newCommandQueue];
+        self.device = device;
+        
         [self makeResources];
         
         _modelOptions = [NuoMeshOption new];
@@ -58,7 +52,7 @@ static const NSInteger InFlightBufferCount = 3;
     [_modelLoader loadModel:path];
     
     _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
-                                      withDevice:_device];
+                                      withDevice:self.device];
 }
 
 
@@ -69,30 +63,32 @@ static const NSInteger InFlightBufferCount = 3;
     if (_modelLoader)
     {
         _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
-                                          withDevice:_device];
+                                          withDevice:self.device];
     }
 }
 
 
 - (void)makeResources
 {
-    id<MTLBuffer> buffers[InFlightBufferCount];
-    for (size_t i = 0; i < InFlightBufferCount; ++i)
+    id<MTLBuffer> modelBuffers[kInFlightBufferCount];
+    id<MTLBuffer> lightingBuffers[kInFlightBufferCount];
+    
+    for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
-        id<MTLBuffer> uniformBuffer = [self.device newBufferWithLength:sizeof(ModelUniforms)
-                                                               options:MTLResourceOptionCPUCacheModeDefault];
-        buffers[i] = uniformBuffer;
-        
-        NSString* label = [NSString stringWithFormat:@"Uniforms %lu", i];
-        [uniformBuffer setLabel:label];
+        modelBuffers[i] = [self.device newBufferWithLength:sizeof(ModelUniforms)
+                                                   options:MTLResourceOptionCPUCacheModeDefault];
+        lightingBuffers[i] = [self.device newBufferWithLength:sizeof(LightingUniforms)
+                                                      options:MTLResourceOptionCPUCacheModeDefault];
     }
-    _uniformBuffers = [[NSArray alloc] initWithObjects:buffers[0], buffers[1], buffers[2], nil];
+    
+    _modelUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers[0], modelBuffers[1], modelBuffers[2], nil];
+    _lightingUniformBuffers = [[NSArray alloc] initWithObjects:lightingBuffers[0],
+                                                               lightingBuffers[1],
+                                                               lightingBuffers[2], nil];
 }
 
-- (void)updateUniformsForView:(NuoMetalView *)viewBase
+- (void)updateUniformsForView
 {
-    ModelView* view = (ModelView*)viewBase;
-    
     {
         float scaleFactor = 1;
         const vector_float3 xAxis = { 1, 0, 0 };
@@ -138,8 +134,8 @@ static const NSInteger InFlightBufferCount = 3;
     };
 
     const matrix_float4x4 viewMatrix = matrix_float4x4_translation(cameraTranslation);
-
-    const CGSize drawableSize = view.drawableSize;
+    
+    const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
     const float near = -cameraDistance - modelSpan / 2.0 + 0.01;
     const float far = near + modelSpan + 0.02;
@@ -150,23 +146,37 @@ static const NSInteger InFlightBufferCount = 3;
     uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
     uniforms.normalMatrix = matrix_float4x4_extract_linear(uniforms.modelViewMatrix);
 
-    memcpy([self.uniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
+    memcpy([self.modelUniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
+    
+    vector_float4 unitVec = { 0, 0, 1, 0 };
+    unitVec = matrix_multiply(unitVec, uniforms.modelViewMatrix);
+    
+    LightingUniforms lighting;
+    {
+        vector_float4 lightVector { 0, 0, 1, 0 };
+        const matrix_float4x4 rotationMatrix = matrix_rotate(lightVector,
+                                                             self.lightingRotationX,
+                                                             self.lightingRotationY);
+        
+        lightVector = matrix_multiply(rotationMatrix, lightVector);
+        lighting.lightVector = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
+    }
+    
+    memcpy([self.lightingUniformBuffers[self.bufferIndex] contents], &lighting, sizeof(LightingUniforms));
 }
 
-- (void)drawInView:(NuoMetalView *)view
+- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
-    MTLRenderPassDescriptor *passDescriptor = [view currentRenderPassDescriptor];
+    MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
     if (!passDescriptor)
         return;
     
-    dispatch_semaphore_wait(self.displaySemaphore, DISPATCH_TIME_FOREVER);
+    [self updateUniformsForView];
 
-    [self updateUniformsForView:view];
-
-    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     
-    [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:self.modelUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:self.lightingUniformBuffers[self.bufferIndex] offset:0 atIndex:2];
     
     if (_cullEnabled)
         [renderPass setCullMode:MTLCullModeBack];
@@ -184,14 +194,6 @@ static const NSInteger InFlightBufferCount = 3;
     }
     
     [renderPass endEncoding];
-
-    [commandBuffer presentDrawable:view.currentDrawable];
-    [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
-        self.bufferIndex = (self.bufferIndex + 1) % InFlightBufferCount;
-        dispatch_semaphore_signal(self.displaySemaphore);
-    }];
-    
-    [commandBuffer commit];
 }
 
 @end

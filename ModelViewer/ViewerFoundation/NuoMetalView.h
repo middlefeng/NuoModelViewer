@@ -2,32 +2,32 @@
 #import <Metal/Metal.h>
 #import <Quartz/Quartz.h>
 
-@protocol NuoMetalViewDelegate;
+@class NuoRenderPassTarget;
+@class NuoRenderPass;
 
 
 
 @interface NuoMetalView : NSView
 
 /**
- *  The delegate of this view, responsible for maintain the model/scene state,
- *  and the rendering
+ *  The passes of the view's rendering, responsible for maintain the model/scene state,
+ *  and the rendering.
  */
-@property (nonatomic, weak) id<NuoMetalViewDelegate> delegate;
+@property (nonatomic, weak) NSArray<NuoRenderPass*>* renderPasses;
 
 @property (nonatomic) NSInteger preferredFramesPerSecond;
 
 @property (nonatomic) MTLPixelFormat colorPixelFormat;
-@property (nonatomic, assign) MTLClearColor clearColor;
 
 @property (nonatomic, readonly) id<CAMetalDrawable> currentDrawable;
-@property (nonatomic, readonly) MTLRenderPassDescriptor *currentRenderPassDescriptor;
 
-@property (nonatomic, readonly) CGSize drawableSize;
 
 
 - (void)commonInit;
 
 - (void)viewResizing;
+
+- (CAMetalLayer *)metalLayer;
 
 
 /**
@@ -37,10 +37,3 @@
 
 @end
 
-
-
-@protocol NuoMetalViewDelegate <NSObject>
-
-- (void)drawInView:(NuoMetalView *)view;
-
-@end

@@ -1,4 +1,6 @@
+
 #import "ModelView.h"
+#import "NuoRenderPass.h"
 
 
 
@@ -6,7 +8,11 @@
 
 
 
-@interface ModelRenderer : NSObject <NuoMetalViewDelegate>
+@interface ModelRenderer : NuoRenderPass
+
+
+@property (nonatomic, assign) float lightingRotationX;
+@property (nonatomic, assign) float lightingRotationY;
 
 
 @property (nonatomic, assign) float zoom;
@@ -22,6 +28,9 @@
 @property (nonatomic, assign) float fieldOfView;
 
 @property (nonatomic, strong) NuoMeshOption* modelOptions;
+
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device;
 
 
 - (void)loadMesh:(NSString*)path;

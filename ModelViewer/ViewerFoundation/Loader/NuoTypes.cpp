@@ -9,4 +9,5 @@
 #include "NuoTypes.h"
 
 
-const unsigned int sSampleCount {8};
+const unsigned int kSampleCount {8};
+const unsigned int kInFlightBufferCount = 3;

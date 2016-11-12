@@ -2,19 +2,17 @@
 #import "NuoMetalView.h"
 
 #import "NuoTypes.h"
+#import "NuoRenderPass.h"
+#import "NuoRenderPassTarget.h"
 
 
 @interface NuoMetalView ()
 
-@property (strong) id<MTLTexture> sampleTexture;
-@property (strong) id<MTLTexture> depthTexture;
 @property (nonatomic, readonly) CAMetalLayer *metalLayer;
+@property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
+@property (strong) dispatch_semaphore_t displaySemaphore;
 
 @end
-
-
-
-
 
 
 
@@ -35,9 +33,10 @@
 - (void)awakeFromNib
 {
     [self setWantsLayer:YES];
-    [self commonInit];
+
     self.metalLayer.device = MTLCreateSystemDefaultDevice();
     
+    [self commonInit];
     [self updateDrawableSize];
 }
 
@@ -50,6 +49,7 @@
 {
     if ((self = [super initWithCoder:aDecoder]))
     {
+        _displaySemaphore = dispatch_semaphore_create(kInFlightBufferCount);
     }
 
     return self;
@@ -69,7 +69,8 @@
 - (void)commonInit
 {
     _preferredFramesPerSecond = 60;
-    _clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+    
+    _commandQueue = [self.metalLayer.device newCommandQueue];
     
     [self setWantsLayer:YES];
     self.metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
@@ -117,8 +118,14 @@
     drawableSize.height *= scale;
 
     self.metalLayer.drawableSize = drawableSize;
-
-    [self makeTextures];
+    
+    for (size_t i = 0; i < [_renderPasses count]; ++i)
+    {
+        NuoRenderPass* render = _renderPasses[i];
+        NuoRenderPassTarget* target = render.renderTarget;
+        [target setDrawableSize:drawableSize];
+    }
+    
     [self render];
 }
 
@@ -141,66 +148,55 @@
 
 - (void)render
 {
-    [self.delegate drawInView:self];
-}
-
-- (void)makeTextures
-{
-    CGSize drawableSize = self.metalLayer.drawableSize;
-
-    if ([self.depthTexture width] != drawableSize.width ||
-        [self.depthTexture height] != drawableSize.height)
-    {
-        MTLTextureDescriptor *desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float
-                                                                                        width:drawableSize.width
-                                                                                       height:drawableSize.height
-                                                                                    mipmapped:NO];
-        desc.sampleCount = sSampleCount;
-        desc.textureType = (sSampleCount == 1) ? MTLTextureType2D : MTLTextureType2DMultisample;
-        desc.resourceOptions = MTLResourceStorageModePrivate;
-        desc.usage = MTLTextureUsageRenderTarget;
-
-        self.depthTexture = [self.metalLayer.device newTextureWithDescriptor:desc];
-        
-        MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                                              width:drawableSize.width
-                                                                                             height:drawableSize.height
-                                                                                          mipmapped:NO];
-        
-        if (sSampleCount > 1)
-        {
-            sampleDesc.sampleCount = sSampleCount;
-            sampleDesc.textureType = MTLTextureType2DMultisample;
-            sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
-            sampleDesc.usage = MTLTextureUsageRenderTarget;
-            
-            self.sampleTexture = [self.metalLayer.device newTextureWithDescriptor:sampleDesc];
-        }
-    }
-}
-
-
-- (MTLRenderPassDescriptor *)currentRenderPassDescriptor
-{
-    MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+    dispatch_semaphore_wait(self.displaySemaphore, DISPATCH_TIME_FOREVER);
     
     _currentDrawable = [self.metalLayer nextDrawable];
     if (!_currentDrawable)
-        return nil;
+        return;
     
-    passDescriptor.colorAttachments[0].texture = (sSampleCount == 1) ? [_currentDrawable texture] : _sampleTexture;
-    passDescriptor.colorAttachments[0].clearColor = self.clearColor;
-    passDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
-    passDescriptor.colorAttachments[0].storeAction = (sSampleCount == 1) ? MTLStoreActionStore : MTLStoreActionMultisampleResolve;
-    if (sSampleCount > 1)
-        passDescriptor.colorAttachments[0].resolveTexture = [_currentDrawable texture];
+    for (size_t i = 0; i < [_renderPasses count]; ++i)
+    {
+        NuoRenderPass* render1 = [_renderPasses objectAtIndex:i];
+        NuoRenderPass* render2 = nil;
+        
+        if (i < [_renderPasses count] - 1)
+            render2 = [_renderPasses objectAtIndex:i + 1];
+        
+        if (render2)
+        {
+            NuoRenderPassTarget* interResult = render1.renderTarget;
+            [render2 setSourceTexture:interResult.targetTexture];
+        }
+        else
+        {
+            NuoRenderPassTarget* finalResult = render1.renderTarget;
+            [finalResult setTargetTexture:[_currentDrawable texture]];
+        }
+    }
 
-    passDescriptor.depthAttachment.texture = self.depthTexture;
-    passDescriptor.depthAttachment.clearDepth = 1.0;
-    passDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
-    passDescriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
-
-    return passDescriptor;
+    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
+    
+    for (size_t i = 0; i < [_renderPasses count]; ++i)
+    {
+        NuoRenderPass* render = [_renderPasses objectAtIndex:i];
+        [render drawWithCommandBuffer:commandBuffer];
+    }
+    
+    __block dispatch_semaphore_t displaySem = self.displaySemaphore;
+    
+    [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer)
+     {
+         for (size_t i = 0; i < [_renderPasses count]; ++i)
+         {
+             _renderPasses[i].bufferIndex = (_renderPasses[i].bufferIndex + 1) % kInFlightBufferCount;
+         }
+         
+        dispatch_semaphore_signal(displaySem);
+     }];
+    
+    [commandBuffer presentDrawable:_currentDrawable];
+    [commandBuffer commit];
 }
+
 
 @end

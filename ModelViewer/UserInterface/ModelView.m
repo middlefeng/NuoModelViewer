@@ -7,8 +7,10 @@
 //
 
 #import "ModelView.h"
-#import "ModelViewerRenderer.h"
 #import "ModelOperationPanel.h"
+
+#import "ModelViewerRenderer.h"
+#import "NotationRenderer.h"
 
 #include "NuoMeshOptions.h"
 
@@ -23,8 +25,13 @@
 
 @implementation ModelView
 {
-    ModelRenderer* _render;
+    ModelRenderer* _modelRender;
+    NotationRenderer* _notationRender;
+    NSArray<NuoRenderPass*>* _renders;
+    
     ModelOperationPanel* _panel;
+    
+    BOOL _trackingLighting;
 }
 
 
@@ -32,7 +39,7 @@
 - (NSRect)operationPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize panelSize = NSMakeSize(225, 192);
+    NSSize panelSize = NSMakeSize(225, 226);
     NSSize panelMargin = NSMakeSize(15, 25);
     NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
                                       viewRect.size.height - panelMargin.height - panelSize.height);
@@ -70,15 +77,16 @@
     [options setTextureEmbeddingMaterialTransparency:[panel textureEmbeddingMaterialTransparency]];
     [options setCombineShapes:[panel combineShapes]];
     
-    [_render setModelOptions:options];
+    [_modelRender setModelOptions:options];
     [self render];
 }
 
 
 - (void)modelOptionUpdate:(ModelOperationPanel *)panel
 {
-    [_render setCullEnabled:[panel cullEnabled]];
-    [_render setFieldOfView:[panel fieldOfViewRadian]];
+    [_modelRender setCullEnabled:[panel cullEnabled]];
+    [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
+    [self setupPipelineSettings];
     [self render];
 }
 
@@ -111,27 +119,111 @@
 - (void)commonInit
 {
     [super commonInit];
-    _render = [ModelRenderer new];
-    self.delegate = _render;
+    
+    _modelRender = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
+    _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
+    
+    [self setupPipelineSettings];
     
     [self registerForDraggedTypes:@[@"public.data"]];
 }
 
 
+- (void)setupPipelineSettings
+{
+    if (_panel.showLightSettings)
+    {
+        _renders = [[NSArray alloc] initWithObjects:_modelRender, _notationRender, nil];
+        
+        NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
+        modelRenderTarget.device = self.metalLayer.device;
+        modelRenderTarget.sampleCount = kSampleCount;
+        modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+        modelRenderTarget.manageTargetTexture = YES;
+        
+        [_modelRender setRenderTarget:modelRenderTarget];
+        
+        NuoRenderPassTarget* notationRenderTarget = [NuoRenderPassTarget new];
+        notationRenderTarget.device = self.metalLayer.device;
+        notationRenderTarget.sampleCount = 1;
+        notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+        notationRenderTarget.manageTargetTexture = NO;
+        
+        [_notationRender setRenderTarget:notationRenderTarget];
+    }
+    else
+    {
+        _renders = [[NSArray alloc] initWithObjects:_modelRender, nil];
+        
+        NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
+        modelRenderTarget.device = self.metalLayer.device;
+        modelRenderTarget.sampleCount = kSampleCount;
+        modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+        modelRenderTarget.manageTargetTexture = NO;
+        
+        [_modelRender setRenderTarget:modelRenderTarget];
+    }
+    
+    [self setRenderPasses:_renders];
+    [self viewResizing];
+}
+
+
+- (void)mouseDown:(NSEvent *)event
+{
+    if (_panel.showLightSettings)
+    {
+        NSPoint location = event.locationInWindow;
+        location = [self convertPoint:location fromView:nil];
+        
+        if (location.x > self.bounds.size.width * 0.8 &&
+            location.y < self.bounds.size.height * 0.2)
+        {
+            _trackingLighting = YES;
+        }
+        else
+        {
+            _trackingLighting = NO;
+        }
+    }
+    else
+    {
+        _trackingLighting = NO;
+    }
+}
+
+
+- (void)mouseUp:(NSEvent *)event
+{
+    _trackingLighting = NO;
+}
+
+
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-    ModelRenderer* renderer = (ModelRenderer*)_render;
+    float deltaX = -0.01 * M_PI * theEvent.deltaY;
+    float deltaY = -0.01 * M_PI * theEvent.deltaX;
     
-    renderer.rotationXDelta = -0.01 * M_PI * theEvent.deltaY;
-    renderer.rotationYDelta = -0.01 * M_PI * theEvent.deltaX;
+    if (_trackingLighting)
+    {
+        _notationRender.rotateX += deltaX;
+        _notationRender.rotateY += deltaY;
+        _modelRender.lightingRotationX = _notationRender.rotateX;
+        _modelRender.lightingRotationY = _notationRender.rotateY;
+    }
+    else
+    {
+        _modelRender.rotationXDelta = deltaX;
+        _modelRender.rotationYDelta = deltaY;
+    }
+    
     [self render];
 }
 
 
 - (void)magnifyWithEvent:(NSEvent *)event
 {
-    ModelRenderer* renderer = (ModelRenderer*)_render;
-    renderer.zoom += 10 * event.magnification;
+    _modelRender.zoom += 10 * event.magnification;
     [self render];
 }
 
@@ -139,9 +231,8 @@
 
 - (void)scrollWheel:(NSEvent *)event
 {
-    ModelRenderer* renderer = (ModelRenderer*)_render;
-    renderer.transX -= event.deltaX;
-    renderer.transY += event.deltaY;
+    _modelRender.transX -= event.deltaX;
+    _modelRender.transY += event.deltaY;
     [self render];
 }
 
@@ -187,8 +278,6 @@
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender
 {
-    ModelRenderer* renderer = (ModelRenderer*)_render;
-    
     NSPasteboard* paste = [sender draggingPasteboard];
     NSArray *draggedFilePaths = [paste propertyListForType:NSFilenamesPboardType];
     NSString* path = draggedFilePaths[0];
@@ -204,7 +293,7 @@
         path = [path stringByAppendingPathComponent:name];
     }
     
-    [renderer loadMesh:path];
+    [_modelRender loadMesh:path];
     [self render];
     return YES;
 }
@@ -219,7 +308,7 @@
                 if (result == NSFileHandlingPanelOKButton)
                 {
                     NSString* path = openPanel.URL.path;
-                    [_render loadMesh:path];
+                    [_modelRender loadMesh:path];
                     [self render];
                 }
             }];

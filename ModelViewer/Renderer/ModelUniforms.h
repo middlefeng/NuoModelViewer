@@ -10,3 +10,11 @@ typedef struct
     matrix_float3x3 normalMatrix;
 }
 ModelUniforms;
+
+
+typedef struct
+{
+    vector_float4 lightVector;
+}
+LightingUniforms;
+
