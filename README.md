@@ -4,6 +4,7 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+Adjustable lighting direction.
 Better handling to material opacity.
 
 <p align="left">
@@ -20,7 +21,9 @@ Better handling to material opacity.
 ## TODO
 
 * Bump texture.
-* Postion and intensity of light source.
+* <del>Direction of lgiht source.</del>
+* Intensity of light source.
+* Mutilple light sources.
 * Selectable list of object.
 * Shadow (to model and to ground).
 * Cull mode.
