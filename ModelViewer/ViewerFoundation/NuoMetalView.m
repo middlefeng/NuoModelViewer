@@ -49,7 +49,7 @@
 {
     if ((self = [super initWithCoder:aDecoder]))
     {
-        _displaySemaphore = dispatch_semaphore_create(InFlightBufferCount);
+        _displaySemaphore = dispatch_semaphore_create(kInFlightBufferCount);
     }
 
     return self;
@@ -182,9 +182,16 @@
         [render drawWithCommandBuffer:commandBuffer];
     }
     
+    __block dispatch_semaphore_t displaySem = self.displaySemaphore;
+    
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer)
      {
-        dispatch_semaphore_signal(self.displaySemaphore);
+         for (size_t i = 0; i < [_renderPasses count]; ++i)
+         {
+             _renderPasses[i].bufferIndex = (_renderPasses[i].bufferIndex + 1) % kInFlightBufferCount;
+         }
+         
+        dispatch_semaphore_signal(displaySem);
      }];
     
     [commandBuffer presentDrawable:_currentDrawable];

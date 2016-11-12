@@ -18,7 +18,6 @@
 
 @property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
-@property (assign) NSInteger bufferIndex;
 
 @property (strong) NuoModelLoader* modelLoader;
 
@@ -71,10 +70,10 @@
 
 - (void)makeResources
 {
-    id<MTLBuffer> modelBuffers[InFlightBufferCount];
-    id<MTLBuffer> lightingBuffers[InFlightBufferCount];
+    id<MTLBuffer> modelBuffers[kInFlightBufferCount];
+    id<MTLBuffer> lightingBuffers[kInFlightBufferCount];
     
-    for (size_t i = 0; i < InFlightBufferCount; ++i)
+    for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
         modelBuffers[i] = [self.device newBufferWithLength:sizeof(ModelUniforms)
                                                    options:MTLResourceOptionCPUCacheModeDefault];
@@ -195,10 +194,6 @@
     }
     
     [renderPass endEncoding];
-    
-    [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer) {
-        self.bufferIndex = (self.bufferIndex + 1) % InFlightBufferCount;
-    }];
 }
 
 @end

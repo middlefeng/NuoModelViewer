@@ -19,6 +19,11 @@
 @property (nonatomic, weak) id<MTLDevice> device;
 
 /**
+ *  current index in the tri-buffer flow
+ */
+@property (nonatomic, assign) NSInteger bufferIndex;
+
+/**
  *  data exchange with adjecent passes
  */
 @property (nonatomic, weak) id<MTLTexture> sourceTexture;

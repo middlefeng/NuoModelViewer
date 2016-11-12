@@ -137,7 +137,7 @@
         
         NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
         modelRenderTarget.device = self.metalLayer.device;
-        modelRenderTarget.sampleCount = sSampleCount;
+        modelRenderTarget.sampleCount = kSampleCount;
         modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         modelRenderTarget.manageTargetTexture = YES;
         
@@ -157,7 +157,7 @@
         
         NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
         modelRenderTarget.device = self.metalLayer.device;
-        modelRenderTarget.sampleCount = sSampleCount;
+        modelRenderTarget.sampleCount = kSampleCount;
         modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         modelRenderTarget.manageTargetTexture = NO;
         

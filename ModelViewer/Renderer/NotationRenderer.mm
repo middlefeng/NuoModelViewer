@@ -22,7 +22,6 @@
 
 @property (nonatomic, strong) NSArray<id<MTLBuffer>>* uniformBuffers;
 @property (nonatomic, strong) id<MTLBuffer> lightBuffer;
-@property (nonatomic, assign) NSInteger bufferIndex;
 
 @property (nonatomic, strong) NuoMesh* lightVector;
 
@@ -72,8 +71,8 @@
 
 - (void)makeResources
 {
-    id<MTLBuffer> buffers[InFlightBufferCount];
-    for (size_t i = 0; i < InFlightBufferCount; ++i)
+    id<MTLBuffer> buffers[kInFlightBufferCount];
+    for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
         id<MTLBuffer> uniformBuffer = [self.device newBufferWithLength:sizeof(ModelUniforms)
                                                                options:MTLResourceOptionCPUCacheModeDefault];
@@ -132,7 +131,7 @@
     const float aspect = drawableSize.width / drawableSize.height;
     const float near = -cameraDistance - modelSpan / 2.0 + 0.01;
     const float far = near + modelSpan + 0.02;
-    const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, (2 * M_PI) / 32, near, far);
+    const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, (2 * M_PI) / 30, near, far);
     
     ModelUniforms uniforms;
     uniforms.modelViewMatrix = matrix_multiply(viewMatrix, modelMatrix);
