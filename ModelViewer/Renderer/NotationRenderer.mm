@@ -40,7 +40,7 @@
     {
         [self makeResources];
         
-        PNuoModelArrow arrow = std::make_shared<NuoModelArrow>(2, 0.3, 0.8, 0.5);
+        PNuoModelArrow arrow = std::make_shared<NuoModelArrow>(1.0, 0.2, 1.0, 0.3);
         arrow->CreateBuffer();
         
         NuoBox boundingBox = arrow->GetBoundingBox();
