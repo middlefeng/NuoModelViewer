@@ -4,8 +4,8 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
-Adjustable lighting direction.
-Better handling to material opacity.
+* Adjustable lighting direction.
+* Better handling to material opacity.
 
 <p align="left">
   <img width="400" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/2016-0913-LP.jpg"/>
