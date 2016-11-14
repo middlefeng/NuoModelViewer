@@ -21,7 +21,7 @@
 /**
  *  current index in the tri-buffer flow
  */
-@property (nonatomic, assign) NSInteger bufferIndex;
+@property (nonatomic, readonly) NSInteger bufferIndex;
 
 /**
  *  data exchange with adjecent passes
@@ -33,6 +33,7 @@
 
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
+- (void)drawablePresented;
 
 
 @end
