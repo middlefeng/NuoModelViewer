@@ -118,7 +118,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		2C5DDAC51D65901400A9DC9A /* User Interface */ = {
+		2C5DDAC51D65901400A9DC9A /* Interface */ = {
 			isa = PBXGroup;
 			children = (
 				2C9D9AA81D658F0800283E46 /* AppDelegate.h */,
@@ -128,7 +128,7 @@
 				2C4B60401D8AD32100A12968 /* ModelOperationPanel.h */,
 				2C4B60411D8AD32100A12968 /* ModelOperationPanel.m */,
 			);
-			name = "User Interface";
+			name = Interface;
 			path = UserInterface;
 			sourceTree = "<group>";
 		};
@@ -242,7 +242,7 @@
 			children = (
 				2C840D0B1D7001A5000D2956 /* ViewerFoundation */,
 				2C5B92B21D7157A600722936 /* MainMenu.xib */,
-				2C5DDAC51D65901400A9DC9A /* User Interface */,
+				2C5DDAC51D65901400A9DC9A /* Interface */,
 				2C65E57A1D77F30000FE77C5 /* Renderer */,
 				2C9D9AAE1D658F0800283E46 /* Assets.xcassets */,
 				2C9D9AB31D658F0800283E46 /* Info.plist */,

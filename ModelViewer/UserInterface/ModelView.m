@@ -176,8 +176,10 @@
         NSPoint location = event.locationInWindow;
         location = [self convertPoint:location fromView:nil];
         
-        if (location.x > self.bounds.size.width * 0.8 &&
-            location.y < self.bounds.size.height * 0.2)
+        const float lightSettingAreaFactor = 0.28;
+        
+        if (location.x > self.bounds.size.width * (1 - lightSettingAreaFactor) &&
+            location.y < self.bounds.size.height * lightSettingAreaFactor)
         {
             _trackingLighting = YES;
         }
