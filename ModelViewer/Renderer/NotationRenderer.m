@@ -137,6 +137,14 @@
     viewPort.zfar = 1.0;
     [renderPass setViewport:viewPort];
     
+    CGFloat factor = [[NSScreen mainScreen] backingScaleFactor];
+    _notationArea = CGRectMake(viewPort.originX, viewPort.originY, viewPort.width, viewPort.height);
+    _notationArea.origin.y = drawableSize.height - _notationArea.origin.y - _notationArea.size.height;
+    _notationArea.origin.x /= factor;
+    _notationArea.origin.y /= factor;
+    _notationArea.size.width /= factor;
+    _notationArea.size.height /= factor;
+    
     [self updateUniformsForView];
     [renderPass setVertexBuffer:self.lightBuffer offset:0 atIndex:2];
     

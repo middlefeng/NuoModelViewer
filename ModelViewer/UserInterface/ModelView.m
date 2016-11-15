@@ -176,10 +176,9 @@
         NSPoint location = event.locationInWindow;
         location = [self convertPoint:location fromView:nil];
         
-        const float lightSettingAreaFactor = 0.28;
+        CGRect lightSettingArea = _notationRender.notationArea;
         
-        if (location.x > self.bounds.size.width * (1 - lightSettingAreaFactor) &&
-            location.y < self.bounds.size.height * lightSettingAreaFactor)
+        if (CGRectContainsPoint(lightSettingArea, location))
         {
             _trackingLighting = YES;
         }
