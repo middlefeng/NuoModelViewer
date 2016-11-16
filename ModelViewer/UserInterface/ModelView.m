@@ -177,15 +177,7 @@
         location = [self convertPoint:location fromView:nil];
         
         CGRect lightSettingArea = _notationRender.notationArea;
-        
-        if (CGRectContainsPoint(lightSettingArea, location))
-        {
-            _trackingLighting = YES;
-        }
-        else
-        {
-            _trackingLighting = NO;
-        }
+        _trackingLighting = CGRectContainsPoint(lightSettingArea, location);
     }
     else
     {
