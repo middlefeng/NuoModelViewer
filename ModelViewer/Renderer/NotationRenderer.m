@@ -126,11 +126,12 @@
     self.lastRenderPass = nil;
     
     const float lightSettingAreaFactor = 0.28;
+    const float lightDensitySliderHeight = 50;
     
     CGSize drawableSize = self.renderTarget.drawableSize;
     MTLViewport viewPort;
     viewPort.originX = drawableSize.width * (1 - lightSettingAreaFactor);
-    viewPort.originY = drawableSize.height * (1 - lightSettingAreaFactor);
+    viewPort.originY = drawableSize.height * (1 - lightSettingAreaFactor) - lightDensitySliderHeight;
     viewPort.width = drawableSize.width * lightSettingAreaFactor;
     viewPort.height = drawableSize.height * lightSettingAreaFactor;
     viewPort.znear = 0.0;
