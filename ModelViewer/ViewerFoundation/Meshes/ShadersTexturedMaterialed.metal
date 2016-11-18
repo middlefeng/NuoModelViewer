@@ -107,15 +107,18 @@ float4 fragment_light_tex_materialed_common(ProjectedVertex vert [[stage_in]],
     float diffuseIntensity = saturate(dot(normal, lightVector));
     float3 diffuseTerm = light.diffuseColor * diffuseColor * diffuseIntensity;
     
+    float opacity = diffuseTexel.a * vert.specularPowerDisolve.y;
+    
     float3 specularTerm(0);
     if (diffuseIntensity > 0)
     {
         float3 eyeDirection = normalize(vert.eye);
         float3 halfway = normalize(lightVector + eyeDirection);
         float specularFactor = pow(saturate(dot(normal, halfway)), vert.specularPowerDisolve.x);
+        opacity = 1 - (1 - opacity) * (1 - pow(specularFactor, 3.0));
         specularTerm = light.specularColor * vert.specularColor * specularFactor;
     }
     
-    return float4(ambientTerm + diffuseTerm + specularTerm, diffuseTexel.a * vert.specularPowerDisolve.y);
+    return float4(ambientTerm + diffuseTerm + specularTerm, opacity);
 }
 
