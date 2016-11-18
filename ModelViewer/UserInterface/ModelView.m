@@ -161,6 +161,20 @@
     _lightDensitySlider = [[NSSlider alloc] initWithFrame:area];
     [self addSubview:_lightDensitySlider];
     [_lightDensitySlider setHidden:YES];
+    
+    [_lightDensitySlider setMaxValue:3.0f];
+    [_lightDensitySlider setMinValue:0.3f];
+    [_lightDensitySlider setFloatValue:1.0f];
+    [_lightDensitySlider setTarget:self];
+    [_lightDensitySlider setAction:@selector(lightDensityChange:)];
+}
+
+
+- (void)lightDensityChange:(id)sender
+{
+    _modelRender.lightingDensity = [_lightDensitySlider floatValue];
+    
+    [self render];
 }
 
 

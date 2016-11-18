@@ -62,6 +62,8 @@ static CIContext* sCIContext = nil;
     NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.device];
     NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:NO checkTransparency:check];
     
+    assert(texture.texture != nil);
+    
     _diffuseTex = texture.texture;
     _hasTransparency = texture.hasTransparency;
     

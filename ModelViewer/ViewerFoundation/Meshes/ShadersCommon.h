@@ -41,6 +41,7 @@ struct Uniforms
 struct LightUniform
 {
     metal::float4 direction;
+    float density;
 };
 
 struct Light
