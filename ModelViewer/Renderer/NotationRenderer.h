@@ -11,14 +11,22 @@
 #import "NuoIntermediateRenderPass.h"
 
 
+@class LightSource;
+
 
 @interface NotationRenderer : NuoIntermediateRenderPass
 
 
-@property (nonatomic, assign) float rotateX;
-@property (nonatomic, assign) float rotateY;
+@property (nonatomic, readonly) LightSource* lightSource;
 
 @property (nonatomic, assign) CGRect notationArea;
+
+
+// manipulator to the current selected light source
+
+@property (nonatomic, assign) float rotateX;
+@property (nonatomic, assign) float rotateY;
+@property (nonatomic, assign) float density;
 
 - (void)selectCurrentLightVector:(CGPoint)point;
 

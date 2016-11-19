@@ -12,6 +12,8 @@
 #include "NuoModelBase.h"
 #include "NuoModelLoader.h"
 
+#import "LightSource.h"
+
 @interface ModelRenderer ()
 
 @property (strong) NSArray<NuoMesh*>* mesh;
@@ -38,7 +40,6 @@
         
         _modelOptions = [NuoMeshOption new];
         _rotationMatrix = matrix_identity_float4x4;
-        _lightingDensity = 1.0;
         
         _cullEnabled = YES;
         _fieldOfView = (2 * M_PI) / 8;
@@ -164,12 +165,12 @@
     {
         vector_float4 lightVector { 0, 0, 1, 0 };
         const matrix_float4x4 rotationMatrix = matrix_rotate(lightVector,
-                                                             _lightingRotationX,
-                                                             _lightingRotationY);
+                                                             _lights.lightingRotationX,
+                                                             _lights.lightingRotationY);
         
         lightVector = matrix_multiply(rotationMatrix, lightVector);
         lighting.lightVector = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
-        lighting.lightDensity = _lightingDensity;
+        lighting.lightDensity = _lights.lightingDensity;
     }
     
     memcpy([self.lightingUniformBuffers[self.bufferIndex] contents], &lighting, sizeof(LightingUniforms));

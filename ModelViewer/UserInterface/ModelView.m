@@ -172,7 +172,7 @@
 
 - (void)lightDensityChange:(id)sender
 {
-    _modelRender.lightingDensity = [_lightDensitySlider floatValue];
+    _notationRender.density = [_lightDensitySlider floatValue];
     
     [self render];
 }
@@ -255,8 +255,6 @@
     {
         _notationRender.rotateX += deltaX;
         _notationRender.rotateY += deltaY;
-        _modelRender.lightingRotationX = _notationRender.rotateX;
-        _modelRender.lightingRotationY = _notationRender.rotateY;
     }
     else
     {
@@ -343,6 +341,14 @@
     [_modelRender loadMesh:path];
     [self render];
     return YES;
+}
+
+
+
+- (void)render
+{
+    _modelRender.lights = _notationRender.lightSource;
+    [super render];
 }
 
 

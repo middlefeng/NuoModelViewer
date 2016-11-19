@@ -14,6 +14,7 @@
 
 #import "NotationLight.h"
 #import "ModelUniforms.h"
+#import "LightSource.h"
 
 #import <math.h>
 
@@ -100,6 +101,18 @@
     }
 }
 
+
+- (LightSource*)lightSource
+{
+    LightSource* result = [LightSource new];
+    result.lightingRotationX = _currentLightVector.rotateX;
+    result.lightingRotationY = _currentLightVector.rotateY;
+    result.lightingDensity = _currentLightVector.density;
+    
+    return result;
+}
+
+
 - (void)selectCurrentLightVector:(CGPoint)point
 {
     CGPoint normalized;
@@ -123,6 +136,18 @@
     }
     
     _currentLightVector.selected = YES;
+}
+
+
+- (void)setDensity:(float)density
+{
+    _currentLightVector.density = density;
+}
+
+
+- (float)density
+{
+    return _currentLightVector.density;
 }
 
 
