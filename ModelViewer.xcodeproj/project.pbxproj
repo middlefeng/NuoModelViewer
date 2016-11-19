@@ -36,10 +36,11 @@
 		2CAF2E851D691AC90074E402 /* tiny_obj_loader.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */; };
 		2CC5EDEE1D8A62B100419168 /* NuoRoundedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CC5EDED1D8A62B100419168 /* NuoRoundedView.m */; };
 		2CDCDAF31DC185A800ECFE39 /* NuoModelArrow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CDCDAF11DC185A800ECFE39 /* NuoModelArrow.cpp */; };
+		2CDFB21E1DD99E2100C67FA3 /* NotationLight.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CDFB21D1DD99E2100C67FA3 /* NotationLight.mm */; };
 		2CE2CA221D804EC5005509EE /* NuoMeshTextured.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2CA211D804EC5005509EE /* NuoMeshTextured.mm */; };
 		988442461D80853700EE2C4C /* NuoModelMaterialedBasic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 988442441D80853700EE2C4C /* NuoModelMaterialedBasic.cpp */; };
 		9884424B1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */; };
-		98CA11B81DD2B00900440C53 /* NotationRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 98CA11B71DD2B00900440C53 /* NotationRenderer.mm */; };
+		98CA11B81DD2B00900440C53 /* NotationRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 98CA11B71DD2B00900440C53 /* NotationRenderer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -97,6 +98,8 @@
 		2CC5EDED1D8A62B100419168 /* NuoRoundedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoRoundedView.m; sourceTree = "<group>"; };
 		2CDCDAF11DC185A800ECFE39 /* NuoModelArrow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoModelArrow.cpp; sourceTree = "<group>"; };
 		2CDCDAF21DC185A800ECFE39 /* NuoModelArrow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoModelArrow.h; sourceTree = "<group>"; };
+		2CDFB21C1DD99E2100C67FA3 /* NotationLight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotationLight.h; sourceTree = "<group>"; };
+		2CDFB21D1DD99E2100C67FA3 /* NotationLight.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NotationLight.mm; sourceTree = "<group>"; };
 		2CE2CA201D804EC5005509EE /* NuoMeshTextured.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoMeshTextured.h; sourceTree = "<group>"; };
 		2CE2CA211D804EC5005509EE /* NuoMeshTextured.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoMeshTextured.mm; sourceTree = "<group>"; };
 		988442441D80853700EE2C4C /* NuoModelMaterialedBasic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoModelMaterialedBasic.cpp; sourceTree = "<group>"; };
@@ -104,7 +107,7 @@
 		988442491D80B07500EE2C4C /* NuoMeshTexMatieraled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoMeshTexMatieraled.h; sourceTree = "<group>"; };
 		9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoMeshTexMatieraled.mm; sourceTree = "<group>"; };
 		98CA11B61DD2B00900440C53 /* NotationRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotationRenderer.h; sourceTree = "<group>"; };
-		98CA11B71DD2B00900440C53 /* NotationRenderer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NotationRenderer.mm; sourceTree = "<group>"; };
+		98CA11B71DD2B00900440C53 /* NotationRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NotationRenderer.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,7 +121,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		2C5DDAC51D65901400A9DC9A /* User Interface */ = {
+		2C5DDAC51D65901400A9DC9A /* Interface */ = {
 			isa = PBXGroup;
 			children = (
 				2C9D9AA81D658F0800283E46 /* AppDelegate.h */,
@@ -128,7 +131,7 @@
 				2C4B60401D8AD32100A12968 /* ModelOperationPanel.h */,
 				2C4B60411D8AD32100A12968 /* ModelOperationPanel.m */,
 			);
-			name = "User Interface";
+			name = Interface;
 			path = UserInterface;
 			sourceTree = "<group>";
 		};
@@ -196,7 +199,9 @@
 				2C5DDAD81D65949E00A9DC9A /* ModelViewerRenderer.h */,
 				2C5DDAD91D65949E00A9DC9A /* ModelViewerRenderer.mm */,
 				98CA11B61DD2B00900440C53 /* NotationRenderer.h */,
-				98CA11B71DD2B00900440C53 /* NotationRenderer.mm */,
+				98CA11B71DD2B00900440C53 /* NotationRenderer.m */,
+				2CDFB21C1DD99E2100C67FA3 /* NotationLight.h */,
+				2CDFB21D1DD99E2100C67FA3 /* NotationLight.mm */,
 			);
 			path = Renderer;
 			sourceTree = "<group>";
@@ -242,7 +247,7 @@
 			children = (
 				2C840D0B1D7001A5000D2956 /* ViewerFoundation */,
 				2C5B92B21D7157A600722936 /* MainMenu.xib */,
-				2C5DDAC51D65901400A9DC9A /* User Interface */,
+				2C5DDAC51D65901400A9DC9A /* Interface */,
 				2C65E57A1D77F30000FE77C5 /* Renderer */,
 				2C9D9AAE1D658F0800283E46 /* Assets.xcassets */,
 				2C9D9AB31D658F0800283E46 /* Info.plist */,
@@ -339,9 +344,10 @@
 				2C235FD01DD6CBD700E68295 /* ShadersTexturedMaterialed.metal in Sources */,
 				2C5B92BD1D7160EC00722936 /* NuoModelLoader.mm in Sources */,
 				2C5DDACC1D6590DB00A9DC9A /* NuoMesh.mm in Sources */,
-				98CA11B81DD2B00900440C53 /* NotationRenderer.mm in Sources */,
+				98CA11B81DD2B00900440C53 /* NotationRenderer.m in Sources */,
 				2C235FCF1DD6CBD700E68295 /* ShadersTextured.metal in Sources */,
 				2C52F1331DCFE8970034ACDC /* NuoIntermediateRenderPass.m in Sources */,
+				2CDFB21E1DD99E2100C67FA3 /* NotationLight.mm in Sources */,
 				2C3D9AA11D7E344F002C1226 /* NuoTypes.cpp in Sources */,
 				2C8974931D8BBAEF00460648 /* NuoMeshOptions.m in Sources */,
 				2C52F12E1DCC03380034ACDC /* NuoTextureMesh.mm in Sources */,

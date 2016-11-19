@@ -30,6 +30,7 @@
     NSArray<NuoRenderPass*>* _renders;
     
     ModelOperationPanel* _panel;
+    NSSlider* _lightDensitySlider;
     
     BOOL _trackingLighting;
 }
@@ -112,6 +113,13 @@
     }
     
     [_panel setFrame:[self operationPanelLocation]];
+    
+    if (!_lightDensitySlider)
+    {
+        [self addLightDensitySlider];
+    }
+    
+    [_lightDensitySlider setFrame:[self lightDensitySliderRect]];
 }
 
 
@@ -126,6 +134,47 @@
     [self setupPipelineSettings];
     
     [self registerForDraggedTypes:@[@"public.data"]];
+}
+
+
+- (NSRect)lightDensitySliderRect
+{
+    const CGFloat margin = 8;
+    
+    CGRect area = [_notationRender notationArea];
+    NSRect result = area;
+    CGFloat width = area.size.width;
+    width = width * 0.8;
+    result.origin.y = area.origin.y - margin;
+    result.origin.x += (area.size.width - width) / 2.0;
+    result.size.width = width;
+    result.size.height = 18;
+    
+    return result;
+}
+
+
+- (void)addLightDensitySlider
+{
+    CGRect area = [self lightDensitySliderRect];
+    
+    _lightDensitySlider = [[NSSlider alloc] initWithFrame:area];
+    [self addSubview:_lightDensitySlider];
+    [_lightDensitySlider setHidden:YES];
+    
+    [_lightDensitySlider setMaxValue:3.0f];
+    [_lightDensitySlider setMinValue:0.3f];
+    [_lightDensitySlider setFloatValue:1.0f];
+    [_lightDensitySlider setTarget:self];
+    [_lightDensitySlider setAction:@selector(lightDensityChange:)];
+}
+
+
+- (void)lightDensityChange:(id)sender
+{
+    _modelRender.lightingDensity = [_lightDensitySlider floatValue];
+    
+    [self render];
 }
 
 
@@ -163,6 +212,8 @@
         
         [_modelRender setRenderTarget:modelRenderTarget];
     }
+
+    [_lightDensitySlider setHidden:!_panel.showLightSettings];
     
     [self setRenderPasses:_renders];
     [self viewResizing];
@@ -176,15 +227,8 @@
         NSPoint location = event.locationInWindow;
         location = [self convertPoint:location fromView:nil];
         
-        if (location.x > self.bounds.size.width * 0.8 &&
-            location.y < self.bounds.size.height * 0.2)
-        {
-            _trackingLighting = YES;
-        }
-        else
-        {
-            _trackingLighting = NO;
-        }
+        CGRect lightSettingArea = _notationRender.notationArea;
+        _trackingLighting = CGRectContainsPoint(lightSettingArea, location);
     }
     else
     {

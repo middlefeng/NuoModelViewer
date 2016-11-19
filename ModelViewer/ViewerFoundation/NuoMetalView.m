@@ -188,10 +188,10 @@
      {
          for (size_t i = 0; i < [_renderPasses count]; ++i)
          {
-             _renderPasses[i].bufferIndex = (_renderPasses[i].bufferIndex + 1) % kInFlightBufferCount;
+             [_renderPasses[i] drawablePresented];
          }
          
-        dispatch_semaphore_signal(displaySem);
+         dispatch_semaphore_signal(displaySem);
      }];
     
     [commandBuffer presentDrawable:_currentDrawable];

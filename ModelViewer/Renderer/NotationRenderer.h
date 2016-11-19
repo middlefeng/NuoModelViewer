@@ -18,5 +18,7 @@
 @property (nonatomic, assign) float rotateX;
 @property (nonatomic, assign) float rotateY;
 
+@property (nonatomic, assign) CGRect notationArea;
+
 
 @end

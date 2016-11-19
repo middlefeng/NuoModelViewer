@@ -37,6 +37,7 @@
         
         _modelOptions = [NuoMeshOption new];
         _rotationMatrix = matrix_identity_float4x4;
+        _lightingDensity = 1.0;
         
         _cullEnabled = YES;
         _fieldOfView = (2 * M_PI) / 8;
@@ -118,6 +119,7 @@
     
     float modelSpan = std::max(bounding.spanZ, bounding.spanX);
     modelSpan = std::max(bounding.spanY, modelSpan);
+    modelSpan = 1.41 * modelSpan;
     
     const float modelNearest = - modelSpan / 2.0;
     const float bilateralFactor = 1 / 750.0f;
@@ -155,11 +157,12 @@
     {
         vector_float4 lightVector { 0, 0, 1, 0 };
         const matrix_float4x4 rotationMatrix = matrix_rotate(lightVector,
-                                                             self.lightingRotationX,
-                                                             self.lightingRotationY);
+                                                             _lightingRotationX,
+                                                             _lightingRotationY);
         
         lightVector = matrix_multiply(rotationMatrix, lightVector);
         lighting.lightVector = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
+        lighting.lightDensity = _lightingDensity;
     }
     
     memcpy([self.lightingUniformBuffers[self.bufferIndex] contents], &lighting, sizeof(LightingUniforms));

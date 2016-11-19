@@ -28,6 +28,7 @@ struct ProjectedVertex
     float2 specularPowerDisolve;
     
     float3 lightingVector;
+    float lightingDensity;
 };
 
 vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[buffer(0)]],
@@ -47,6 +48,7 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
     outVert.specularPowerDisolve = vertices[vid].specularPowerDisolve;
     
     outVert.lightingVector = lighting.direction.xyz;
+    outVert.lightingDensity = lighting.density;
 
     return outVert;
 }
@@ -105,7 +107,7 @@ float4 fragment_light_tex_materialed_common(ProjectedVertex vert [[stage_in]],
     
     float3 normal = normalize(vert.normal);
     float diffuseIntensity = saturate(dot(normal, lightVector));
-    float3 diffuseTerm = light.diffuseColor * diffuseColor * diffuseIntensity;
+    float3 diffuseTerm = light.diffuseColor * diffuseColor * diffuseIntensity * vert.lightingDensity;
     
     float opacity = diffuseTexel.a * vert.specularPowerDisolve.y;
     
@@ -116,7 +118,7 @@ float4 fragment_light_tex_materialed_common(ProjectedVertex vert [[stage_in]],
         float3 halfway = normalize(lightVector + eyeDirection);
         float specularFactor = pow(saturate(dot(normal, halfway)), vert.specularPowerDisolve.x);
         opacity = 1 - (1 - opacity) * (1 - pow(specularFactor, 3.0));
-        specularTerm = light.specularColor * vert.specularColor * specularFactor;
+        specularTerm = light.specularColor * vert.specularColor * specularFactor * vert.lightingDensity;
     }
     
     return float4(ambientTerm + diffuseTerm + specularTerm, opacity);

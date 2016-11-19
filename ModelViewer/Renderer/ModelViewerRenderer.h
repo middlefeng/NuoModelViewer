@@ -13,6 +13,7 @@
 
 @property (nonatomic, assign) float lightingRotationX;
 @property (nonatomic, assign) float lightingRotationY;
+@property (nonatomic, assign) float lightingDensity;
 
 
 @property (nonatomic, assign) float zoom;
