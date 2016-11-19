@@ -34,6 +34,7 @@
 
 
 - (NuoMeshBox*)boundingBox;
+- (CGPoint)headPointProjected;
 
 
 @end

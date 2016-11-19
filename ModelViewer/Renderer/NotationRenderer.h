@@ -20,5 +20,7 @@
 
 @property (nonatomic, assign) CGRect notationArea;
 
+- (void)selectCurrentLightVector:(CGPoint)point;
+
 
 @end

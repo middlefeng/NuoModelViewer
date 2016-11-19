@@ -229,6 +229,9 @@
         
         CGRect lightSettingArea = _notationRender.notationArea;
         _trackingLighting = CGRectContainsPoint(lightSettingArea, location);
+        
+        if (_trackingLighting)
+            [_notationRender selectCurrentLightVector:location];
     }
     else
     {

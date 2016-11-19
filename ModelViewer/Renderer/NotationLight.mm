@@ -123,6 +123,17 @@
 
 
 
+- (CGPoint)headPointProjected
+{
+    const vector_float4 startVec = { 0, 0, 1, 1 };
+    matrix_float4x4 rotationMatrix = matrix_rotate(startVec, _rotateX, _rotateY);
+    vector_float4 projected = matrix_multiply(rotationMatrix, startVec);
+    
+    return CGPointMake(projected.x / projected.w, projected.y / projected.w);
+}
+
+
+
 - (void)drawWithRenderPass:(id<MTLRenderCommandEncoder>)renderPass
 {
     [self updateUniformsForView];
