@@ -179,7 +179,7 @@
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     
     [renderPass setVertexBuffer:self.modelUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
-    [renderPass setVertexBuffer:self.lightingUniformBuffers[self.bufferIndex] offset:0 atIndex:2];
+    [renderPass setFragmentBuffer:self.lightingUniformBuffers[self.bufferIndex] offset:0 atIndex:0];
     
     if (_cullEnabled)
         [renderPass setCullMode:MTLCullModeBack];
