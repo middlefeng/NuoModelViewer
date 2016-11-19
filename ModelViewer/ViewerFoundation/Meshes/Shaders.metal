@@ -30,7 +30,8 @@ vertex ProjectedVertex vertex_project(device Vertex *vertices [[buffer(0)]],
 }
 
 fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
-                               constant LightUniform &lightUniform [[buffer(0)]])
+                               constant LightUniform &lightUniform [[buffer(0)]],
+                               constant ModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]])
 {
     float3 ambientTerm = light.ambientColor * material.ambientColor;
     
@@ -47,5 +48,5 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
         specularTerm = light.specularColor * material.specularColor * specularFactor;
     }
     
-    return float4(ambientTerm + diffuseTerm + specularTerm, 1);
+    return float4(ambientTerm + diffuseTerm + specularTerm, modelCharacterUniforms.opacity);
 }

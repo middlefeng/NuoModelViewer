@@ -19,3 +19,11 @@ typedef struct
 }
 LightingUniforms;
 
+
+typedef struct
+{
+    float opacity;
+}
+ModelCharacterUniforms;
+
+

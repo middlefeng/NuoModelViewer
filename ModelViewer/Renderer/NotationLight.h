@@ -23,6 +23,8 @@
 @property (nonatomic, assign) matrix_float4x4 viewMatrix;
 @property (nonatomic, assign) matrix_float4x4 projMatrix;
 
+@property (nonatomic, assign) BOOL selected;
+
 
 @property (nonatomic, readonly) NSInteger bufferIndex;
 

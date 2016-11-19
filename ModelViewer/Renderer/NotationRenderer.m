@@ -100,6 +100,31 @@
     }
 }
 
+- (void)selectCurrentLightVector:(CGPoint)point
+{
+    CGPoint normalized;
+    normalized.x = (point.x - _notationArea.origin.x) / _notationArea.size.width * 2.0 - 1.0;
+    normalized.y = (point.y - _notationArea.origin.y) / _notationArea.size.height * 2.0 - 1.0;
+    
+    float minDistance = 2.0f;
+    
+    for (size_t i = 0; i < _lightVectors.count; ++i)
+    {
+        _lightVectors[i].selected = NO;
+        
+        CGPoint headProjected = _lightVectors[i].headPointProjected;
+        float distance = sqrt((headProjected.x - normalized.x) * (headProjected.x - normalized.x) +
+                              (headProjected.y - normalized.y) * (headProjected.y - normalized.y));
+        if (distance < minDistance)
+        {
+            minDistance = distance;
+            _currentLightVector = _lightVectors[i];
+        }
+    }
+    
+    _currentLightVector.selected = YES;
+}
+
 
 - (void)setRotateX:(float)rotateX
 {
@@ -112,30 +137,6 @@
 {
     return _currentLightVector.rotateX;
 }
-
-
-
-- (void)selectCurrentLightVector:(CGPoint)point
-{
-    CGPoint normalized;
-    normalized.x = (point.x - _notationArea.origin.x) / _notationArea.size.width * 2.0 - 1.0;
-    normalized.y = (point.y - _notationArea.origin.y) / _notationArea.size.height * 2.0 - 1.0;
-    
-    float minDistance = 2.0f;
-    
-    for (size_t i = 0; i < _lightVectors.count; ++i)
-    {
-        CGPoint headProjected = _lightVectors[i].headPointProjected;
-        float distance = sqrt((headProjected.x - normalized.x) * (headProjected.x - normalized.x) +
-                              (headProjected.y - normalized.y) * (headProjected.y - normalized.y));
-        if (distance < minDistance)
-        {
-            minDistance = distance;
-            _currentLightVector = _lightVectors[i];
-        }
-    }
-}
-
 
 
 - (void)setRotateY:(float)rotateY
@@ -183,6 +184,8 @@
     _notationArea.size.height /= factor;
     
     [self updateUniformsForView];
+    
+    [renderPass setCullMode:MTLCullModeNone];
     [renderPass setFragmentBuffer:self.lightBuffer offset:0 atIndex:0];
     
     for (size_t i = 0; i < _lightVectors.count; ++i)

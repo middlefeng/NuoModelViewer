@@ -18,6 +18,7 @@
 
 @property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
+@property (strong) id<MTLBuffer> modelCharacterUnfiromBuffer;
 
 @property (strong) NuoModelLoader* modelLoader;
 
@@ -86,6 +87,12 @@
     _lightingUniformBuffers = [[NSArray alloc] initWithObjects:lightingBuffers[0],
                                                                lightingBuffers[1],
                                                                lightingBuffers[2], nil];
+    
+    ModelCharacterUniforms modelCharacter;
+    modelCharacter.opacity = 1.0f;
+    _modelCharacterUnfiromBuffer = [self.device newBufferWithLength:sizeof(ModelCharacterUniforms)
+                                                            options:MTLResourceOptionCPUCacheModeDefault];
+    memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(ModelCharacterUniforms));
 }
 
 - (void)updateUniformsForView
@@ -180,6 +187,7 @@
     
     [renderPass setVertexBuffer:self.modelUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
     [renderPass setFragmentBuffer:self.lightingUniformBuffers[self.bufferIndex] offset:0 atIndex:0];
+    [renderPass setFragmentBuffer:self.modelCharacterUnfiromBuffer offset:0 atIndex:1];
     
     if (_cullEnabled)
         [renderPass setCullMode:MTLCullModeBack];

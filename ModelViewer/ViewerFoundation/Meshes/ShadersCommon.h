@@ -35,8 +35,10 @@ struct Uniforms
     metal::float3x3 normalMatrix;
 };
 
-
-
+struct ModelCharacterUniforms
+{
+    float opacity;
+};
 
 struct LightUniform
 {
