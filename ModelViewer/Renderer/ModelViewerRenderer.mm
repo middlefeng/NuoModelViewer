@@ -119,6 +119,7 @@
     
     float modelSpan = std::max(bounding.spanZ, bounding.spanX);
     modelSpan = std::max(bounding.spanY, modelSpan);
+    modelSpan = 1.41 * modelSpan;
     
     const float modelNearest = - modelSpan / 2.0;
     const float bilateralFactor = 1 / 750.0f;

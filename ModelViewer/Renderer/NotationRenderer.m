@@ -79,8 +79,8 @@
     
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
-    const float near = -cameraDistance - modelSpan + 0.01;
-    const float far = near + modelSpan * 2.0 + 0.02;
+    const float near = -cameraDistance - modelSpan;
+    const float far = near + modelSpan * 2.0;
     const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, (2 * M_PI) / 30, near, far);
     
     _lightVector.viewMatrix = viewMatrix;
