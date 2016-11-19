@@ -16,13 +16,10 @@ struct ProjectedVertex
     float3 eye;
     float3 normal;
     float2 texCoord;
-    
-    float3 lightVector;
 };
 
 vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(0)]],
                                                constant Uniforms &uniforms [[buffer(1)]],
-                                               constant LightUniform &lightUniform [[buffer(2)]],
                                                uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
@@ -31,12 +28,11 @@ vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(
     outVert.normal = uniforms.normalMatrix * vertices[vid].normal.xyz;
     outVert.texCoord = vertices[vid].texCoord;
 
-    outVert.lightVector = lightUniform.direction.xyz;
-    
     return outVert;
 }
 
 fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
+                                        constant LightUniform &lightUniform [[buffer(0)]],
                                         texture2d<float> diffuseTexture [[texture(0)]],
                                         sampler samplr [[sampler(0)]])
 {
@@ -46,14 +42,14 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
     float3 ambientTerm = light.ambientColor * material.ambientColor;
     
     float3 normal = normalize(vert.normal);
-    float diffuseIntensity = saturate(dot(normal, normalize(vert.lightVector)));
+    float diffuseIntensity = saturate(dot(normal, normalize(lightUniform.direction.xyz)));
     float3 diffuseTerm = light.diffuseColor * diffuseColor * diffuseIntensity;
     
     float3 specularTerm(0);
     if (diffuseIntensity > 0)
     {
         float3 eyeDirection = normalize(vert.eye);
-        float3 halfway = normalize(normalize(vert.lightVector) + eyeDirection);
+        float3 halfway = normalize(normalize(lightUniform.direction.xyz) + eyeDirection);
         float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower);
         specularTerm = light.specularColor * material.specularColor * specularFactor;
     }

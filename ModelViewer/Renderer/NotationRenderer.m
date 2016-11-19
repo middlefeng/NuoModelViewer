@@ -183,7 +183,7 @@
     _notationArea.size.height /= factor;
     
     [self updateUniformsForView];
-    [renderPass setVertexBuffer:self.lightBuffer offset:0 atIndex:2];
+    [renderPass setFragmentBuffer:self.lightBuffer offset:0 atIndex:0];
     
     for (size_t i = 0; i < _lightVectors.count; ++i)
     {
