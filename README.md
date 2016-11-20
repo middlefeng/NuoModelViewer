@@ -4,6 +4,13 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Light source configuration.
+* Multiple light sources.
+
+<p align="left">
+  <img width="400" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F-16.jpg"/>
+<p>
+
 * Adjustable lighting direction.
 * Better handling to material opacity.
 
@@ -22,11 +29,13 @@ A simple Wavefront OBJ viewer.
 
 * Bump texture.
 * <del>Direction of lgiht source.</del>
-* Intensity of light source.
-* Mutilple light sources.
+* <del>Intensity of light source.</del>
+* <del>Mutilple light sources.</del>
 * Selectable list of object.
 * Shadow (to model and to ground).
-* Cull mode.
+* <del>Cull mode.</del>
+* Surrounding.
+* Reflection.
   
 
 ## Early Screenshots
