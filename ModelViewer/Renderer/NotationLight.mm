@@ -22,6 +22,7 @@
 
 
 @property (nonatomic, strong) NSArray<id<MTLBuffer>>* uniformBuffers;
+@property (nonatomic, strong) NSArray<id<MTLBuffer>>* characterUniformBuffers;
 @property (nonatomic, weak) id<MTLDevice> device;
 
 @property (nonatomic, strong) NuoMesh* lightVector;
@@ -82,17 +83,20 @@
 - (void)makeResources
 {
     id<MTLBuffer> buffers[kInFlightBufferCount];
+    id<MTLBuffer> characters[kInFlightBufferCount];
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
         id<MTLBuffer> uniformBuffer = [self.device newBufferWithLength:sizeof(ModelUniforms)
                                                                options:MTLResourceOptionCPUCacheModeDefault];
         buffers[i] = uniformBuffer;
         
-        NSString* label = [NSString stringWithFormat:@"Uniforms %lu", i];
-        [uniformBuffer setLabel:label];
+        id<MTLBuffer> characterUniformBuffers = [self.device newBufferWithLength:sizeof(ModelCharacterUniforms)
+                                                                         options:MTLResourceOptionCPUCacheModeDefault];
+        characters[i] = characterUniformBuffers;
     }
     
     _uniformBuffers = [[NSArray alloc] initWithObjects:buffers[0], buffers[1], buffers[2], nil];
+    _characterUniformBuffers = [[NSArray alloc] initWithObjects:characters[0], characters[1], characters[2], nil];
 }
 
 
@@ -119,6 +123,30 @@
     uniforms.normalMatrix = matrix_float4x4_extract_linear(uniforms.modelViewMatrix);
     
     memcpy([self.uniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
+    
+    ModelCharacterUniforms characters;
+    characters.opacity = _selected ? 1.0f : 0.1f;
+    
+    memcpy([self.characterUniformBuffers[self.bufferIndex] contents], &characters, sizeof(characters));
+}
+
+
+- (void)setSelected:(BOOL)selected
+{
+    _selected = selected;
+    
+    [_lightVector setTransparency:!_selected];
+    [_lightVector makeDepthStencilState];
+}
+
+
+- (CGPoint)headPointProjected
+{
+    const vector_float4 startVec = { 0, 0, 1, 1 };
+    matrix_float4x4 rotationMatrix = matrix_rotate(startVec, _rotateX, _rotateY);
+    vector_float4 projected = matrix_multiply(rotationMatrix, startVec);
+    
+    return CGPointMake(projected.x / projected.w, projected.y / projected.w);
 }
 
 
@@ -127,6 +155,7 @@
 {
     [self updateUniformsForView];
     [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
+    [renderPass setFragmentBuffer:self.characterUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
     [_lightVector drawMesh:renderPass];
 }
 

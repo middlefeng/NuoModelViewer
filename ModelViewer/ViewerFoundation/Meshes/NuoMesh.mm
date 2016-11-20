@@ -44,6 +44,9 @@
 
 
 @implementation NuoMesh
+{
+    BOOL _hasTransparency;
+}
 
 
 
@@ -88,6 +91,14 @@
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
+    MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
+    colorAttachment.blendingEnabled = YES;
+    colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
+    colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
+    colorAttachment.sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
+    colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+    colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+    
     return pipelineDescriptor;
 }
 
@@ -127,12 +138,13 @@
 
 - (BOOL)hasTransparency
 {
-    return NO;
+    return _hasTransparency;
 }
 
 
 - (void)setTransparency:(BOOL)transparent
 {
+    _hasTransparency = transparent;
 }
 
 

@@ -71,9 +71,9 @@ static CIContext* sCIContext = nil;
     MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
     samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
     samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
-    samplerDesc.minFilter = MTLSamplerMinMagFilterNearest;
+    samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
     samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
-    samplerDesc.mipFilter = MTLSamplerMipFilterLinear;
+    samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
     _samplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 

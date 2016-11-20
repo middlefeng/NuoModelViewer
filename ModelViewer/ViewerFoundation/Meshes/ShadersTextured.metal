@@ -41,19 +41,26 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
     
     float3 ambientTerm = light.ambientColor * material.ambientColor;
     
-    float3 normal = normalize(vert.normal);
-    float diffuseIntensity = saturate(dot(normal, normalize(lightUniform.direction.xyz)));
-    float3 diffuseTerm = light.diffuseColor * diffuseColor * diffuseIntensity;
+    float3 colorForLights = 0.0;
     
-    float3 specularTerm(0);
-    if (diffuseIntensity > 0)
+    for (unsigned i = 0; i < 4; ++i)
     {
-        float3 eyeDirection = normalize(vert.eye);
-        float3 halfway = normalize(normalize(lightUniform.direction.xyz) + eyeDirection);
-        float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower);
-        specularTerm = light.specularColor * material.specularColor * specularFactor;
+        float3 normal = normalize(vert.normal);
+        float diffuseIntensity = saturate(dot(normal, normalize(lightUniform.direction[i].xyz)));
+        float3 diffuseTerm = light.diffuseColor * diffuseColor * diffuseIntensity;
+        
+        float3 specularTerm(0);
+        if (diffuseIntensity > 0)
+        {
+            float3 eyeDirection = normalize(vert.eye);
+            float3 halfway = normalize(normalize(lightUniform.direction[i].xyz) + eyeDirection);
+            float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower);
+            specularTerm = light.specularColor * material.specularColor * specularFactor;
+        }
+        
+        colorForLights += (diffuseTerm + specularTerm) * lightUniform.density[i];
     }
     
-    return float4(ambientTerm + diffuseTerm + specularTerm, diffuseTexel.a);
+    return float4(ambientTerm + colorForLights, diffuseTexel.a);
 }
 

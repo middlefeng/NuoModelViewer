@@ -17,11 +17,15 @@
 @interface NotationLight : NSObject
 
 
+@property (nonatomic, assign) float density;
+
 @property (nonatomic, assign) float rotateX;
 @property (nonatomic, assign) float rotateY;
 
 @property (nonatomic, assign) matrix_float4x4 viewMatrix;
 @property (nonatomic, assign) matrix_float4x4 projMatrix;
+
+@property (nonatomic, assign) BOOL selected;
 
 
 @property (nonatomic, readonly) NSInteger bufferIndex;
@@ -34,6 +38,7 @@
 
 
 - (NuoMeshBox*)boundingBox;
+- (CGPoint)headPointProjected;
 
 
 @end

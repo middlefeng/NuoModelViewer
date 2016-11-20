@@ -163,7 +163,7 @@
     [_lightDensitySlider setHidden:YES];
     
     [_lightDensitySlider setMaxValue:3.0f];
-    [_lightDensitySlider setMinValue:0.3f];
+    [_lightDensitySlider setMinValue:0.0f];
     [_lightDensitySlider setFloatValue:1.0f];
     [_lightDensitySlider setTarget:self];
     [_lightDensitySlider setAction:@selector(lightDensityChange:)];
@@ -172,7 +172,7 @@
 
 - (void)lightDensityChange:(id)sender
 {
-    _modelRender.lightingDensity = [_lightDensitySlider floatValue];
+    _notationRender.density = [_lightDensitySlider floatValue];
     
     [self render];
 }
@@ -229,6 +229,12 @@
         
         CGRect lightSettingArea = _notationRender.notationArea;
         _trackingLighting = CGRectContainsPoint(lightSettingArea, location);
+        
+        if (_trackingLighting)
+        {
+            [_notationRender selectCurrentLightVector:location];
+            [_lightDensitySlider setFloatValue:_notationRender.density];
+        }
     }
     else
     {
@@ -240,6 +246,7 @@
 - (void)mouseUp:(NSEvent *)event
 {
     _trackingLighting = NO;
+    [self render];
 }
 
 
@@ -252,8 +259,6 @@
     {
         _notationRender.rotateX += deltaX;
         _notationRender.rotateY += deltaY;
-        _modelRender.lightingRotationX = _notationRender.rotateX;
-        _modelRender.lightingRotationY = _notationRender.rotateY;
     }
     else
     {
@@ -340,6 +345,14 @@
     [_modelRender loadMesh:path];
     [self render];
     return YES;
+}
+
+
+
+- (void)render
+{
+    _modelRender.lights = _notationRender.lightSources;
+    [super render];
 }
 
 

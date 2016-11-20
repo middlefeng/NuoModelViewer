@@ -14,13 +14,17 @@
 
 #import "NotationLight.h"
 #import "ModelUniforms.h"
+#import "LightSource.h"
+
+#import <math.h>
 
 
 @interface NotationRenderer()
 
 @property (nonatomic, strong) id<MTLBuffer> lightBuffer;
 
-@property (nonatomic, strong) NotationLight* lightVector;
+@property (nonatomic, strong) NSArray<NotationLight*>* lightVectors;
+@property (nonatomic, weak) NotationLight* currentLightVector;
 
 @end
 
@@ -35,15 +39,28 @@
     
     if (self)
     {
-        _lightVector = [[NotationLight alloc] initWithDevice:device];
+        NSMutableArray* lightVectors = [[NSMutableArray alloc] init];
+        
+        for (unsigned int index = 0; index < 4; ++index)
+        {
+            NotationLight* lightNotation = [[NotationLight alloc] initWithDevice:device];
+            [lightVectors addObject:lightNotation];
+        }
+        _lightVectors = lightVectors;
+        _currentLightVector = lightVectors[0];
         
         // the direction of light used to render the "light vector"
         
         LightingUniforms lightUniform;
-        lightUniform.lightVector.x = 0.13;
-        lightUniform.lightVector.y = 0.72;
-        lightUniform.lightVector.z = 0.68;
-        lightUniform.lightVector.w = 0.0;
+        lightUniform.lightVector[0].x = 0.13;
+        lightUniform.lightVector[0].y = 0.72;
+        lightUniform.lightVector[0].z = 0.68;
+        lightUniform.lightVector[0].w = 0.0;
+        
+        lightUniform.lightDensity[0] = 1.0f;
+        lightUniform.lightDensity[1] = 0.0f;
+        lightUniform.lightDensity[2] = 0.0f;
+        lightUniform.lightDensity[3] = 0.0f;
         
         _lightBuffer = [self.device newBufferWithLength:sizeof(LightingUniforms)
                                                 options:MTLResourceOptionCPUCacheModeDefault];
@@ -59,7 +76,7 @@
 
 - (void)updateUniformsForView
 {
-    NuoMeshBox* bounding = _lightVector.boundingBox;
+    NuoMeshBox* bounding = _lightVectors[0].boundingBox;
     
     float zoom = -200.0;
     
@@ -83,35 +100,91 @@
     const float far = near + modelSpan * 2.0;
     const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, (2 * M_PI) / 30, near, far);
     
-    _lightVector.viewMatrix = viewMatrix;
-    _lightVector.projMatrix = projectionMatrix;
+    for (size_t i = 0; i < _lightVectors.count; ++i)
+    {
+        _lightVectors[i].viewMatrix = viewMatrix;
+        _lightVectors[i].projMatrix = projectionMatrix;
+    }
+}
+
+
+- (NSArray<LightSource*>*)lightSources
+{
+    LightSource* result[4];
+    
+    for (unsigned int i = 0; i < 4; ++i)
+    {
+        result[i] = [LightSource new];
+        result[i].lightingRotationX = _lightVectors[i].rotateX;
+        result[i].lightingRotationY = _lightVectors[i].rotateY;
+        result[i].lightingDensity = _lightVectors[i].density;
+    }
+    
+    return [[NSArray alloc] initWithObjects:result[0], result[1], result[2], result[3], nil];
+}
+
+
+- (void)selectCurrentLightVector:(CGPoint)point
+{
+    CGPoint normalized;
+    normalized.x = (point.x - _notationArea.origin.x) / _notationArea.size.width * 2.0 - 1.0;
+    normalized.y = (point.y - _notationArea.origin.y) / _notationArea.size.height * 2.0 - 1.0;
+    
+    float minDistance = 2.0f;
+    
+    for (size_t i = 0; i < _lightVectors.count; ++i)
+    {
+        _lightVectors[i].selected = NO;
+        
+        CGPoint headProjected = _lightVectors[i].headPointProjected;
+        float distance = sqrt((headProjected.x - normalized.x) * (headProjected.x - normalized.x) +
+                              (headProjected.y - normalized.y) * (headProjected.y - normalized.y));
+        if (distance < minDistance)
+        {
+            minDistance = distance;
+            _currentLightVector = _lightVectors[i];
+        }
+    }
+    
+    _currentLightVector.selected = YES;
+}
+
+
+- (void)setDensity:(float)density
+{
+    _currentLightVector.density = density;
+}
+
+
+- (float)density
+{
+    return _currentLightVector.density;
 }
 
 
 - (void)setRotateX:(float)rotateX
 {
-    _lightVector.rotateX = rotateX;
+    _currentLightVector.rotateX = rotateX;
 }
 
 
 
 - (float)rotateX
 {
-    return _lightVector.rotateX;
+    return _currentLightVector.rotateX;
 }
-
 
 
 - (void)setRotateY:(float)rotateY
 {
-    _lightVector.rotateY = rotateY;
+    _currentLightVector.rotateY = rotateY;
 }
 
 
 
 - (float)rotateY
 {
-    return _lightVector.rotateY;
+    return _currentLightVector.rotateY;
 }
 
 
@@ -147,9 +220,15 @@
     _notationArea.size.height /= factor;
     
     [self updateUniformsForView];
+    
+    [renderPass setCullMode:MTLCullModeNone];
     [renderPass setFragmentBuffer:self.lightBuffer offset:0 atIndex:0];
     
-    [_lightVector drawWithRenderPass:renderPass];
+    for (size_t i = 0; i < _lightVectors.count; ++i)
+    {
+        [_lightVectors[i] drawWithRenderPass:renderPass];
+    }
+    
     [renderPass endEncoding];
 }
 
@@ -158,7 +237,9 @@
 - (void)drawablePresented
 {
     [super drawablePresented];
-    [_lightVector drawablePresented];
+    
+    for (size_t i = 0; i < _lightVectors.count; ++i)
+        [_lightVectors[i] drawablePresented];
 }
 
 

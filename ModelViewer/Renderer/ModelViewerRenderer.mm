@@ -12,12 +12,15 @@
 #include "NuoModelBase.h"
 #include "NuoModelLoader.h"
 
+#import "LightSource.h"
+
 @interface ModelRenderer ()
 
 @property (strong) NSArray<NuoMesh*>* mesh;
 
 @property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
+@property (strong) id<MTLBuffer> modelCharacterUnfiromBuffer;
 
 @property (strong) NuoModelLoader* modelLoader;
 
@@ -37,7 +40,6 @@
         
         _modelOptions = [NuoMeshOption new];
         _rotationMatrix = matrix_identity_float4x4;
-        _lightingDensity = 1.0;
         
         _cullEnabled = YES;
         _fieldOfView = (2 * M_PI) / 8;
@@ -86,6 +88,12 @@
     _lightingUniformBuffers = [[NSArray alloc] initWithObjects:lightingBuffers[0],
                                                                lightingBuffers[1],
                                                                lightingBuffers[2], nil];
+    
+    ModelCharacterUniforms modelCharacter;
+    modelCharacter.opacity = 1.0f;
+    _modelCharacterUnfiromBuffer = [self.device newBufferWithLength:sizeof(ModelCharacterUniforms)
+                                                            options:MTLResourceOptionCPUCacheModeDefault];
+    memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(ModelCharacterUniforms));
 }
 
 - (void)updateUniformsForView
@@ -154,15 +162,16 @@
     unitVec = matrix_multiply(unitVec, uniforms.modelViewMatrix);
     
     LightingUniforms lighting;
+    for (unsigned int i = 0; i < 4; ++i)
     {
         vector_float4 lightVector { 0, 0, 1, 0 };
         const matrix_float4x4 rotationMatrix = matrix_rotate(lightVector,
-                                                             _lightingRotationX,
-                                                             _lightingRotationY);
+                                                             _lights[i].lightingRotationX,
+                                                             _lights[i].lightingRotationY);
         
         lightVector = matrix_multiply(rotationMatrix, lightVector);
-        lighting.lightVector = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
-        lighting.lightDensity = _lightingDensity;
+        lighting.lightVector[i] = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
+        lighting.lightDensity[i] = _lights[i].lightingDensity;
     }
     
     memcpy([self.lightingUniformBuffers[self.bufferIndex] contents], &lighting, sizeof(LightingUniforms));
@@ -180,6 +189,7 @@
     
     [renderPass setVertexBuffer:self.modelUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
     [renderPass setFragmentBuffer:self.lightingUniformBuffers[self.bufferIndex] offset:0 atIndex:0];
+    [renderPass setFragmentBuffer:self.modelCharacterUnfiromBuffer offset:0 atIndex:1];
     
     if (_cullEnabled)
         [renderPass setCullMode:MTLCullModeBack];
