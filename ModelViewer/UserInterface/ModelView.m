@@ -163,7 +163,7 @@
     [_lightDensitySlider setHidden:YES];
     
     [_lightDensitySlider setMaxValue:3.0f];
-    [_lightDensitySlider setMinValue:0.3f];
+    [_lightDensitySlider setMinValue:0.0f];
     [_lightDensitySlider setFloatValue:1.0f];
     [_lightDensitySlider setTarget:self];
     [_lightDensitySlider setAction:@selector(lightDensityChange:)];
@@ -231,7 +231,10 @@
         _trackingLighting = CGRectContainsPoint(lightSettingArea, location);
         
         if (_trackingLighting)
+        {
             [_notationRender selectCurrentLightVector:location];
+            [_lightDensitySlider setFloatValue:_notationRender.density];
+        }
     }
     else
     {
@@ -243,6 +246,7 @@
 - (void)mouseUp:(NSEvent *)event
 {
     _trackingLighting = NO;
+    [self render];
 }
 
 
@@ -347,7 +351,7 @@
 
 - (void)render
 {
-    _modelRender.lights = _notationRender.lightSource;
+    _modelRender.lights = _notationRender.lightSources;
     [super render];
 }
 

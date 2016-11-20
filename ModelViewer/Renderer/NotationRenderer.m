@@ -47,14 +47,20 @@
             [lightVectors addObject:lightNotation];
         }
         _lightVectors = lightVectors;
+        _currentLightVector = lightVectors[0];
         
         // the direction of light used to render the "light vector"
         
         LightingUniforms lightUniform;
-        lightUniform.lightVector.x = 0.13;
-        lightUniform.lightVector.y = 0.72;
-        lightUniform.lightVector.z = 0.68;
-        lightUniform.lightVector.w = 0.0;
+        lightUniform.lightVector[0].x = 0.13;
+        lightUniform.lightVector[0].y = 0.72;
+        lightUniform.lightVector[0].z = 0.68;
+        lightUniform.lightVector[0].w = 0.0;
+        
+        lightUniform.lightDensity[0] = 1.0f;
+        lightUniform.lightDensity[1] = 0.0f;
+        lightUniform.lightDensity[2] = 0.0f;
+        lightUniform.lightDensity[3] = 0.0f;
         
         _lightBuffer = [self.device newBufferWithLength:sizeof(LightingUniforms)
                                                 options:MTLResourceOptionCPUCacheModeDefault];
@@ -102,14 +108,19 @@
 }
 
 
-- (LightSource*)lightSource
+- (NSArray<LightSource*>*)lightSources
 {
-    LightSource* result = [LightSource new];
-    result.lightingRotationX = _currentLightVector.rotateX;
-    result.lightingRotationY = _currentLightVector.rotateY;
-    result.lightingDensity = _currentLightVector.density;
+    LightSource* result[4];
     
-    return result;
+    for (unsigned int i = 0; i < 4; ++i)
+    {
+        result[i] = [LightSource new];
+        result[i].lightingRotationX = _lightVectors[i].rotateX;
+        result[i].lightingRotationY = _lightVectors[i].rotateY;
+        result[i].lightingDensity = _lightVectors[i].density;
+    }
+    
+    return [[NSArray alloc] initWithObjects:result[0], result[1], result[2], result[3], nil];
 }
 
 

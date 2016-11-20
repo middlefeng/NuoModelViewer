@@ -11,7 +11,7 @@
 @interface ModelRenderer : NuoRenderPass
 
 
-@property (nonatomic, strong) LightSource* lights;
+@property (nonatomic, strong) NSArray<LightSource*>* lights;
 
 
 @property (nonatomic, assign) float zoom;

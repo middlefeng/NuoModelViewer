@@ -14,8 +14,8 @@ ModelUniforms;
 
 typedef struct
 {
-    vector_float4 lightVector;
-    float lightDensity;
+    vector_float4 lightVector[4];
+    float lightDensity[4];
 }
 LightingUniforms;
 

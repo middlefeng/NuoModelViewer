@@ -42,8 +42,8 @@ struct ModelCharacterUniforms
 
 struct LightUniform
 {
-    metal::float4 direction;
-    float density;
+    metal::float4 direction[4];
+    float density[4];
 };
 
 struct Light

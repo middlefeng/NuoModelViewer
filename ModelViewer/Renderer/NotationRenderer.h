@@ -17,7 +17,7 @@
 @interface NotationRenderer : NuoIntermediateRenderPass
 
 
-@property (nonatomic, readonly) LightSource* lightSource;
+@property (nonatomic, readonly) NSArray<LightSource*>* lightSources;
 
 @property (nonatomic, assign) CGRect notationArea;
 

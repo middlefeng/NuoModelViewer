@@ -162,15 +162,16 @@
     unitVec = matrix_multiply(unitVec, uniforms.modelViewMatrix);
     
     LightingUniforms lighting;
+    for (unsigned int i = 0; i < 4; ++i)
     {
         vector_float4 lightVector { 0, 0, 1, 0 };
         const matrix_float4x4 rotationMatrix = matrix_rotate(lightVector,
-                                                             _lights.lightingRotationX,
-                                                             _lights.lightingRotationY);
+                                                             _lights[i].lightingRotationX,
+                                                             _lights[i].lightingRotationY);
         
         lightVector = matrix_multiply(rotationMatrix, lightVector);
-        lighting.lightVector = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
-        lighting.lightDensity = _lights.lightingDensity;
+        lighting.lightVector[i] = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
+        lighting.lightDensity[i] = _lights[i].lightingDensity;
     }
     
     memcpy([self.lightingUniformBuffers[self.bufferIndex] contents], &lighting, sizeof(LightingUniforms));
