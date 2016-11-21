@@ -66,6 +66,7 @@ public:
     
     virtual void SetTexturePathOpacity(const std::string texPath) override;
     virtual std::string GetTexturePathOpacity() override;
+    virtual void GenerateTangents() override;
 };
 
 
@@ -93,6 +94,7 @@ class NuoModelMaterialed : public NuoModelMaterialedBasicBase<NuoItemMaterialedB
 
 public:
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
+    virtual void GenerateTangents() override;
     
     virtual void SetTexturePathDiffuse(const std::string texPath) override;
     virtual std::string GetTexturePathDiffuse() override;

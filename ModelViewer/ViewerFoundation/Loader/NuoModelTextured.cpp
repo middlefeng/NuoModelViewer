@@ -38,6 +38,11 @@ void NuoModelTextured::SetTexturePathOpacity(const std::string texPath)
 }
 
 
+void NuoModelTextured::GenerateTangents()
+{
+}
+
+
 
 std::string NuoModelTextured::GetTexturePathOpacity()
 {

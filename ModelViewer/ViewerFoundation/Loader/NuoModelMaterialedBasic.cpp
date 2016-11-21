@@ -99,6 +99,11 @@ std::string NuoModelMaterialedTextured::GetTexturePathOpacity()
 }
 
 
+void NuoModelMaterialedTextured::GenerateTangents()
+{
+}
+
+
 void NuoModelMaterialed::SetTexturePathDiffuse(const std::string texPath)
 {
 }
@@ -124,6 +129,11 @@ std::string NuoModelMaterialed::GetTexturePathOpacity()
 
 
 void NuoModelMaterialed::AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer)
+{
+}
+
+
+void NuoModelMaterialed::GenerateTangents()
 {
 }
 

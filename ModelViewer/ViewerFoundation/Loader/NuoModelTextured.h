@@ -62,6 +62,8 @@ public:
     virtual void AddMaterial(const NuoMaterial& material) override;
     virtual bool HasTransparent() override;
     
+    virtual void GenerateTangents() override;
+    
     virtual void SetTexturePathOpacity(const std::string texPath) override;
     virtual std::string GetTexturePathOpacity() override;
 };
