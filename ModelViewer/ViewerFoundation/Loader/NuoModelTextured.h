@@ -45,6 +45,16 @@ public:
 
 
 
+template <class ItemBase>
+class NuoModelTexturedWithTangent : virtual public NuoModelTextureBase<ItemBase>
+{
+public:
+    
+    virtual void GenerateTangents() override;
+};
+
+
+
 
 class NuoModelTextured : public NuoModelTextureBase<NuoItemTextured>
 {
@@ -81,12 +91,73 @@ void NuoModelTextureBase<ItemBase>::SetCheckTransparency(bool check)
     _checkTransparency = check;
 }
 
-
-
 template <class ItemBase>
 std::string NuoModelTextureBase<ItemBase>::GetTexturePathDiffuse()
 {
     return _texPathDiffuse;
+}
+
+
+/* http://answers.unity3d.com/questions/7789/calculating-tangents-vector4.html */
+
+template <class ItemBase>
+void NuoModelTexturedWithTangent<ItemBase>::GenerateTangents()
+{
+    std::vector<uint32_t>& indices = NuoModelCommon<ItemBase>::_indices;
+    std::vector<ItemBase>& buffer = NuoModelCommon<ItemBase>::_buffer;
+    
+    std::vector<vector_float3> tan1(buffer.size());
+    std::vector<vector_float3> tan2(buffer.size());
+    std::vector<vector_float4> tangents(buffer.size());
+    
+    memset(tan1.data(), 0, sizeof(vector_float3) * tan1.size());
+    memset(tan2.data(), 0, sizeof(vector_float3) * tan2.size());
+    memset(tangents.data(), 0, sizeof(vector_float4) * tangents.size());
+    
+    for (size_t a = 0; a < indices.size(); a += 3)
+    {
+        uint32_t index1 = indices[a];
+        uint32_t index2 = indices[a + 1];
+        uint32_t index3 = indices[a + 2];
+        
+        vector_float4 v1 = buffer._position[index1];
+        vector_float4 v2 = buffer._position[index2];
+        vector_float4 v3 = buffer._position[index3];
+        
+        vector_float2 w1 = buffer._texCoord[index1];
+        vector_float2 w2 = buffer._texCoord[index2];
+        vector_float2 w3 = buffer._texCoord[index3];
+        
+        float x1 = v2.x - v1.x;
+        float x2 = v3.x - v1.x;
+        float y1 = v2.y - v1.y;
+        float y2 = v3.y - v1.y;
+        float z1 = v2.z - v1.z;
+        float z2 = v3.z - v1.z;
+        float s1 = w2.x - w1.x;
+        float s2 = w3.x - w1.x;
+        float t1 = w2.y - w1.y;
+        float t2 = w3.y - w1.y;
+        float r = 1.0f / (s1 * t2 - s2 * t1);
+        vector_float3 sdir = vector_float3 { (t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r };
+        vector_float3 tdir = vector_float3 { (s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r };
+        
+        tan1[index1] += sdir;
+        tan1[index2] += sdir;
+        tan1[index3] += sdir;
+        tan2[index1] += tdir;
+        tan2[index2] += tdir;
+        tan2[index3] += tdir;
+    }
+    
+    for (size_t a = 0; a < buffer.size(); ++a)
+    {
+        vector_float3 n = buffer._normal.xyz;
+        vector_float3 t = tan1[a];
+        vector_float3 tmp = vector_normalize(t - n * vector_dot(n, t));
+        buffer[a]._tangent = vector_float4 { tmp.x, tmp.y, tmp.z, 0 };
+        buffer[a]._tangent.w = vector_dot(vector_cross(n, t), tan2[a]) < 0.0f ? -1.0f : 1.0f;
+    }
 }
 
 

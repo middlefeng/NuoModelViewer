@@ -121,6 +121,10 @@ void NuoModelSimple::AddMaterial(const NuoMaterial& material)
 }
 
 
+void NuoModelSimple::GenerateTangents()
+{
+}
+
 
 void NuoModelSimple::SetTexturePathDiffuse(const std::string texPath)
 {

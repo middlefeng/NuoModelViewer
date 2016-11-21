@@ -68,6 +68,7 @@ public:
     
     virtual void GenerateIndices() = 0;
     virtual void GenerateNormals() = 0;
+    virtual void GenerateTangents() = 0;
     
     virtual size_t GetVerticesNumber() = 0;
     virtual vector_float4 GetPosition(size_t index) = 0;
@@ -127,6 +128,8 @@ public:
     
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
     virtual void AddMaterial(const NuoMaterial& material) override;
+    
+    virtual void GenerateTangents() override;
     
     virtual void SetTexturePathDiffuse(const std::string texPath) override;
     virtual std::string GetTexturePathDiffuse() override;
