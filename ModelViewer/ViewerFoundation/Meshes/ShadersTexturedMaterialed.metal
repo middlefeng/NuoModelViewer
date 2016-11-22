@@ -52,12 +52,6 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert);
 
 
 
-float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
-                                            float3 normal,
-                                            constant LightUniform &lighting,
-                                            float4 diffuseTexel);
-
-
 fragment float4 fragment_light_tex_a_materialed(ProjectedVertex vert [[stage_in]],
                                                 constant LightUniform &lighting [[buffer(0)]],
                                                 texture2d<float> diffuseTexture [[texture(0)]],
@@ -102,40 +96,6 @@ fragment float4 fragment_light_tex_materialed_tex_opacity(ProjectedVertex vert [
     diffuseTexel = diffuseTexel / diffuseTexel.a;
     diffuseTexel.a = opacityTexel.a;
     return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel);
-}
-
-
-float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
-                                            float3 normal,
-                                            constant LightUniform &lightingUniform,
-                                            float4 diffuseTexel)
-{
-    float3 diffuseColor = diffuseTexel.rgb * vert.diffuseColor;
-    float opacity = diffuseTexel.a * vert.opacity;
-    
-    float3 ambientTerm = light.ambientColor * vert.ambientColor;
-    float3 colorForLights = 0.0;
-    
-    for (unsigned i = 0; i < 4; ++i)
-    {
-        float3 lightVector = normalize(lightingUniform.direction[i].xyz);
-        float diffuseIntensity = saturate(dot(normal, lightVector));
-        float3 diffuseTerm = light.diffuseColor * diffuseColor * diffuseIntensity;
-        
-        float3 specularTerm(0);
-        if (diffuseIntensity > 0)
-        {
-            float3 eyeDirection = normalize(vert.eye);
-            float3 halfway = normalize(lightVector + eyeDirection);
-            float specularFactor = pow(saturate(dot(normal, halfway)), vert.specularPowerDisolve);
-            opacity = 1 - (1 - opacity) * (1 - pow(specularFactor, 3.0));
-            specularTerm = light.specularColor * vert.specularColor * specularFactor;
-        }
-        
-        colorForLights += (diffuseTerm + specularTerm) * lightingUniform.density[i];
-    }
-    
-    return float4(ambientTerm + colorForLights, opacity);
 }
 
 
