@@ -60,5 +60,17 @@ constant Light light = {
 };
 
 
+struct VertexFragmentCharacters
+{
+    metal::float3 eye;
+    
+    metal::float3 diffuseColor;
+    metal::float3 ambientColor;
+    metal::float3 specularColor;
+    float specularPowerDisolve;
+    float opacity;
+};
+
+
 
 #endif /* ShadersCommon_h */
