@@ -48,9 +48,8 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
 
 
 
-float4 fragment_light_tex_materialed_common(ProjectedVertex vert,
-                                            constant LightUniform &lighting,
-                                            float4 diffuseTexel);
+VertexFragmentCharacters vertex_characters(ProjectedVertex vert);
+
 
 
 fragment float4 fragment_light_tex_a_materialed(ProjectedVertex vert [[stage_in]],
@@ -58,9 +57,11 @@ fragment float4 fragment_light_tex_a_materialed(ProjectedVertex vert [[stage_in]
                                                 texture2d<float> diffuseTexture [[texture(0)]],
                                                 sampler samplr [[sampler(0)]])
 {
+    VertexFragmentCharacters outVert = vertex_characters(vert);
+    
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     diffuseTexel = float4(diffuseTexel.rgb / diffuseTexel.a, diffuseTexel.a);
-    return fragment_light_tex_materialed_common(vert, lighting, diffuseTexel);
+    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel);
 }
 
 
@@ -69,6 +70,8 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
                                               texture2d<float> diffuseTexture [[texture(0)]],
                                               sampler samplr [[sampler(0)]])
 {
+    VertexFragmentCharacters outVert = vertex_characters(vert);
+    
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     if (diffuseTexel.a < 1e-9)
         diffuseTexel.rgb = float3(1.0);
@@ -76,7 +79,7 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
         diffuseTexel = diffuseTexel / diffuseTexel.a;
     
     diffuseTexel.a = 1.0;
-    return fragment_light_tex_materialed_common(vert, lighting, diffuseTexel);
+    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel);
 }
 
 
@@ -86,45 +89,27 @@ fragment float4 fragment_light_tex_materialed_tex_opacity(ProjectedVertex vert [
                                                           texture2d<float> opacityTexture [[texture(1)]],
                                                           sampler samplr [[sampler(0)]])
 {
+    VertexFragmentCharacters outVert = vertex_characters(vert);
+    
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     float4 opacityTexel = opacityTexture.sample(samplr, vert.texCoord);
     diffuseTexel = diffuseTexel / diffuseTexel.a;
     diffuseTexel.a = opacityTexel.a;
-    return fragment_light_tex_materialed_common(vert, lighting, diffuseTexel);
+    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel);
 }
 
 
-float4 fragment_light_tex_materialed_common(ProjectedVertex vert,
-                                            constant LightUniform &lightingUniform,
-                                            float4 diffuseTexel)
+VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
 {
-    float3 diffuseColor = diffuseTexel.rgb * vert.diffuseColor;
-    float opacity = diffuseTexel.a * vert.specularPowerDisolve.y;
+    VertexFragmentCharacters outVert;
     
-    float3 ambientTerm = light.ambientColor * vert.ambientColor;
-    float3 colorForLights = 0.0;
+    outVert.eye = vert.eye;
+    outVert.diffuseColor = vert.diffuseColor;
+    outVert.ambientColor = vert.ambientColor;
+    outVert.specularColor = vert.specularColor;
+    outVert.specularPowerDisolve = vert.specularPowerDisolve.x;
+    outVert.opacity = vert.specularPowerDisolve.y;
     
-    for (unsigned i = 0; i < 4; ++i)
-    {
-        float3 lightVector = normalize(lightingUniform.direction[i].xyz);
-        
-        float3 normal = normalize(vert.normal);
-        float diffuseIntensity = saturate(dot(normal, lightVector));
-        float3 diffuseTerm = light.diffuseColor * diffuseColor * diffuseIntensity;
-        
-        float3 specularTerm(0);
-        if (diffuseIntensity > 0)
-        {
-            float3 eyeDirection = normalize(vert.eye);
-            float3 halfway = normalize(lightVector + eyeDirection);
-            float specularFactor = pow(saturate(dot(normal, halfway)), vert.specularPowerDisolve.x);
-            opacity = 1 - (1 - opacity) * (1 - pow(specularFactor, 3.0));
-            specularTerm = light.specularColor * vert.specularColor * specularFactor;
-        }
-        
-        colorForLights += (diffuseTerm + specularTerm) * lightingUniform.density[i];
-    }
-    
-    return float4(ambientTerm + colorForLights, opacity);
+    return outVert;
 }
 
