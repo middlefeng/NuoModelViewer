@@ -46,6 +46,7 @@ vertex ProjectedVertex vertex_project_materialed(device Vertex *vertices [[buffe
 fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
                                           constant LightUniform &lightUniform [[buffer(0)]])
 {
+    float3 normal = normalize(vert.normal);
     float3 diffuseColor = vert.diffuseColor;
     float3 ambientTerm = light.ambientColor * vert.ambientColor;
     
@@ -53,7 +54,6 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
     
     for (unsigned i = 0; i < 4; ++i)
     {
-        float3 normal = normalize(vert.normal);
         float diffuseIntensity = saturate(dot(normal, normalize(lightUniform.direction[i].xyz)));
         float3 diffuseTerm = light.diffuseColor * diffuseColor * diffuseIntensity;
         

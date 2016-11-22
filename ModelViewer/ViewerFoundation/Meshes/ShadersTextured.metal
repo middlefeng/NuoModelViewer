@@ -36,6 +36,7 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
                                         texture2d<float> diffuseTexture [[texture(0)]],
                                         sampler samplr [[sampler(0)]])
 {
+    float3 normal = normalize(vert.normal);
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     float3 diffuseColor = diffuseTexel.rgb / diffuseTexel.a;
     
@@ -45,7 +46,6 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
     
     for (unsigned i = 0; i < 4; ++i)
     {
-        float3 normal = normalize(vert.normal);
         float diffuseIntensity = saturate(dot(normal, normalize(lightUniform.direction[i].xyz)));
         float3 diffuseTerm = light.diffuseColor * diffuseColor * diffuseIntensity;
         

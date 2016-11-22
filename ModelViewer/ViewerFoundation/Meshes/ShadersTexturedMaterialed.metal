@@ -98,6 +98,7 @@ float4 fragment_light_tex_materialed_common(ProjectedVertex vert,
                                             constant LightUniform &lightingUniform,
                                             float4 diffuseTexel)
 {
+    float3 normal = normalize(vert.normal);
     float3 diffuseColor = diffuseTexel.rgb * vert.diffuseColor;
     float opacity = diffuseTexel.a * vert.specularPowerDisolve.y;
     
@@ -107,8 +108,6 @@ float4 fragment_light_tex_materialed_common(ProjectedVertex vert,
     for (unsigned i = 0; i < 4; ++i)
     {
         float3 lightVector = normalize(lightingUniform.direction[i].xyz);
-        
-        float3 normal = normalize(vert.normal);
         float diffuseIntensity = saturate(dot(normal, lightVector));
         float3 diffuseTerm = light.diffuseColor * diffuseColor * diffuseIntensity;
         

@@ -33,12 +33,12 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
                                constant LightUniform &lightUniform [[buffer(0)]],
                                constant ModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]])
 {
+    float3 normal = normalize(vert.normal);
     float3 ambientTerm = light.ambientColor * material.ambientColor;
     float3 colorForLights = 0.0;
     
     for (unsigned i = 0; i < 4; ++i)
     {
-        float3 normal = normalize(vert.normal);
         float diffuseIntensity = saturate(dot(normal, normalize(lightUniform.direction[i].xyz)));
         float3 diffuseTerm = light.diffuseColor * material.diffuseColor * diffuseIntensity;
         
