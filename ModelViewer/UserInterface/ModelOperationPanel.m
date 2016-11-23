@@ -16,6 +16,7 @@
 @property (nonatomic, strong) NSButton* checkMaterial;
 @property (nonatomic, strong) NSButton* checkTexture;
 @property (nonatomic, strong) NSButton* checkTextureEmbedTrans;
+@property (nonatomic, strong) NSButton* checkTextureBump;
 
 @property (nonatomic, strong) NSButton* cull;
 @property (nonatomic, strong) NSButton* combine;
@@ -77,10 +78,20 @@
     [self addSubview:checkTextureEmbedTrans];
     _checkTextureEmbedTrans = checkTextureEmbedTrans;
     
+    NSButton* checkTextureBump = [NSButton new];
+    [checkTextureBump setButtonType:NSSwitchButton];
+    [checkTextureBump setTitle:@"Texture Bump"];
+    [checkTextureBump setFrame:[self buttonLoactionAtRow:3 withLeading:0]];
+    [checkTextureBump setTarget:self];
+    [checkTextureBump setAction:@selector(textureBumpChanged:)];
+    [checkTextureBump setEnabled:NO];
+    [self addSubview:checkTextureBump];
+    _checkTextureBump = checkTextureBump;
+    
     NSButton* cull = [NSButton new];
     [cull setButtonType:NSSwitchButton];
     [cull setTitle:@"Enable Culling"];
-    [cull setFrame:[self buttonLoactionAtRow:3.2 withLeading:0]];
+    [cull setFrame:[self buttonLoactionAtRow:4.2 withLeading:0]];
     [cull setTarget:self];
     [cull setAction:@selector(cullChanged:)];
     [cull setState:NSOnState];
@@ -90,7 +101,7 @@
     NSButton* combine = [NSButton new];
     [combine setButtonType:NSSwitchButton];
     [combine setTitle:@"Combine Shapes by Material"];
-    [combine setFrame:[self buttonLoactionAtRow:4.2 withLeading:0]];
+    [combine setFrame:[self buttonLoactionAtRow:5.2 withLeading:0]];
     [combine setTarget:self];
     [combine setAction:@selector(combineChanged:)];
     [combine setState:NSOnState];
@@ -102,11 +113,11 @@
     [labelFOV setSelectable:NO];
     [labelFOV setBordered:NO];
     [labelFOV setStringValue:@"Field of View:"];
-    [labelFOV setFrame:[self buttonLoactionAtRow:5.4 withLeading:0]];
+    [labelFOV setFrame:[self buttonLoactionAtRow:6.4 withLeading:0]];
     [self addSubview:labelFOV];
     
     NSSlider* fieldOfView = [NSSlider new];
-    [fieldOfView setFrame:[self buttonLoactionAtRow:6.2 withLeading:6]];
+    [fieldOfView setFrame:[self buttonLoactionAtRow:7.2 withLeading:6]];
     [fieldOfView setMaxValue:_fieldOfViewRadian];
     [fieldOfView setMinValue:1e-6];
     [fieldOfView setFloatValue:_fieldOfViewRadian];
@@ -118,7 +129,7 @@
     NSButton* lightSettings = [NSButton new];
     [lightSettings setButtonType:NSSwitchButton];
     [lightSettings setTitle:@"Light Settings"];
-    [lightSettings setFrame:[self buttonLoactionAtRow:7.6 withLeading:0]];
+    [lightSettings setFrame:[self buttonLoactionAtRow:8.6 withLeading:0]];
     [lightSettings setTarget:self];
     [lightSettings setAction:@selector(lightSettingsChanged:)];
     [lightSettings setState:NSOffState];
@@ -148,6 +159,14 @@
 - (void)textureEmbedTransChanged:(id)sender
 {
     _textureEmbeddingMaterialTransparency = [_checkTextureEmbedTrans state] == NSOnState;
+    
+    [_optionUpdateDelegate modelUpdate:self];
+}
+
+
+- (void)textureBumpChanged:(id)sender
+{
+    _texturedBump = [_checkTextureBump state] == NSOnState;
     
     [_optionUpdateDelegate modelUpdate:self];
 }
@@ -188,6 +207,7 @@
 - (void)updateControls
 {
     [_checkTextureEmbedTrans setEnabled:[_checkTexture state]];
+    [_checkTextureBump setEnabled:[_checkTexture state]];
 }
 
 

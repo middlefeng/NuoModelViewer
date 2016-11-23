@@ -40,6 +40,7 @@ class NuoModelOption
 public:
     bool _textured;
     bool _textureEmbedMaterialTransparency;
+    bool _texturedBump;
     
     bool _basicMaterialized;
 };

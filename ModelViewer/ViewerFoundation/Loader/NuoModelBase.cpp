@@ -31,7 +31,7 @@ std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMate
     }
     else if (options._textured && options._basicMaterialized)
     {
-        if (material.HasTextureBump())
+        if (material.HasTextureBump() && options._texturedBump)
         {
             auto model = std::make_shared<NuoModelMaterialedBumpedTextured>();
             model->SetCheckTransparency(true);
