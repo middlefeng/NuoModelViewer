@@ -64,6 +64,35 @@ public:
 
 
 
+struct NuoItermMaterialedBumpedTextured
+{
+    vector_float4 _position;
+    vector_float4 _normal;
+    vector_float4 _tangent;
+    vector_float2 _texCoord;
+    
+    vector_float3 _diffuse;
+    vector_float3 _ambient;
+    vector_float3 _specular;
+    vector_float2 _shinessDisolve;
+    
+    NuoItermMaterialedBumpedTextured();
+    
+    bool operator == (const NuoItermMaterialedBumpedTextured& other);
+};
+
+
+
+
+class NuoModelMaterialedBumpedTextured : virtual public NuoModelTexturedWithTangentBase<NuoItermMaterialedBumpedTextured>,
+                                         virtual public NuoModelMaterialedBasicBase<NuoItermMaterialedBumpedTextured>
+{
+    
+};
+
+
+
+
 struct NuoItemMaterialedBasic
 {
     vector_float4 _position;
