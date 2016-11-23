@@ -55,17 +55,8 @@ struct NuoItemMaterialedTexturedBasic
 class NuoModelMaterialedTextured : virtual public NuoModelTextureBase<NuoItemMaterialedTexturedBasic>,
                                            public NuoModelMaterialedBasicBase<NuoItemMaterialedTexturedBasic>
 {
-private:
-    bool _ignoreTextureTransparency;
-    std::string _textureOpacity;
-
 public:
     NuoModelMaterialedTextured();
-    
-    void SetIgnoreTextureTransparency(bool ignore);
-    
-    virtual void SetTexturePathOpacity(const std::string texPath) override;
-    virtual std::string GetTexturePathOpacity() override;
 };
 
 
