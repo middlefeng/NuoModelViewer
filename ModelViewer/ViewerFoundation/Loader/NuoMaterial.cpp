@@ -91,5 +91,11 @@ bool NuoMaterial::HasTextureOpacity() const
 }
 
 
+bool NuoMaterial::HasTextureBump() const
+{
+    return !bump_texname.empty();
+}
+
+
 
 

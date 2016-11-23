@@ -58,6 +58,7 @@ static VertexFragmentCharacters vertex_characters(ProjectedVertex vert);
 fragment float4 fragment_tex_a_materialed_bump(ProjectedVertex vert [[stage_in]],
                                                constant LightUniform &lighting [[buffer(0)]],
                                                texture2d<float> diffuseTexture [[texture(0)]],
+                                               texture2d<float> bumpTexture [[texture(1)]],
                                                sampler samplr [[sampler(0)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
@@ -71,6 +72,7 @@ fragment float4 fragment_tex_a_materialed_bump(ProjectedVertex vert [[stage_in]]
 fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
                                              constant LightUniform &lighting [[buffer(0)]],
                                              texture2d<float> diffuseTexture [[texture(0)]],
+                                             texture2d<float> bumpTexture [[texture(1)]],
                                              sampler samplr [[sampler(0)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
@@ -90,6 +92,7 @@ fragment float4 fragment_tex_materialed_tex_opacity_bump(ProjectedVertex vert [[
                                                          constant LightUniform &lighting [[buffer(0)]],
                                                          texture2d<float> diffuseTexture [[texture(0)]],
                                                          texture2d<float> opacityTexture [[texture(1)]],
+                                                         texture2d<float> bumpTexture [[texture(2)]],
                                                          sampler samplr [[sampler(0)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);

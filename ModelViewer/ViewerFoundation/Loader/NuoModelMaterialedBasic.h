@@ -59,6 +59,8 @@ public:
     NuoModelMaterialedTextured();
     
     virtual void GenerateTangents() override;
+    virtual void SetTexturePathBump(const std::string texPath) override;
+    virtual std::string GetTexturePathBump() override;
 };
 
 
@@ -87,7 +89,6 @@ struct NuoItermMaterialedBumpedTextured
 class NuoModelMaterialedBumpedTextured : virtual public NuoModelTexturedWithTangentBase<NuoItermMaterialedBumpedTextured>,
                                          virtual public NuoModelMaterialedBasicBase<NuoItermMaterialedBumpedTextured>
 {
-    
 };
 
 
@@ -121,6 +122,8 @@ public:
     virtual std::string GetTexturePathDiffuse() override;
     virtual void SetTexturePathOpacity(const std::string texPath) override;
     virtual std::string GetTexturePathOpacity() override;
+    virtual void SetTexturePathBump(const std::string texPath) override;
+    virtual std::string GetTexturePathBump() override;
 };
 
 

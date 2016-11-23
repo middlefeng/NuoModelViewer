@@ -65,6 +65,8 @@ public:
     virtual std::string GetTexturePathDiffuse() = 0;
     virtual void SetTexturePathOpacity(const std::string texPath) = 0;
     virtual std::string GetTexturePathOpacity() = 0;
+    virtual void SetTexturePathBump(const std::string texPath) = 0;
+    virtual std::string GetTexturePathBump() = 0;
     
     virtual void GenerateIndices() = 0;
     virtual void GenerateNormals() = 0;
@@ -135,6 +137,8 @@ public:
     virtual std::string GetTexturePathDiffuse() override;
     virtual void SetTexturePathOpacity(const std::string texPath) override;
     virtual std::string GetTexturePathOpacity() override;
+    virtual void SetTexturePathBump(const std::string texPath) override;
+    virtual std::string GetTexturePathBump() override;
     
     virtual bool HasTransparent() override;
 };

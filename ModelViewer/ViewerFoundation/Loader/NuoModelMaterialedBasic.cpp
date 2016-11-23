@@ -119,6 +119,17 @@ void NuoModelMaterialedTextured::GenerateTangents()
 }
 
 
+void NuoModelMaterialedTextured::SetTexturePathBump(const std::string texPath)
+{
+}
+
+
+std::string NuoModelMaterialedTextured::GetTexturePathBump()
+{
+    return std::string();
+}
+
+
 
 void NuoModelMaterialed::SetTexturePathDiffuse(const std::string texPath)
 {
@@ -137,7 +148,6 @@ void NuoModelMaterialed::SetTexturePathOpacity(const std::string texPath)
 }
 
 
-
 std::string NuoModelMaterialed::GetTexturePathOpacity()
 {
     return std::string();
@@ -151,5 +161,16 @@ void NuoModelMaterialed::AddTexCoord(size_t sourceIndex, const std::vector<float
 
 void NuoModelMaterialed::GenerateTangents()
 {
+}
+
+
+void NuoModelMaterialed::SetTexturePathBump(const std::string texPath)
+{
+}
+
+
+std::string NuoModelMaterialed::GetTexturePathBump()
+{
+    return std::string();
 }
 

@@ -38,11 +38,6 @@ void NuoModelTextured::SetTexturePathOpacity(const std::string texPath)
 }
 
 
-void NuoModelTextured::GenerateTangents()
-{
-}
-
-
 
 std::string NuoModelTextured::GetTexturePathOpacity()
 {
@@ -55,6 +50,23 @@ bool NuoModelTextured::HasTransparent()
 {
     return false;
 }
+
+
+void NuoModelTextured::GenerateTangents()
+{
+}
+
+
+void NuoModelTextured::SetTexturePathBump(const std::string texPath)
+{
+}
+
+
+std::string NuoModelTextured::GetTexturePathBump()
+{
+    return std::string();
+}
+
 
 
 

@@ -206,6 +206,12 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         if (modelTexturePathOpacity)
             [mesh makeTextureOpacity:modelTexturePathOpacity];
         
+        NSString* modelTexturePathBump = [NSString stringWithUTF8String:model->GetTexturePathBump().c_str()];
+        if ([modelTexturePathBump isEqualToString:@""])
+            modelTexturePathBump = nil;
+        if (modelTexturePathBump)
+            [mesh makeTextureBump:modelTexturePathBump];
+        
         if (model->HasTransparent() || modelTexturePathOpacity)
             [mesh setTransparency:YES];
         else if (!embeddedAlpha)

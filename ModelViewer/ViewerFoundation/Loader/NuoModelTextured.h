@@ -53,9 +53,14 @@ public:
 template <class ItemBase>
 class NuoModelTexturedWithTangentBase : virtual public NuoModelTextureBase<ItemBase>
 {
+protected:
+    std::string _texPathBump;
+    
 public:
     
     virtual void GenerateTangents() override;
+    virtual void SetTexturePathBump(const std::string texPath) override;
+    virtual std::string GetTexturePathBump() override;
 };
 
 
@@ -71,6 +76,8 @@ public:
     
     virtual void SetTexturePathOpacity(const std::string texPath) override;
     virtual std::string GetTexturePathOpacity() override;
+    virtual void SetTexturePathBump(const std::string texPath) override;
+    virtual std::string GetTexturePathBump() override;
 };
 
 
@@ -143,13 +150,13 @@ void NuoModelTexturedWithTangentBase<ItemBase>::GenerateTangents()
         uint32_t index2 = indices[a + 1];
         uint32_t index3 = indices[a + 2];
         
-        vector_float4 v1 = buffer._position[index1];
-        vector_float4 v2 = buffer._position[index2];
-        vector_float4 v3 = buffer._position[index3];
+        vector_float4 v1 = buffer[index1]._position;
+        vector_float4 v2 = buffer[index2]._position;
+        vector_float4 v3 = buffer[index3]._position;
         
-        vector_float2 w1 = buffer._texCoord[index1];
-        vector_float2 w2 = buffer._texCoord[index2];
-        vector_float2 w3 = buffer._texCoord[index3];
+        vector_float2 w1 = buffer[index1]._texCoord;
+        vector_float2 w2 = buffer[index2]._texCoord;
+        vector_float2 w3 = buffer[index3]._texCoord;
         
         float x1 = v2.x - v1.x;
         float x2 = v3.x - v1.x;
@@ -175,12 +182,27 @@ void NuoModelTexturedWithTangentBase<ItemBase>::GenerateTangents()
     
     for (size_t a = 0; a < buffer.size(); ++a)
     {
-        vector_float3 n = buffer._normal.xyz;
+        vector_float3 n = buffer[a]._normal.xyz;
         vector_float3 t = tan1[a];
         vector_float3 tmp = vector_normalize(t - n * vector_dot(n, t));
         buffer[a]._tangent = vector_float4 { tmp.x, tmp.y, tmp.z, 0 };
         buffer[a]._tangent.w = vector_dot(vector_cross(n, t), tan2[a]) < 0.0f ? -1.0f : 1.0f;
     }
+}
+
+
+
+template <class ItemBase>
+void NuoModelTexturedWithTangentBase<ItemBase>::SetTexturePathBump(const std::string texPath)
+{
+    _texPathBump = texPath;
+}
+
+
+template <class ItemBase>
+std::string NuoModelTexturedWithTangentBase<ItemBase>::GetTexturePathBump()
+{
+    return _texPathBump;
 }
 
 

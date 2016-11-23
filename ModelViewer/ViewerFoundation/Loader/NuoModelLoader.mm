@@ -260,6 +260,14 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
             modelBase->SetTexturePathOpacity(opacityTexPath.UTF8String);
         }
         
+        if (material.HasTextureBump())
+        {
+            NSString* bumpTexName = [NSString stringWithUTF8String:material.bump_texname.c_str()];
+            NSString* bumpTexPath = [_basePath stringByAppendingPathComponent:bumpTexName];
+            
+            modelBase->SetTexturePathBump(bumpTexPath.UTF8String);
+        }
+        
         models.push_back(modelBase);
         modelOptions.insert(std::make_pair(modelBase, options));
     }
