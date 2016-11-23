@@ -265,6 +265,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
             NSString* bumpTexName = [NSString stringWithUTF8String:material.bump_texname.c_str()];
             NSString* bumpTexPath = [_basePath stringByAppendingPathComponent:bumpTexName];
             
+            modelBase->GenerateTangents();
             modelBase->SetTexturePathBump(bumpTexPath.UTF8String);
         }
         

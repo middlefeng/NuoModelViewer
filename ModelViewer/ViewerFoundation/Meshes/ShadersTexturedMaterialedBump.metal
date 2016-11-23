@@ -38,7 +38,7 @@ vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[b
     outVert.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
     outVert.eye =  -(uniforms.modelViewMatrix * vertices[vid].position).xyz;
     outVert.normal = uniforms.normalMatrix * vertices[vid].normal.xyz;
-    outVert.tangent = vertices[vid].tangent.xyz / vertices[vid].tangent.w;
+    outVert.tangent = uniforms.normalMatrix * (vertices[vid].tangent.xyz / vertices[vid].tangent.w);
     outVert.texCoord = vertices[vid].texCoord;
     
     outVert.ambientColor = vertices[vid].ambientColor;
@@ -65,7 +65,21 @@ fragment float4 fragment_tex_a_materialed_bump(ProjectedVertex vert [[stage_in]]
     
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     diffuseTexel = float4(diffuseTexel.rgb / diffuseTexel.a, diffuseTexel.a);
-    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel);
+    
+    float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
+    bumpNormal.x = (bumpNormal.x * 2.) - 1.;
+    bumpNormal.y = (bumpNormal.y * 2.) - 1.;
+    bumpNormal.z = (bumpNormal.z * 2.) - 1.;
+    bumpNormal.w = 0;
+    
+    float4 tangent = float4(vert.tangent, 0);
+    float4 normal = float4(normalize(vert.normal), 0);
+    float4 bitagent = normal * tangent;
+    float4x4 m = { tangent, bitagent, normal,
+                   float4(0, 0, 0, 1) };
+    normal = normalize(m * bumpNormal);
+    
+    return fragment_light_tex_materialed_common(outVert, normal.xyz, lighting, diffuseTexel);
 }
 
 
