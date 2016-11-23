@@ -105,6 +105,9 @@ public:
     
     virtual void* Ptr() override;
     virtual size_t Length() override;
+
+protected:
+    virtual void DoGenerateIndices(bool compressBuffer);
 };
 
 
@@ -146,29 +149,44 @@ public:
 
 
 
-
-
 template <class ItemBase>
 void NuoModelCommon<ItemBase>::GenerateIndices()
 {
-    std::vector<ItemBase> compactBuffer;
-    size_t checkBackward = 100;
+    DoGenerateIndices(true);
+}
+
+
+
+template <class ItemBase>
+void NuoModelCommon<ItemBase>::DoGenerateIndices(bool compressBuffer)
+{
     uint32_t indexCurrent = 0;
     
-    _indices.clear();
-    
-    for (size_t i = 0; i < _buffer.size(); ++i)
+    if (compressBuffer)
     {
-        const ItemBase& item = _buffer[i];
+        std::vector<ItemBase> compactBuffer;
+        size_t checkBackward = 100;
         
-        if (item._normal.x != 0.0f || item._normal.y != 0.0f || item._normal.z != 0.0f)
+        _indices.clear();
+        
+        for (size_t i = 0; i < _buffer.size(); ++i)
         {
-            auto search = std::find((compactBuffer.size() < checkBackward ? compactBuffer.begin() : compactBuffer.end() - checkBackward),
-                                    compactBuffer.end(), item);
-            if (search != std::end(compactBuffer))
+            const ItemBase& item = _buffer[i];
+            
+            if (item._normal.x != 0.0f || item._normal.y != 0.0f || item._normal.z != 0.0f)
             {
-                uint32_t indexExist = (uint32_t)(search - std::begin(compactBuffer));
-                _indices.push_back(indexExist);
+                auto search = std::find((compactBuffer.size() < checkBackward ? compactBuffer.begin() : compactBuffer.end() - checkBackward),
+                                        compactBuffer.end(), item);
+                if (search != std::end(compactBuffer))
+                {
+                    uint32_t indexExist = (uint32_t)(search - std::begin(compactBuffer));
+                    _indices.push_back(indexExist);
+                }
+                else
+                {
+                    compactBuffer.push_back(item);
+                    _indices.push_back(indexCurrent++);
+                }
             }
             else
             {
@@ -176,14 +194,14 @@ void NuoModelCommon<ItemBase>::GenerateIndices()
                 _indices.push_back(indexCurrent++);
             }
         }
-        else
-        {
-            compactBuffer.push_back(item);
-            _indices.push_back(indexCurrent++);
-        }
+        
+        _buffer.swap(compactBuffer);
     }
-    
-    _buffer.swap(compactBuffer);
+    else
+    {
+        for (size_t i = 0; i < _buffer.size(); ++i)
+            _indices.push_back(indexCurrent++);
+    }
 }
 
 

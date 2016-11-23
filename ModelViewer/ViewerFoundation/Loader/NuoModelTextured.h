@@ -58,6 +58,8 @@ protected:
     
 public:
     
+    virtual void GenerateIndices() override;
+    
     virtual void GenerateTangents() override;
     virtual void SetTexturePathBump(const std::string texPath) override;
     virtual std::string GetTexturePathBump() override;
@@ -188,6 +190,14 @@ void NuoModelTexturedWithTangentBase<ItemBase>::GenerateTangents()
         buffer[a]._tangent = vector_float4 { tmp.x, tmp.y, tmp.z, 0 };
         buffer[a]._tangent.w = vector_dot(vector_cross(n, t), tan2[a]) < 0.0f ? -1.0f : 1.0f;
     }
+}
+
+
+
+template <class ItemBase>
+void NuoModelTexturedWithTangentBase<ItemBase>::GenerateIndices()
+{
+    NuoModelCommon<ItemBase>::DoGenerateIndices(false);
 }
 
 
