@@ -73,35 +73,16 @@ bool NuoItemMaterialedBasic::operator == (const NuoItemMaterialedBasic& i2)
 
 
 
-NuoModelMaterialedTextured::NuoModelMaterialedTextured() :
-    _ignoreTextureTransparency(false)
+NuoModelMaterialedTextured::NuoModelMaterialedTextured()
 {
 }
 
-
-void NuoModelMaterialedTextured::SetIgnoreTextureTransparency(bool ignore)
-{
-    _ignoreTextureTransparency = ignore;
-}
-
-
-
-void NuoModelMaterialedTextured::SetTexturePathOpacity(const std::string texPath)
-{
-    _textureOpacity = texPath;
-}
-
-
-
-std::string NuoModelMaterialedTextured::GetTexturePathOpacity()
-{
-    return _textureOpacity;
-}
 
 
 void NuoModelMaterialedTextured::GenerateTangents()
 {
 }
+
 
 
 void NuoModelMaterialed::SetTexturePathDiffuse(const std::string texPath)

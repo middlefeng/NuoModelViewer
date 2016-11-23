@@ -33,7 +33,6 @@ std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMate
     {
         auto model = std::make_shared<NuoModelMaterialedTextured>();
         model->SetCheckTransparency(true);
-        model->SetIgnoreTextureTransparency(!options._textureEmbedMaterialTransparency);
         return model;
     }
     else if (options._basicMaterialized)

@@ -33,6 +33,8 @@ protected:
     std::string _texPathDiffuse;
     bool _checkTransparency;
     
+    std::string _texPathOpacity;
+    
 public:
     
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
@@ -40,13 +42,16 @@ public:
     virtual void SetTexturePathDiffuse(const std::string texPath) override;
     virtual std::string GetTexturePathDiffuse() override;
     
+    virtual void SetTexturePathOpacity(const std::string texPath) override;
+    virtual std::string GetTexturePathOpacity() override;
+    
     void SetCheckTransparency(bool check);
 };
 
 
 
 template <class ItemBase>
-class NuoModelTexturedWithTangent : virtual public NuoModelTextureBase<ItemBase>
+class NuoModelTexturedWithTangentBase : virtual public NuoModelTextureBase<ItemBase>
 {
 public:
     
@@ -87,6 +92,8 @@ void NuoModelTextureBase<ItemBase>::SetTexturePathDiffuse(const std::string texP
     _texPathDiffuse = texPath;
 }
 
+
+
 template <class ItemBase>
 void NuoModelTextureBase<ItemBase>::SetCheckTransparency(bool check)
 {
@@ -100,10 +107,24 @@ std::string NuoModelTextureBase<ItemBase>::GetTexturePathDiffuse()
 }
 
 
+template <class ItemBase>
+void NuoModelTextureBase<ItemBase>::SetTexturePathOpacity(const std::string texPath)
+{
+    _texPathOpacity = texPath;
+}
+
+
+template <class ItemBase>
+std::string NuoModelTextureBase<ItemBase>::GetTexturePathOpacity()
+{
+    return _texPathOpacity;
+}
+
+
 /* http://answers.unity3d.com/questions/7789/calculating-tangents-vector4.html */
 
 template <class ItemBase>
-void NuoModelTexturedWithTangent<ItemBase>::GenerateTangents()
+void NuoModelTexturedWithTangentBase<ItemBase>::GenerateTangents()
 {
     std::vector<uint32_t>& indices = NuoModelCommon<ItemBase>::_indices;
     std::vector<ItemBase>& buffer = NuoModelCommon<ItemBase>::_buffer;
