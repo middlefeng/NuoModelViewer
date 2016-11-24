@@ -72,12 +72,7 @@
 
 - (void)modelUpdate:(ModelOperationPanel *)panel
 {
-    NuoMeshOption* options = [NuoMeshOption new];
-    [options setBasicMaterialized:[panel basicMaterialized]];
-    [options setTextured:[panel textured]];
-    [options setTextureEmbeddingMaterialTransparency:[panel textureEmbeddingMaterialTransparency]];
-    [options setCombineShapes:[panel combineShapes]];
-    [options setTexturedBump:[panel texturedBump]];
+    NuoMeshOption* options = panel.meshOptions;
     
     [_modelRender setModelOptions:options];
     [self render];

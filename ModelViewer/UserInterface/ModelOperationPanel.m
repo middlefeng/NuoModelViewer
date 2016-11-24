@@ -7,7 +7,7 @@
 //
 
 #import "ModelOperationPanel.h"
-
+#import "NuoMeshOptions.h"
 
 
 
@@ -38,8 +38,11 @@
     
     if (self)
     {
+        _meshOptions = [NuoMeshOption new];
+        _meshOptions.combineShapes = YES;
+        
         _cullEnabled = YES;
-        _combineShapes = YES;
+        
         _fieldOfViewRadian = (2 * M_PI) / 8;
         _showLightSettings = NO;
     }
@@ -140,7 +143,7 @@
 
 - (void)basicMaterializedChanged:(id)sender
 {
-    _basicMaterialized = [_checkMaterial state] == NSOnState;
+    _meshOptions.basicMaterialized = [_checkMaterial state] == NSOnState;
     [self updateControls];
     
     [_optionUpdateDelegate modelUpdate:self];
@@ -149,7 +152,7 @@
 
 - (void)texturedChanged:(id)sender
 {
-    _textured = [_checkTexture state] == NSOnState;
+    _meshOptions.textured = [_checkTexture state] == NSOnState;
     [self updateControls];
     
     [_optionUpdateDelegate modelUpdate:self];
@@ -158,7 +161,7 @@
 
 - (void)textureEmbedTransChanged:(id)sender
 {
-    _textureEmbeddingMaterialTransparency = [_checkTextureEmbedTrans state] == NSOnState;
+    _meshOptions.textureEmbeddingMaterialTransparency = [_checkTextureEmbedTrans state] == NSOnState;
     
     [_optionUpdateDelegate modelUpdate:self];
 }
@@ -166,7 +169,7 @@
 
 - (void)textureBumpChanged:(id)sender
 {
-    _texturedBump = [_checkTextureBump state] == NSOnState;
+    _meshOptions.texturedBump = [_checkTextureBump state] == NSOnState;
     
     [_optionUpdateDelegate modelUpdate:self];
 }
@@ -182,7 +185,7 @@
 
 - (void)combineChanged:(id)sender
 {
-    _combineShapes = [_combine state] == NSOnState;
+    _meshOptions.combineShapes = [_combine state] == NSOnState;
     
     [_optionUpdateDelegate modelUpdate:self];
 }
