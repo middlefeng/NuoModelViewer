@@ -158,9 +158,6 @@
 
     memcpy([self.modelUniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
     
-    vector_float4 unitVec = { 0, 0, 1, 0 };
-    unitVec = matrix_multiply(unitVec, uniforms.modelViewMatrix);
-    
     LightingUniforms lighting;
     for (unsigned int i = 0; i < 4; ++i)
     {

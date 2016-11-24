@@ -53,74 +53,90 @@
 
 - (void)addCheckbox
 {
+    float rowCoord = 0.0;
+    
     NSButton* checkMaterial = [NSButton new];
     [checkMaterial setButtonType:NSSwitchButton];
     [checkMaterial setTitle:@"Basic Material"];
-    [checkMaterial setFrame:[self buttonLoactionAtRow:0 withLeading:0]];
+    [checkMaterial setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [checkMaterial setTarget:self];
     [checkMaterial setAction:@selector(basicMaterializedChanged:)];
     [self addSubview:checkMaterial];
     _checkMaterial = checkMaterial;
     
+    rowCoord += 1;
+    
     NSButton* checkTexture = [NSButton new];
     [checkTexture setButtonType:NSSwitchButton];
     [checkTexture setTitle:@"Texture"];
-    [checkTexture setFrame:[self buttonLoactionAtRow:1 withLeading:0]];
+    [checkTexture setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [checkTexture setTarget:self];
     [checkTexture setAction:@selector(texturedChanged:)];
     [self addSubview:checkTexture];
     _checkTexture = checkTexture;
     
+    rowCoord += 1;
+    
     NSButton* checkTextureEmbedTrans = [NSButton new];
     [checkTextureEmbedTrans setButtonType:NSSwitchButton];
     [checkTextureEmbedTrans setTitle:@"Texture Alpha as Transparency"];
-    [checkTextureEmbedTrans setFrame:[self buttonLoactionAtRow:2 withLeading:0]];
+    [checkTextureEmbedTrans setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [checkTextureEmbedTrans setTarget:self];
     [checkTextureEmbedTrans setAction:@selector(textureEmbedTransChanged:)];
     [checkTextureEmbedTrans setEnabled:NO];
     [self addSubview:checkTextureEmbedTrans];
     _checkTextureEmbedTrans = checkTextureEmbedTrans;
     
+    rowCoord += 1;
+    
     NSButton* checkTextureBump = [NSButton new];
     [checkTextureBump setButtonType:NSSwitchButton];
     [checkTextureBump setTitle:@"Texture Bump"];
-    [checkTextureBump setFrame:[self buttonLoactionAtRow:3 withLeading:0]];
+    [checkTextureBump setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [checkTextureBump setTarget:self];
     [checkTextureBump setAction:@selector(textureBumpChanged:)];
     [checkTextureBump setEnabled:NO];
     [self addSubview:checkTextureBump];
     _checkTextureBump = checkTextureBump;
     
+    rowCoord += 1.2;
+    
     NSButton* cull = [NSButton new];
     [cull setButtonType:NSSwitchButton];
     [cull setTitle:@"Enable Culling"];
-    [cull setFrame:[self buttonLoactionAtRow:4.2 withLeading:0]];
+    [cull setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [cull setTarget:self];
     [cull setAction:@selector(cullChanged:)];
     [cull setState:NSOnState];
     [self addSubview:cull];
     _cull = cull;
     
+    rowCoord += 1;
+    
     NSButton* combine = [NSButton new];
     [combine setButtonType:NSSwitchButton];
     [combine setTitle:@"Combine Shapes by Material"];
-    [combine setFrame:[self buttonLoactionAtRow:5.2 withLeading:0]];
+    [combine setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [combine setTarget:self];
     [combine setAction:@selector(combineChanged:)];
     [combine setState:NSOnState];
     [self addSubview:combine];
     _combine = combine;
     
+    rowCoord += 1.2;
+    
     NSTextField* labelFOV = [NSTextField new];
     [labelFOV setEditable:NO];
     [labelFOV setSelectable:NO];
     [labelFOV setBordered:NO];
     [labelFOV setStringValue:@"Field of View:"];
-    [labelFOV setFrame:[self buttonLoactionAtRow:6.4 withLeading:0]];
+    [labelFOV setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [self addSubview:labelFOV];
     
+    rowCoord += 0.8;
+    
     NSSlider* fieldOfView = [NSSlider new];
-    [fieldOfView setFrame:[self buttonLoactionAtRow:7.2 withLeading:6]];
+    [fieldOfView setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6]];
     [fieldOfView setMaxValue:_fieldOfViewRadian];
     [fieldOfView setMinValue:1e-6];
     [fieldOfView setFloatValue:_fieldOfViewRadian];
@@ -129,10 +145,12 @@
     [self addSubview:fieldOfView];
     _fieldOfView = fieldOfView;
     
+    rowCoord += 1.4;
+    
     NSButton* lightSettings = [NSButton new];
     [lightSettings setButtonType:NSSwitchButton];
     [lightSettings setTitle:@"Light Settings"];
-    [lightSettings setFrame:[self buttonLoactionAtRow:8.6 withLeading:0]];
+    [lightSettings setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [lightSettings setTarget:self];
     [lightSettings setAction:@selector(lightSettingsChanged:)];
     [lightSettings setState:NSOffState];
