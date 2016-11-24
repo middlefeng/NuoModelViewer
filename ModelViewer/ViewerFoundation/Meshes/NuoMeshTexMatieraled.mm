@@ -98,18 +98,6 @@
     colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
     colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
     
-    /*
-    vector_float4 _position;
-    vector_float4 _normal;
-    vector_float4 _tangent;
-    vector_float2 _texCoord;
-    
-    vector_float3 _diffuse;
-    vector_float3 _ambient;
-    vector_float3 _specular;
-    vector_float2 _shinessDisolve;
-     */
-
     unsigned int offset = 0;
     
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];
