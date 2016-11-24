@@ -52,6 +52,8 @@ vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[b
 
 
 static VertexFragmentCharacters vertex_characters(ProjectedVertex vert);
+static float3 bumpped_normal(float3 normal, float3 tangent, float3 bumpNormal);
+
 
 
 
@@ -67,13 +69,7 @@ fragment float4 fragment_tex_a_materialed_bump(ProjectedVertex vert [[stage_in]]
     diffuseTexel = float4(diffuseTexel.rgb / diffuseTexel.a, diffuseTexel.a);
     
     float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
-    bumpNormal = bumpNormal * 2. - float4(1.);
-    
-    float3 tangent = normalize(vert.tangent);
-    float3 normal =normalize(vert.normal);
-    float3 bitagent = normalize(normal * tangent);
-    float3x3 m = { tangent, bitagent , normal };
-    normal = normalize(m * bumpNormal.xyz);
+    float3 normal = bumpped_normal(vert.normal.xyz, vert.tangent.xyz, bumpNormal.xyz);
     
     return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel);
 }
@@ -94,7 +90,10 @@ fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
         diffuseTexel = diffuseTexel / diffuseTexel.a;
     
     diffuseTexel.a = 1.0;
-    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel);
+    float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
+    float3 normal = bumpped_normal(vert.normal.xyz, vert.tangent.xyz, bumpNormal.xyz);
+    
+    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel);
 }
 
 
@@ -111,7 +110,11 @@ fragment float4 fragment_tex_materialed_tex_opacity_bump(ProjectedVertex vert [[
     float4 opacityTexel = opacityTexture.sample(samplr, vert.texCoord);
     diffuseTexel = diffuseTexel / diffuseTexel.a;
     diffuseTexel.a = opacityTexel.a;
-    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel);
+    
+    float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
+    float3 normal = bumpped_normal(vert.normal.xyz, vert.tangent.xyz, bumpNormal.xyz);
+    
+    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel);
 }
 
 
@@ -128,4 +131,19 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
     
     return outVert;
 }
+
+
+
+float3 bumpped_normal(float3 normal, float3 tangent, float3 bumpNormal)
+{
+    bumpNormal = bumpNormal * 2. - float3(1.);
+    
+    tangent = normalize(tangent);
+    normal = normalize(normal);
+    float3 bitagent = normalize(normal * tangent);
+    float3x3 m = { tangent, bitagent , normal };
+    
+    return normalize(m * bumpNormal);
+}
+
 
