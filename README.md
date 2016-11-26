@@ -34,8 +34,11 @@ A simple Wavefront OBJ viewer.
 * Selectable list of object.
 * Shadow (to model and to ground).
 * <del>Cull mode.</del>
-* Surrounding.
+* Surrounding (cube map).
 * Reflection.
+* Model visualization
+  * Triangle mesh
+  * Normal/tangent visualization
   
 
 ## Early Screenshots
