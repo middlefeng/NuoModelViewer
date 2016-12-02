@@ -57,6 +57,38 @@ class NuoModelMaterialedTextured : virtual public NuoModelTextureBase<NuoItemMat
 {
 public:
     NuoModelMaterialedTextured();
+    
+    virtual void GenerateTangents() override;
+    virtual void SetTexturePathBump(const std::string texPath) override;
+    virtual std::string GetTexturePathBump() override;
+};
+
+
+
+
+struct NuoItermMaterialedBumpedTextured
+{
+    vector_float4 _position;
+    vector_float4 _normal;
+    vector_float4 _tangent;
+    vector_float2 _texCoord;
+    
+    vector_float3 _diffuse;
+    vector_float3 _ambient;
+    vector_float3 _specular;
+    vector_float2 _shinessDisolve;
+    
+    NuoItermMaterialedBumpedTextured();
+    
+    bool operator == (const NuoItermMaterialedBumpedTextured& other);
+};
+
+
+
+
+class NuoModelMaterialedBumpedTextured : virtual public NuoModelTexturedWithTangentBase<NuoItermMaterialedBumpedTextured>,
+                                         virtual public NuoModelMaterialedBasicBase<NuoItermMaterialedBumpedTextured>
+{
 };
 
 
@@ -84,11 +116,14 @@ class NuoModelMaterialed : public NuoModelMaterialedBasicBase<NuoItemMaterialedB
 
 public:
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
+    virtual void GenerateTangents() override;
     
     virtual void SetTexturePathDiffuse(const std::string texPath) override;
     virtual std::string GetTexturePathDiffuse() override;
     virtual void SetTexturePathOpacity(const std::string texPath) override;
     virtual std::string GetTexturePathOpacity() override;
+    virtual void SetTexturePathBump(const std::string texPath) override;
+    virtual std::string GetTexturePathBump() override;
 };
 
 

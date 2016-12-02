@@ -42,6 +42,7 @@
 		988442461D80853700EE2C4C /* NuoModelMaterialedBasic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 988442441D80853700EE2C4C /* NuoModelMaterialedBasic.cpp */; };
 		9884424B1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */; };
 		98CA11B81DD2B00900440C53 /* NotationRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 98CA11B71DD2B00900440C53 /* NotationRenderer.m */; };
+		98CD06BA1DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal in Sources */ = {isa = PBXBuildFile; fileRef = 98CD06B91DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -111,6 +112,7 @@
 		9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoMeshTexMatieraled.mm; sourceTree = "<group>"; };
 		98CA11B61DD2B00900440C53 /* NotationRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotationRenderer.h; sourceTree = "<group>"; };
 		98CA11B71DD2B00900440C53 /* NotationRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NotationRenderer.m; sourceTree = "<group>"; };
+		98CD06B91DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ShadersTexturedMaterialedBump.metal; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -156,6 +158,7 @@
 				2C235FC91DD6CBD700E68295 /* ShadersMaterialed.metal */,
 				2C235FCA1DD6CBD700E68295 /* ShadersTextured.metal */,
 				2C235FCB1DD6CBD700E68295 /* ShadersTexturedMaterialed.metal */,
+				98CD06B91DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal */,
 				2C235FCC1DD6CBD700E68295 /* ShadersTextureImage.metal */,
 			);
 			path = Meshes;
@@ -361,6 +364,7 @@
 				2C5B92C31D73F51E00722936 /* NuoMaterial.cpp in Sources */,
 				2C840D0E1D7001C2000D2956 /* NuoMetalView.m in Sources */,
 				2CAF2E851D691AC90074E402 /* tiny_obj_loader.cc in Sources */,
+				98CD06BA1DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal in Sources */,
 				2C5B92C01D72D11E00722936 /* NuoModelBase.cpp in Sources */,
 				2C235FCE1DD6CBD700E68295 /* ShadersMaterialed.metal in Sources */,
 				2C235FCD1DD6CBD700E68295 /* Shaders.metal in Sources */,

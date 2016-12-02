@@ -40,6 +40,7 @@ class NuoModelOption
 public:
     bool _textured;
     bool _textureEmbedMaterialTransparency;
+    bool _texturedBump;
     
     bool _basicMaterialized;
 };
@@ -65,9 +66,12 @@ public:
     virtual std::string GetTexturePathDiffuse() = 0;
     virtual void SetTexturePathOpacity(const std::string texPath) = 0;
     virtual std::string GetTexturePathOpacity() = 0;
+    virtual void SetTexturePathBump(const std::string texPath) = 0;
+    virtual std::string GetTexturePathBump() = 0;
     
     virtual void GenerateIndices() = 0;
     virtual void GenerateNormals() = 0;
+    virtual void GenerateTangents() = 0;
     
     virtual size_t GetVerticesNumber() = 0;
     virtual vector_float4 GetPosition(size_t index) = 0;
@@ -101,6 +105,9 @@ public:
     
     virtual void* Ptr() override;
     virtual size_t Length() override;
+
+protected:
+    virtual void DoGenerateIndices(bool compressBuffer);
 };
 
 
@@ -128,39 +135,58 @@ public:
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
     virtual void AddMaterial(const NuoMaterial& material) override;
     
+    virtual void GenerateTangents() override;
+    
     virtual void SetTexturePathDiffuse(const std::string texPath) override;
     virtual std::string GetTexturePathDiffuse() override;
     virtual void SetTexturePathOpacity(const std::string texPath) override;
     virtual std::string GetTexturePathOpacity() override;
+    virtual void SetTexturePathBump(const std::string texPath) override;
+    virtual std::string GetTexturePathBump() override;
     
     virtual bool HasTransparent() override;
 };
 
 
 
-
-
 template <class ItemBase>
 void NuoModelCommon<ItemBase>::GenerateIndices()
 {
-    std::vector<ItemBase> compactBuffer;
-    size_t checkBackward = 100;
+    DoGenerateIndices(true);
+}
+
+
+
+template <class ItemBase>
+void NuoModelCommon<ItemBase>::DoGenerateIndices(bool compressBuffer)
+{
     uint32_t indexCurrent = 0;
     
-    _indices.clear();
-    
-    for (size_t i = 0; i < _buffer.size(); ++i)
+    if (compressBuffer)
     {
-        const ItemBase& item = _buffer[i];
+        std::vector<ItemBase> compactBuffer;
+        size_t checkBackward = 100;
         
-        if (item._normal.x != 0.0f || item._normal.y != 0.0f || item._normal.z != 0.0f)
+        _indices.clear();
+        
+        for (size_t i = 0; i < _buffer.size(); ++i)
         {
-            auto search = std::find((compactBuffer.size() < checkBackward ? compactBuffer.begin() : compactBuffer.end() - checkBackward),
-                                    compactBuffer.end(), item);
-            if (search != std::end(compactBuffer))
+            const ItemBase& item = _buffer[i];
+            
+            if (item._normal.x != 0.0f || item._normal.y != 0.0f || item._normal.z != 0.0f)
             {
-                uint32_t indexExist = (uint32_t)(search - std::begin(compactBuffer));
-                _indices.push_back(indexExist);
+                auto search = std::find((compactBuffer.size() < checkBackward ? compactBuffer.begin() : compactBuffer.end() - checkBackward),
+                                        compactBuffer.end(), item);
+                if (search != std::end(compactBuffer))
+                {
+                    uint32_t indexExist = (uint32_t)(search - std::begin(compactBuffer));
+                    _indices.push_back(indexExist);
+                }
+                else
+                {
+                    compactBuffer.push_back(item);
+                    _indices.push_back(indexCurrent++);
+                }
             }
             else
             {
@@ -168,14 +194,14 @@ void NuoModelCommon<ItemBase>::GenerateIndices()
                 _indices.push_back(indexCurrent++);
             }
         }
-        else
-        {
-            compactBuffer.push_back(item);
-            _indices.push_back(indexCurrent++);
-        }
+        
+        _buffer.swap(compactBuffer);
     }
-    
-    _buffer.swap(compactBuffer);
+    else
+    {
+        for (size_t i = 0; i < _buffer.size(); ++i)
+            _indices.push_back(indexCurrent++);
+    }
 }
 
 

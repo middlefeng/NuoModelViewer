@@ -69,6 +69,8 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
     float3 ambientTerm = light.ambientColor * vert.ambientColor;
     float3 colorForLights = 0.0;
     
+    float transparency = 1.0;
+    
     for (unsigned i = 0; i < 4; ++i)
     {
         float3 lightVector = normalize(lightingUniform.direction[i].xyz);
@@ -81,12 +83,15 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             float3 eyeDirection = normalize(vert.eye);
             float3 halfway = normalize(lightVector + eyeDirection);
             float specularFactor = pow(saturate(dot(normal, halfway)), vert.specularPowerDisolve);
-            opacity = 1 - (1 - opacity) * (1 - pow(specularFactor, 3.0));
+            transparency *= ((1 - opacity) * (1 - saturate(pow(specularFactor * lightingUniform.density[i], 3.0))));
             specularTerm = light.specularColor * vert.specularColor * specularFactor;
         }
         
         colorForLights += (diffuseTerm + specularTerm) * lightingUniform.density[i];
     }
+    
+    if (opacity < 1.0 && transparency < 1.0)
+        opacity = 1.0 - transparency;
     
     return float4(ambientTerm + colorForLights, opacity);
 }

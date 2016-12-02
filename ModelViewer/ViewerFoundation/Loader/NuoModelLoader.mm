@@ -218,6 +218,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         NuoModelOption options;
         options._textured = loadOption.textured;
         options._textureEmbedMaterialTransparency = loadOption.textureEmbeddingMaterialTransparency;
+        options._texturedBump = loadOption.texturedBump;
         options._basicMaterialized = loadOption.basicMaterialized;
         
         PNuoModelBase modelBase = CreateModel(options, material);
@@ -258,6 +259,15 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
             NSString* opacityTexPath = [_basePath stringByAppendingPathComponent:opacityTexName];
             
             modelBase->SetTexturePathOpacity(opacityTexPath.UTF8String);
+        }
+        
+        if (material.HasTextureBump())
+        {
+            NSString* bumpTexName = [NSString stringWithUTF8String:material.bump_texname.c_str()];
+            NSString* bumpTexPath = [_basePath stringByAppendingPathComponent:bumpTexName];
+            
+            modelBase->GenerateTangents();
+            modelBase->SetTexturePathBump(bumpTexPath.UTF8String);
         }
         
         models.push_back(modelBase);

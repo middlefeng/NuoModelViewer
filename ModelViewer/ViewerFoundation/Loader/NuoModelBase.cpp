@@ -31,9 +31,18 @@ std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMate
     }
     else if (options._textured && options._basicMaterialized)
     {
-        auto model = std::make_shared<NuoModelMaterialedTextured>();
-        model->SetCheckTransparency(true);
-        return model;
+        if (material.HasTextureBump() && options._texturedBump)
+        {
+            auto model = std::make_shared<NuoModelMaterialedBumpedTextured>();
+            model->SetCheckTransparency(true);
+            return model;
+        }
+        else
+        {
+            auto model = std::make_shared<NuoModelMaterialedTextured>();
+            model->SetCheckTransparency(true);
+            return model;
+        }
     }
     else if (options._basicMaterialized)
     {
@@ -120,6 +129,10 @@ void NuoModelSimple::AddMaterial(const NuoMaterial& material)
 }
 
 
+void NuoModelSimple::GenerateTangents()
+{
+}
+
 
 void NuoModelSimple::SetTexturePathDiffuse(const std::string texPath)
 {
@@ -139,6 +152,17 @@ void NuoModelSimple::SetTexturePathOpacity(const std::string texPath)
 
 
 std::string NuoModelSimple::GetTexturePathOpacity()
+{
+    return std::string();
+}
+
+
+void NuoModelSimple::SetTexturePathBump(const std::string texPath)
+{
+}
+
+
+std::string NuoModelSimple::GetTexturePathBump()
 {
     return std::string();
 }

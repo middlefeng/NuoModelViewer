@@ -60,6 +60,7 @@ public:
     
     bool HasTextureDiffuse() const;
     bool HasTextureOpacity() const;
+    bool HasTextureBump() const;
 };
 
 

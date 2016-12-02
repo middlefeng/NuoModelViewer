@@ -13,6 +13,7 @@
 @implementation NuoMeshTexMatieraled
 {
     id<MTLTexture> _textureOpacity;
+    id<MTLTexture> _textureBump;
 }
 
 
@@ -40,6 +41,15 @@
 
 
 
+- (void)makeTextureBump:(NSString*)texPath
+{
+    NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.device];
+    NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:NO checkTransparency:NO];
+    _textureBump = texture.texture;
+}
+
+
+
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor:(BOOL)ignoreTextureAlpha
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
@@ -48,19 +58,36 @@
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     pipelineDescriptor.sampleCount = kSampleCount;
     
-    pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_tex_materialed"];
-    if (ignoreTextureAlpha)
+    if (!_textureBump)
     {
-        if (_textureOpacity)
-            pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed_tex_opacity"];
+        pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_tex_materialed"];
+        if (ignoreTextureAlpha)
+        {
+            if (_textureOpacity)
+                pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed_tex_opacity"];
+            else
+                pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed"];
+        }
         else
-            pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed"];
+        {
+            pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_a_materialed"];
+        }
     }
     else
     {
-        pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_a_materialed"];
+        pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_tex_materialed_tangent"];
+        if (ignoreTextureAlpha)
+        {
+            if (_textureOpacity)
+                pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_tex_materialed_tex_opacity_bump"];
+            else
+                pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_tex_materialed_bump"];
+        }
+        else
+        {
+            pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_tex_a_materialed_bump"];
+        }
     }
-    
     
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
@@ -71,30 +98,38 @@
     colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
     colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
     
+    unsigned int offset = 0;
+    
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];
-    vertexDescriptor.attributes[0].format = MTLVertexFormatFloat4;
-    vertexDescriptor.attributes[0].offset = 0;
+    vertexDescriptor.attributes[0].format = MTLVertexFormatFloat4;      // position
+    vertexDescriptor.attributes[0].offset = offset; offset += 16;
     vertexDescriptor.attributes[0].bufferIndex = 0;
-    vertexDescriptor.attributes[1].format = MTLVertexFormatFloat4;
-    vertexDescriptor.attributes[1].offset = 16;
+    vertexDescriptor.attributes[1].format = MTLVertexFormatFloat4;      // normal
+    vertexDescriptor.attributes[1].offset = offset; offset += 16;
     vertexDescriptor.attributes[1].bufferIndex = 0;
-    vertexDescriptor.attributes[2].format = MTLVertexFormatFloat2;
-    vertexDescriptor.attributes[2].offset = 32;
+    if (_textureBump)
+    {
+        vertexDescriptor.attributes[1].format = MTLVertexFormatFloat4;  // tangent
+        vertexDescriptor.attributes[1].offset = offset; offset += 16;
+        vertexDescriptor.attributes[1].bufferIndex = 0;
+    }
+    vertexDescriptor.attributes[2].format = MTLVertexFormatFloat2;      // texCoord
+    vertexDescriptor.attributes[2].offset = offset; offset += 16;
     vertexDescriptor.attributes[2].bufferIndex = 0;
-    vertexDescriptor.attributes[3].format = MTLVertexFormatFloat3;
-    vertexDescriptor.attributes[3].offset = 48;
+    vertexDescriptor.attributes[3].format = MTLVertexFormatFloat3;      // diffuse
+    vertexDescriptor.attributes[3].offset = offset; offset += 16;
     vertexDescriptor.attributes[3].bufferIndex = 0;
-    vertexDescriptor.attributes[4].format = MTLVertexFormatFloat3;
-    vertexDescriptor.attributes[4].offset = 64;
+    vertexDescriptor.attributes[4].format = MTLVertexFormatFloat3;      // ambient
+    vertexDescriptor.attributes[4].offset = offset; offset += 16;
     vertexDescriptor.attributes[4].bufferIndex = 0;
-    vertexDescriptor.attributes[5].format = MTLVertexFormatFloat3;
-    vertexDescriptor.attributes[5].offset = 80;
+    vertexDescriptor.attributes[5].format = MTLVertexFormatFloat3;      // specular
+    vertexDescriptor.attributes[5].offset = offset; offset += 16;
     vertexDescriptor.attributes[5].bufferIndex = 0;
-    vertexDescriptor.attributes[6].format = MTLVertexFormatFloat2;
-    vertexDescriptor.attributes[6].offset = 96;
+    vertexDescriptor.attributes[6].format = MTLVertexFormatFloat2;      // shinessDisolve
+    vertexDescriptor.attributes[6].offset = offset; offset += 16;
     vertexDescriptor.attributes[6].bufferIndex = 0;
     
-    vertexDescriptor.layouts[0].stride = 112;
+    vertexDescriptor.layouts[0].stride = offset;
     vertexDescriptor.layouts[0].stepRate = 1;
     vertexDescriptor.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
     
@@ -113,9 +148,12 @@
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
     
-    [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
+    NSUInteger texBufferIndex = 0;
+    [renderPass setFragmentTexture:self.diffuseTex atIndex:texBufferIndex++];
     if (_textureOpacity)
-        [renderPass setFragmentTexture:_textureOpacity atIndex:1];
+        [renderPass setFragmentTexture:_textureOpacity atIndex:texBufferIndex++];
+    if (_textureBump)
+        [renderPass setFragmentTexture:_textureBump atIndex:texBufferIndex];
     
     [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
                            indexCount:[self.indexBuffer length] / sizeof(uint32_t)

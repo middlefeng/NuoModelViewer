@@ -15,6 +15,7 @@
 
 @property (nonatomic, assign) BOOL textured;
 @property (nonatomic, assign) BOOL textureEmbeddingMaterialTransparency;
+@property (nonatomic, assign) BOOL texturedBump;
 @property (nonatomic, assign) BOOL basicMaterialized;
 
 @property (nonatomic, assign) BOOL combineShapes;
