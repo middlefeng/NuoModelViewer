@@ -40,7 +40,7 @@
 - (NSRect)operationPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize panelSize = NSMakeSize(225, 248);
+    NSSize panelSize = NSMakeSize(225, 285);
     NSSize panelMargin = NSMakeSize(15, 25);
     NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
                                       viewRect.size.height - panelMargin.height - panelSize.height);
@@ -83,6 +83,7 @@
 {
     [_modelRender setCullEnabled:[panel cullEnabled]];
     [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
+    [_modelRender setAmbientDensity:[panel ambientDensity]];
     [self setupPipelineSettings];
     [self render];
 }

@@ -36,6 +36,8 @@
 
 @property (nonatomic, assign) float fieldOfViewRadian;
 
+@property (nonatomic, assign) float ambientDensity;
+
 @property (nonatomic, assign) BOOL showLightSettings;
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;

@@ -44,17 +44,16 @@ struct LightUniform
 {
     metal::float4 direction[4];
     float density[4];
+    float ambientDensity;
 };
 
 struct Light
 {
-    metal::float3 ambientColor;
     metal::float3 diffuseColor;
     metal::float3 specularColor;
 };
 
 constant Light light = {
-    .ambientColor = { 0.28, 0.28, 0.28 },
     .diffuseColor = { 1, 1, 1 },
     .specularColor = { 0.5, 0.5, 0.5 }
 };
