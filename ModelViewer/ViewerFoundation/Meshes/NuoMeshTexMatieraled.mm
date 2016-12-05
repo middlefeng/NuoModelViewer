@@ -99,35 +99,36 @@
     colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
     
     unsigned int offset = 0;
+    unsigned int attrIndex = 0;
     
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];
-    vertexDescriptor.attributes[0].format = MTLVertexFormatFloat4;      // position
-    vertexDescriptor.attributes[0].offset = offset; offset += 16;
-    vertexDescriptor.attributes[0].bufferIndex = 0;
-    vertexDescriptor.attributes[1].format = MTLVertexFormatFloat4;      // normal
-    vertexDescriptor.attributes[1].offset = offset; offset += 16;
-    vertexDescriptor.attributes[1].bufferIndex = 0;
+    vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat4;      // position
+    vertexDescriptor.attributes[attrIndex].offset = offset; offset += 16;
+    vertexDescriptor.attributes[attrIndex].bufferIndex = 0; ++attrIndex;
+    vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat4;      // normal
+    vertexDescriptor.attributes[attrIndex].offset = offset; offset += 16;
+    vertexDescriptor.attributes[attrIndex].bufferIndex = 0; ++attrIndex;
     if (_textureBump)
     {
-        vertexDescriptor.attributes[1].format = MTLVertexFormatFloat4;  // tangent
-        vertexDescriptor.attributes[1].offset = offset; offset += 16;
-        vertexDescriptor.attributes[1].bufferIndex = 0;
+        vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat4;  // tangent
+        vertexDescriptor.attributes[attrIndex].offset = offset; offset += 16;
+        vertexDescriptor.attributes[attrIndex].bufferIndex = 0; ++attrIndex;
     }
-    vertexDescriptor.attributes[2].format = MTLVertexFormatFloat2;      // texCoord
-    vertexDescriptor.attributes[2].offset = offset; offset += 16;
-    vertexDescriptor.attributes[2].bufferIndex = 0;
-    vertexDescriptor.attributes[3].format = MTLVertexFormatFloat3;      // diffuse
-    vertexDescriptor.attributes[3].offset = offset; offset += 16;
-    vertexDescriptor.attributes[3].bufferIndex = 0;
-    vertexDescriptor.attributes[4].format = MTLVertexFormatFloat3;      // ambient
-    vertexDescriptor.attributes[4].offset = offset; offset += 16;
-    vertexDescriptor.attributes[4].bufferIndex = 0;
-    vertexDescriptor.attributes[5].format = MTLVertexFormatFloat3;      // specular
-    vertexDescriptor.attributes[5].offset = offset; offset += 16;
-    vertexDescriptor.attributes[5].bufferIndex = 0;
-    vertexDescriptor.attributes[6].format = MTLVertexFormatFloat2;      // shinessDisolve
-    vertexDescriptor.attributes[6].offset = offset; offset += 16;
-    vertexDescriptor.attributes[6].bufferIndex = 0;
+    vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat2;      // texCoord
+    vertexDescriptor.attributes[attrIndex].offset = offset; offset += 16;
+    vertexDescriptor.attributes[attrIndex].bufferIndex = 0; ++attrIndex;
+    vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat3;      // diffuse
+    vertexDescriptor.attributes[attrIndex].offset = offset; offset += 16;
+    vertexDescriptor.attributes[attrIndex].bufferIndex = 0; ++attrIndex;
+    vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat3;      // ambient
+    vertexDescriptor.attributes[attrIndex].offset = offset; offset += 16;
+    vertexDescriptor.attributes[attrIndex].bufferIndex = 0; ++attrIndex;
+    vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat3;      // specular
+    vertexDescriptor.attributes[attrIndex].offset = offset; offset += 16;
+    vertexDescriptor.attributes[attrIndex].bufferIndex = 0; ++attrIndex;
+    vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat2;      // shinessDisolve
+    vertexDescriptor.attributes[attrIndex].offset = offset; offset += 16;
+    vertexDescriptor.attributes[attrIndex].bufferIndex = 0; ++attrIndex;
     
     vertexDescriptor.layouts[0].stride = offset;
     vertexDescriptor.layouts[0].stepRate = 1;
