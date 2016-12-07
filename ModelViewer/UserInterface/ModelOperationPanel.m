@@ -23,6 +23,7 @@
 
 @property (nonatomic, assign) NSSlider* fieldOfView;
 
+@property (nonatomic, strong) NSSlider* ambientDensitySlider;
 @property (nonatomic, strong) NSButton* lightSettings;
 
 @end
@@ -145,7 +146,29 @@
     [self addSubview:fieldOfView];
     _fieldOfView = fieldOfView;
     
-    rowCoord += 1.4;
+    rowCoord += 1.0;
+    
+    NSTextField* labelambientDensity = [NSTextField new];
+    [labelambientDensity setEditable:NO];
+    [labelambientDensity setSelectable:NO];
+    [labelambientDensity setBordered:NO];
+    [labelambientDensity setStringValue:@"Ambient Density:"];
+    [labelambientDensity setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [self addSubview:labelambientDensity];
+    
+    rowCoord += 0.9;
+    
+    NSSlider* ambientDensity = [NSSlider new];
+    [ambientDensity setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6]];
+    [ambientDensity setMaxValue:2.0];
+    [ambientDensity setMinValue:0];
+    [ambientDensity setFloatValue:0.28];
+    [ambientDensity setTarget:self];
+    [ambientDensity setAction:@selector(ambientDensityChanged:)];
+    [self addSubview:ambientDensity];
+    _ambientDensitySlider = ambientDensity;
+    
+    rowCoord += 1.0;
     
     NSButton* lightSettings = [NSButton new];
     [lightSettings setButtonType:NSSwitchButton];
@@ -212,6 +235,14 @@
 - (void)fieldOfViewChanged:(id)sender
 {
     _fieldOfViewRadian = [_fieldOfView floatValue];
+    
+    [_optionUpdateDelegate modelOptionUpdate:self];
+}
+
+
+- (void)ambientDensityChanged:(id)sender
+{
+    _ambientDensity = [_ambientDensitySlider floatValue];
     
     [_optionUpdateDelegate modelOptionUpdate:self];
 }

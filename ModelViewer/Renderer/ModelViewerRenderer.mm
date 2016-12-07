@@ -159,6 +159,7 @@
     memcpy([self.modelUniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
     
     LightingUniforms lighting;
+    lighting.ambientDensity = _ambientDensity;
     for (unsigned int i = 0; i < 4; ++i)
     {
         vector_float4 lightVector { 0, 0, 1, 0 };
