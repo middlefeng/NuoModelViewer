@@ -22,6 +22,7 @@ public:
     NuoTableExporter();
     
     void StartTable();
+    void StartArrayIndex(size_t index);
     void StartEntry(const std::string& entryName);
     void SetEntryValueFloat(float value);
     void SetEntryValueBool(bool value);

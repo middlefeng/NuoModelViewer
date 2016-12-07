@@ -34,6 +34,7 @@
 
 
 - (void)loadMesh:(NSString*)path;
+- (NSString*)exportAsString;
 
 
 @end

@@ -370,4 +370,25 @@
 
 
 
+- (IBAction)saveScene:(id)sender
+{
+    NSSavePanel* savePanel = [NSSavePanel savePanel];
+    [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
+             {
+                 if (result == NSFileHandlingPanelOKButton)
+                 {
+                     NSString* path = savePanel.URL.path;
+                     NSString* result = [_modelRender exportAsString];
+                     
+                     const char* pathStr = path.UTF8String;
+                     
+                     FILE* file = fopen(pathStr, "w");
+                     fwrite(result.UTF8String, sizeof(char), result.length, file);
+                     fclose(file);
+                 }
+             }];
+        }
+
+
+
 @end

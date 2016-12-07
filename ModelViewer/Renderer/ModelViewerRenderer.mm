@@ -11,6 +11,7 @@
 #include "NuoMathUtilities.h"
 #include "NuoModelBase.h"
 #include "NuoModelLoader.h"
+#include "NuoTableExporter.h"
 
 #import "LightSource.h"
 
@@ -56,6 +57,44 @@
     
     _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
                                       withDevice:self.device];
+}
+
+
+- (NSString*)exportAsString
+{
+    NuoTableExporter exporter;
+    
+    exporter.StartTable();
+    
+    {
+        exporter.StartEntry("rotationMatrix");
+        exporter.StartTable();
+        
+        {
+            for (unsigned char col = 0; col < 4; ++ col)
+            {
+                exporter.StartArrayIndex(col);
+                exporter.StartTable();
+                
+                vector_float4 colomn = _rotationMatrix.columns[col];
+                
+                for (unsigned char row = 0; row < 4; ++ row)
+                {
+                    exporter.StartArrayIndex(row);
+                    exporter.SetEntryValueFloat(colomn[row]);
+                }
+                
+                exporter.EndTable();
+            }
+            
+        }
+        
+        exporter.EndTable();
+    }
+    
+    exporter.EndTable();
+    
+    return [[NSString alloc] initWithUTF8String:exporter.GetResult().c_str()];
 }
 
 

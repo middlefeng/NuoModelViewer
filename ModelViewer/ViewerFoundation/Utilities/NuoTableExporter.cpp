@@ -20,8 +20,9 @@ NuoTableExporter::NuoTableExporter()
 
 void NuoTableExporter::StartTable()
 {
+    _result = _result + "\n";
     AppendByIndent();
-    _result = _result + "\n{\n";
+    _result = _result + "{\n";
     _indent += 4;
 }
 
@@ -29,8 +30,22 @@ void NuoTableExporter::StartTable()
 void NuoTableExporter::StartEntry(const std::string& entryName)
 {
     AppendByIndent();
-    _result = _result + "\"" + entryName + "\" =";
+    _result = _result + "\"" + entryName + "\" = ";
 }
+
+
+
+void NuoTableExporter::StartArrayIndex(size_t index)
+{
+    char* buffer = new char[100];
+    snprintf(buffer, 100, "%lu", index);
+    
+    AppendByIndent();
+    _result = _result + "[" + buffer + "] = ";
+    
+    delete[] buffer;
+}
+
 
 
 void NuoTableExporter::SetEntryValueFloat(float value)
@@ -74,3 +89,11 @@ void NuoTableExporter::AppendByIndent()
     for (size_t i = 0; i < _indent; ++i)
         _result = _result + " ";
 }
+
+
+const std::string& NuoTableExporter::GetResult() const
+{
+    return _result;
+}
+
+
