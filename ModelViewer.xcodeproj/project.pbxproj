@@ -33,6 +33,7 @@
 		2C9D9AAA1D658F0800283E46 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AA91D658F0800283E46 /* AppDelegate.m */; };
 		2C9D9AAD1D658F0800283E46 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAC1D658F0800283E46 /* main.m */; };
 		2C9D9AAF1D658F0800283E46 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAE1D658F0800283E46 /* Assets.xcassets */; };
+		2C9E397B1DF7D8BC00286EA0 /* NuoTableExporter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C9E39791DF7D8BC00286EA0 /* NuoTableExporter.cpp */; };
 		2CA55FA91DD21D2A0000AD21 /* NuoRenderPass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */; };
 		2CAF2E851D691AC90074E402 /* tiny_obj_loader.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */; };
 		2CC5EDEE1D8A62B100419168 /* NuoRoundedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CC5EDED1D8A62B100419168 /* NuoRoundedView.m */; };
@@ -94,6 +95,8 @@
 		2C9D9AAC1D658F0800283E46 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2C9D9AAE1D658F0800283E46 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2C9D9AB31D658F0800283E46 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2C9E39791DF7D8BC00286EA0 /* NuoTableExporter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoTableExporter.cpp; sourceTree = "<group>"; };
+		2C9E397A1DF7D8BC00286EA0 /* NuoTableExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoTableExporter.h; sourceTree = "<group>"; };
 		2CA55FA71DD21D2A0000AD21 /* NuoRenderPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRenderPass.h; sourceTree = "<group>"; };
 		2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoRenderPass.m; sourceTree = "<group>"; };
 		2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_obj_loader.cc; sourceTree = "<group>"; };
@@ -194,6 +197,8 @@
 				2CDCDAF11DC185A800ECFE39 /* NuoModelArrow.cpp */,
 				2C5DDAD51D6591B000A9DC9A /* NuoMathUtilities.h */,
 				2C5DDAD41D6591B000A9DC9A /* NuoMathUtilities.cpp */,
+				2C9E397A1DF7D8BC00286EA0 /* NuoTableExporter.h */,
+				2C9E39791DF7D8BC00286EA0 /* NuoTableExporter.cpp */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -374,6 +379,7 @@
 				2C5DDADA1D65949E00A9DC9A /* ModelViewerRenderer.mm in Sources */,
 				988442461D80853700EE2C4C /* NuoModelMaterialedBasic.cpp in Sources */,
 				2C5DDAD61D6591B000A9DC9A /* NuoMathUtilities.cpp in Sources */,
+				2C9E397B1DF7D8BC00286EA0 /* NuoTableExporter.cpp in Sources */,
 				2C3D9A9C1D7DF5C3002C1226 /* NuoModelTextured.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
