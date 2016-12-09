@@ -186,9 +186,15 @@ void NuoModelTexturedWithTangentBase<ItemBase>::GenerateTangents()
     {
         vector_float3 n = buffer[a]._normal.xyz;
         vector_float3 t = tan1[a];
-        vector_float3 tmp = vector_normalize(t - n * vector_dot(n, t));
-        buffer[a]._tangent = vector_float4 { tmp.x, tmp.y, tmp.z, 0 };
-        buffer[a]._tangent.w = vector_dot(vector_cross(n, t), tan2[a]) < 0.0f ? -1.0f : 1.0f;
+        t = vector_normalize(t - vector_cross(n, vector_dot(n, t)));
+        buffer[a]._tangent = vector_float4 { t.x, t.y, t.z, 0 };
+        
+        // not full sure this is completely right because somehow the Y of normal-texture need to
+        // be negated
+        //
+        vector_float3 b = tan2[a];
+        b = vector_normalize(b - vector_cross(b, vector_dot(n, b)) - vector_cross(t, vector_dot(t, b)));
+        buffer[a]._bitangent = vector_float4 { b.x, b.y, b.z, 0 };
     }
 }
 
