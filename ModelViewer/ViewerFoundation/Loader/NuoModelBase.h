@@ -165,7 +165,7 @@ void NuoModelCommon<ItemBase>::DoGenerateIndices(bool compressBuffer)
     if (compressBuffer)
     {
         std::vector<ItemBase> compactBuffer;
-        size_t checkBackward = 100;
+        size_t checkBackward = 200;
         
         _indices.clear();
         

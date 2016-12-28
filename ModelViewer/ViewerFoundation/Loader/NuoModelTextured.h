@@ -170,7 +170,11 @@ void NuoModelTexturedWithTangentBase<ItemBase>::GenerateTangents()
         float s2 = w3.x - w1.x;
         float t1 = w2.y - w1.y;
         float t2 = w3.y - w1.y;
-        float r = 1.0f / (s1 * t2 - s2 * t1);
+        
+        // a crude way to eliminate NaN
+        float div = (s1 * t2 - s2 * t1);
+        float r = 1.0f; if (fabs(div) > 1e-9) r = 1.0 / div;
+        
         vector_float3 sdir = vector_float3 { (t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r };
         vector_float3 tdir = vector_float3 { (s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r };
         
@@ -203,7 +207,7 @@ void NuoModelTexturedWithTangentBase<ItemBase>::GenerateTangents()
 template <class ItemBase>
 void NuoModelTexturedWithTangentBase<ItemBase>::GenerateIndices()
 {
-    NuoModelCommon<ItemBase>::DoGenerateIndices(false);
+    NuoModelCommon<ItemBase>::DoGenerateIndices(true);
 }
 
 
