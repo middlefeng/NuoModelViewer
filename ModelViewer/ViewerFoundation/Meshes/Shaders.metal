@@ -63,6 +63,8 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                             constant LightUniform &lightingUniform,
                                             float4 diffuseTexel)
 {
+    normal = normalize(normal);
+    
     float3 diffuseColor = diffuseTexel.rgb * vert.diffuseColor;
     float opacity = diffuseTexel.a * vert.opacity;
     

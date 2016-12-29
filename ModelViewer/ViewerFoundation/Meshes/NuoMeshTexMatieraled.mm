@@ -113,6 +113,9 @@
         vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat4;  // tangent
         vertexDescriptor.attributes[attrIndex].offset = offset; offset += 16;
         vertexDescriptor.attributes[attrIndex].bufferIndex = 0; ++attrIndex;
+        vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat4;  // bi-tangent
+        vertexDescriptor.attributes[attrIndex].offset = offset; offset += 16;
+        vertexDescriptor.attributes[attrIndex].bufferIndex = 0; ++attrIndex;
     }
     vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat2;      // texCoord
     vertexDescriptor.attributes[attrIndex].offset = offset; offset += 16;

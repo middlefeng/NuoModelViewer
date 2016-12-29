@@ -71,6 +71,7 @@ struct NuoItermMaterialedBumpedTextured
     vector_float4 _position;
     vector_float4 _normal;
     vector_float4 _tangent;
+    vector_float4 _bitangent;
     vector_float2 _texCoord;
     
     vector_float3 _diffuse;
