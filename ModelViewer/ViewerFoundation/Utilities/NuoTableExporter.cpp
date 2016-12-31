@@ -35,9 +35,11 @@ void NuoTableExporter::StartEntry(const std::string& entryName)
 
 
 
-void NuoTableExporter::EndEntry()
+void NuoTableExporter::EndEntry(bool extraLine)
 {
     _result = _result + ",\n";
+    if (extraLine)
+        _result += "\n";
 }
 
 

@@ -82,14 +82,50 @@
                 {
                     exporter.StartArrayIndex(row);
                     exporter.SetEntryValueFloat(colomn[row]);
+                    exporter.EndEntry(false);
                 }
                 
                 exporter.EndTable();
+                exporter.EndEntry(false);
             }
             
         }
         
         exporter.EndTable();
+        exporter.EndEntry(true);
+    }
+    
+    {
+        exporter.StartEntry("lights");
+        exporter.StartTable();
+        
+        for (unsigned char lightIndex = 0; lightIndex < _lights.count; ++lightIndex)
+        {
+            exporter.StartArrayIndex(lightIndex);
+            exporter.StartTable();
+            
+            LightSource* light = _lights[lightIndex];
+            
+            {
+                exporter.StartEntry("rotateX");
+                exporter.SetEntryValueFloat(light.lightingRotationX);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("rotateY");
+                exporter.SetEntryValueFloat(light.lightingRotationY);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("density");
+                exporter.SetEntryValueFloat(light.lightingDensity);
+                exporter.EndEntry(false);
+            }
+            
+            exporter.EndTable();
+            exporter.EndEntry(true);
+        }
+        
+        exporter.EndTable();
+        exporter.EndEntry(true);
     }
     
     exporter.EndTable();

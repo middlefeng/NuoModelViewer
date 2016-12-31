@@ -12,7 +12,8 @@
 #import "ModelViewerRenderer.h"
 #import "NotationRenderer.h"
 
-#include "NuoMeshOptions.h"
+#import "NuoLua.h"
+#import "NuoMeshOptions.h"
 
 
 
@@ -25,6 +26,7 @@
 
 @implementation ModelView
 {
+    NuoLua* _lua;
     ModelRenderer* _modelRender;
     NotationRenderer* _notationRender;
     NSArray<NuoRenderPass*>* _renders;
@@ -33,6 +35,16 @@
     NSSlider* _lightDensitySlider;
     
     BOOL _trackingLighting;
+}
+
+
+
+- (NuoLua*)lua
+{
+    if (!_lua)
+        _lua = [[NuoLua alloc] init];
+    
+    return _lua;
 }
 
 
@@ -357,13 +369,26 @@
 - (IBAction)openFile:(id)sender
 {
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
+    openPanel.allowedFileTypes = @[@"obj", @"scn"];
+    
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
             {
                 if (result == NSFileHandlingPanelOKButton)
                 {
                     NSString* path = openPanel.URL.path;
-                    [_modelRender loadMesh:path];
-                    [self render];
+                    NSString* ext = path.pathExtension;
+                    
+                    if ([ext isEqualToString:@"obj"])
+                    {
+                        [_modelRender loadMesh:path];
+                        [self render];
+                    }
+                    
+                    if ([ext isEqualToString:@"scn"])
+                    {
+                        NuoLua* lua = [self lua];
+                        [lua loadFile:path];
+                    }
                 }
             }];
 }

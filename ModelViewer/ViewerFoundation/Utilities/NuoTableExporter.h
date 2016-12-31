@@ -28,7 +28,7 @@ public:
     void SetEntryValueBool(bool value);
     void SetEntryValueString(const std::string& value);
     void EndTable();
-    void EndEntry();
+    void EndEntry(bool extraLine);
     
     const std::string& GetResult() const;
 
