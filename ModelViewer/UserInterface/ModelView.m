@@ -389,7 +389,9 @@
                         [lua loadFile:path];
                         [_modelRender importScene:lua];
                         [_notationRender importScene:lua];
+                        
                         [_panel setFieldOfViewRadian:_modelRender.fieldOfView];
+                        [_panel updateControls];
                     }
                     
                     [self render];

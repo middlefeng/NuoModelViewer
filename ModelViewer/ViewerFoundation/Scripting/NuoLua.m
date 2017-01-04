@@ -19,7 +19,6 @@
 
 
 
-
 - (instancetype)init
 {
     self = [super init];
@@ -31,12 +30,10 @@
 
 
 
-
 - (void)loadFile:(NSString*)path
 {
     luaL_dofile(_luaState, path.UTF8String);
 }
-
 
 
 

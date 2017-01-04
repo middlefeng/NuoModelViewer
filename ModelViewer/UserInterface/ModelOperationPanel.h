@@ -44,5 +44,6 @@
 
 
 - (void)addCheckbox;
+- (void)updateControls;
 
 @end

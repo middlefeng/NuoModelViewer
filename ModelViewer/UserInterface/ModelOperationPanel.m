@@ -46,6 +46,7 @@
         
         _fieldOfViewRadian = (2 * M_PI) / 8;
         _showLightSettings = NO;
+        _ambientDensity = 0.28;
     }
     
     return self;
@@ -84,7 +85,6 @@
     [checkTextureEmbedTrans setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [checkTextureEmbedTrans setTarget:self];
     [checkTextureEmbedTrans setAction:@selector(textureEmbedTransChanged:)];
-    [checkTextureEmbedTrans setEnabled:NO];
     [self addSubview:checkTextureEmbedTrans];
     _checkTextureEmbedTrans = checkTextureEmbedTrans;
     
@@ -96,7 +96,6 @@
     [checkTextureBump setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [checkTextureBump setTarget:self];
     [checkTextureBump setAction:@selector(textureBumpChanged:)];
-    [checkTextureBump setEnabled:NO];
     [self addSubview:checkTextureBump];
     _checkTextureBump = checkTextureBump;
     
@@ -108,7 +107,6 @@
     [cull setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [cull setTarget:self];
     [cull setAction:@selector(cullChanged:)];
-    [cull setState:NSOnState];
     [self addSubview:cull];
     _cull = cull;
     
@@ -120,7 +118,6 @@
     [combine setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [combine setTarget:self];
     [combine setAction:@selector(combineChanged:)];
-    [combine setState:NSOnState];
     [self addSubview:combine];
     _combine = combine;
     
@@ -140,7 +137,6 @@
     [fieldOfView setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6]];
     [fieldOfView setMaxValue:_fieldOfViewRadian];
     [fieldOfView setMinValue:1e-6];
-    [fieldOfView setFloatValue:_fieldOfViewRadian];
     [fieldOfView setTarget:self];
     [fieldOfView setAction:@selector(fieldOfViewChanged:)];
     [self addSubview:fieldOfView];
@@ -162,7 +158,6 @@
     [ambientDensity setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6]];
     [ambientDensity setMaxValue:2.0];
     [ambientDensity setMinValue:0];
-    [ambientDensity setFloatValue:0.28];
     [ambientDensity setTarget:self];
     [ambientDensity setAction:@selector(ambientDensityChanged:)];
     [self addSubview:ambientDensity];
@@ -176,9 +171,10 @@
     [lightSettings setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [lightSettings setTarget:self];
     [lightSettings setAction:@selector(lightSettingsChanged:)];
-    [lightSettings setState:NSOffState];
     [self addSubview:lightSettings];
     _lightSettings = lightSettings;
+    
+    [self updateControls];
 }
 
 
@@ -260,6 +256,15 @@
 {
     [_checkTextureEmbedTrans setEnabled:[_checkTexture state]];
     [_checkTextureBump setEnabled:[_checkTexture state]];
+    
+    [_checkMaterial setState:_meshOptions.basicMaterialized ? NSOnState : NSOffState];
+    [_checkTexture setState:_meshOptions.textured ? NSOnState : NSOffState];
+    [_checkTextureEmbedTrans setState:_meshOptions.textureEmbeddingMaterialTransparency ? NSOnState : NSOffState];
+    [_checkTextureBump setState:_meshOptions.texturedBump ? NSOnState : NSOffState];
+    [_cull setState:_cullEnabled ? NSOnState : NSOffState];
+    [_combine setState:_meshOptions.combineShapes ? NSOnState : NSOffState];
+    [_fieldOfView setFloatValue:_fieldOfViewRadian];
+    [_ambientDensitySlider setFloatValue:_ambientDensity];
 }
 
 

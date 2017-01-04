@@ -27,7 +27,4 @@ struct lua_State;
 
 - (matrix_float4x4)getMatrixFromTable:(int)index;
 
-//- (struct lua_State*)state;
-
-
 @end
