@@ -7,6 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <simd/simd.h>
+
+
+
+struct lua_State;
 
 
 
@@ -14,6 +19,15 @@
 
 
 - (void)loadFile:(NSString*)path;
+
+- (void)getField:(NSString*)key fromTable:(int)index;
+- (void)getItem:(int)itemIndex fromTable:(int)index;
+- (void)removeField;
+- (float)getFieldAsNumber:(NSString*)key fromTable:(int)index;
+
+- (matrix_float4x4)getMatrixFromTable:(int)index;
+
+//- (struct lua_State*)state;
 
 
 @end
