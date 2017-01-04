@@ -86,7 +86,9 @@
         
         exporter.EndTable();
         exporter.EndEntry(true);
-        
+    }
+    
+    {
         exporter.StartEntry("rotationMatrix");
         exporter.StartTable();
         
