@@ -69,6 +69,24 @@
     exporter.StartTable();
     
     {
+        exporter.StartEntry("canvas");
+        exporter.StartTable();
+        
+        CGSize drawableSize = self.renderTarget.drawableSize;
+        
+        {
+            exporter.StartEntry("width");
+            exporter.SetEntryValueFloat(drawableSize.width);
+            exporter.EndEntry(false);
+            
+            exporter.StartEntry("height");
+            exporter.SetEntryValueFloat(drawableSize.height);
+            exporter.EndEntry(false);
+        }
+        
+        exporter.EndTable();
+        exporter.EndEntry(true);
+        
         exporter.StartEntry("rotationMatrix");
         exporter.StartTable();
         
@@ -90,38 +108,37 @@
                 exporter.EndTable();
                 exporter.EndEntry(false);
             }
-            
         }
+        
+        exporter.EndTable();
+        exporter.EndEntry(true);
     }
     
-    exporter.EndTable();
-    exporter.EndEntry(true);
-    
-    exporter.StartEntry("view");
-    exporter.StartTable();
-    
     {
-        exporter.StartEntry("zoom");
-        exporter.SetEntryValueFloat(_zoom);
-        exporter.EndEntry(false);
+        exporter.StartEntry("view");
+        exporter.StartTable();
         
-        exporter.StartEntry("transX");
-        exporter.SetEntryValueFloat(_transX);
-        exporter.EndEntry(false);
+        {
+            exporter.StartEntry("zoom");
+            exporter.SetEntryValueFloat(_zoom);
+            exporter.EndEntry(false);
+            
+            exporter.StartEntry("transX");
+            exporter.SetEntryValueFloat(_transX);
+            exporter.EndEntry(false);
+            
+            exporter.StartEntry("transY");
+            exporter.SetEntryValueFloat(_transY);
+            exporter.EndEntry(false);
+            
+            exporter.StartEntry("FOV");
+            exporter.SetEntryValueFloat(_fieldOfView);
+            exporter.EndEntry(false);
+        }
         
-        exporter.StartEntry("transY");
-        exporter.SetEntryValueFloat(_transY);
-        exporter.EndEntry(false);
+        exporter.EndTable();
+        exporter.EndEntry(true);
         
-        exporter.StartEntry("FOV");
-        exporter.SetEntryValueFloat(_fieldOfView);
-        exporter.EndEntry(false);
-    }
-    
-    exporter.EndTable();
-    exporter.EndEntry(true);
-    
-    {
         exporter.StartEntry("lights");
         exporter.StartTable();
         

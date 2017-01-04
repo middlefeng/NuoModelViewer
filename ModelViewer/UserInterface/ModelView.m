@@ -366,6 +366,31 @@
 
 
 
+- (void)loadScene:(NSString*)path
+{
+    NuoLua* lua = [self lua];
+    [lua loadFile:path];
+    
+    CGSize drawableSize;
+    [lua getField:@"canvas" fromTable:-1];
+    drawableSize.width = [lua getFieldAsNumber:@"width" fromTable:-1];
+    drawableSize.height = [lua getFieldAsNumber:@"height" fromTable:-1];
+    [lua removeField];
+    
+    NSWindow* window = self.window;
+    drawableSize.width /= window.backingScaleFactor;
+    drawableSize.height /= window.backingScaleFactor;
+    [window setContentSize:drawableSize];
+    
+    [_modelRender importScene:lua];
+    [_notationRender importScene:lua];
+    
+    [_panel setFieldOfViewRadian:_modelRender.fieldOfView];
+    [_panel updateControls];
+}
+
+
+
 - (IBAction)openFile:(id)sender
 {
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
@@ -385,13 +410,7 @@
                     
                     if ([ext isEqualToString:@"scn"])
                     {
-                        NuoLua* lua = [self lua];
-                        [lua loadFile:path];
-                        [_modelRender importScene:lua];
-                        [_notationRender importScene:lua];
-                        
-                        [_panel setFieldOfViewRadian:_modelRender.fieldOfView];
-                        [_panel updateControls];
+                        [self loadScene:path];
                     }
                     
                     [self render];
@@ -410,6 +429,9 @@
                  {
                      NSString* path = savePanel.URL.path;
                      NSString* result = [_modelRender exportAsString];
+                     NSString* ext = [path pathExtension];
+                     if (![ext isEqualToString:@"scn"])
+                         path = [path stringByAppendingString:@".scn"];
                      
                      const char* pathStr = path.UTF8String;
                      
