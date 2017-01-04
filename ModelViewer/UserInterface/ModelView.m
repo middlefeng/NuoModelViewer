@@ -443,7 +443,7 @@
                  if (result == NSFileHandlingPanelOKButton)
                  {
                      NSString* path = savePanel.URL.path;
-                     NSString* result = [_modelRender exportAsString];
+                     NSString* result = [_modelRender exportSceneAsString];
                      const char* pathStr = path.UTF8String;
                      
                      FILE* file = fopen(pathStr, "w");

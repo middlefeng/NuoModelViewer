@@ -62,7 +62,7 @@
 }
 
 
-- (NSString*)exportAsString
+- (NSString*)exportSceneAsString
 {
     NuoTableExporter exporter;
     

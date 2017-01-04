@@ -36,7 +36,7 @@
 
 - (void)loadMesh:(NSString*)path;
 
-- (NSString*)exportAsString;
+- (NSString*)exportSceneAsString;
 - (void)importScene:(NuoLua*)lua;
 
 
