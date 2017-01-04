@@ -13,6 +13,8 @@
 #include "NuoModelLoader.h"
 #include "NuoTableExporter.h"
 
+#include "NuoLua.h"
+
 #import "LightSource.h"
 
 @interface ModelRenderer ()
@@ -155,6 +157,21 @@
     exporter.EndTable();
     
     return [[NSString alloc] initWithUTF8String:exporter.GetResult().c_str()];
+}
+
+
+- (void)importScene:(NuoLua*)lua
+{
+    [lua getField:@"rotationMatrix" fromTable:-1];
+    _rotationMatrix = [lua getMatrixFromTable:-1];
+    [lua removeField];
+    
+    [lua getField:@"view" fromTable:-1];
+    _zoom = [lua getFieldAsNumber:@"zoom" fromTable:-1];
+    _transX = [lua getFieldAsNumber:@"transX" fromTable:-1];
+    _transY = [lua getFieldAsNumber:@"transY" fromTable:-1];
+    _fieldOfView = [lua getFieldAsNumber:@"FOV" fromTable:-1];
+    [lua removeField];
 }
 
 

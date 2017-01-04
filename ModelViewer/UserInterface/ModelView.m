@@ -381,14 +381,17 @@
                     if ([ext isEqualToString:@"obj"])
                     {
                         [_modelRender loadMesh:path];
-                        [self render];
                     }
                     
                     if ([ext isEqualToString:@"scn"])
                     {
                         NuoLua* lua = [self lua];
                         [lua loadFile:path];
+                        [_modelRender importScene:lua];
+                        [_notationRender importScene:lua];
                     }
+                    
+                    [self render];
                 }
             }];
 }

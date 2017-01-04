@@ -11,6 +11,7 @@
 
 #import "NuoMesh.h"
 #import "NuoMathUtilities.h"
+#import "NuoLua.h"
 
 #import "NotationLight.h"
 #import "ModelUniforms.h"
@@ -148,6 +149,22 @@
     
     _currentLightVector.selected = YES;
 }
+
+
+- (void)importScene:(NuoLua*)lua
+{
+    [lua getField:@"lights" fromTable:-1];
+    for (int lightIndex = 0; lightIndex < _lightVectors.count; ++lightIndex)
+    {
+        [lua getItem:lightIndex fromTable:-1];
+        _lightVectors[lightIndex].rotateX = [lua getFieldAsNumber:@"rotateX" fromTable:-1];
+        _lightVectors[lightIndex].rotateY = [lua getFieldAsNumber:@"rotateY" fromTable:-1];
+        _lightVectors[lightIndex].density = [lua getFieldAsNumber:@"density" fromTable:-1];
+        [lua removeField];
+    }
+    [lua removeField];
+}
+
 
 
 - (void)setDensity:(float)density
