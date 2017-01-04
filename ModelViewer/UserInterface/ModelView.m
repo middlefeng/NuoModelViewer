@@ -35,6 +35,8 @@
     NSSlider* _lightDensitySlider;
     
     BOOL _trackingLighting;
+    
+    NSString* _documentName;
 }
 
 
@@ -406,6 +408,11 @@
                     if ([ext isEqualToString:@"obj"])
                     {
                         [_modelRender loadMesh:path];
+                        
+                        NSString* documentName = [path lastPathComponent];
+                        _documentName = [documentName stringByDeletingPathExtension];
+                        NSString* title = [[NSString alloc] initWithFormat:@"ModelView - %@", documentName];
+                        [self.window setTitle:title];
                     }
                     
                     if ([ext isEqualToString:@"scn"])
@@ -422,17 +429,21 @@
 
 - (IBAction)saveScene:(id)sender
 {
+    NSString* defaultName = _documentName;
+    if (!defaultName)
+        defaultName = @" ";
+    
     NSSavePanel* savePanel = [NSSavePanel savePanel];
+    [savePanel setNameFieldStringValue:defaultName];
+    [savePanel setCanSelectHiddenExtension:YES];
+    [savePanel setAllowedFileTypes:@[@"scn"]];
+    
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
                  if (result == NSFileHandlingPanelOKButton)
                  {
                      NSString* path = savePanel.URL.path;
                      NSString* result = [_modelRender exportAsString];
-                     NSString* ext = [path pathExtension];
-                     if (![ext isEqualToString:@"scn"])
-                         path = [path stringByAppendingString:@".scn"];
-                     
                      const char* pathStr = path.UTF8String;
                      
                      FILE* file = fopen(pathStr, "w");
