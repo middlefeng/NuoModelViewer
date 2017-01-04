@@ -90,10 +90,34 @@
             }
             
         }
-        
-        exporter.EndTable();
-        exporter.EndEntry(true);
     }
+    
+    exporter.EndTable();
+    exporter.EndEntry(true);
+    
+    exporter.StartEntry("view");
+    exporter.StartTable();
+    
+    {
+        exporter.StartEntry("zoom");
+        exporter.SetEntryValueFloat(_zoom);
+        exporter.EndEntry(false);
+        
+        exporter.StartEntry("transX");
+        exporter.SetEntryValueFloat(_transX);
+        exporter.EndEntry(false);
+        
+        exporter.StartEntry("transY");
+        exporter.SetEntryValueFloat(_transY);
+        exporter.EndEntry(false);
+        
+        exporter.StartEntry("FOV");
+        exporter.SetEntryValueFloat(_fieldOfView);
+        exporter.EndEntry(false);
+    }
+    
+    exporter.EndTable();
+    exporter.EndEntry(true);
     
     {
         exporter.StartEntry("lights");
