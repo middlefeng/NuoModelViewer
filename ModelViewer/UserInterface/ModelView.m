@@ -34,7 +34,6 @@
     
     ModelOperationPanel* _modelPanel;
     LightOperationPanel* _lightPanel;
-    //NSSlider* _lightDensitySlider;
     
     BOOL _trackingLighting;
     
@@ -241,7 +240,7 @@
         if (_trackingLighting)
         {
             [_notationRender selectCurrentLightVector:location];
-            //[_lightDensitySlider setFloatValue:_notationRender.density];
+            [_lightPanel setLightDensity:_notationRender.density];
         }
     }
     else

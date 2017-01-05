@@ -2,7 +2,7 @@
 //  ModelOperationPanel.m
 //  ModelViewer
 //
-//  Created by middleware on 9/15/16.
+//  Created by middleware on 1/5/17
 //  Copyright © 2016 middleware. All rights reserved.
 //
 
@@ -86,6 +86,12 @@
 - (float)lightDensity
 {
     return [_lightDensitySlider floatValue];
+}
+
+
+- (void)setLightDensity:(float)lightDensity
+{
+    [_lightDensitySlider setFloatValue:lightDensity];
 }
 
 

@@ -1,9 +1,9 @@
 //
-//  ModelOperationPanel.h
+//  LightOperationPanel.h
 //  ModelViewer
 //
-//  Created by middleware on 9/15/16.
-//  Copyright © 2016 middleware. All rights reserved.
+//  Created by middleware on 1/7/17.
+//  Copyright © 2017 middleware. All rights reserved.
 //
 
 
@@ -18,7 +18,7 @@
 @interface LightOperationPanel : NSView
 
 
-@property (nonatomic, readonly) float lightDensity;
+@property (nonatomic) float lightDensity;
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 
