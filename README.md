@@ -4,6 +4,8 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Load/save scene parameters (postion, light source direction, etc.).
+* Normal texture.
 * Light source configuration.
 * Multiple light sources.
 
@@ -27,11 +29,12 @@ A simple Wavefront OBJ viewer.
 
 ## TODO
 
-* Bump texture.
+* <del>Bump texture.</del>
 * <del>Direction of lgiht source.</del>
 * <del>Intensity of light source.</del>
 * <del>Mutilple light sources.</del>
 * Selectable list of object.
+* Surface smooth.
 * Shadow (to model and to ground).
 * <del>Cull mode.</del>
 * Surrounding (cube map).
