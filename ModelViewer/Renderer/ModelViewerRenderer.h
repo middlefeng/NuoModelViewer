@@ -36,7 +36,7 @@
 
 - (void)loadMesh:(NSString*)path;
 
-- (NSString*)exportSceneAsString;
+- (NSString*)exportSceneAsString:(CGSize)canvasSize;
 - (void)importScene:(NuoLua*)lua;
 
 

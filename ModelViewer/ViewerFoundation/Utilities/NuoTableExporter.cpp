@@ -60,7 +60,7 @@ void NuoTableExporter::StartArrayIndex(size_t index)
 void NuoTableExporter::SetEntryValueFloat(float value)
 {
     char* buffer = new char[100];
-    snprintf(buffer, 100, "%.2f", value);
+    snprintf(buffer, 100, "%.6f", value);
     
     _result = _result + buffer;
     

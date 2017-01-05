@@ -380,8 +380,6 @@
     [lua removeField];
     
     NSWindow* window = self.window;
-    drawableSize.width /= window.backingScaleFactor;
-    drawableSize.height /= window.backingScaleFactor;
     [window setContentSize:drawableSize];
     
     [_modelRender importScene:lua];
@@ -443,7 +441,7 @@
                  if (result == NSFileHandlingPanelOKButton)
                  {
                      NSString* path = savePanel.URL.path;
-                     NSString* result = [_modelRender exportSceneAsString];
+                     NSString* result = [_modelRender exportSceneAsString:[self.window contentView].frame.size];
                      const char* pathStr = path.UTF8String;
                      
                      FILE* file = fopen(pathStr, "w");

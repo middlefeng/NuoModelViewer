@@ -62,7 +62,7 @@
 }
 
 
-- (NSString*)exportSceneAsString
+- (NSString*)exportSceneAsString:(CGSize)canvasSize
 {
     NuoTableExporter exporter;
     
@@ -72,15 +72,13 @@
         exporter.StartEntry("canvas");
         exporter.StartTable();
         
-        CGSize drawableSize = self.renderTarget.drawableSize;
-        
         {
             exporter.StartEntry("width");
-            exporter.SetEntryValueFloat(drawableSize.width);
+            exporter.SetEntryValueFloat(canvasSize.width);
             exporter.EndEntry(false);
             
             exporter.StartEntry("height");
-            exporter.SetEntryValueFloat(drawableSize.height);
+            exporter.SetEntryValueFloat(canvasSize.height);
             exporter.EndEntry(false);
         }
         
