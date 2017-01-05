@@ -353,7 +353,7 @@
         path = [path stringByAppendingPathComponent:name];
     }
     
-    [_modelRender loadMesh:path];
+    [self loadMesh:path];
     [self render];
     return YES;
 }
@@ -364,6 +364,18 @@
 {
     _modelRender.lights = _notationRender.lightSources;
     [super render];
+}
+
+
+
+- (void)loadMesh:(NSString*)path
+{
+    [_modelRender loadMesh:path];
+    
+    NSString* documentName = [path lastPathComponent];
+    _documentName = [documentName stringByDeletingPathExtension];
+    NSString* title = [[NSString alloc] initWithFormat:@"ModelView - %@", documentName];
+    [self.window setTitle:title];
 }
 
 
@@ -405,19 +417,10 @@
                     NSString* ext = path.pathExtension;
                     
                     if ([ext isEqualToString:@"obj"])
-                    {
-                        [_modelRender loadMesh:path];
-                        
-                        NSString* documentName = [path lastPathComponent];
-                        _documentName = [documentName stringByDeletingPathExtension];
-                        NSString* title = [[NSString alloc] initWithFormat:@"ModelView - %@", documentName];
-                        [self.window setTitle:title];
-                    }
+                        [self loadMesh:path];
                     
                     if ([ext isEqualToString:@"scn"])
-                    {
                         [self loadScene:path];
-                    }
                     
                     [self render];
                 }
