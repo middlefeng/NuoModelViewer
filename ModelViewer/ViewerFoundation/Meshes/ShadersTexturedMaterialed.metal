@@ -25,7 +25,8 @@ struct ProjectedVertex
     float3 diffuseColor;
     float3 ambientColor;
     float3 specularColor;
-    float2 specularPowerDisolve;
+    float specularPower;
+    float dissolve [[flat]];
 };
 
 vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[buffer(0)]],
@@ -41,7 +42,8 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
     outVert.ambientColor = vertices[vid].ambientColor;
     outVert.diffuseColor = vertices[vid].diffuseColor;
     outVert.specularColor = vertices[vid].specularColor;
-    outVert.specularPowerDisolve = vertices[vid].specularPowerDisolve;
+    outVert.specularPower = vertices[vid].specularPowerDisolve.x;
+    outVert.dissolve = vertices[vid].specularPowerDisolve.y;
     
     return outVert;
 }
@@ -107,8 +109,8 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
     outVert.diffuseColor = vert.diffuseColor;
     outVert.ambientColor = vert.ambientColor;
     outVert.specularColor = vert.specularColor;
-    outVert.specularPowerDisolve = vert.specularPowerDisolve.x;
-    outVert.opacity = vert.specularPowerDisolve.y;
+    outVert.specularPower = vert.specularPower;
+    outVert.opacity = vert.dissolve;
     
     return outVert;
 }

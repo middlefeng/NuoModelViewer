@@ -53,7 +53,7 @@ struct NuoItemMaterialedTexturedBasic
 
 
 class NuoModelMaterialedTextured : virtual public NuoModelTextureBase<NuoItemMaterialedTexturedBasic>,
-                                           public NuoModelMaterialedBasicBase<NuoItemMaterialedTexturedBasic>
+                                   virtual public NuoModelMaterialedBasicBase<NuoItemMaterialedTexturedBasic>
 {
 public:
     NuoModelMaterialedTextured();
