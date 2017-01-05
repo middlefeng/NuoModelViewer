@@ -386,6 +386,7 @@
     [_notationRender importScene:lua];
     
     [_panel setFieldOfViewRadian:_modelRender.fieldOfView];
+    [_panel setAmbientDensity:_modelRender.ambientDensity];
     [_panel updateControls];
 }
 

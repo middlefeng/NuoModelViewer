@@ -167,6 +167,12 @@
             exporter.EndEntry(true);
         }
         
+        {
+            exporter.StartEntry("ambient");
+            exporter.SetEntryValueFloat(_ambientDensity);
+            exporter.EndEntry(true);
+        }
+        
         exporter.EndTable();
         exporter.EndEntry(true);
     }
@@ -188,6 +194,10 @@
     _transX = [lua getFieldAsNumber:@"transX" fromTable:-1];
     _transY = [lua getFieldAsNumber:@"transY" fromTable:-1];
     _fieldOfView = [lua getFieldAsNumber:@"FOV" fromTable:-1];
+    [lua removeField];
+    
+    [lua getField:@"lights" fromTable:-1];
+    _ambientDensity = [lua getFieldAsNumber:@"ambient" fromTable:-1];
     [lua removeField];
 }
 
