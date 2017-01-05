@@ -4,6 +4,7 @@
 
 
 @class NuoMeshOption;
+@class NuoLua;
 @class LightSource;
 
 
@@ -34,6 +35,9 @@
 
 
 - (void)loadMesh:(NSString*)path;
+
+- (NSString*)exportSceneAsString:(CGSize)canvasSize;
+- (void)importScene:(NuoLua*)lua;
 
 
 @end

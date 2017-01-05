@@ -16,7 +16,9 @@
 		2C2A58B01DD1457200E9F9BC /* NuoRenderPassTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2A58AF1DD1457200E9F9BC /* NuoRenderPassTarget.m */; };
 		2C3D9A9C1D7DF5C3002C1226 /* NuoModelTextured.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9A1D7DF5C3002C1226 /* NuoModelTextured.cpp */; };
 		2C3D9AA11D7E344F002C1226 /* NuoTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9F1D7E344F002C1226 /* NuoTypes.cpp */; };
+		2C4042BE1E065B2700AAC06E /* NuoLua.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C4042BD1E065B2700AAC06E /* NuoLua.m */; };
 		2C4B60421D8AD32100A12968 /* ModelOperationPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C4B60411D8AD32100A12968 /* ModelOperationPanel.m */; };
+		2C4DE7881DFB565900199F1D /* libluad.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C4DE7851DFB55E100199F1D /* libluad.dylib */; };
 		2C52F12E1DCC03380034ACDC /* NuoTextureMesh.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C52F12D1DCC03380034ACDC /* NuoTextureMesh.mm */; };
 		2C52F1331DCFE8970034ACDC /* NuoIntermediateRenderPass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C52F1321DCFE8970034ACDC /* NuoIntermediateRenderPass.m */; };
 		2C5B92B41D7157A600722936 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C5B92B21D7157A600722936 /* MainMenu.xib */; };
@@ -33,6 +35,7 @@
 		2C9D9AAA1D658F0800283E46 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AA91D658F0800283E46 /* AppDelegate.m */; };
 		2C9D9AAD1D658F0800283E46 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAC1D658F0800283E46 /* main.m */; };
 		2C9D9AAF1D658F0800283E46 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAE1D658F0800283E46 /* Assets.xcassets */; };
+		2C9E397B1DF7D8BC00286EA0 /* NuoTableExporter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C9E39791DF7D8BC00286EA0 /* NuoTableExporter.cpp */; };
 		2CA55FA91DD21D2A0000AD21 /* NuoRenderPass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */; };
 		2CAF2E851D691AC90074E402 /* tiny_obj_loader.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */; };
 		2CC5EDEE1D8A62B100419168 /* NuoRoundedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CC5EDED1D8A62B100419168 /* NuoRoundedView.m */; };
@@ -44,6 +47,51 @@
 		98CA11B81DD2B00900440C53 /* NotationRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 98CA11B71DD2B00900440C53 /* NotationRenderer.m */; };
 		98CD06BA1DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal in Sources */ = {isa = PBXBuildFile; fileRef = 98CD06B91DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2C4DE77C1DFB55E100199F1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2C4DE7741DFB55E100199F1D /* lua.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2C3170E3157CE98000F12776;
+			remoteInfo = lua;
+		};
+		2C4DE77E1DFB55E100199F1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2C4DE7741DFB55E100199F1D /* lua.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2C57C91B163F923C00C9AA4A;
+			remoteInfo = luad;
+		};
+		2C4DE7801DFB55E100199F1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2C4DE7741DFB55E100199F1D /* lua.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2C317193157CEEE000F12776;
+			remoteInfo = luac;
+		};
+		2C4DE7821DFB55E100199F1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2C4DE7741DFB55E100199F1D /* lua.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2C317152157CECFD00F12776;
+			remoteInfo = liblua;
+		};
+		2C4DE7841DFB55E100199F1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2C4DE7741DFB55E100199F1D /* lua.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2C57C8E0163F909000C9AA4A;
+			remoteInfo = libluad;
+		};
+		2C4DE7861DFB565300199F1D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2C4DE7741DFB55E100199F1D /* lua.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 2C57C8DF163F909000C9AA4A;
+			remoteInfo = libluad;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		2C1B28061D95FF17009F5912 /* NuoTextureBase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoTextureBase.m; sourceTree = "<group>"; };
@@ -60,8 +108,11 @@
 		2C3D9A9B1D7DF5C3002C1226 /* NuoModelTextured.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoModelTextured.h; sourceTree = "<group>"; };
 		2C3D9A9F1D7E344F002C1226 /* NuoTypes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoTypes.cpp; sourceTree = "<group>"; };
 		2C3D9AA01D7E344F002C1226 /* NuoTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoTypes.h; sourceTree = "<group>"; };
+		2C4042BC1E065B2700AAC06E /* NuoLua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoLua.h; sourceTree = "<group>"; };
+		2C4042BD1E065B2700AAC06E /* NuoLua.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoLua.m; sourceTree = "<group>"; };
 		2C4B60401D8AD32100A12968 /* ModelOperationPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelOperationPanel.h; sourceTree = "<group>"; };
 		2C4B60411D8AD32100A12968 /* ModelOperationPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ModelOperationPanel.m; sourceTree = "<group>"; };
+		2C4DE7741DFB55E100199F1D /* lua.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = lua.xcodeproj; path = Lua/project/lua.xcodeproj; sourceTree = "<group>"; };
 		2C52F12C1DCC03380034ACDC /* NuoTextureMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoTextureMesh.h; sourceTree = "<group>"; };
 		2C52F12D1DCC03380034ACDC /* NuoTextureMesh.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoTextureMesh.mm; sourceTree = "<group>"; };
 		2C52F1311DCFE8970034ACDC /* NuoIntermediateRenderPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoIntermediateRenderPass.h; sourceTree = "<group>"; };
@@ -94,6 +145,8 @@
 		2C9D9AAC1D658F0800283E46 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		2C9D9AAE1D658F0800283E46 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2C9D9AB31D658F0800283E46 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2C9E39791DF7D8BC00286EA0 /* NuoTableExporter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoTableExporter.cpp; sourceTree = "<group>"; };
+		2C9E397A1DF7D8BC00286EA0 /* NuoTableExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoTableExporter.h; sourceTree = "<group>"; };
 		2CA55FA71DD21D2A0000AD21 /* NuoRenderPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRenderPass.h; sourceTree = "<group>"; };
 		2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoRenderPass.m; sourceTree = "<group>"; };
 		2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_obj_loader.cc; sourceTree = "<group>"; };
@@ -120,12 +173,35 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C4DE7881DFB565900199F1D /* libluad.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2C4DE7731DFB558B00199F1D /* Scripting */ = {
+			isa = PBXGroup;
+			children = (
+				2C4DE7741DFB55E100199F1D /* lua.xcodeproj */,
+				2C4042BC1E065B2700AAC06E /* NuoLua.h */,
+				2C4042BD1E065B2700AAC06E /* NuoLua.m */,
+			);
+			path = Scripting;
+			sourceTree = "<group>";
+		};
+		2C4DE7751DFB55E100199F1D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2C4DE77D1DFB55E100199F1D /* lua */,
+				2C4DE77F1DFB55E100199F1D /* luad */,
+				2C4DE7811DFB55E100199F1D /* luac */,
+				2C4DE7831DFB55E100199F1D /* liblua.a */,
+				2C4DE7851DFB55E100199F1D /* libluad.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		2C5DDAC51D65901400A9DC9A /* Interface */ = {
 			isa = PBXGroup;
 			children = (
@@ -194,6 +270,8 @@
 				2CDCDAF11DC185A800ECFE39 /* NuoModelArrow.cpp */,
 				2C5DDAD51D6591B000A9DC9A /* NuoMathUtilities.h */,
 				2C5DDAD41D6591B000A9DC9A /* NuoMathUtilities.cpp */,
+				2C9E397A1DF7D8BC00286EA0 /* NuoTableExporter.h */,
+				2C9E39791DF7D8BC00286EA0 /* NuoTableExporter.cpp */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -230,6 +308,7 @@
 				2C5DDAC61D6590C200A9DC9A /* Meshes */,
 				2C5DDACD1D65912900A9DC9A /* Loader */,
 				2C5DDAD71D6591B800A9DC9A /* Utilities */,
+				2C4DE7731DFB558B00199F1D /* Scripting */,
 			);
 			path = ViewerFoundation;
 			sourceTree = "<group>";
@@ -286,6 +365,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				2C4DE7871DFB565300199F1D /* PBXTargetDependency */,
 			);
 			name = ModelViewer;
 			productName = ModelViewer;
@@ -317,12 +397,56 @@
 			mainGroup = 2C9D9A9C1D658F0800283E46;
 			productRefGroup = 2C9D9AA61D658F0800283E46 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 2C4DE7751DFB55E100199F1D /* Products */;
+					ProjectRef = 2C4DE7741DFB55E100199F1D /* lua.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				2C9D9AA41D658F0800283E46 /* ModelViewer */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		2C4DE77D1DFB55E100199F1D /* lua */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = lua;
+			remoteRef = 2C4DE77C1DFB55E100199F1D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2C4DE77F1DFB55E100199F1D /* luad */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = luad;
+			remoteRef = 2C4DE77E1DFB55E100199F1D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2C4DE7811DFB55E100199F1D /* luac */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = luac;
+			remoteRef = 2C4DE7801DFB55E100199F1D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2C4DE7831DFB55E100199F1D /* liblua.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = liblua.a;
+			remoteRef = 2C4DE7821DFB55E100199F1D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		2C4DE7851DFB55E100199F1D /* libluad.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.dylib";
+			path = libluad.dylib;
+			remoteRef = 2C4DE7841DFB55E100199F1D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		2C9D9AA31D658F0800283E46 /* Resources */ = {
@@ -348,6 +472,7 @@
 				2C2A58B01DD1457200E9F9BC /* NuoRenderPassTarget.m in Sources */,
 				2C5B92B71D7157EA00722936 /* ModelView.m in Sources */,
 				2CA55FA91DD21D2A0000AD21 /* NuoRenderPass.m in Sources */,
+				2C4042BE1E065B2700AAC06E /* NuoLua.m in Sources */,
 				2CDCDAF31DC185A800ECFE39 /* NuoModelArrow.cpp in Sources */,
 				2C235FD01DD6CBD700E68295 /* ShadersTexturedMaterialed.metal in Sources */,
 				2C5B92BD1D7160EC00722936 /* NuoModelLoader.mm in Sources */,
@@ -374,11 +499,20 @@
 				2C5DDADA1D65949E00A9DC9A /* ModelViewerRenderer.mm in Sources */,
 				988442461D80853700EE2C4C /* NuoModelMaterialedBasic.cpp in Sources */,
 				2C5DDAD61D6591B000A9DC9A /* NuoMathUtilities.cpp in Sources */,
+				2C9E397B1DF7D8BC00286EA0 /* NuoTableExporter.cpp in Sources */,
 				2C3D9A9C1D7DF5C3002C1226 /* NuoModelTextured.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2C4DE7871DFB565300199F1D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = libluad;
+			targetProxy = 2C4DE7861DFB565300199F1D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		2C5B92B21D7157A600722936 /* MainMenu.xib */ = {
@@ -412,7 +546,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -435,6 +569,7 @@
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = ./ModelViewer/ViewerFoundation/Scripting/Lua/src;
 			};
 			name = Debug;
 		};
@@ -458,7 +593,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -474,6 +609,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = ./ModelViewer/ViewerFoundation/Scripting/Lua/src;
 			};
 			name = Release;
 		};

@@ -207,6 +207,9 @@ void NuoModelTexturedWithTangentBase<ItemBase>::GenerateTangents()
 template <class ItemBase>
 void NuoModelTexturedWithTangentBase<ItemBase>::GenerateIndices()
 {
+    // used to pass "false" because some all-black artifacts were considered caused by the
+    // buffer-index compacting. turns out that was because of the NaN handling.
+    //
     NuoModelCommon<ItemBase>::DoGenerateIndices(true);
 }
 

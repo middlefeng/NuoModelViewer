@@ -12,7 +12,8 @@
 #import "ModelViewerRenderer.h"
 #import "NotationRenderer.h"
 
-#include "NuoMeshOptions.h"
+#import "NuoLua.h"
+#import "NuoMeshOptions.h"
 
 
 
@@ -25,6 +26,7 @@
 
 @implementation ModelView
 {
+    NuoLua* _lua;
     ModelRenderer* _modelRender;
     NotationRenderer* _notationRender;
     NSArray<NuoRenderPass*>* _renders;
@@ -33,6 +35,18 @@
     NSSlider* _lightDensitySlider;
     
     BOOL _trackingLighting;
+    
+    NSString* _documentName;
+}
+
+
+
+- (NuoLua*)lua
+{
+    if (!_lua)
+        _lua = [[NuoLua alloc] init];
+    
+    return _lua;
 }
 
 
@@ -339,7 +353,7 @@
         path = [path stringByAppendingPathComponent:name];
     }
     
-    [_modelRender loadMesh:path];
+    [self loadMesh:path];
     [self render];
     return YES;
 }
@@ -354,19 +368,92 @@
 
 
 
+- (void)loadMesh:(NSString*)path
+{
+    [_modelRender loadMesh:path];
+    
+    NSString* documentName = [path lastPathComponent];
+    _documentName = [documentName stringByDeletingPathExtension];
+    NSString* title = [[NSString alloc] initWithFormat:@"ModelView - %@", documentName];
+    [self.window setTitle:title];
+}
+
+
+
+- (void)loadScene:(NSString*)path
+{
+    NuoLua* lua = [self lua];
+    [lua loadFile:path];
+    
+    CGSize drawableSize;
+    [lua getField:@"canvas" fromTable:-1];
+    drawableSize.width = [lua getFieldAsNumber:@"width" fromTable:-1];
+    drawableSize.height = [lua getFieldAsNumber:@"height" fromTable:-1];
+    [lua removeField];
+    
+    NSWindow* window = self.window;
+    [window setContentSize:drawableSize];
+    
+    [_modelRender importScene:lua];
+    [_notationRender importScene:lua];
+    
+    [_panel setFieldOfViewRadian:_modelRender.fieldOfView];
+    [_panel setAmbientDensity:_modelRender.ambientDensity];
+    [_panel updateControls];
+}
+
+
+
 - (IBAction)openFile:(id)sender
 {
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
+    openPanel.allowedFileTypes = @[@"obj", @"scn"];
+    
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
             {
                 if (result == NSFileHandlingPanelOKButton)
                 {
                     NSString* path = openPanel.URL.path;
-                    [_modelRender loadMesh:path];
+                    NSString* ext = path.pathExtension;
+                    
+                    if ([ext isEqualToString:@"obj"])
+                        [self loadMesh:path];
+                    
+                    if ([ext isEqualToString:@"scn"])
+                        [self loadScene:path];
+                    
                     [self render];
                 }
             }];
 }
+
+
+
+- (IBAction)saveScene:(id)sender
+{
+    NSString* defaultName = _documentName;
+    if (!defaultName)
+        defaultName = @" ";
+    
+    NSSavePanel* savePanel = [NSSavePanel savePanel];
+    [savePanel setNameFieldStringValue:defaultName];
+    [savePanel setCanSelectHiddenExtension:YES];
+    [savePanel setAllowedFileTypes:@[@"scn"]];
+    
+    [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
+             {
+                 if (result == NSFileHandlingPanelOKButton)
+                 {
+                     NSString* path = savePanel.URL.path;
+                     NSString* result = [_modelRender exportSceneAsString:[self.window contentView].frame.size];
+                     const char* pathStr = path.UTF8String;
+                     
+                     FILE* file = fopen(pathStr, "w");
+                     fwrite(result.UTF8String, sizeof(char), result.length, file);
+                     fclose(file);
+                 }
+             }];
+        }
 
 
 

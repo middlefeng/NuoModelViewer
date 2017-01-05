@@ -11,6 +11,9 @@
 #include "NuoMathUtilities.h"
 #include "NuoModelBase.h"
 #include "NuoModelLoader.h"
+#include "NuoTableExporter.h"
+
+#include "NuoLua.h"
 
 #import "LightSource.h"
 
@@ -56,6 +59,146 @@
     
     _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
                                       withDevice:self.device];
+}
+
+
+- (NSString*)exportSceneAsString:(CGSize)canvasSize
+{
+    NuoTableExporter exporter;
+    
+    exporter.StartTable();
+    
+    {
+        exporter.StartEntry("canvas");
+        exporter.StartTable();
+        
+        {
+            exporter.StartEntry("width");
+            exporter.SetEntryValueFloat(canvasSize.width);
+            exporter.EndEntry(false);
+            
+            exporter.StartEntry("height");
+            exporter.SetEntryValueFloat(canvasSize.height);
+            exporter.EndEntry(false);
+        }
+        
+        exporter.EndTable();
+        exporter.EndEntry(true);
+    }
+    
+    {
+        exporter.StartEntry("rotationMatrix");
+        exporter.StartTable();
+        
+        {
+            for (unsigned char col = 0; col < 4; ++ col)
+            {
+                exporter.StartArrayIndex(col);
+                exporter.StartTable();
+                
+                vector_float4 colomn = _rotationMatrix.columns[col];
+                
+                for (unsigned char row = 0; row < 4; ++ row)
+                {
+                    exporter.StartArrayIndex(row);
+                    exporter.SetEntryValueFloat(colomn[row]);
+                    exporter.EndEntry(false);
+                }
+                
+                exporter.EndTable();
+                exporter.EndEntry(false);
+            }
+        }
+        
+        exporter.EndTable();
+        exporter.EndEntry(true);
+    }
+    
+    {
+        exporter.StartEntry("view");
+        exporter.StartTable();
+        
+        {
+            exporter.StartEntry("zoom");
+            exporter.SetEntryValueFloat(_zoom);
+            exporter.EndEntry(false);
+            
+            exporter.StartEntry("transX");
+            exporter.SetEntryValueFloat(_transX);
+            exporter.EndEntry(false);
+            
+            exporter.StartEntry("transY");
+            exporter.SetEntryValueFloat(_transY);
+            exporter.EndEntry(false);
+            
+            exporter.StartEntry("FOV");
+            exporter.SetEntryValueFloat(_fieldOfView);
+            exporter.EndEntry(false);
+        }
+        
+        exporter.EndTable();
+        exporter.EndEntry(true);
+        
+        exporter.StartEntry("lights");
+        exporter.StartTable();
+        
+        for (unsigned char lightIndex = 0; lightIndex < _lights.count; ++lightIndex)
+        {
+            exporter.StartArrayIndex(lightIndex);
+            exporter.StartTable();
+            
+            LightSource* light = _lights[lightIndex];
+            
+            {
+                exporter.StartEntry("rotateX");
+                exporter.SetEntryValueFloat(light.lightingRotationX);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("rotateY");
+                exporter.SetEntryValueFloat(light.lightingRotationY);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("density");
+                exporter.SetEntryValueFloat(light.lightingDensity);
+                exporter.EndEntry(false);
+            }
+            
+            exporter.EndTable();
+            exporter.EndEntry(true);
+        }
+        
+        {
+            exporter.StartEntry("ambient");
+            exporter.SetEntryValueFloat(_ambientDensity);
+            exporter.EndEntry(true);
+        }
+        
+        exporter.EndTable();
+        exporter.EndEntry(true);
+    }
+    
+    exporter.EndTable();
+    
+    return [[NSString alloc] initWithUTF8String:exporter.GetResult().c_str()];
+}
+
+
+- (void)importScene:(NuoLua*)lua
+{
+    [lua getField:@"rotationMatrix" fromTable:-1];
+    _rotationMatrix = [lua getMatrixFromTable:-1];
+    [lua removeField];
+    
+    [lua getField:@"view" fromTable:-1];
+    _zoom = [lua getFieldAsNumber:@"zoom" fromTable:-1];
+    _transX = [lua getFieldAsNumber:@"transX" fromTable:-1];
+    _transY = [lua getFieldAsNumber:@"transY" fromTable:-1];
+    _fieldOfView = [lua getFieldAsNumber:@"FOV" fromTable:-1];
+    [lua removeField];
+    
+    [lua getField:@"lights" fromTable:-1];
+    _ambientDensity = [lua getFieldAsNumber:@"ambient" fromTable:-1];
+    [lua removeField];
 }
 
 

@@ -143,6 +143,7 @@ float3 bumpped_normal(float3 normal, float3 tangent, float3 bitangent, float3 bu
     bumpNormal.y =  -bumpNormal.y;
     
     tangent = normalize(tangent);
+    bitangent = normalize(bitangent);
     normal = normalize(normal);
     float3x3 m = { tangent, bitangent , normal };
     

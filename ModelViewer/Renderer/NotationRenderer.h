@@ -12,6 +12,7 @@
 
 
 @class LightSource;
+@class NuoLua;
 
 
 @interface NotationRenderer : NuoIntermediateRenderPass
@@ -29,6 +30,7 @@
 @property (nonatomic, assign) float density;
 
 - (void)selectCurrentLightVector:(CGPoint)point;
+- (void)importScene:(NuoLua*)lua;
 
 
 @end
