@@ -113,6 +113,7 @@
 		2C4042BD1E065B2700AAC06E /* NuoLua.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoLua.m; sourceTree = "<group>"; };
 		2C44344E1E1EAAF800C861AF /* LightOperationPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LightOperationPanel.h; sourceTree = "<group>"; };
 		2C44344F1E1EAAF800C861AF /* LightOperationPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LightOperationPanel.m; sourceTree = "<group>"; };
+		2C4434551E1EF50B00C861AF /* ModelOptionUpdate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelOptionUpdate.h; sourceTree = "<group>"; };
 		2C4B60401D8AD32100A12968 /* ModelOperationPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelOperationPanel.h; sourceTree = "<group>"; };
 		2C4B60411D8AD32100A12968 /* ModelOperationPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ModelOperationPanel.m; sourceTree = "<group>"; };
 		2C4DE7741DFB55E100199F1D /* lua.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = lua.xcodeproj; path = Lua/project/lua.xcodeproj; sourceTree = "<group>"; };
@@ -212,6 +213,7 @@
 				2C9D9AA91D658F0800283E46 /* AppDelegate.m */,
 				2C5B92B51D7157EA00722936 /* ModelView.h */,
 				2C5B92B61D7157EA00722936 /* ModelView.m */,
+				2C4434551E1EF50B00C861AF /* ModelOptionUpdate.h */,
 				2C4B60401D8AD32100A12968 /* ModelOperationPanel.h */,
 				2C4B60411D8AD32100A12968 /* ModelOperationPanel.m */,
 				2C44344E1E1EAAF800C861AF /* LightOperationPanel.h */,
