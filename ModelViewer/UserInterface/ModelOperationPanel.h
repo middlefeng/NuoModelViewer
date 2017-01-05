@@ -13,6 +13,7 @@
 
 
 @class ModelOperationPanel;
+@class LightOperationPanel;
 @class NuoMeshOption;
 
 
@@ -21,6 +22,7 @@
 
 - (void)modelUpdate:(ModelOperationPanel*)panel;
 - (void)modelOptionUpdate:(ModelOperationPanel*)panel;
+- (void)lightOptionUpdate:(LightOperationPanel*)panel;
 
 @end
 
