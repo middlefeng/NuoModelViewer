@@ -161,7 +161,7 @@
     
     _modelRender = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
     _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
-    _notationRender.notationWidthCap = [self operationPanelLocation].size.width + 50;
+    _notationRender.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
     [self setupPipelineSettings];
     
@@ -177,10 +177,10 @@
     NSRect result = area;
     CGFloat width = area.size.width;
     width = width * 0.8;
-    result.origin.y = area.origin.y - margin;
-    result.origin.x += (area.size.width - width) / 2.0;
     result.size.width = width;
-    result.size.height = 18;
+    result.size.height = 50;
+    result.origin.y = area.origin.y + margin - result.size.height;
+    result.origin.x += (area.size.width - width) / 2.0;
     
     return result;
 }

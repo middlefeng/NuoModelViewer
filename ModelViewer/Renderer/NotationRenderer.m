@@ -215,7 +215,7 @@
     self.lastRenderPass = nil;
     
     const float lightSettingAreaFactor = 0.28;
-    const float lightDensitySliderHeight = 50;
+    const float lightDensitySliderHeight = 100;
     const CGFloat factor = [[NSScreen mainScreen] backingScaleFactor];
     
     CGSize drawableSize = self.renderTarget.drawableSize;

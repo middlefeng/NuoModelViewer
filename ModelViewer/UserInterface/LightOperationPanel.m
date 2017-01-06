@@ -17,6 +17,9 @@
 {
     NSTextField* _lightDensityLabel;
     NSSlider* _lightDensitySlider;
+    
+    NSTextField* _lightSpacularLabel;
+    NSSlider* _lightSpacularSlider;
 }
 
 
@@ -34,6 +37,7 @@
         [_lightDensityLabel setBordered:NO];
         [_lightDensityLabel setBackgroundColor:[NSColor colorWithWhite:0.0 alpha:0.0]];
         [_lightDensityLabel setStringValue:@"Density:"];
+        [_lightDensityLabel setAlignment:NSTextAlignmentRight];
         [self addSubview:_lightDensityLabel];
         
         _lightDensitySlider = [[NSSlider alloc] init];
@@ -43,6 +47,23 @@
         [_lightDensitySlider setTarget:self];
         [_lightDensitySlider setAction:@selector(lightDensityChange:)];
         [self addSubview:_lightDensitySlider];
+        
+        _lightSpacularLabel = [[NSTextField alloc] init];
+        [_lightSpacularLabel setEditable:NO];
+        [_lightSpacularLabel setSelectable:NO];
+        [_lightSpacularLabel setBordered:NO];
+        [_lightSpacularLabel setBackgroundColor:[NSColor colorWithWhite:0.0 alpha:0.0]];
+        [_lightSpacularLabel setStringValue:@"Spacular:"];
+        [_lightSpacularLabel setAlignment:NSTextAlignmentRight];
+        [self addSubview:_lightSpacularLabel];
+        
+        _lightSpacularSlider = [[NSSlider alloc] init];
+        [_lightSpacularSlider setMaxValue:3.0f];
+        [_lightSpacularSlider setMinValue:0.0f];
+        [_lightSpacularSlider setFloatValue:1.0f];
+        [_lightSpacularSlider setTarget:self];
+        [_lightSpacularSlider setAction:@selector(lightDensityChange:)];
+        [self addSubview:_lightSpacularSlider];
     }
     
     return self;
@@ -65,20 +86,27 @@
 {
     CGSize viewSize = [self bounds].size;
     
-    float labelWidth = 55;
-    float labelSpace = 0;
+    float labelWidth = 60;
+    float labelSpace = 2;
     float entryHeight = 18;
+    float lineSpace = 6;
     
     CGRect labelFrame;
     labelFrame.size = CGSizeMake(labelWidth, entryHeight);
-    labelFrame.origin = CGPointMake(0, 0);
+    labelFrame.origin = CGPointMake(0, entryHeight + lineSpace + 5);
     
     [_lightDensityLabel setFrame:labelFrame];
     
     CGRect sliderFrame;
     sliderFrame.size = CGSizeMake(viewSize.width - labelWidth - labelSpace, entryHeight);
-    sliderFrame.origin = CGPointMake(labelWidth + labelSpace, 0);
+    sliderFrame.origin = CGPointMake(labelWidth + labelSpace, entryHeight + lineSpace + 5);
     [_lightDensitySlider setFrame:sliderFrame];
+    
+    labelFrame.origin.y -= entryHeight + lineSpace;
+    sliderFrame.origin.y -= entryHeight + lineSpace;
+    
+    [_lightSpacularLabel setFrame:labelFrame];
+    [_lightSpacularSlider setFrame:sliderFrame];
 }
 
 
