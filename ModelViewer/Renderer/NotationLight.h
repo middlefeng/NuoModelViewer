@@ -18,6 +18,7 @@
 
 
 @property (nonatomic, assign) float density;
+@property (nonatomic, assign) float spacular;
 
 @property (nonatomic, assign) float rotateX;
 @property (nonatomic, assign) float rotateY;

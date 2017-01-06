@@ -29,6 +29,7 @@
 @property (nonatomic, assign) float rotateX;
 @property (nonatomic, assign) float rotateY;
 @property (nonatomic, assign) float density;
+@property (nonatomic, assign) float spacular;
 
 - (void)selectCurrentLightVector:(CGPoint)point;
 - (void)importScene:(NuoLua*)lua;

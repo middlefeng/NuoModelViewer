@@ -19,6 +19,7 @@
 
 
 @property (nonatomic) float lightDensity;
+@property (nonatomic) float lightSpacular;
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 

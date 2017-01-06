@@ -313,6 +313,7 @@
         lightVector = matrix_multiply(rotationMatrix, lightVector);
         lighting.lightVector[i] = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
         lighting.lightDensity[i] = _lights[i].lightingDensity;
+        lighting.lightSpacular[i] = _lights[i].lightingSpacular;
     }
     
     memcpy([self.lightingUniformBuffers[self.bufferIndex] contents], &lighting, sizeof(LightingUniforms));

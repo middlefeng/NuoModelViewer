@@ -119,6 +119,7 @@
 - (void)lightOptionUpdate:(LightOperationPanel*)panel;
 {
     _notationRender.density = [panel lightDensity];
+    _notationRender.spacular = [panel lightSpacular];
     [self render];
 }
 
@@ -242,6 +243,7 @@
         {
             [_notationRender selectCurrentLightVector:location];
             [_lightPanel setLightDensity:_notationRender.density];
+            [_lightPanel setLightSpacular:_notationRender.spacular];
         }
     }
     else

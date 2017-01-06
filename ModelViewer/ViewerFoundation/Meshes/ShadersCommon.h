@@ -44,6 +44,7 @@ struct LightUniform
 {
     metal::float4 direction[4];
     float density[4];
+    float spacular[4];
     float ambientDensity;
 };
 

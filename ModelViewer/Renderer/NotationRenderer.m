@@ -118,6 +118,7 @@
         result[i].lightingRotationX = _lightVectors[i].rotateX;
         result[i].lightingRotationY = _lightVectors[i].rotateY;
         result[i].lightingDensity = _lightVectors[i].density;
+        result[i].lightingSpacular = _lightVectors[i].spacular;
     }
     
     return [[NSArray alloc] initWithObjects:result[0], result[1], result[2], result[3], nil];
@@ -175,6 +176,18 @@
 - (float)density
 {
     return _currentLightVector.density;
+}
+
+
+- (void)setSpacular:(float)spacular
+{
+    _currentLightVector.spacular = spacular;
+}
+
+
+- (float)spacular
+{
+    return _currentLightVector.spacular;
 }
 
 

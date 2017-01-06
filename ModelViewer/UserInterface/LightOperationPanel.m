@@ -62,7 +62,7 @@
         [_lightSpacularSlider setMinValue:0.0f];
         [_lightSpacularSlider setFloatValue:1.0f];
         [_lightSpacularSlider setTarget:self];
-        [_lightSpacularSlider setAction:@selector(lightDensityChange:)];
+        [_lightSpacularSlider setAction:@selector(lightSpacularChange:)];
         [self addSubview:_lightSpacularSlider];
     }
     
@@ -124,6 +124,24 @@
 
 
 - (void)lightDensityChange:(id)sender
+{
+    [_optionUpdateDelegate lightOptionUpdate:self];
+}
+
+
+- (float)lightSpacular
+{
+    return [_lightSpacularSlider floatValue];
+}
+
+
+- (void)setLightSpacular:(float)lightSpacular
+{
+    [_lightSpacularSlider setFloatValue:lightSpacular];
+}
+
+
+- (void)lightSpacularChange:(id)sender
 {
     [_optionUpdateDelegate lightOptionUpdate:self];
 }
