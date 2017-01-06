@@ -20,6 +20,7 @@
 
 @property (nonatomic, readonly) NSArray<LightSource*>* lightSources;
 
+@property (nonatomic, assign) float notationWidthCap;
 @property (nonatomic, assign) CGRect notationArea;
 
 

@@ -95,8 +95,7 @@
     
     const matrix_float4x4 viewMatrix = matrix_float4x4_translation(cameraTranslation);
     
-    const CGSize drawableSize = self.renderTarget.drawableSize;
-    const float aspect = drawableSize.width / drawableSize.height;
+    const float aspect = _notationArea.size.width / _notationArea.size.height;
     const float near = -cameraDistance - modelSpan;
     const float far = near + modelSpan * 2.0;
     const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, (2 * M_PI) / 30, near, far);
@@ -217,18 +216,18 @@
     
     const float lightSettingAreaFactor = 0.28;
     const float lightDensitySliderHeight = 50;
+    const CGFloat factor = [[NSScreen mainScreen] backingScaleFactor];
     
     CGSize drawableSize = self.renderTarget.drawableSize;
     MTLViewport viewPort;
-    viewPort.originX = drawableSize.width * (1 - lightSettingAreaFactor);
-    viewPort.originY = drawableSize.height * (1 - lightSettingAreaFactor) - lightDensitySliderHeight;
-    viewPort.width = drawableSize.width * lightSettingAreaFactor;
-    viewPort.height = drawableSize.height * lightSettingAreaFactor;
+    viewPort.width = fmin(drawableSize.width * lightSettingAreaFactor, _notationWidthCap * factor);
+    viewPort.height = fmin(drawableSize.height * lightSettingAreaFactor, _notationWidthCap * factor);
+    viewPort.originX = drawableSize.width - viewPort.width;
+    viewPort.originY = drawableSize.height - viewPort.height - lightDensitySliderHeight;
     viewPort.znear = 0.0;
     viewPort.zfar = 1.0;
     [renderPass setViewport:viewPort];
     
-    CGFloat factor = [[NSScreen mainScreen] backingScaleFactor];
     _notationArea = CGRectMake(viewPort.originX, viewPort.originY, viewPort.width, viewPort.height);
     _notationArea.origin.y = drawableSize.height - _notationArea.origin.y - _notationArea.size.height;
     _notationArea.origin.x /= factor;

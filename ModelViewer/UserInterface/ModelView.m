@@ -161,6 +161,7 @@
     
     _modelRender = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
     _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
+    _notationRender.notationWidthCap = [self operationPanelLocation].size.width + 50;
     
     [self setupPipelineSettings];
     
