@@ -27,7 +27,7 @@ struct ProjectedVertex
 };
 
 vertex ProjectedVertex vertex_project_materialed(device Vertex *vertices [[buffer(0)]],
-                                                 constant Uniforms &uniforms [[buffer(1)]],
+                                                 constant ModelUniforms &uniforms [[buffer(1)]],
                                                  uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;

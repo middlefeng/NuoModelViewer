@@ -1,5 +1,5 @@
 #import "ModelViewerRenderer.h"
-#import "ModelUniforms.h"
+#import "NuoUniforms.h"
 
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
@@ -227,7 +227,7 @@
     {
         modelBuffers[i] = [self.device newBufferWithLength:sizeof(ModelUniforms)
                                                    options:MTLResourceOptionCPUCacheModeDefault];
-        lightingBuffers[i] = [self.device newBufferWithLength:sizeof(LightingUniforms)
+        lightingBuffers[i] = [self.device newBufferWithLength:sizeof(LightUniform)
                                                       options:MTLResourceOptionCPUCacheModeDefault];
     }
     
@@ -305,7 +305,7 @@
 
     memcpy([self.modelUniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
     
-    LightingUniforms lighting;
+    LightUniform lighting;
     lighting.ambientDensity = _ambientDensity;
     for (unsigned int i = 0; i < 4; ++i)
     {
@@ -315,12 +315,12 @@
                                                              _lights[i].lightingRotationY);
         
         lightVector = matrix_multiply(rotationMatrix, lightVector);
-        lighting.lightVector[i] = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
-        lighting.lightDensity[i] = _lights[i].lightingDensity;
-        lighting.lightSpacular[i] = _lights[i].lightingSpacular;
+        lighting.direction[i] = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
+        lighting.density[i] = _lights[i].lightingDensity;
+        lighting.spacular[i] = _lights[i].lightingSpacular;
     }
     
-    memcpy([self.lightingUniformBuffers[self.bufferIndex] contents], &lighting, sizeof(LightingUniforms));
+    memcpy([self.lightingUniformBuffers[self.bufferIndex] contents], &lighting, sizeof(LightUniform));
 }
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer

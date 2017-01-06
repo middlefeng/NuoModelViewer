@@ -14,7 +14,7 @@
 #include "NuoModelArrow.h"
 #include <memory>
 
-#include "ModelUniforms.h"
+#include "NuoUniforms.h"
 
 #import "LightSource.h"
 

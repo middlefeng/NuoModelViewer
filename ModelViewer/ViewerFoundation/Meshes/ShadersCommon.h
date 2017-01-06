@@ -12,6 +12,8 @@
 #include <metal_stdlib>
 #include <metal_matrix>
 
+#include "NuoUniforms.h"
+
 
 struct Material
 {
@@ -26,26 +28,6 @@ constant Material material = {
     .diffuseColor = { 0.6, 0.6, 0.6 },
     .specularColor = { 1, 1, 1 },
     .specularPower = 100
-};
-
-struct Uniforms
-{
-    metal::float4x4 modelViewProjectionMatrix;
-    metal::float4x4 modelViewMatrix;
-    metal::float3x3 normalMatrix;
-};
-
-struct ModelCharacterUniforms
-{
-    float opacity;
-};
-
-struct LightUniform
-{
-    metal::float4 direction[4];
-    float density[4];
-    float spacular[4];
-    float ambientDensity;
 };
 
 struct Light

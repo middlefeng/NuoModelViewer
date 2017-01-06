@@ -14,7 +14,7 @@
 #import "NuoLua.h"
 
 #import "NotationLight.h"
-#import "ModelUniforms.h"
+#import "NuoUniforms.h"
 #import "LightSource.h"
 
 #import <math.h>
@@ -60,21 +60,21 @@
         
         lightSourcesDesc[0].lightingDensity = 1.0f;
         
-        LightingUniforms lightUniform;
-        lightUniform.lightVector[0].x = 0.13;
-        lightUniform.lightVector[0].y = 0.72;
-        lightUniform.lightVector[0].z = 0.68;
-        lightUniform.lightVector[0].w = 0.0;
+        LightUniform lightUniform;
+        lightUniform.direction[0].x = 0.13;
+        lightUniform.direction[0].y = 0.72;
+        lightUniform.direction[0].z = 0.68;
+        lightUniform.direction[0].w = 0.0;
         
-        lightUniform.lightDensity[0] = lightSourcesDesc[0].lightingDensity;
-        lightUniform.lightDensity[1] = 0.0f;
-        lightUniform.lightDensity[2] = 0.0f;
-        lightUniform.lightDensity[3] = 0.0f;
+        lightUniform.density[0] = lightSourcesDesc[0].lightingDensity;
+        lightUniform.density[1] = 0.0f;
+        lightUniform.density[2] = 0.0f;
+        lightUniform.density[3] = 0.0f;
         
-        _lightBuffer = [self.device newBufferWithLength:sizeof(LightingUniforms)
+        _lightBuffer = [self.device newBufferWithLength:sizeof(LightUniform)
                                                 options:MTLResourceOptionCPUCacheModeDefault];
         
-        memcpy([_lightBuffer contents], &lightUniform, sizeof(LightingUniforms));
+        memcpy([_lightBuffer contents], &lightUniform, sizeof(LightUniform));
     }
     
     return self;
