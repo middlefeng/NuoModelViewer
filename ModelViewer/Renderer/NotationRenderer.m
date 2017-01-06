@@ -41,16 +41,24 @@
     if (self)
     {
         NSMutableArray* lightVectors = [[NSMutableArray alloc] init];
+        NSMutableArray<LightSource*>* lightSourcesDesc = [[NSMutableArray alloc] init];
         
         for (unsigned int index = 0; index < 4; ++index)
         {
             NotationLight* lightNotation = [[NotationLight alloc] initWithDevice:device];
             [lightVectors addObject:lightNotation];
+            
+            LightSource* lightSource = [[LightSource alloc] init];
+            lightNotation.lightSourceDesc = lightSource;
+            [lightSourcesDesc addObject:lightSource];
         }
         _lightVectors = lightVectors;
+        _lightSources = lightSourcesDesc;
         _currentLightVector = lightVectors[0];
         
         // the direction of light used to render the "light vector"
+        
+        lightSourcesDesc[0].lightingDensity = 1.0f;
         
         LightingUniforms lightUniform;
         lightUniform.lightVector[0].x = 0.13;
@@ -58,7 +66,7 @@
         lightUniform.lightVector[0].z = 0.68;
         lightUniform.lightVector[0].w = 0.0;
         
-        lightUniform.lightDensity[0] = 1.0f;
+        lightUniform.lightDensity[0] = lightSourcesDesc[0].lightingDensity;
         lightUniform.lightDensity[1] = 0.0f;
         lightUniform.lightDensity[2] = 0.0f;
         lightUniform.lightDensity[3] = 0.0f;
@@ -108,23 +116,6 @@
 }
 
 
-- (NSArray<LightSource*>*)lightSources
-{
-    LightSource* result[4];
-    
-    for (unsigned int i = 0; i < 4; ++i)
-    {
-        result[i] = [LightSource new];
-        result[i].lightingRotationX = _lightVectors[i].rotateX;
-        result[i].lightingRotationY = _lightVectors[i].rotateY;
-        result[i].lightingDensity = _lightVectors[i].density;
-        result[i].lightingSpacular = _lightVectors[i].spacular;
-    }
-    
-    return [[NSArray alloc] initWithObjects:result[0], result[1], result[2], result[3], nil];
-}
-
-
 - (void)selectCurrentLightVector:(CGPoint)point
 {
     CGPoint normalized;
@@ -157,10 +148,10 @@
     for (int lightIndex = 0; lightIndex < _lightVectors.count; ++lightIndex)
     {
         [lua getItem:lightIndex fromTable:-1];
-        _lightVectors[lightIndex].rotateX = [lua getFieldAsNumber:@"rotateX" fromTable:-1];
-        _lightVectors[lightIndex].rotateY = [lua getFieldAsNumber:@"rotateY" fromTable:-1];
-        _lightVectors[lightIndex].density = [lua getFieldAsNumber:@"density" fromTable:-1];
-        _lightVectors[lightIndex].spacular = [lua getFieldAsNumber:@"spacular" fromTable:-1];
+        _lightSources[lightIndex].lightingRotationX = [lua getFieldAsNumber:@"rotateX" fromTable:-1];
+        _lightSources[lightIndex].lightingDensity = [lua getFieldAsNumber:@"rotateY" fromTable:-1];
+        _lightSources[lightIndex].lightingDensity = [lua getFieldAsNumber:@"density" fromTable:-1];
+        _lightSources[lightIndex].lightingSpacular = [lua getFieldAsNumber:@"spacular" fromTable:-1];
         [lua removeField];
     }
     [lua removeField];
@@ -170,51 +161,51 @@
 
 - (void)setDensity:(float)density
 {
-    _currentLightVector.density = density;
+    _currentLightVector.lightSourceDesc.lightingDensity = density;
 }
 
 
 - (float)density
 {
-    return _currentLightVector.density;
+    return _currentLightVector.lightSourceDesc.lightingDensity;
 }
 
 
 - (void)setSpacular:(float)spacular
 {
-    _currentLightVector.spacular = spacular;
+    _currentLightVector.lightSourceDesc.lightingSpacular = spacular;
 }
 
 
 - (float)spacular
 {
-    return _currentLightVector.spacular;
+    return _currentLightVector.lightSourceDesc.lightingSpacular;
 }
 
 
 - (void)setRotateX:(float)rotateX
 {
-    _currentLightVector.rotateX = rotateX;
+    _currentLightVector.lightSourceDesc.lightingRotationX = rotateX;
 }
 
 
 
 - (float)rotateX
 {
-    return _currentLightVector.rotateX;
+    return _currentLightVector.lightSourceDesc.lightingRotationX;
 }
 
 
 - (void)setRotateY:(float)rotateY
 {
-    _currentLightVector.rotateY = rotateY;
+    _currentLightVector.lightSourceDesc.lightingRotationY = rotateY;
 }
 
 
 
 - (float)rotateY
 {
-    return _currentLightVector.rotateY;
+    return _currentLightVector.lightSourceDesc.lightingRotationY;
 }
 
 

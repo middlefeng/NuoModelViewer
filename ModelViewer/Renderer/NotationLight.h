@@ -11,17 +11,14 @@
 #import <simd/simd.h>
 
 
+@class LightSource;
 @class NuoMeshBox;
 
 
 @interface NotationLight : NSObject
 
 
-@property (nonatomic, assign) float density;
-@property (nonatomic, assign) float spacular;
-
-@property (nonatomic, assign) float rotateX;
-@property (nonatomic, assign) float rotateY;
+@property (nonatomic, weak) LightSource* lightSourceDesc;
 
 @property (nonatomic, assign) matrix_float4x4 viewMatrix;
 @property (nonatomic, assign) matrix_float4x4 projMatrix;

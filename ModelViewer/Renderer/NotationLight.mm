@@ -16,6 +16,8 @@
 
 #include "ModelUniforms.h"
 
+#import "LightSource.h"
+
 
 
 @interface NotationLight()
@@ -102,8 +104,12 @@
 
 - (void)updateUniformsForView
 {
+    LightSource* desc = _lightSourceDesc;
+    
     const vector_float4 startVec = { 0, 0, 1, 0 };
-    matrix_float4x4 rotationMatrix = matrix_rotate(startVec, _rotateX, _rotateY);
+    matrix_float4x4 rotationMatrix = matrix_rotate(startVec,
+                                                   desc.lightingRotationX,
+                                                   desc.lightingRotationY);
     
     NuoMeshBox* bounding = _lightVector.boundingBox;
     
@@ -142,8 +148,12 @@
 
 - (CGPoint)headPointProjected
 {
+    LightSource* desc = _lightSourceDesc;
+    
     const vector_float4 startVec = { 0, 0, 1, 1 };
-    matrix_float4x4 rotationMatrix = matrix_rotate(startVec, _rotateX, _rotateY);
+    matrix_float4x4 rotationMatrix = matrix_rotate(startVec,
+                                                   desc.lightingRotationX,
+                                                   desc.lightingRotationY);
     vector_float4 projected = matrix_multiply(rotationMatrix, startVec);
     
     return CGPointMake(projected.x / projected.w, projected.y / projected.w);
