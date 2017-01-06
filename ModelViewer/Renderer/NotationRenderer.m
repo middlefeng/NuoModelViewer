@@ -160,6 +160,7 @@
         _lightVectors[lightIndex].rotateX = [lua getFieldAsNumber:@"rotateX" fromTable:-1];
         _lightVectors[lightIndex].rotateY = [lua getFieldAsNumber:@"rotateY" fromTable:-1];
         _lightVectors[lightIndex].density = [lua getFieldAsNumber:@"density" fromTable:-1];
+        _lightVectors[lightIndex].spacular = [lua getFieldAsNumber:@"spacular" fromTable:-1];
         [lua removeField];
     }
     [lua removeField];

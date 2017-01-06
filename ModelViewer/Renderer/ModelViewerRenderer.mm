@@ -161,6 +161,10 @@
                 exporter.StartEntry("density");
                 exporter.SetEntryValueFloat(light.lightingDensity);
                 exporter.EndEntry(false);
+                
+                exporter.StartEntry("spacular");
+                exporter.SetEntryValueFloat(light.lightingSpacular);
+                exporter.EndEntry(false);
             }
             
             exporter.EndTable();
