@@ -18,7 +18,7 @@ struct ProjectedVertex
 };
 
 vertex ProjectedVertex vertex_project(device Vertex *vertices [[buffer(0)]],
-                                      constant Uniforms &uniforms [[buffer(1)]],
+                                      constant ModelUniforms &uniforms [[buffer(1)]],
                                       uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
@@ -51,7 +51,7 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
             specularTerm = material.specularColor * specularFactor;
         }
         
-        colorForLights += (diffuseTerm + specularTerm) * lightUniform.density[i];
+        colorForLights += diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i];
     }
     
     return float4(ambientTerm + colorForLights, modelCharacterUniforms.opacity);
@@ -89,7 +89,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             specularTerm = vert.specularColor * specularFactor;
         }
         
-        colorForLights += (diffuseTerm + specularTerm) * lightingUniform.density[i];
+        colorForLights += diffuseTerm * lightingUniform.density[i] + specularTerm * lightingUniform.spacular[i];
     }
     
     if (opacity < 1.0 && transparency < 1.0)

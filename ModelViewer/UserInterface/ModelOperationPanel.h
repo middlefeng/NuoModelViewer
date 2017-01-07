@@ -9,20 +9,11 @@
 #import "NuoRoundedView.h"
 #import "NuoTypes.h"
 
+#import "ModelOptionUpdate.h"
 
 
 
-@class ModelOperationPanel;
 @class NuoMeshOption;
-
-
-
-@protocol ModelOptionUpdate
-
-- (void)modelUpdate:(ModelOperationPanel*)panel;
-- (void)modelOptionUpdate:(ModelOperationPanel*)panel;
-
-@end
 
 
 

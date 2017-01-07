@@ -14,7 +14,7 @@
 #import "NuoLua.h"
 
 #import "NotationLight.h"
-#import "ModelUniforms.h"
+#import "NuoUniforms.h"
 #import "LightSource.h"
 
 #import <math.h>
@@ -41,32 +41,40 @@
     if (self)
     {
         NSMutableArray* lightVectors = [[NSMutableArray alloc] init];
+        NSMutableArray<LightSource*>* lightSourcesDesc = [[NSMutableArray alloc] init];
         
         for (unsigned int index = 0; index < 4; ++index)
         {
             NotationLight* lightNotation = [[NotationLight alloc] initWithDevice:device];
             [lightVectors addObject:lightNotation];
+            
+            LightSource* lightSource = [[LightSource alloc] init];
+            lightNotation.lightSourceDesc = lightSource;
+            [lightSourcesDesc addObject:lightSource];
         }
         _lightVectors = lightVectors;
+        _lightSources = lightSourcesDesc;
         _currentLightVector = lightVectors[0];
         
         // the direction of light used to render the "light vector"
         
-        LightingUniforms lightUniform;
-        lightUniform.lightVector[0].x = 0.13;
-        lightUniform.lightVector[0].y = 0.72;
-        lightUniform.lightVector[0].z = 0.68;
-        lightUniform.lightVector[0].w = 0.0;
+        lightSourcesDesc[0].lightingDensity = 1.0f;
         
-        lightUniform.lightDensity[0] = 1.0f;
-        lightUniform.lightDensity[1] = 0.0f;
-        lightUniform.lightDensity[2] = 0.0f;
-        lightUniform.lightDensity[3] = 0.0f;
+        LightUniform lightUniform;
+        lightUniform.direction[0].x = 0.13;
+        lightUniform.direction[0].y = 0.72;
+        lightUniform.direction[0].z = 0.68;
+        lightUniform.direction[0].w = 0.0;
         
-        _lightBuffer = [self.device newBufferWithLength:sizeof(LightingUniforms)
+        lightUniform.density[0] = lightSourcesDesc[0].lightingDensity;
+        lightUniform.density[1] = 0.0f;
+        lightUniform.density[2] = 0.0f;
+        lightUniform.density[3] = 0.0f;
+        
+        _lightBuffer = [self.device newBufferWithLength:sizeof(LightUniform)
                                                 options:MTLResourceOptionCPUCacheModeDefault];
         
-        memcpy([_lightBuffer contents], &lightUniform, sizeof(LightingUniforms));
+        memcpy([_lightBuffer contents], &lightUniform, sizeof(LightUniform));
     }
     
     return self;
@@ -95,8 +103,7 @@
     
     const matrix_float4x4 viewMatrix = matrix_float4x4_translation(cameraTranslation);
     
-    const CGSize drawableSize = self.renderTarget.drawableSize;
-    const float aspect = drawableSize.width / drawableSize.height;
+    const float aspect = _notationArea.size.width / _notationArea.size.height;
     const float near = -cameraDistance - modelSpan;
     const float far = near + modelSpan * 2.0;
     const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, (2 * M_PI) / 30, near, far);
@@ -106,22 +113,6 @@
         _lightVectors[i].viewMatrix = viewMatrix;
         _lightVectors[i].projMatrix = projectionMatrix;
     }
-}
-
-
-- (NSArray<LightSource*>*)lightSources
-{
-    LightSource* result[4];
-    
-    for (unsigned int i = 0; i < 4; ++i)
-    {
-        result[i] = [LightSource new];
-        result[i].lightingRotationX = _lightVectors[i].rotateX;
-        result[i].lightingRotationY = _lightVectors[i].rotateY;
-        result[i].lightingDensity = _lightVectors[i].density;
-    }
-    
-    return [[NSArray alloc] initWithObjects:result[0], result[1], result[2], result[3], nil];
 }
 
 
@@ -157,53 +148,45 @@
     for (int lightIndex = 0; lightIndex < _lightVectors.count; ++lightIndex)
     {
         [lua getItem:lightIndex fromTable:-1];
-        _lightVectors[lightIndex].rotateX = [lua getFieldAsNumber:@"rotateX" fromTable:-1];
-        _lightVectors[lightIndex].rotateY = [lua getFieldAsNumber:@"rotateY" fromTable:-1];
-        _lightVectors[lightIndex].density = [lua getFieldAsNumber:@"density" fromTable:-1];
+        _lightSources[lightIndex].lightingRotationX = [lua getFieldAsNumber:@"rotateX" fromTable:-1];
+        _lightSources[lightIndex].lightingRotationY = [lua getFieldAsNumber:@"rotateY" fromTable:-1];
+        _lightSources[lightIndex].lightingDensity = [lua getFieldAsNumber:@"density" fromTable:-1];
+        _lightSources[lightIndex].lightingSpacular = [lua getFieldAsNumber:@"spacular" fromTable:-1];
         [lua removeField];
     }
     [lua removeField];
 }
 
 
-
-- (void)setDensity:(float)density
+- (LightSource*)selectedLightSource
 {
-    _currentLightVector.density = density;
+    return _currentLightVector.lightSourceDesc;
 }
 
 
-- (float)density
+- (void)setDensity:(float)density
 {
-    return _currentLightVector.density;
+    _currentLightVector.lightSourceDesc.lightingDensity = density;
+}
+
+
+- (void)setSpacular:(float)spacular
+{
+    _currentLightVector.lightSourceDesc.lightingSpacular = spacular;
 }
 
 
 - (void)setRotateX:(float)rotateX
 {
-    _currentLightVector.rotateX = rotateX;
+    _currentLightVector.lightSourceDesc.lightingRotationX = rotateX;
 }
 
-
-
-- (float)rotateX
-{
-    return _currentLightVector.rotateX;
-}
 
 
 - (void)setRotateY:(float)rotateY
 {
-    _currentLightVector.rotateY = rotateY;
+    _currentLightVector.lightSourceDesc.lightingRotationY = rotateY;
 }
-
-
-
-- (float)rotateY
-{
-    return _currentLightVector.rotateY;
-}
-
 
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
@@ -216,19 +199,19 @@
     self.lastRenderPass = nil;
     
     const float lightSettingAreaFactor = 0.28;
-    const float lightDensitySliderHeight = 50;
+    const float lightDensitySliderHeight = 100;
+    const CGFloat factor = [[NSScreen mainScreen] backingScaleFactor];
     
     CGSize drawableSize = self.renderTarget.drawableSize;
     MTLViewport viewPort;
-    viewPort.originX = drawableSize.width * (1 - lightSettingAreaFactor);
-    viewPort.originY = drawableSize.height * (1 - lightSettingAreaFactor) - lightDensitySliderHeight;
-    viewPort.width = drawableSize.width * lightSettingAreaFactor;
-    viewPort.height = drawableSize.height * lightSettingAreaFactor;
+    viewPort.width = fmin(drawableSize.width * lightSettingAreaFactor, _notationWidthCap * factor);
+    viewPort.height = fmin(drawableSize.height * lightSettingAreaFactor, _notationWidthCap * factor);
+    viewPort.originX = drawableSize.width - viewPort.width;
+    viewPort.originY = drawableSize.height - viewPort.height - lightDensitySliderHeight;
     viewPort.znear = 0.0;
     viewPort.zfar = 1.0;
     [renderPass setViewport:viewPort];
     
-    CGFloat factor = [[NSScreen mainScreen] backingScaleFactor];
     _notationArea = CGRectMake(viewPort.originX, viewPort.originY, viewPort.width, viewPort.height);
     _notationArea.origin.y = drawableSize.height - _notationArea.origin.y - _notationArea.size.height;
     _notationArea.origin.x /= factor;

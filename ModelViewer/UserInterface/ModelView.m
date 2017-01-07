@@ -8,12 +8,14 @@
 
 #import "ModelView.h"
 #import "ModelOperationPanel.h"
+#import "LightOperationPanel.h"
 
 #import "ModelViewerRenderer.h"
 #import "NotationRenderer.h"
 
 #import "NuoLua.h"
 #import "NuoMeshOptions.h"
+#import "LightSource.h"
 
 
 
@@ -31,8 +33,8 @@
     NotationRenderer* _notationRender;
     NSArray<NuoRenderPass*>* _renders;
     
-    ModelOperationPanel* _panel;
-    NSSlider* _lightDensitySlider;
+    ModelOperationPanel* _modelPanel;
+    LightOperationPanel* _lightPanel;
     
     BOOL _trackingLighting;
     
@@ -68,19 +70,30 @@
 
 
 
-- (void)addOperationPanel
+- (void)addModelOperationPanel
 {
     NSRect panelRect = [self operationPanelLocation];
     
-    _panel = [ModelOperationPanel new];
-    _panel.frame = panelRect;
-    _panel.layer.opacity = 0.8f;
-    _panel.layer.backgroundColor = [NSColor colorWithWhite:1.0 alpha:1.0].CGColor;
+    _modelPanel = [ModelOperationPanel new];
+    _modelPanel.frame = panelRect;
+    _modelPanel.layer.opacity = 0.8f;
+    _modelPanel.layer.backgroundColor = [NSColor colorWithWhite:1.0 alpha:1.0].CGColor;
     
-    [_panel addCheckbox];
-    [_panel setOptionUpdateDelegate:self];
+    [_modelPanel addCheckbox];
+    [_modelPanel setOptionUpdateDelegate:self];
     
-    [self addSubview:_panel];
+    [self addSubview:_modelPanel];
+}
+
+
+- (void)addLightOperationPanel
+{
+    CGRect area = [self lightPanelRect];
+    
+    _lightPanel = [[LightOperationPanel alloc] initWithFrame:area];
+    [self addSubview:_lightPanel];
+    [_lightPanel setHidden:YES];
+    [_lightPanel setOptionUpdateDelegate:self];
 }
 
 
@@ -104,6 +117,15 @@
 
 
 
+- (void)lightOptionUpdate:(LightOperationPanel*)panel;
+{
+    _notationRender.density = [panel lightDensity];
+    _notationRender.spacular = [panel lightSpacular];
+    [self render];
+}
+
+
+
 - (void)viewResizing
 {
     [super viewResizing];
@@ -118,19 +140,19 @@
     popupRect.origin = popupOrigin;
     popupRect.size = popupSize;
     
-    if (!_panel)
+    if (!_modelPanel)
     {
-        [self addOperationPanel];
+        [self addModelOperationPanel];
     }
     
-    [_panel setFrame:[self operationPanelLocation]];
+    [_modelPanel setFrame:[self operationPanelLocation]];
     
-    if (!_lightDensitySlider)
+    if (!_lightPanel)
     {
-        [self addLightDensitySlider];
+        [self addLightOperationPanel];
     }
     
-    [_lightDensitySlider setFrame:[self lightDensitySliderRect]];
+    [_lightPanel setFrame:[self lightPanelRect]];
 }
 
 
@@ -141,6 +163,7 @@
     
     _modelRender = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
     _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
+    _notationRender.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
     [self setupPipelineSettings];
     
@@ -148,7 +171,7 @@
 }
 
 
-- (NSRect)lightDensitySliderRect
+- (NSRect)lightPanelRect
 {
     const CGFloat margin = 8;
     
@@ -156,42 +179,18 @@
     NSRect result = area;
     CGFloat width = area.size.width;
     width = width * 0.8;
-    result.origin.y = area.origin.y - margin;
-    result.origin.x += (area.size.width - width) / 2.0;
     result.size.width = width;
-    result.size.height = 18;
+    result.size.height = 50;
+    result.origin.y = area.origin.y + margin - result.size.height;
+    result.origin.x += (area.size.width - width) / 2.0;
     
     return result;
 }
 
 
-- (void)addLightDensitySlider
-{
-    CGRect area = [self lightDensitySliderRect];
-    
-    _lightDensitySlider = [[NSSlider alloc] initWithFrame:area];
-    [self addSubview:_lightDensitySlider];
-    [_lightDensitySlider setHidden:YES];
-    
-    [_lightDensitySlider setMaxValue:3.0f];
-    [_lightDensitySlider setMinValue:0.0f];
-    [_lightDensitySlider setFloatValue:1.0f];
-    [_lightDensitySlider setTarget:self];
-    [_lightDensitySlider setAction:@selector(lightDensityChange:)];
-}
-
-
-- (void)lightDensityChange:(id)sender
-{
-    _notationRender.density = [_lightDensitySlider floatValue];
-    
-    [self render];
-}
-
-
 - (void)setupPipelineSettings
 {
-    if (_panel.showLightSettings)
+    if (_modelPanel.showLightSettings)
     {
         _renders = [[NSArray alloc] initWithObjects:_modelRender, _notationRender, nil];
         
@@ -224,7 +223,7 @@
         [_modelRender setRenderTarget:modelRenderTarget];
     }
 
-    [_lightDensitySlider setHidden:!_panel.showLightSettings];
+    [_lightPanel setHidden:!_modelPanel.showLightSettings];
     
     [self setRenderPasses:_renders];
     [self viewResizing];
@@ -233,7 +232,7 @@
 
 - (void)mouseDown:(NSEvent *)event
 {
-    if (_panel.showLightSettings)
+    if (_modelPanel.showLightSettings)
     {
         NSPoint location = event.locationInWindow;
         location = [self convertPoint:location fromView:nil];
@@ -243,8 +242,10 @@
         
         if (_trackingLighting)
         {
+            LightSource* source = _notationRender.selectedLightSource;
             [_notationRender selectCurrentLightVector:location];
-            [_lightDensitySlider setFloatValue:_notationRender.density];
+            [_lightPanel setLightDensity:source.lightingDensity];
+            [_lightPanel setLightSpacular:source.lightingSpacular];
         }
     }
     else
@@ -268,8 +269,9 @@
     
     if (_trackingLighting)
     {
-        _notationRender.rotateX += deltaX;
-        _notationRender.rotateY += deltaY;
+        LightSource* lightSource = _notationRender.selectedLightSource;
+        [_notationRender setRotateX:lightSource.lightingRotationX + deltaX];
+        [_notationRender setRotateY:lightSource.lightingRotationY + deltaY];
     }
     else
     {
@@ -397,9 +399,9 @@
     [_modelRender importScene:lua];
     [_notationRender importScene:lua];
     
-    [_panel setFieldOfViewRadian:_modelRender.fieldOfView];
-    [_panel setAmbientDensity:_modelRender.ambientDensity];
-    [_panel updateControls];
+    [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];
+    [_modelPanel setAmbientDensity:_modelRender.ambientDensity];
+    [_modelPanel updateControls];
 }
 
 

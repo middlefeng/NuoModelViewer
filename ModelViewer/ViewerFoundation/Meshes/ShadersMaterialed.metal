@@ -27,7 +27,7 @@ struct ProjectedVertex
 };
 
 vertex ProjectedVertex vertex_project_materialed(device Vertex *vertices [[buffer(0)]],
-                                                 constant Uniforms &uniforms [[buffer(1)]],
+                                                 constant ModelUniforms &uniforms [[buffer(1)]],
                                                  uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
@@ -66,7 +66,7 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
             specularTerm = vert.specularColor * specularFactor;
         }
         
-        colorForLights += (diffuseTerm + specularTerm) * lightUniform.density[i];
+        colorForLights += diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i];
     }
     
     return float4(ambientTerm + colorForLights, vert.specularPowerDisolve.y);
