@@ -149,7 +149,7 @@
     {
         [lua getItem:lightIndex fromTable:-1];
         _lightSources[lightIndex].lightingRotationX = [lua getFieldAsNumber:@"rotateX" fromTable:-1];
-        _lightSources[lightIndex].lightingDensity = [lua getFieldAsNumber:@"rotateY" fromTable:-1];
+        _lightSources[lightIndex].lightingRotationY = [lua getFieldAsNumber:@"rotateY" fromTable:-1];
         _lightSources[lightIndex].lightingDensity = [lua getFieldAsNumber:@"density" fromTable:-1];
         _lightSources[lightIndex].lightingSpacular = [lua getFieldAsNumber:@"spacular" fromTable:-1];
         [lua removeField];
@@ -158,6 +158,11 @@
 }
 
 
+- (LightSource*)selectedLightSource
+{
+    return _currentLightVector.lightSourceDesc;
+}
+
 
 - (void)setDensity:(float)density
 {
@@ -165,21 +170,9 @@
 }
 
 
-- (float)density
-{
-    return _currentLightVector.lightSourceDesc.lightingDensity;
-}
-
-
 - (void)setSpacular:(float)spacular
 {
     _currentLightVector.lightSourceDesc.lightingSpacular = spacular;
-}
-
-
-- (float)spacular
-{
-    return _currentLightVector.lightSourceDesc.lightingSpacular;
 }
 
 
@@ -190,24 +183,10 @@
 
 
 
-- (float)rotateX
-{
-    return _currentLightVector.lightSourceDesc.lightingRotationX;
-}
-
-
 - (void)setRotateY:(float)rotateY
 {
     _currentLightVector.lightSourceDesc.lightingRotationY = rotateY;
 }
-
-
-
-- (float)rotateY
-{
-    return _currentLightVector.lightSourceDesc.lightingRotationY;
-}
-
 
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer

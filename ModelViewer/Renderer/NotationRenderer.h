@@ -24,15 +24,21 @@
 @property (nonatomic, assign) CGRect notationArea;
 
 
-// manipulator to the current selected light source
+// retrieve the currently-selected description
 
-@property (nonatomic, assign) float rotateX;
-@property (nonatomic, assign) float rotateY;
-@property (nonatomic, assign) float density;
-@property (nonatomic, assign) float spacular;
+@property (nonatomic, readonly) LightSource* selectedLightSource;
+
 
 - (void)selectCurrentLightVector:(CGPoint)point;
 - (void)importScene:(NuoLua*)lua;
+
+
+// manipulator to the current selected light source
+
+- (void)setRotateX:(float)rotateX;
+- (void)setRotateY:(float)rotateY;
+- (void)setDensity:(float)density;
+- (void)setSpacular:(float)spacular;
 
 
 @end

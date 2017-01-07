@@ -15,6 +15,7 @@
 
 #import "NuoLua.h"
 #import "NuoMeshOptions.h"
+#import "LightSource.h"
 
 
 
@@ -241,9 +242,10 @@
         
         if (_trackingLighting)
         {
+            LightSource* source = _notationRender.selectedLightSource;
             [_notationRender selectCurrentLightVector:location];
-            [_lightPanel setLightDensity:_notationRender.density];
-            [_lightPanel setLightSpacular:_notationRender.spacular];
+            [_lightPanel setLightDensity:source.lightingDensity];
+            [_lightPanel setLightSpacular:source.lightingSpacular];
         }
     }
     else
@@ -267,8 +269,9 @@
     
     if (_trackingLighting)
     {
-        _notationRender.rotateX += deltaX;
-        _notationRender.rotateY += deltaY;
+        LightSource* lightSource = _notationRender.selectedLightSource;
+        [_notationRender setRotateX:lightSource.lightingRotationX + deltaX];
+        [_notationRender setRotateY:lightSource.lightingRotationY + deltaY];
     }
     else
     {
