@@ -242,8 +242,8 @@
         
         if (_trackingLighting)
         {
-            LightSource* source = _notationRender.selectedLightSource;
             [_notationRender selectCurrentLightVector:location];
+            LightSource* source = _notationRender.selectedLightSource;
             [_lightPanel setLightDensity:source.lightingDensity];
             [_lightPanel setLightSpacular:source.lightingSpacular];
         }
