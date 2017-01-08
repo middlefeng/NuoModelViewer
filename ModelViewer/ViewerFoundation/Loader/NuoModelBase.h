@@ -47,13 +47,15 @@ public:
 
 
 
-std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMaterial& material);
+std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMaterial& material,
+                                          const std::string& modelItemName);
 
 
 
 class NuoModelBase : public std::enable_shared_from_this<NuoModelBase>
 {
 protected:
+    std::string _name;
     std::vector<uint32_t> _indices;
     
 public:
@@ -82,6 +84,8 @@ public:
     virtual void* IndicesPtr();
     virtual size_t IndicesLength();
     
+    virtual const std::string& GetName() const = 0;
+    
     virtual bool HasTransparent() = 0;
 };
 
@@ -105,6 +109,9 @@ public:
     
     virtual void* Ptr() override;
     virtual size_t Length() override;
+    
+    virtual void SetName(const std::string& name);
+    virtual const std::string& GetName() const override;
 
 protected:
     virtual void DoGenerateIndices(bool compressBuffer);
@@ -298,6 +305,22 @@ template <class ItemBase>
 size_t NuoModelCommon<ItemBase>::Length()
 {
     return _buffer.size() * sizeof(ItemBase);
+}
+
+
+
+template <class ItemBase>
+void NuoModelCommon<ItemBase>::SetName(const std::string &name)
+{
+    _name = name;
+}
+
+
+
+template <class ItemBase>
+const std::string& NuoModelCommon<ItemBase>::GetName() const
+{
+    return _name;
 }
 
 

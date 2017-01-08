@@ -221,7 +221,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         options._texturedBump = loadOption.texturedBump;
         options._basicMaterialized = loadOption.basicMaterialized;
         
-        PNuoModelBase modelBase = CreateModel(options, material);
+        PNuoModelBase modelBase = CreateModel(options, material, shape.name);
         
         for (size_t i = 0; i < shape.mesh.indices.size(); ++i)
         {
