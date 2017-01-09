@@ -43,6 +43,10 @@
 - (void)makeDepthStencilState;
 
 
+- (void)setRawModel:(void*)model;
+- (NSString*)modelName;
+
+
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass;
 - (BOOL)hasTransparency;
 - (void)setTransparency:(BOOL)transparent;
