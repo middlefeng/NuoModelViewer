@@ -7,6 +7,8 @@
 //
 
 #import "ModelView.h"
+
+#import "ModelPartsList.h"
 #import "ModelOperationPanel.h"
 #import "LightOperationPanel.h"
 
@@ -33,6 +35,7 @@
     NotationRenderer* _notationRender;
     NSArray<NuoRenderPass*>* _renders;
     
+    ModelPartsList* _modelPartsList;
     ModelOperationPanel* _modelPanel;
     LightOperationPanel* _lightPanel;
     
@@ -52,6 +55,19 @@
 }
 
 
+- (NSRect)modelParsListLocation
+{
+    NSRect viewRect = [self frame];
+    NSSize listSize = NSMakeSize(225, 285);
+    NSSize listMargin = NSMakeSize(15, 25);
+    
+    NSRect listRect;
+    listRect.origin = NSMakePoint(listMargin.width, viewRect.size.height - listSize.height - listMargin.height);
+    listRect.size = listSize;
+    
+    return listRect;
+}
+
 
 - (NSRect)operationPanelLocation
 {
@@ -68,6 +84,18 @@
     return panelRect;
 }
 
+
+- (void)addModelPartsList
+{
+    NSRect listRect = [self modelParsListLocation];
+    
+    _modelPartsList = [ModelPartsList new];
+    _modelPartsList.wantsLayer = YES;
+    _modelPartsList.frame = listRect;
+    
+    [self addSubview:_modelPartsList];
+    [_modelPartsList setHidden:YES];
+}
 
 
 - (void)addModelOperationPanel
@@ -108,6 +136,8 @@
 
 - (void)modelOptionUpdate:(ModelOperationPanel *)panel
 {
+    [_modelPartsList setHidden:![panel showModelParts]];
+    
     [_modelRender setCullEnabled:[panel cullEnabled]];
     [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
     [_modelRender setAmbientDensity:[panel ambientDensity]];
@@ -145,6 +175,11 @@
         [self addModelOperationPanel];
     }
     
+    if (!_modelPartsList)
+    {
+        [self addModelPartsList];
+    }
+    
     [_modelPanel setFrame:[self operationPanelLocation]];
     
     if (!_lightPanel)
@@ -153,6 +188,7 @@
     }
     
     [_lightPanel setFrame:[self lightPanelRect]];
+    [_modelPartsList setFrame:[self modelParsListLocation]];
 }
 
 

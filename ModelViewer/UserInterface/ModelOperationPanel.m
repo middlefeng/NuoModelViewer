@@ -13,6 +13,9 @@
 
 @interface ModelOperationPanel()
 
+
+@property (nonatomic, strong) NSButton* checkModelParts;
+
 @property (nonatomic, strong) NSButton* checkMaterial;
 @property (nonatomic, strong) NSButton* checkTexture;
 @property (nonatomic, strong) NSButton* checkTextureEmbedTrans;
@@ -56,6 +59,17 @@
 - (void)addCheckbox
 {
     float rowCoord = 0.0;
+    
+    NSButton* checkModelParts = [NSButton new];
+    [checkModelParts setButtonType:NSSwitchButton];
+    [checkModelParts setTitle:@"Show Model Parts"];
+    [checkModelParts setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [checkModelParts setTarget:self];
+    [checkModelParts setAction:@selector(showModelPartsChanged:)];
+    [self addSubview:checkModelParts];
+    _checkModelParts = checkModelParts;
+    
+    rowCoord += 1.2;
     
     NSButton* checkMaterial = [NSButton new];
     [checkMaterial setButtonType:NSSwitchButton];
@@ -176,6 +190,16 @@
     
     [self updateControls];
 }
+
+
+-(void)showModelPartsChanged:(id)sender
+{
+    _showModelParts = [_checkModelParts state] == NSOnState;
+    [self updateControls];
+    
+    [_optionUpdateDelegate modelOptionUpdate:self];
+}
+
 
 
 - (void)basicMaterializedChanged:(id)sender

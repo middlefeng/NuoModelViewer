@@ -21,6 +21,8 @@
 @interface ModelOperationPanel : NuoRoundedView
 
 
+@property (nonatomic, assign) BOOL showModelParts;
+
 @property (nonatomic, strong) NuoMeshOption* meshOptions;
 
 @property (nonatomic, assign) BOOL cullEnabled;
