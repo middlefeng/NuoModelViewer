@@ -14,21 +14,21 @@
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
-        <scrollView wantsLayer="YES" alphaValue="0.80000000000000004" borderType="none" autohidesScrollers="YES" horizontalLineScroll="20" horizontalPageScroll="10" verticalLineScroll="20" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="209-zg-7tZ">
+        <scrollView wantsLayer="YES" alphaValue="0.80000000000000004" borderType="none" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="209-zg-7tZ">
             <rect key="frame" x="0.0" y="0.0" width="431" height="322"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <clipView key="contentView" id="XeZ-xY-8Qj">
                 <rect key="frame" x="0.0" y="0.0" width="431" height="322"/>
                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                 <subviews>
-                    <tableView wantsLayer="YES" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowHeight="18" rowSizeStyle="automatic" headerView="HUQ-Tb-76F" viewBased="YES" id="s9b-YC-J5p" customClass="ModelPartsListTable">
+                    <tableView wantsLayer="YES" verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" rowSizeStyle="automatic" headerView="HUQ-Tb-76F" viewBased="YES" id="s9b-YC-J5p" customClass="ModelPartsListTable">
                         <rect key="frame" x="0.0" y="0.0" width="431" height="299"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <size key="intercellSpacing" width="3" height="2"/>
                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                         <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                         <tableColumns>
-                            <tableColumn width="40" minWidth="40" maxWidth="1000" id="PEu-2F-jjO">
+                            <tableColumn identifier="enabled" width="40" minWidth="40" maxWidth="1000" id="PEu-2F-jjO">
                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border">
                                     <font key="font" metaFont="smallSystem"/>
                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -41,7 +41,7 @@
                                 </textFieldCell>
                                 <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                 <prototypeCellViews>
-                                    <button id="gLR-PJ-tpM">
+                                    <button id="gLR-PJ-tpM" customClass="ModelBoolView">
                                         <rect key="frame" x="1" y="1" width="40" height="18"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <buttonCell key="cell" type="check" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="0xf-gb-NaF">
@@ -51,7 +51,7 @@
                                     </button>
                                 </prototypeCellViews>
                             </tableColumn>
-                            <tableColumn width="384.5" minWidth="40" maxWidth="1000" id="yLt-uk-aCn">
+                            <tableColumn identifier="name" width="384.5" minWidth="40" maxWidth="1000" id="yLt-uk-aCn">
                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Name">
                                     <font key="font" metaFont="smallSystem"/>
                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>

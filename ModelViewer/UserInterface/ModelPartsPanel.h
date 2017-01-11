@@ -9,7 +9,14 @@
 #import <Cocoa/Cocoa.h>
 
 
+@class NuoMesh;
+
+
 
 @interface ModelPartsPanel : NSView
+
+
+- (void)setMesh:(NSArray<NuoMesh*>*)mesh;
+
 
 @end

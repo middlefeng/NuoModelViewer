@@ -35,7 +35,7 @@
     NotationRenderer* _notationRender;
     NSArray<NuoRenderPass*>* _renders;
     
-    NSView* _modelPartsPanel;
+    ModelPartsPanel* _modelPartsPanel;
     ModelOperationPanel* _modelPanel;
     LightOperationPanel* _lightPanel;
     
@@ -88,7 +88,6 @@
 - (void)addModelPartsList
 {
     NSRect listRect = [self modelParsListLocation];
-    
     
     _modelPartsPanel = [ModelPartsPanel new];
     _modelPartsPanel.layer.backgroundColor = CGColorCreateGenericGray(0.0, 0.0);
@@ -412,6 +411,7 @@
 - (void)loadMesh:(NSString*)path
 {
     [_modelRender loadMesh:path];
+    [_modelPartsPanel setMesh:_modelRender.mesh];
     
     NSString* documentName = [path lastPathComponent];
     _documentName = [documentName stringByDeletingPathExtension];

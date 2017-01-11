@@ -19,7 +19,6 @@
 
 @interface ModelRenderer ()
 
-@property (strong) NSArray<NuoMesh*>* mesh;
 
 @property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
@@ -28,6 +27,7 @@
 @property (strong) NuoModelLoader* modelLoader;
 
 @property (nonatomic, assign) matrix_float4x4 rotationMatrix;
+
 
 @end
 

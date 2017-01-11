@@ -5,6 +5,7 @@
 
 @class NuoMeshOption;
 @class NuoLua;
+@class NuoMesh;
 @class LightSource;
 
 
@@ -13,6 +14,7 @@
 
 
 @property (nonatomic, strong) NSArray<LightSource*>* lights;
+@property (nonatomic, strong) NSArray<NuoMesh*>* mesh;
 
 
 @property (nonatomic, assign) float zoom;
