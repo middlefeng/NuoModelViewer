@@ -55,10 +55,10 @@
 }
 
 
-- (NSRect)modelParsListLocation
+- (NSRect)modelPartsPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize listSize = NSMakeSize(225, 285);
+    NSSize listSize = NSMakeSize(225, 315);
     NSSize listMargin = NSMakeSize(15, 25);
     
     NSRect listRect;
@@ -72,7 +72,7 @@
 - (NSRect)operationPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize panelSize = NSMakeSize(225, 285);
+    NSSize panelSize = NSMakeSize(225, 315);
     NSSize panelMargin = NSMakeSize(15, 25);
     NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
                                       viewRect.size.height - panelMargin.height - panelSize.height);
@@ -85,9 +85,9 @@
 }
 
 
-- (void)addModelPartsList
+- (void)addModelPartsPanel
 {
-    NSRect listRect = [self modelParsListLocation];
+    NSRect listRect = [self modelPartsPanelLocation];
     
     _modelPartsPanel = [ModelPartsPanel new];
     _modelPartsPanel.layer.backgroundColor = CGColorCreateGenericGray(0.0, 0.0);
@@ -179,7 +179,7 @@
     
     if (!_modelPartsPanel)
     {
-        [self addModelPartsList];
+        [self addModelPartsPanel];
     }
     
     [_modelPanel setFrame:[self operationPanelLocation]];
@@ -190,7 +190,7 @@
     }
     
     [_lightPanel setFrame:[self lightPanelRect]];
-    [_modelPartsPanel setFrame:[self modelParsListLocation]];
+    [_modelPartsPanel setFrame:[self modelPartsPanelLocation]];
 }
 
 
