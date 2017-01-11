@@ -43,7 +43,8 @@
 		2CDCDAF31DC185A800ECFE39 /* NuoModelArrow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CDCDAF11DC185A800ECFE39 /* NuoModelArrow.cpp */; };
 		2CDFB21E1DD99E2100C67FA3 /* NotationLight.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CDFB21D1DD99E2100C67FA3 /* NotationLight.mm */; };
 		2CE2CA221D804EC5005509EE /* NuoMeshTextured.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2CA211D804EC5005509EE /* NuoMeshTextured.mm */; };
-		2CE2D7FF1E2167F2000CCD2D /* ModelPartsList.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2D7FE1E2167F2000CCD2D /* ModelPartsList.m */; };
+		2CE2D7FF1E2167F2000CCD2D /* ModelPartsPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2D7FE1E2167F2000CCD2D /* ModelPartsPanel.m */; };
+		2CE2D80B1E254790000CCD2D /* ModelPartsTableView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2CE2D80A1E254790000CCD2D /* ModelPartsTableView.xib */; };
 		988442461D80853700EE2C4C /* NuoModelMaterialedBasic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 988442441D80853700EE2C4C /* NuoModelMaterialedBasic.cpp */; };
 		9884424B1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */; };
 		98CA11B81DD2B00900440C53 /* NotationRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 98CA11B71DD2B00900440C53 /* NotationRenderer.m */; };
@@ -164,8 +165,9 @@
 		2CE2CA201D804EC5005509EE /* NuoMeshTextured.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoMeshTextured.h; sourceTree = "<group>"; };
 		2CE2CA211D804EC5005509EE /* NuoMeshTextured.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoMeshTextured.mm; sourceTree = "<group>"; };
 		2CE2D7F31E2042F3000CCD2D /* NuoUniforms.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoUniforms.h; sourceTree = "<group>"; };
-		2CE2D7FD1E2167F2000CCD2D /* ModelPartsList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelPartsList.h; sourceTree = "<group>"; };
-		2CE2D7FE1E2167F2000CCD2D /* ModelPartsList.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ModelPartsList.m; sourceTree = "<group>"; };
+		2CE2D7FD1E2167F2000CCD2D /* ModelPartsPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelPartsPanel.h; sourceTree = "<group>"; };
+		2CE2D7FE1E2167F2000CCD2D /* ModelPartsPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ModelPartsPanel.m; sourceTree = "<group>"; };
+		2CE2D80A1E254790000CCD2D /* ModelPartsTableView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ModelPartsTableView.xib; sourceTree = "<group>"; };
 		988442441D80853700EE2C4C /* NuoModelMaterialedBasic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoModelMaterialedBasic.cpp; sourceTree = "<group>"; };
 		988442451D80853700EE2C4C /* NuoModelMaterialedBasic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoModelMaterialedBasic.h; sourceTree = "<group>"; };
 		988442491D80B07500EE2C4C /* NuoMeshTexMatieraled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoMeshTexMatieraled.h; sourceTree = "<group>"; };
@@ -221,8 +223,9 @@
 				2C4B60411D8AD32100A12968 /* ModelOperationPanel.m */,
 				2C44344E1E1EAAF800C861AF /* LightOperationPanel.h */,
 				2C44344F1E1EAAF800C861AF /* LightOperationPanel.m */,
-				2CE2D7FD1E2167F2000CCD2D /* ModelPartsList.h */,
-				2CE2D7FE1E2167F2000CCD2D /* ModelPartsList.m */,
+				2CE2D7FD1E2167F2000CCD2D /* ModelPartsPanel.h */,
+				2CE2D7FE1E2167F2000CCD2D /* ModelPartsPanel.m */,
+				2CE2D80A1E254790000CCD2D /* ModelPartsTableView.xib */,
 			);
 			name = Interface;
 			path = UserInterface;
@@ -465,6 +468,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2CE2D80B1E254790000CCD2D /* ModelPartsTableView.xib in Resources */,
 				2C9D9AAF1D658F0800283E46 /* Assets.xcassets in Resources */,
 				2C5B92B41D7157A600722936 /* MainMenu.xib in Resources */,
 			);
@@ -513,7 +517,7 @@
 				988442461D80853700EE2C4C /* NuoModelMaterialedBasic.cpp in Sources */,
 				2C5DDAD61D6591B000A9DC9A /* NuoMathUtilities.cpp in Sources */,
 				2C9E397B1DF7D8BC00286EA0 /* NuoTableExporter.cpp in Sources */,
-				2CE2D7FF1E2167F2000CCD2D /* ModelPartsList.m in Sources */,
+				2CE2D7FF1E2167F2000CCD2D /* ModelPartsPanel.m in Sources */,
 				2C3D9A9C1D7DF5C3002C1226 /* NuoModelTextured.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

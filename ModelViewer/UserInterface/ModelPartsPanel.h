@@ -10,6 +10,6 @@
 
 
 
-@interface ModelPartsList : NSScrollView
+@interface ModelPartsPanel : NSView
 
 @end
