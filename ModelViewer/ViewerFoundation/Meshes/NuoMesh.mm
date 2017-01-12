@@ -46,6 +46,7 @@
 @implementation NuoMesh
 {
     BOOL _hasTransparency;
+    std::shared_ptr<NuoModelBase> _rawModel;
 }
 
 
@@ -73,9 +74,29 @@
                                            length:indicesLength
                                           options:MTLResourceOptionCPUCacheModeDefault];
         _device = device;
+        _enabled = true;
     }
     
     return self;
+}
+
+
+
+- (void)setRawModel:(void*)model
+{
+    _rawModel = ((NuoModelBase*)model)->shared_from_this();
+}
+
+
+- (NSString*)modelName
+{
+    if (_rawModel)
+    {
+        NSString* name = [[NSString alloc] initWithUTF8String:_rawModel->GetName().c_str()];
+        return name;
+    }
+    
+    return nil;
 }
 
 
@@ -166,6 +187,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                             withIndices:model->IndicesPtr()
                                              withLength:model->IndicesLength()];
         
+        [mesh setRawModel:model.get()];
         [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
         [mesh makeDepthStencilState];
         return mesh;
@@ -181,6 +203,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                                             withIndices:model->IndicesPtr()
                                                              withLength:model->IndicesLength()];
         
+        [mesh setRawModel:model.get()];
         [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency];
         [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
         [mesh makeDepthStencilState];
@@ -198,6 +221,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                                 withIndices:model->IndicesPtr()
                                                  withLength:model->IndicesLength()];
         
+        [mesh setRawModel:model.get()];
         [mesh makeTexture:modelTexturePath checkTransparency:embeddedAlpha];
         
         NSString* modelTexturePathOpacity = [NSString stringWithUTF8String:model->GetTexturePathOpacity().c_str()];
@@ -230,6 +254,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                                                 withIndices:model->IndicesPtr()
                                                                  withLength:model->IndicesLength()];
         
+        [mesh setRawModel:model.get()];
         [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
         [mesh makeDepthStencilState];
         [mesh setTransparency:model->HasTransparent()];

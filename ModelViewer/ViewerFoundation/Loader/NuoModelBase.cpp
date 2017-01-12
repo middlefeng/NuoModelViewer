@@ -14,18 +14,22 @@
 
 
 
-std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMaterial& material)
+std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMaterial& material,
+                                          const std::string& modelItemName)
 {
     if (!material.HasTextureDiffuse())
         options._textured = false;
     
     if (!options._textured && !options._basicMaterialized)
     {
-        return std::make_shared<NuoModelSimple>();
+        auto model = std::make_shared<NuoModelSimple>();
+        model->SetName(modelItemName);
+        return model;
     }
     else if (options._textured && !options._basicMaterialized)
     {
         auto model = std::make_shared<NuoModelTextured>();
+        model->SetName(modelItemName);
         model->SetCheckTransparency(options._textureEmbedMaterialTransparency);
         return model;
     }
@@ -34,23 +38,28 @@ std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMate
         if (material.HasTextureBump() && options._texturedBump)
         {
             auto model = std::make_shared<NuoModelMaterialedBumpedTextured>();
+            model->SetName(modelItemName);
             model->SetCheckTransparency(true);
             return model;
         }
         else
         {
             auto model = std::make_shared<NuoModelMaterialedTextured>();
+            model->SetName(modelItemName);
             model->SetCheckTransparency(true);
             return model;
         }
     }
     else if (options._basicMaterialized)
     {
-        return std::make_shared<NuoModelMaterialed>();
+        auto model = std::make_shared<NuoModelMaterialed>();
+        model->SetName(modelItemName);
+        return model;
     }
     else
     {
-        return std::shared_ptr<NuoModelBase>();
+        auto model = std::shared_ptr<NuoModelBase>();
+        return model;
     }
 }
 

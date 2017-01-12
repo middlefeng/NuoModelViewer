@@ -7,6 +7,8 @@
 //
 
 #import "ModelView.h"
+
+#import "ModelPartsPanel.h"
 #import "ModelOperationPanel.h"
 #import "LightOperationPanel.h"
 
@@ -33,6 +35,7 @@
     NotationRenderer* _notationRender;
     NSArray<NuoRenderPass*>* _renders;
     
+    ModelPartsPanel* _modelPartsPanel;
     ModelOperationPanel* _modelPanel;
     LightOperationPanel* _lightPanel;
     
@@ -52,11 +55,24 @@
 }
 
 
+- (NSRect)modelPartsPanelLocation
+{
+    NSRect viewRect = [self frame];
+    NSSize listSize = NSMakeSize(225, 315);
+    NSSize listMargin = NSMakeSize(15, 25);
+    
+    NSRect listRect;
+    listRect.origin = NSMakePoint(listMargin.width, viewRect.size.height - listSize.height - listMargin.height);
+    listRect.size = listSize;
+    
+    return listRect;
+}
+
 
 - (NSRect)operationPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize panelSize = NSMakeSize(225, 285);
+    NSSize panelSize = NSMakeSize(225, 315);
     NSSize panelMargin = NSMakeSize(15, 25);
     NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
                                       viewRect.size.height - panelMargin.height - panelSize.height);
@@ -68,6 +84,21 @@
     return panelRect;
 }
 
+
+- (void)addModelPartsPanel
+{
+    NSRect listRect = [self modelPartsPanelLocation];
+    
+    _modelPartsPanel = [ModelPartsPanel new];
+    _modelPartsPanel.layer.backgroundColor = CGColorCreateGenericGray(0.0, 0.0);
+    _modelPartsPanel.layer.borderWidth = 1.0;
+    _modelPartsPanel.layer.borderColor = CGColorCreateGenericGray(0.6, 0.5);
+    
+    [self addSubview:_modelPartsPanel];
+    [_modelPartsPanel setFrame:listRect];
+    [_modelPartsPanel setHidden:YES];
+    [_modelPartsPanel setOptionUpdateDelegate:self];
+}
 
 
 - (void)addModelOperationPanel
@@ -102,16 +133,23 @@
     NuoMeshOption* options = panel.meshOptions;
     
     [_modelRender setModelOptions:options];
+    [_modelPartsPanel setMesh:_modelRender.mesh];
     [self render];
 }
 
 
 - (void)modelOptionUpdate:(ModelOperationPanel *)panel
 {
-    [_modelRender setCullEnabled:[panel cullEnabled]];
-    [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
-    [_modelRender setAmbientDensity:[panel ambientDensity]];
-    [self setupPipelineSettings];
+    if (panel)
+    {
+        [_modelPartsPanel setHidden:![panel showModelParts]];
+        
+        [_modelRender setCullEnabled:[panel cullEnabled]];
+        [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
+        [_modelRender setAmbientDensity:[panel ambientDensity]];
+        [self setupPipelineSettings];
+    }
+    
     [self render];
 }
 
@@ -145,6 +183,11 @@
         [self addModelOperationPanel];
     }
     
+    if (!_modelPartsPanel)
+    {
+        [self addModelPartsPanel];
+    }
+    
     [_modelPanel setFrame:[self operationPanelLocation]];
     
     if (!_lightPanel)
@@ -153,6 +196,7 @@
     }
     
     [_lightPanel setFrame:[self lightPanelRect]];
+    [_modelPartsPanel setFrame:[self modelPartsPanelLocation]];
 }
 
 
@@ -374,6 +418,7 @@
 - (void)loadMesh:(NSString*)path
 {
     [_modelRender loadMesh:path];
+    [_modelPartsPanel setMesh:_modelRender.mesh];
     
     NSString* documentName = [path lastPathComponent];
     _documentName = [documentName stringByDeletingPathExtension];

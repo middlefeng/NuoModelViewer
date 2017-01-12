@@ -32,6 +32,7 @@
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
 
 @property (nonatomic, strong) NuoMeshBox* boundingBox;
+@property (nonatomic, assign) BOOL enabled;
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
@@ -41,6 +42,10 @@
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 - (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor;
 - (void)makeDepthStencilState;
+
+
+- (void)setRawModel:(void*)model;
+- (NSString*)modelName;
 
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass;

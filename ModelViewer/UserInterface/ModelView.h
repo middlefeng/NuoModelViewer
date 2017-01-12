@@ -10,8 +10,11 @@
 
 
 
+@class ModelPartsList;
+
 
 @interface ModelView : NuoMetalView
+
 
 - (IBAction)openFile:(id)sender;
 

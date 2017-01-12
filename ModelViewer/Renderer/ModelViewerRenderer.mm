@@ -19,7 +19,6 @@
 
 @interface ModelRenderer ()
 
-@property (strong) NSArray<NuoMesh*>* mesh;
 
 @property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
@@ -28,6 +27,7 @@
 @property (strong) NuoModelLoader* modelLoader;
 
 @property (nonatomic, assign) matrix_float4x4 rotationMatrix;
+
 
 @end
 
@@ -348,7 +348,8 @@
         {
             if (((renderPassStep == 0) && ![mesh hasTransparency]) /* first pass for opaque */ ||
                 ((renderPassStep == 1) && [mesh hasTransparency])  /* second pass for transparent */)
-                [mesh drawMesh:renderPass];
+                if ([mesh enabled])
+                    [mesh drawMesh:renderPass];
         }
     }
     
