@@ -121,6 +121,9 @@ protected:
     std::vector<uint32_t> _indices;
     
 public:
+    
+    virtual std::shared_ptr<NuoModelBase> Clone() const = 0;
+    
     virtual void AddPosition(size_t sourceIndex, const std::vector<float>& positionsBuffer) = 0;
     virtual void AddNormal(size_t sourceIndex, const std::vector<float>& normalBuffer) = 0;
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) = 0;
@@ -152,6 +155,14 @@ public:
     
     virtual bool HasTransparent() = 0;
 };
+
+
+#define IMPL_CLONE(className)                                       \
+    virtual std::shared_ptr<NuoModelBase> Clone() const override    \
+    {                                                               \
+        std::shared_ptr<NuoModelBase> result(new className(*this)); \
+        return result;                                              \
+    }
 
 
 
@@ -204,6 +215,8 @@ protected:
     
 public:
     NuoModelSimple();
+    
+    IMPL_CLONE(NuoModelSimple);
     
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
     virtual void AddMaterial(const NuoMaterial& material) override;
@@ -304,8 +317,6 @@ void NuoModelCommon<ItemBase>::SmoothSurface(float tolerance)
                     break;
                 }
             }
-            
-            
         }
         else
         {

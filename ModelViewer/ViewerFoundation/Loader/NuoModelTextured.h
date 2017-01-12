@@ -71,6 +71,9 @@ public:
 class NuoModelTextured : public NuoModelTextureBase<NuoItemTextured>
 {
 public:
+    
+    IMPL_CLONE(NuoModelTextured);
+    
     virtual void AddMaterial(const NuoMaterial& material) override;
     virtual bool HasTransparent() override;
     

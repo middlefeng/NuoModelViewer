@@ -83,7 +83,16 @@
 
 - (void)smoothWithTolerance:(float)tolerance
 {
+    std::shared_ptr<NuoModelBase> clonedModel = _rawModel->Clone();
+    clonedModel->SmoothSurface(tolerance);
     
+    _vertexBuffer = [_device newBufferWithBytes:clonedModel->Ptr()
+                                         length:clonedModel->Length()
+                                        options:MTLResourceOptionCPUCacheModeDefault];
+    
+    _indexBuffer = [_device newBufferWithBytes:clonedModel->IndicesPtr()
+                                        length:clonedModel->IndicesLength()
+                                       options:MTLResourceOptionCPUCacheModeDefault];
 }
 
 
