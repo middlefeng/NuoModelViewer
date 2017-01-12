@@ -74,6 +74,7 @@
                                            length:indicesLength
                                           options:MTLResourceOptionCPUCacheModeDefault];
         _device = device;
+        _enabled = true;
     }
     
     return self;

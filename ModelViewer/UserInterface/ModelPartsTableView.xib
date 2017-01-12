@@ -48,6 +48,9 @@
                                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                             <font key="font" metaFont="system"/>
                                         </buttonCell>
+                                        <connections>
+                                            <action selector="cellEnablingChanged:" target="s9b-YC-J5p" id="Ttj-L8-3uw"/>
+                                        </connections>
                                     </button>
                                 </prototypeCellViews>
                             </tableColumn>
@@ -65,11 +68,11 @@
                                 <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                 <prototypeCellViews>
                                     <tableCellView id="Xe1-Qv-oN4">
-                                        <rect key="frame" x="29" y="1" width="384.5" height="17"/>
+                                        <rect key="frame" x="29" y="1" width="384" height="17"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" allowsCharacterPickerTouchBarItem="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dtX-bv-9Zg">
-                                                <rect key="frame" x="0.0" y="0.0" width="385" height="14"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="384.5" height="14"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                 <textFieldCell key="cell" controlSize="small" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="Table View Cell" id="L52-0J-Kwu">
                                                     <font key="font" metaFont="smallSystem"/>

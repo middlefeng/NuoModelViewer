@@ -348,7 +348,8 @@
         {
             if (((renderPassStep == 0) && ![mesh hasTransparency]) /* first pass for opaque */ ||
                 ((renderPassStep == 1) && [mesh hasTransparency])  /* second pass for transparent */)
-                [mesh drawMesh:renderPass];
+                if ([mesh enabled])
+                    [mesh drawMesh:renderPass];
         }
     }
     

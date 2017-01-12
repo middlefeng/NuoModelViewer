@@ -97,6 +97,7 @@
     [self addSubview:_modelPartsPanel];
     [_modelPartsPanel setFrame:listRect];
     [_modelPartsPanel setHidden:YES];
+    [_modelPartsPanel setOptionUpdateDelegate:self];
 }
 
 
@@ -132,18 +133,23 @@
     NuoMeshOption* options = panel.meshOptions;
     
     [_modelRender setModelOptions:options];
+    [_modelPartsPanel setMesh:_modelRender.mesh];
     [self render];
 }
 
 
 - (void)modelOptionUpdate:(ModelOperationPanel *)panel
 {
-    [_modelPartsPanel setHidden:![panel showModelParts]];
+    if (panel)
+    {
+        [_modelPartsPanel setHidden:![panel showModelParts]];
+        
+        [_modelRender setCullEnabled:[panel cullEnabled]];
+        [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
+        [_modelRender setAmbientDensity:[panel ambientDensity]];
+        [self setupPipelineSettings];
+    }
     
-    [_modelRender setCullEnabled:[panel cullEnabled]];
-    [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
-    [_modelRender setAmbientDensity:[panel ambientDensity]];
-    [self setupPipelineSettings];
     [self render];
 }
 

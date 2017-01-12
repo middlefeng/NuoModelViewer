@@ -32,6 +32,7 @@
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
 
 @property (nonatomic, strong) NuoMeshBox* boundingBox;
+@property (nonatomic, assign) BOOL enabled;
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device

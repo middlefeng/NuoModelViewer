@@ -10,11 +10,14 @@
 
 
 @class NuoMesh;
+@protocol ModelOptionUpdate;
 
 
 
 @interface ModelPartsPanel : NSView
 
+
+@property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 
 - (void)setMesh:(NSArray<NuoMesh*>*)mesh;
 

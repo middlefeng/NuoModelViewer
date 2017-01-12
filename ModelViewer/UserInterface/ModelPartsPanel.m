@@ -8,6 +8,7 @@
 
 #import "ModelPartsPanel.h"
 #import "NuoMesh.h"
+#import "ModelOptionUpdate.h"
 
 
 
@@ -16,6 +17,21 @@
 @interface ModelBoolView : NSButton
 
 @end
+
+
+
+
+@interface ModelPartsListTable : NSTableView < NSTableViewDataSource, NSTableViewDelegate >
+
+
+@property (nonatomic, weak) id<ModelOptionUpdate> updateDelegate;
+@property (nonatomic, weak) NSArray<NuoMesh*>* mesh;
+
+- (IBAction)cellEnablingChanged:(id)sender;
+
+
+@end
+
 
 
 @implementation ModelBoolView
@@ -32,21 +48,16 @@
     return @(self.state == NSOnState);
 }
 
-@end
-
-
-
-
-
-
-
-@interface ModelPartsListTable : NSTableView < NSTableViewDataSource, NSTableViewDelegate >
-
-
-@property (nonatomic, weak) NSArray<NuoMesh*>* mesh;
-
+- (void)mouseDown:(NSEvent *)event
+{
+    [super mouseDown:event];
+    
+    ModelPartsListTable* table = (ModelPartsListTable*)self.target;
+    [table cellEnablingChanged:self];
+}
 
 @end
+
 
 
 @implementation ModelPartsListTable
@@ -80,7 +91,8 @@
     if ([tableColumn.identifier isEqualToString:@"enabled"])
     {
         ModelBoolView* boolView = (ModelBoolView*)result;
-        boolView.objectValue = @(true);
+        boolView.objectValue = @(_mesh[row].enabled);
+        boolView.target = self;
     }
     else
     {
@@ -91,6 +103,17 @@
     
     return result;
 }
+
+
+- (IBAction)cellEnablingChanged:(id)sender
+{
+    NSInteger row = [self rowForView:sender];
+    ModelBoolView* enableButton = (ModelBoolView*)sender;
+    _mesh[row].enabled = enableButton.state == NSOnState;
+    
+    [_updateDelegate modelOptionUpdate:nil];
+}
+
 
 
 @end
@@ -151,6 +174,13 @@
     [_partsTable setMesh:mesh];
     [_partsTable reloadData];
 }
+
+
+- (void)setOptionUpdateDelegate:(id<ModelOptionUpdate>)optionUpdateDelegate
+{
+    _partsTable.updateDelegate = optionUpdateDelegate;
+}
+
 
 
 
