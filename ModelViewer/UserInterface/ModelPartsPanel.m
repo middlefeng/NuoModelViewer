@@ -27,7 +27,7 @@
 @property (nonatomic, weak) id<ModelOptionUpdate> updateDelegate;
 @property (nonatomic, weak) NSArray<NuoMesh*>* mesh;
 
-- (IBAction)cellEnablingChanged:(id)sender;
+- (void)cellEnablingChanged:(id)sender;
 
 
 @end
@@ -105,7 +105,7 @@
 }
 
 
-- (IBAction)cellEnablingChanged:(id)sender
+- (void)cellEnablingChanged:(id)sender
 {
     NSInteger row = [self rowForView:sender];
     ModelBoolView* enableButton = (ModelBoolView*)sender;
