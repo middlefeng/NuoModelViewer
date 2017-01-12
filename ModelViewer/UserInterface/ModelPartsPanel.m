@@ -94,11 +94,17 @@
         boolView.objectValue = @(_mesh[row].enabled);
         boolView.target = self;
     }
-    else
+    else if ([tableColumn.identifier isEqualToString:@"name"])
     {
         NSTableCellView* cell = (NSTableCellView*)result;
         NSTextField* textField = cell.textField;
         textField.stringValue = _mesh[row].modelName;
+    }
+    else
+    {
+        NSTableCellView* cell = (NSTableCellView*)result;
+        NSTextField* textField = cell.textField;
+        textField.stringValue = [NSString stringWithFormat:@"%0.3f", _mesh[row].smoothTolerance];
     }
     
     return result;

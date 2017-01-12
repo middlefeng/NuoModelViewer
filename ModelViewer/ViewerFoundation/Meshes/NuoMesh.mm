@@ -75,6 +75,8 @@
                                           options:MTLResourceOptionCPUCacheModeDefault];
         _device = device;
         _enabled = true;
+        
+        _smoothTolerance = 0.0f;
     }
     
     return self;
@@ -83,6 +85,8 @@
 
 - (void)smoothWithTolerance:(float)tolerance
 {
+    _smoothTolerance = tolerance;
+    
     std::shared_ptr<NuoModelBase> clonedModel = _rawModel->Clone();
     clonedModel->SmoothSurface(tolerance);
     
