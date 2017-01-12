@@ -19,6 +19,10 @@
 @end
 
 
+@interface ModelTextView : NSTextField <NSTextFieldDelegate>
+
+@end
+
 
 
 @interface ModelPartsListTable : NSTableView < NSTableViewDataSource, NSTableViewDelegate >
@@ -28,6 +32,7 @@
 @property (nonatomic, weak) NSArray<NuoMesh*>* mesh;
 
 - (void)cellEnablingChanged:(id)sender;
+- (void)smoothToleranceChanged:(id)sender;
 
 
 @end
@@ -55,6 +60,22 @@
     ModelPartsListTable* table = (ModelPartsListTable*)self.target;
     [table cellEnablingChanged:self];
 }
+
+@end
+
+
+
+@implementation ModelTextView
+
+
+- (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)fieldEditor
+{
+    ModelPartsListTable* table = (ModelPartsListTable*)self.target;
+    [table smoothToleranceChanged:self];
+    
+    return YES;
+}
+
 
 @end
 
@@ -103,7 +124,9 @@
     else
     {
         NSTableCellView* cell = (NSTableCellView*)result;
-        NSTextField* textField = cell.textField;
+        ModelTextView* textField = (ModelTextView*)cell.textField;
+        textField.delegate = textField;
+        textField.target = self;
         textField.stringValue = [NSString stringWithFormat:@"%0.3f", _mesh[row].smoothTolerance];
     }
     
@@ -120,6 +143,25 @@
     [_updateDelegate modelOptionUpdate:nil];
 }
 
+
+- (IBAction)smoothToleranceChanged:(id)sender
+{
+    NSInteger row = [self rowForView:sender];
+    NSTextField* textField = (NSTextField*)sender;
+    NSString* valueStr = textField.stringValue;
+    
+    float value;
+    sscanf(valueStr.UTF8String, "%f", &value);
+    
+    [_mesh[row] smoothWithTolerance:value];
+    [_updateDelegate modelOptionUpdate:nil];
+}
+
+
+- (void)textDidEndEditing:(NSNotification *)notification
+{
+    [super textDidEndEditing:notification];
+}
 
 
 @end

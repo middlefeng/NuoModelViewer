@@ -87,8 +87,13 @@
 {
     _smoothTolerance = tolerance;
     
-    std::shared_ptr<NuoModelBase> clonedModel = _rawModel->Clone();
-    clonedModel->SmoothSurface(tolerance);
+    std::shared_ptr<NuoModelBase> clonedModel = _rawModel;
+    
+    if (_smoothTolerance > 0.001)
+    {
+        clonedModel = _rawModel->Clone();
+        clonedModel->SmoothSurface(tolerance);
+    }
     
     _vertexBuffer = [_device newBufferWithBytes:clonedModel->Ptr()
                                          length:clonedModel->Length()

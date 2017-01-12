@@ -130,9 +130,12 @@
 
 - (void)modelUpdate:(ModelOperationPanel *)panel
 {
-    NuoMeshOption* options = panel.meshOptions;
+    if (panel)
+    {
+        NuoMeshOption* options = panel.meshOptions;
+        [_modelRender setModelOptions:options];
+    }
     
-    [_modelRender setModelOptions:options];
     [_modelPartsPanel setMesh:_modelRender.mesh];
     [self render];
 }
