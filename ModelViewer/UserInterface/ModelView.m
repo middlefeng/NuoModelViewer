@@ -82,6 +82,8 @@
     [_modelPanel addCheckbox];
     [_modelPanel setOptionUpdateDelegate:self];
     
+    [_modelRender setModelOptions:_modelPanel.meshOptions];
+    
     [self addSubview:_modelPanel];
 }
 
