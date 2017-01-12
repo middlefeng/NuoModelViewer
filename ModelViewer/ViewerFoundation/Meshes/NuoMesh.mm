@@ -81,6 +81,11 @@
 }
 
 
+- (void)smoothWithTolerance:(float)tolerance
+{
+    
+}
+
 
 - (void)setRawModel:(void*)model
 {

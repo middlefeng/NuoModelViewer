@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 #include <simd/simd.h>
 #include "NuoTypes.h"
@@ -50,6 +51,67 @@ public:
 std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMaterial& material,
                                           const std::string& modelItemName);
 
+template <class ItemBase>
+class SmoothItem
+{
+    vector_float4 _position;
+    std::vector<ItemBase*> _smoothedVertices;
+
+public:
+    SmoothItem(ItemBase& item);
+    bool operator < (const SmoothItem& other) const;
+    
+    void AddItem(ItemBase& item);
+    void Smooth();
+};
+
+
+
+template <class ItemBase>
+SmoothItem<ItemBase>::SmoothItem(ItemBase& item)
+{
+    _position = item._position;
+    _smoothedVertices.push_back(&item);
+}
+
+
+
+template <class ItemBase>
+void SmoothItem<ItemBase>::AddItem(ItemBase& item)
+{
+    _smoothedVertices.push_back(&item);
+}
+
+
+template <class ItemBase>
+void SmoothItem<ItemBase>::Smooth()
+{
+    vector_float4 normalSum;
+    for(auto vertex : _smoothedVertices)
+        normalSum += vertex->_normal;
+    
+    vector_float4 normal = vector_normalize(normalSum);
+    for(auto vertex : _smoothedVertices)
+        vertex->_normal = normal;
+}
+
+
+
+template <class ItemBase>
+bool SmoothItem<ItemBase>::operator < (const SmoothItem<ItemBase>& other) const
+{
+#define compare_element(a) \
+    if (a < other.a) return true; \
+    if (a > other.a) return false;
+    
+    compare_element(_position.x);
+    compare_element(_position.y);
+    compare_element(_position.z);
+    compare_element(_position.w);
+    
+    return false;
+}
+
 
 
 class NuoModelBase : public std::enable_shared_from_this<NuoModelBase>
@@ -74,6 +136,8 @@ public:
     virtual void GenerateIndices() = 0;
     virtual void GenerateNormals() = 0;
     virtual void GenerateTangents() = 0;
+    
+    virtual void SmoothSurface(float tolerance) = 0;
     
     virtual size_t GetVerticesNumber() = 0;
     virtual vector_float4 GetPosition(size_t index) = 0;
@@ -103,6 +167,8 @@ public:
     
     virtual void GenerateIndices() override;
     virtual void GenerateNormals() override;
+    
+    virtual void SmoothSurface(float tolerance) override;
     
     virtual size_t GetVerticesNumber() override;
     virtual vector_float4 GetPosition(size_t index) override;
@@ -208,6 +274,61 @@ void NuoModelCommon<ItemBase>::DoGenerateIndices(bool compressBuffer)
     {
         for (size_t i = 0; i < _buffer.size(); ++i)
             _indices.push_back(indexCurrent++);
+    }
+}
+
+template <class ItemBase>
+void NuoModelCommon<ItemBase>::SmoothSurface(float tolerance)
+{
+    typedef std::vector<ItemBase*> ItemVec;
+    typedef std::map<SmoothItem<ItemBase>, ItemVec> Smoother;
+    
+    Smoother smoother;
+    for (size_t i = 0; i < _buffer.size(); ++i)
+    {
+        SmoothItem<ItemBase> smoothItem(_buffer[i]);
+        auto existingSmoother = smoother.find(smoothItem);
+
+        if (existingSmoother != smoother.end())
+        {
+            ItemVec& existingSmootherValue = existingSmoother->second;
+            
+            for (ItemBase* item : existingSmootherValue)
+            {
+                vector_float4 normal1 = vector_normalize(item->_normal);
+                vector_float4 normal2 = vector_normalize(_buffer[i]._normal);
+                float cross = vector_dot(normal2, normal1);
+                if (fabs(cross) > tolerance)
+                {
+                    existingSmootherValue.push_back(&_buffer[i]);
+                    break;
+                }
+            }
+            
+            
+        }
+        else
+        {
+            ItemVec existingSmootherValue;
+            existingSmootherValue.push_back(&_buffer[i]);
+            smoother.insert(std::make_pair(smoothItem, existingSmootherValue));
+        }
+    }
+    
+    for (auto smoothItem : smoother)
+    {
+        ItemVec smoothVertex = smoothItem.second;
+        
+        if (smoothVertex.size() <= 1)
+            continue;
+        
+        vector_float4 normalSum {0};
+        for (ItemBase* item : smoothVertex)
+            normalSum += item->_normal;
+
+        vector_float4 normal = vector_normalize(normalSum);
+        for (ItemBase* item : smoothVertex)
+            item->_normal = normal;
     }
 }
 
@@ -322,6 +443,16 @@ const std::string& NuoModelCommon<ItemBase>::GetName() const
 {
     return _name;
 }
+
+
+
+template <class ModelClass>
+std::shared_ptr<NuoModelBase> CloneModel(std::shared_ptr<ModelClass> source)
+{
+    std::shared_ptr<NuoModelBase> result(new ModelClass(*(source.get())));
+    return result;
+}
+
 
 
 

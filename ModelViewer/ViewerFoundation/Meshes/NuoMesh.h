@@ -46,6 +46,7 @@
 
 - (void)setRawModel:(void*)model;
 - (NSString*)modelName;
+- (void)smoothWithTolerance:(float)tolerance;
 
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass;
