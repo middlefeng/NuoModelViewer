@@ -82,8 +82,6 @@
     [_modelPanel addCheckbox];
     [_modelPanel setOptionUpdateDelegate:self];
     
-    [_modelRender setModelOptions:_modelPanel.meshOptions];
-    
     [self addSubview:_modelPanel];
 }
 
@@ -225,6 +223,7 @@
         [_modelRender setRenderTarget:modelRenderTarget];
     }
 
+    [_modelRender setModelOptions:_modelPanel.meshOptions];
     [_lightPanel setHidden:!_modelPanel.showLightSettings];
     
     [self setRenderPasses:_renders];
