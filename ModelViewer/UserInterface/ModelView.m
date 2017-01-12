@@ -209,8 +209,9 @@
     _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
     _notationRender.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
-    [self setupPipelineSettings];
+    _modelRender.modelOptions = _modelPanel.meshOptions;
     
+    [self setupPipelineSettings];
     [self registerForDraggedTypes:@[@"public.data"]];
 }
 
@@ -267,7 +268,6 @@
         [_modelRender setRenderTarget:modelRenderTarget];
     }
 
-    [_modelRender setModelOptions:_modelPanel.meshOptions];
     [_lightPanel setHidden:!_modelPanel.showLightSettings];
     
     [self setRenderPasses:_renders];
