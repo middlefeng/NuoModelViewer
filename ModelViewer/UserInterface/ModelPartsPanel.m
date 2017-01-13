@@ -24,6 +24,11 @@
 @end
 
 
+@interface ModelNumberValueFormatter : NSNumberFormatter
+
+@end
+
+
 
 @interface ModelPartsListTable : NSTableView < NSTableViewDataSource, NSTableViewDelegate >
 
@@ -81,6 +86,30 @@
 
 
 
+@implementation ModelNumberValueFormatter
+
+- (BOOL)isPartialStringValid:(NSString*)partialString
+            newEditingString:(NSString**)newString
+            errorDescription:(NSString**)error
+{
+    if ([partialString length] == 0)
+        return YES;
+    
+    NSScanner* scanner = [NSScanner scannerWithString:partialString];
+    
+    if(!([scanner scanFloat:nil] && [scanner isAtEnd]))
+    {
+        NSBeep();
+        return NO;
+    }
+    
+    return YES;
+}
+
+@end
+
+
+
 @implementation ModelPartsListTable
 
 
@@ -125,9 +154,15 @@
     {
         NSTableCellView* cell = (NSTableCellView*)result;
         ModelTextView* textField = (ModelTextView*)cell.textField;
+        
+        ModelNumberValueFormatter* numberFormatter = [[ModelNumberValueFormatter alloc] init];
+        numberFormatter.numberStyle = NSNumberFormatterDecimalStyle;
+        numberFormatter.minimumFractionDigits = 4;
+        
+        textField.formatter = numberFormatter;
         textField.delegate = textField;
         textField.target = self;
-        textField.stringValue = [NSString stringWithFormat:@"%0.3f", _mesh[row].smoothTolerance];
+        textField.stringValue = [NSString stringWithFormat:@"%0.4f", _mesh[row].smoothTolerance];
     }
     
     return result;
