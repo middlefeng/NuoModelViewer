@@ -179,7 +179,7 @@
 }
 
 
-- (IBAction)smoothToleranceChanged:(id)sender
+- (void)smoothToleranceChanged:(id)sender
 {
     NSInteger row = [self rowForView:sender];
     NSTextField* textField = (NSTextField*)sender;
