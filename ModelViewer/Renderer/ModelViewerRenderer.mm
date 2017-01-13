@@ -139,6 +139,38 @@
         exporter.EndTable();
         exporter.EndEntry(true);
         
+        exporter.StartEntry("models");
+        exporter.StartTable();
+        
+        size_t index = 0;
+        
+        for (NuoMesh* meshItem : _mesh)
+        {
+            if (meshItem.smoothTolerance > 0.001 || !meshItem.enabled)
+            {
+                exporter.StartArrayIndex(++index);
+                exporter.StartTable();
+                
+                exporter.StartEntry("name");
+                exporter.SetEntryValueString(meshItem.modelName.UTF8String);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("enabled");
+                exporter.SetEntryValueBool(meshItem.enabled);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("smooth");
+                exporter.SetEntryValueFloat(meshItem.smoothTolerance);
+                exporter.EndEntry(false);
+                
+                exporter.EndTable();
+                exporter.EndEntry(true);
+            }
+        }
+
+        exporter.EndTable();
+        exporter.EndEntry(true);
+        
         exporter.StartEntry("lights");
         exporter.StartTable();
         
@@ -198,6 +230,32 @@
     _transX = [lua getFieldAsNumber:@"transX" fromTable:-1];
     _transY = [lua getFieldAsNumber:@"transY" fromTable:-1];
     _fieldOfView = [lua getFieldAsNumber:@"FOV" fromTable:-1];
+    [lua removeField];
+    
+    [lua getField:@"models" fromTable:-1];
+    
+    size_t length = [lua getArraySize:-1];
+    size_t passedModel = 0;
+    
+    for (size_t i = 0; i < length; ++i)
+    {
+        [lua getItem:(int)(i + 1) fromTable:-1];
+        NSString* name = [lua getFieldAsString:@"name" fromTable:-1];
+        for (size_t i = passedModel; i < _mesh.count; ++i)
+        {
+            NuoMesh* mesh = _mesh[i];
+            
+            if ([mesh.modelName isEqualToString:name])
+            {
+                [mesh setEnabled:[lua getFieldAsBool:@"enabled" fromTable:-1]];
+                [mesh smoothWithTolerance:[lua getFieldAsNumber:@"smooth" fromTable:-1]];
+                
+                passedModel = ++i;
+                break;
+            }
+        }
+        [lua removeField];
+    }
     [lua removeField];
     
     [lua getField:@"lights" fromTable:-1];

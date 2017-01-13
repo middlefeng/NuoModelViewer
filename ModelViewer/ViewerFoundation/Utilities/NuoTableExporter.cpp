@@ -70,17 +70,14 @@ void NuoTableExporter::SetEntryValueFloat(float value)
 void NuoTableExporter::SetEntryValueBool(bool value)
 {
     const char* buffer = value ? "true" : "false";
-    
-    _result = _result + buffer + "\n";
-    
-    delete[] buffer;
+    _result = _result + buffer;
 }
 
 
 
 void NuoTableExporter::SetEntryValueString(const std::string& value)
 {
-     _result = _result + value + "\n";
+     _result = _result + "\"" + value + "\"";
 }
 
 

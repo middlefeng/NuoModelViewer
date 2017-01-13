@@ -43,6 +43,16 @@
 }
 
 
+- (size_t)getArraySize:(int)index
+{
+    lua_len(_luaState, index);
+    size_t len = lua_tointeger(_luaState, -1);
+    lua_pop(_luaState, 1);
+    
+    return len;
+}
+
+
 - (void)getItem:(int)itemIndex fromTable:(int)index
 {
     lua_geti(_luaState, index, itemIndex);
@@ -55,10 +65,52 @@
 }
 
 
+- (bool)getArrayItemAsBool:(size_t)item fromTable:(int)index
+{
+    lua_geti(_luaState, index, item);
+    bool result = lua_toboolean(_luaState, -1);
+    lua_pop(_luaState, 1);
+    
+    return result;
+}
+
+
+- (float)getArrayItemAsNumber:(size_t)item fromTable:(int)index
+{
+    lua_geti(_luaState, index, item);
+    float result = lua_tonumber(_luaState, -1);
+    lua_pop(_luaState, 1);
+    
+    return result;
+}
+
+
+
+- (NSString*)getFieldAsString:(NSString*)key fromTable:(int)index
+{
+    lua_getfield(_luaState, index, key.UTF8String);
+    const char* result = lua_tostring(_luaState, -1);
+    NSString* r = [[NSString alloc] initWithUTF8String:result];
+    lua_pop(_luaState, 1);
+    
+    return r;
+}
+
+
 - (float)getFieldAsNumber:(NSString*)key fromTable:(int)index
 {
     lua_getfield(_luaState, index, key.UTF8String);
     float value = lua_tonumber(_luaState, -1);
+    lua_pop(_luaState, 1);
+    
+    return value;
+}
+
+
+- (bool)getFieldAsBool:(NSString*)key fromTable:(int)index
+{
+    lua_getfield(_luaState, index, key.UTF8String);
+    bool value = lua_toboolean(_luaState, -1);
     lua_pop(_luaState, 1);
     
     return value;

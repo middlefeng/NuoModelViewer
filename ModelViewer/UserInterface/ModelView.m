@@ -448,6 +448,7 @@
     [_modelRender importScene:lua];
     [_notationRender importScene:lua];
     
+    [_modelPartsPanel setMesh:_modelRender.mesh];
     [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];
     [_modelPanel setAmbientDensity:_modelRender.ambientDensity];
     [_modelPanel updateControls];
