@@ -55,14 +55,10 @@ template <class ItemBase>
 class SmoothItem
 {
     vector_float4 _position;
-    std::vector<ItemBase*> _smoothedVertices;
 
 public:
     SmoothItem(ItemBase& item);
     bool operator < (const SmoothItem& other) const;
-    
-    void AddItem(ItemBase& item);
-    void Smooth();
 };
 
 
@@ -71,28 +67,6 @@ template <class ItemBase>
 SmoothItem<ItemBase>::SmoothItem(ItemBase& item)
 {
     _position = item._position;
-    _smoothedVertices.push_back(&item);
-}
-
-
-
-template <class ItemBase>
-void SmoothItem<ItemBase>::AddItem(ItemBase& item)
-{
-    _smoothedVertices.push_back(&item);
-}
-
-
-template <class ItemBase>
-void SmoothItem<ItemBase>::Smooth()
-{
-    vector_float4 normalSum;
-    for(auto vertex : _smoothedVertices)
-        normalSum += vertex->_normal;
-    
-    vector_float4 normal = vector_normalize(normalSum);
-    for(auto vertex : _smoothedVertices)
-        vertex->_normal = normal;
 }
 
 
