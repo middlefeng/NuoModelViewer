@@ -186,10 +186,14 @@
     NSString* valueStr = textField.stringValue;
     
     float value;
-    sscanf(valueStr.UTF8String, "%f", &value);
+    NSScanner* scanner = [[NSScanner alloc] initWithString:valueStr];
+    [scanner scanFloat:&value];
     
-    [_mesh[row] smoothWithTolerance:value];
-    [_updateDelegate modelOptionUpdate:nil];
+    if ([scanner isAtEnd])
+    {
+        [_mesh[row] smoothWithTolerance:value];
+        [_updateDelegate modelOptionUpdate:nil];
+    }
 }
 
 
