@@ -116,6 +116,11 @@ struct NuoItemMaterialedBasic
 
 
 
+template <>
+bool ItemTexCoordEequal<NuoItemMaterialedBasic>(const NuoItemMaterialedBasic& i1, const NuoItemMaterialedBasic& i2);
+
+
+
 class NuoModelMaterialed : public NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>
 {
 

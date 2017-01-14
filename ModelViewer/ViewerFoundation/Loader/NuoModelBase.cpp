@@ -13,6 +13,12 @@
 
 
 
+template <>
+bool ItemTexCoordEequal<NuoItemSimple>(const NuoItemSimple& i1, const NuoItemSimple& i2)
+{
+    return true;
+}
+
 
 std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMaterial& material,
                                           const std::string& modelItemName)

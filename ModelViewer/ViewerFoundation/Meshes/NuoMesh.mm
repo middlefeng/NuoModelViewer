@@ -92,7 +92,7 @@
     if (_smoothTolerance > 0.001)
     {
         clonedModel = _rawModel->Clone();
-        clonedModel->SmoothSurface(tolerance);
+        clonedModel->SmoothSurface(tolerance, true);
     }
     
     _vertexBuffer = [_device newBufferWithBytes:clonedModel->Ptr()

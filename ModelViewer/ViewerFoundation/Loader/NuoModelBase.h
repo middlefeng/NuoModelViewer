@@ -113,6 +113,14 @@ bool SmoothItem<ItemBase>::operator < (const SmoothItem<ItemBase>& other) const
 }
 
 
+template <class ItemBase>
+bool ItemTexCoordEequal(const ItemBase& i1, const ItemBase& i2)
+{
+    return  fabs(i1._texCoord.x - i2._texCoord.x) < 1e-3 &&
+    fabs(i1._texCoord.y - i2._texCoord.y) < 1e-3;
+}
+
+
 
 class NuoModelBase : public std::enable_shared_from_this<NuoModelBase>
 {
@@ -140,7 +148,7 @@ public:
     virtual void GenerateNormals() = 0;
     virtual void GenerateTangents() = 0;
     
-    virtual void SmoothSurface(float tolerance) = 0;
+    virtual void SmoothSurface(float tolerance, bool texDiscontinuityOnly) = 0;
     
     virtual size_t GetVerticesNumber() = 0;
     virtual vector_float4 GetPosition(size_t index) = 0;
@@ -179,7 +187,7 @@ public:
     virtual void GenerateIndices() override;
     virtual void GenerateNormals() override;
     
-    virtual void SmoothSurface(float tolerance) override;
+    virtual void SmoothSurface(float tolerance, bool texDiscontinuityOnly) override;
     
     virtual size_t GetVerticesNumber() override;
     virtual vector_float4 GetPosition(size_t index) override;
@@ -205,6 +213,13 @@ struct NuoItemSimple
     
     bool operator == (const NuoItemSimple& other);
 };
+
+
+
+
+template <>
+bool ItemTexCoordEequal<NuoItemSimple>(const NuoItemSimple& i1, const NuoItemSimple& i2);
+
 
 
 
@@ -291,7 +306,7 @@ void NuoModelCommon<ItemBase>::DoGenerateIndices(bool compressBuffer)
 }
 
 template <class ItemBase>
-void NuoModelCommon<ItemBase>::SmoothSurface(float tolerance)
+void NuoModelCommon<ItemBase>::SmoothSurface(float tolerance, bool texDiscontinuityOnly)
 {
     typedef std::vector<ItemBase*> ItemVec;
     typedef std::map<SmoothItem<ItemBase>, ItemVec> Smoother;
@@ -311,7 +326,8 @@ void NuoModelCommon<ItemBase>::SmoothSurface(float tolerance)
                 vector_float4 normal1 = vector_normalize(item->_normal);
                 vector_float4 normal2 = vector_normalize(_buffer[i]._normal);
                 float cross = vector_dot(normal2, normal1);
-                if (fabs(cross) > tolerance)
+                if (fabs(cross) > tolerance &&
+                    (!texDiscontinuityOnly || !ItemTexCoordEequal(*item, _buffer[i])))
                 {
                     existingSmootherValue.push_back(&_buffer[i]);
                     break;
