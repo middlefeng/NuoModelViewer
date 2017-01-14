@@ -58,6 +58,8 @@ class NuoModelMaterialedTextured : virtual public NuoModelTextureBase<NuoItemMat
 public:
     NuoModelMaterialedTextured();
     
+    IMPL_CLONE(NuoModelMaterialedTextured);
+    
     virtual void GenerateTangents() override;
     virtual void SetTexturePathBump(const std::string texPath) override;
     virtual std::string GetTexturePathBump() override;
@@ -90,6 +92,8 @@ struct NuoItermMaterialedBumpedTextured
 class NuoModelMaterialedBumpedTextured : virtual public NuoModelTexturedWithTangentBase<NuoItermMaterialedBumpedTextured>,
                                          virtual public NuoModelMaterialedBasicBase<NuoItermMaterialedBumpedTextured>
 {
+public:
+    IMPL_CLONE(NuoModelMaterialedBumpedTextured);
 };
 
 
@@ -112,10 +116,18 @@ struct NuoItemMaterialedBasic
 
 
 
+template <>
+bool ItemTexCoordEequal<NuoItemMaterialedBasic>(const NuoItemMaterialedBasic& i1, const NuoItemMaterialedBasic& i2);
+
+
+
 class NuoModelMaterialed : public NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>
 {
 
 public:
+    
+    IMPL_CLONE(NuoModelMaterialed);
+    
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
     virtual void GenerateTangents() override;
     

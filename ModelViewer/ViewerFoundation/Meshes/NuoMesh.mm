@@ -75,11 +75,34 @@
                                           options:MTLResourceOptionCPUCacheModeDefault];
         _device = device;
         _enabled = true;
+        
+        _smoothTolerance = 0.0f;
     }
     
     return self;
 }
 
+
+- (void)smoothWithTolerance:(float)tolerance
+{
+    _smoothTolerance = tolerance;
+    
+    std::shared_ptr<NuoModelBase> clonedModel = _rawModel;
+    
+    if (_smoothTolerance > 0.001)
+    {
+        clonedModel = _rawModel->Clone();
+        clonedModel->SmoothSurface(tolerance, true);
+    }
+    
+    _vertexBuffer = [_device newBufferWithBytes:clonedModel->Ptr()
+                                         length:clonedModel->Length()
+                                        options:MTLResourceOptionCPUCacheModeDefault];
+    
+    _indexBuffer = [_device newBufferWithBytes:clonedModel->IndicesPtr()
+                                        length:clonedModel->IndicesLength()
+                                       options:MTLResourceOptionCPUCacheModeDefault];
+}
 
 
 - (void)setRawModel:(void*)model

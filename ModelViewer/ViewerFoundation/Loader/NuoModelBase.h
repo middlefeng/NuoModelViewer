@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 #include <simd/simd.h>
 #include "NuoTypes.h"
@@ -50,6 +51,49 @@ public:
 std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMaterial& material,
                                           const std::string& modelItemName);
 
+template <class ItemBase>
+class SmoothItem
+{
+    vector_float4 _position;
+
+public:
+    SmoothItem(ItemBase& item);
+    bool operator < (const SmoothItem& other) const;
+};
+
+
+
+template <class ItemBase>
+SmoothItem<ItemBase>::SmoothItem(ItemBase& item)
+{
+    _position = item._position;
+}
+
+
+
+template <class ItemBase>
+bool SmoothItem<ItemBase>::operator < (const SmoothItem<ItemBase>& other) const
+{
+#define compare_element(a) \
+    if (a < other.a) return true; \
+    if (a > other.a) return false;
+    
+    compare_element(_position.x);
+    compare_element(_position.y);
+    compare_element(_position.z);
+    compare_element(_position.w);
+    
+    return false;
+}
+
+
+template <class ItemBase>
+bool ItemTexCoordEequal(const ItemBase& i1, const ItemBase& i2)
+{
+    return  fabs(i1._texCoord.x - i2._texCoord.x) < 1e-3 &&
+    fabs(i1._texCoord.y - i2._texCoord.y) < 1e-3;
+}
+
 
 
 class NuoModelBase : public std::enable_shared_from_this<NuoModelBase>
@@ -59,6 +103,9 @@ protected:
     std::vector<uint32_t> _indices;
     
 public:
+    
+    virtual std::shared_ptr<NuoModelBase> Clone() const = 0;
+    
     virtual void AddPosition(size_t sourceIndex, const std::vector<float>& positionsBuffer) = 0;
     virtual void AddNormal(size_t sourceIndex, const std::vector<float>& normalBuffer) = 0;
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) = 0;
@@ -75,6 +122,8 @@ public:
     virtual void GenerateNormals() = 0;
     virtual void GenerateTangents() = 0;
     
+    virtual void SmoothSurface(float tolerance, bool texDiscontinuityOnly) = 0;
+    
     virtual size_t GetVerticesNumber() = 0;
     virtual vector_float4 GetPosition(size_t index) = 0;
     virtual NuoBox GetBoundingBox();
@@ -90,6 +139,14 @@ public:
 };
 
 
+#define IMPL_CLONE(className)                                       \
+    virtual std::shared_ptr<NuoModelBase> Clone() const override    \
+    {                                                               \
+        std::shared_ptr<NuoModelBase> result(new className(*this)); \
+        return result;                                              \
+    }
+
+
 
 template <class ItemBase>
 class NuoModelCommon : virtual public NuoModelBase
@@ -103,6 +160,8 @@ public:
     
     virtual void GenerateIndices() override;
     virtual void GenerateNormals() override;
+    
+    virtual void SmoothSurface(float tolerance, bool texDiscontinuityOnly) override;
     
     virtual size_t GetVerticesNumber() override;
     virtual vector_float4 GetPosition(size_t index) override;
@@ -131,6 +190,13 @@ struct NuoItemSimple
 
 
 
+
+template <>
+bool ItemTexCoordEequal<NuoItemSimple>(const NuoItemSimple& i1, const NuoItemSimple& i2);
+
+
+
+
 class NuoModelSimple : public NuoModelCommon<NuoItemSimple>
 {
 protected:
@@ -138,6 +204,8 @@ protected:
     
 public:
     NuoModelSimple();
+    
+    IMPL_CLONE(NuoModelSimple);
     
     virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
     virtual void AddMaterial(const NuoMaterial& material) override;
@@ -208,6 +276,60 @@ void NuoModelCommon<ItemBase>::DoGenerateIndices(bool compressBuffer)
     {
         for (size_t i = 0; i < _buffer.size(); ++i)
             _indices.push_back(indexCurrent++);
+    }
+}
+
+template <class ItemBase>
+void NuoModelCommon<ItemBase>::SmoothSurface(float tolerance, bool texDiscontinuityOnly)
+{
+    typedef std::vector<ItemBase*> ItemVec;
+    typedef std::map<SmoothItem<ItemBase>, ItemVec> Smoother;
+    
+    Smoother smoother;
+    for (size_t i = 0; i < _buffer.size(); ++i)
+    {
+        SmoothItem<ItemBase> smoothItem(_buffer[i]);
+        auto existingSmoother = smoother.find(smoothItem);
+
+        if (existingSmoother != smoother.end())
+        {
+            ItemVec& existingSmootherValue = existingSmoother->second;
+            
+            for (ItemBase* item : existingSmootherValue)
+            {
+                vector_float4 normal1 = vector_normalize(item->_normal);
+                vector_float4 normal2 = vector_normalize(_buffer[i]._normal);
+                float cross = vector_dot(normal2, normal1);
+                if (fabs(cross) > tolerance &&
+                    (!texDiscontinuityOnly || !ItemTexCoordEequal(*item, _buffer[i])))
+                {
+                    existingSmootherValue.push_back(&_buffer[i]);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            ItemVec existingSmootherValue;
+            existingSmootherValue.push_back(&_buffer[i]);
+            smoother.insert(std::make_pair(smoothItem, existingSmootherValue));
+        }
+    }
+    
+    for (auto smoothItem : smoother)
+    {
+        ItemVec smoothVertex = smoothItem.second;
+        
+        if (smoothVertex.size() <= 1)
+            continue;
+        
+        vector_float4 normalSum {0};
+        for (ItemBase* item : smoothVertex)
+            normalSum += item->_normal;
+
+        vector_float4 normal = vector_normalize(normalSum);
+        for (ItemBase* item : smoothVertex)
+            item->_normal = normal;
     }
 }
 
@@ -322,6 +444,16 @@ const std::string& NuoModelCommon<ItemBase>::GetName() const
 {
     return _name;
 }
+
+
+
+template <class ModelClass>
+std::shared_ptr<NuoModelBase> CloneModel(std::shared_ptr<ModelClass> source)
+{
+    std::shared_ptr<NuoModelBase> result(new ModelClass(*(source.get())));
+    return result;
+}
+
 
 
 

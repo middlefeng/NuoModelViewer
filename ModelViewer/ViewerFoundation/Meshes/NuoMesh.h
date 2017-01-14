@@ -27,6 +27,8 @@
 @property (nonatomic, strong) id<MTLRenderPipelineState> renderPipelineState;
 @property (nonatomic, strong) id<MTLDepthStencilState> depthStencilState;
 
+@property (nonatomic, readonly, assign) float smoothTolerance;
+
 
 @property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
@@ -46,6 +48,7 @@
 
 - (void)setRawModel:(void*)model;
 - (NSString*)modelName;
+- (void)smoothWithTolerance:(float)tolerance;
 
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass;

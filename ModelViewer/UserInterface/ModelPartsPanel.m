@@ -19,6 +19,15 @@
 @end
 
 
+@interface ModelTextView : NSTextField <NSTextFieldDelegate>
+
+@end
+
+
+@interface ModelNumberValueFormatter : NSNumberFormatter
+
+@end
+
 
 
 @interface ModelPartsListTable : NSTableView < NSTableViewDataSource, NSTableViewDelegate >
@@ -28,6 +37,7 @@
 @property (nonatomic, weak) NSArray<NuoMesh*>* mesh;
 
 - (void)cellEnablingChanged:(id)sender;
+- (void)smoothToleranceChanged:(id)sender;
 
 
 @end
@@ -54,6 +64,46 @@
     
     ModelPartsListTable* table = (ModelPartsListTable*)self.target;
     [table cellEnablingChanged:self];
+}
+
+@end
+
+
+
+@implementation ModelTextView
+
+
+- (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)fieldEditor
+{
+    ModelPartsListTable* table = (ModelPartsListTable*)self.target;
+    [table smoothToleranceChanged:self];
+    
+    return YES;
+}
+
+
+@end
+
+
+
+@implementation ModelNumberValueFormatter
+
+- (BOOL)isPartialStringValid:(NSString*)partialString
+            newEditingString:(NSString**)newString
+            errorDescription:(NSString**)error
+{
+    if ([partialString length] == 0)
+        return YES;
+    
+    NSScanner* scanner = [NSScanner scannerWithString:partialString];
+    
+    if(!([scanner scanFloat:nil] && [scanner isAtEnd]))
+    {
+        NSBeep();
+        return NO;
+    }
+    
+    return YES;
 }
 
 @end
@@ -94,11 +144,25 @@
         boolView.objectValue = @(_mesh[row].enabled);
         boolView.target = self;
     }
-    else
+    else if ([tableColumn.identifier isEqualToString:@"name"])
     {
         NSTableCellView* cell = (NSTableCellView*)result;
         NSTextField* textField = cell.textField;
         textField.stringValue = _mesh[row].modelName;
+    }
+    else
+    {
+        NSTableCellView* cell = (NSTableCellView*)result;
+        ModelTextView* textField = (ModelTextView*)cell.textField;
+        
+        ModelNumberValueFormatter* numberFormatter = [[ModelNumberValueFormatter alloc] init];
+        numberFormatter.numberStyle = NSNumberFormatterDecimalStyle;
+        numberFormatter.minimumFractionDigits = 4;
+        
+        textField.formatter = numberFormatter;
+        textField.delegate = textField;
+        textField.target = self;
+        textField.stringValue = [NSString stringWithFormat:@"%0.4f", _mesh[row].smoothTolerance];
     }
     
     return result;
@@ -114,6 +178,29 @@
     [_updateDelegate modelOptionUpdate:nil];
 }
 
+
+- (void)smoothToleranceChanged:(id)sender
+{
+    NSInteger row = [self rowForView:sender];
+    NSTextField* textField = (NSTextField*)sender;
+    NSString* valueStr = textField.stringValue;
+    
+    float value;
+    NSScanner* scanner = [[NSScanner alloc] initWithString:valueStr];
+    [scanner scanFloat:&value];
+    
+    if ([scanner isAtEnd])
+    {
+        [_mesh[row] smoothWithTolerance:value];
+        [_updateDelegate modelOptionUpdate:nil];
+    }
+}
+
+
+- (void)textDidEndEditing:(NSNotification *)notification
+{
+    [super textDidEndEditing:notification];
+}
 
 
 @end

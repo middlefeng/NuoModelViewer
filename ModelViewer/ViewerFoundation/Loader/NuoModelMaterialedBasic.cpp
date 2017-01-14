@@ -10,6 +10,15 @@
 #include "NuoTypes.h"
 
 
+
+template <>
+bool ItemTexCoordEequal<NuoItemMaterialedBasic>(const NuoItemMaterialedBasic& i1, const NuoItemMaterialedBasic& i2)
+{
+    return true;
+}
+
+
+
 NuoItemMaterialedTexturedBasic::NuoItemMaterialedTexturedBasic() :
     _position(0), _normal(0), _texCoord(0),
     _ambient(0), _diffuse(0), _specular(0)
