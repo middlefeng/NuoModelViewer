@@ -29,6 +29,12 @@ vertex ProjectedVertex vertex_project(device Vertex *vertices [[buffer(0)]],
     return outVert;
 }
 
+
+fragment void shadow(ProjectedVertex vert [[stage_in]])
+{
+}
+
+
 fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
                                constant LightUniform &lightUniform [[buffer(0)]],
                                constant ModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]])

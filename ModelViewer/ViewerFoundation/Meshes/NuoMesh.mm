@@ -151,6 +151,18 @@
     NSError *error = nil;
     _renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineDescriptor
                                                                        error:&error];
+    
+    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    
+    MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
+    shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project"];
+    shadowPipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"shadow"];
+    shadowPipelineDescriptor.sampleCount = kSampleCount;
+    shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
+    pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    
+    _shadowPipelineState = [self.device newRenderPipelineStateWithDescriptor:shadowPipelineDescriptor
+                                                                       error:&error];
 }
 
 - (void)makeDepthStencilState
@@ -169,6 +181,21 @@
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_renderPipelineState];
+    [renderPass setDepthStencilState:_depthStencilState];
+    
+    [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
+    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                           indexCount:[_indexBuffer length] / sizeof(uint32_t)
+                            indexType:MTLIndexTypeUInt32
+                          indexBuffer:_indexBuffer
+                    indexBufferOffset:0];
+}
+
+
+- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass
+{
+    [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
+    [renderPass setRenderPipelineState:_shadowPipelineState];
     [renderPass setDepthStencilState:_depthStencilState];
     
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];

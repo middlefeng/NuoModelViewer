@@ -25,6 +25,7 @@
 
 @property (nonatomic, strong) id<MTLDevice> device;
 @property (nonatomic, strong) id<MTLRenderPipelineState> renderPipelineState;
+@property (nonatomic, strong) id<MTLRenderPipelineState> shadowPipelineState;
 @property (nonatomic, strong) id<MTLDepthStencilState> depthStencilState;
 
 @property (nonatomic, readonly, assign) float smoothTolerance;
@@ -52,6 +53,7 @@
 
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass;
+- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass;
 - (BOOL)hasTransparency;
 - (void)setTransparency:(BOOL)transparent;
 
