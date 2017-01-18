@@ -31,7 +31,15 @@
 
 @end
 
+
+
 @implementation ModelRenderer
+{
+    NuoMeshBox* _meshBounding;
+    float _meshMaxSpan;
+}
+
+
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
 {
@@ -57,8 +65,24 @@
     _modelLoader = [NuoModelLoader new];
     [_modelLoader loadModel:path];
     
+    [self createMeshs];
+}
+
+
+- (void)createMeshs
+{
     _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
                                       withDevice:self.device];
+    
+    NuoMeshBox* bounding = _mesh[0].boundingBox;
+    for (size_t i = 1; i < _mesh.count; ++i)
+        bounding = [bounding unionWith:_mesh[i].boundingBox];
+    
+    _meshBounding = bounding;
+    
+    float modelSpan = std::max(bounding.spanZ, bounding.spanX);
+    modelSpan = std::max(bounding.spanY, modelSpan);
+    _meshMaxSpan = 1.41 * modelSpan;
 }
 
 
@@ -270,8 +294,7 @@
     
     if (_modelLoader)
     {
-        _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
-                                          withDevice:self.device];
+        [self createMeshs];
     }
 }
 
@@ -317,27 +340,19 @@
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
-    NuoMeshBox* bounding = _mesh[0].boundingBox;
-    for (size_t i = 1; i < _mesh.count; ++i)
-        bounding = [bounding unionWith:_mesh[i].boundingBox];
-    
     const vector_float3 translationToCenter =
     {
-        - bounding.centerX,
-        - bounding.centerY,
-        - bounding.centerZ
+        - _meshBounding.centerX,
+        - _meshBounding.centerY,
+        - _meshBounding.centerZ
     };
     const matrix_float4x4 modelCenteringMatrix = matrix_float4x4_translation(translationToCenter);
     const matrix_float4x4 modelMatrix = matrix_multiply(self.rotationMatrix, modelCenteringMatrix);
     
-    float modelSpan = std::max(bounding.spanZ, bounding.spanX);
-    modelSpan = std::max(bounding.spanY, modelSpan);
-    modelSpan = 1.41 * modelSpan;
-    
-    const float modelNearest = - modelSpan / 2.0;
+    const float modelNearest = - _meshMaxSpan / 2.0;
     const float bilateralFactor = 1 / 750.0f;
-    const float cameraDefaultDistance = (modelNearest - modelSpan);
-    const float cameraDistance = cameraDefaultDistance + _zoom * modelSpan / 20.0f;
+    const float cameraDefaultDistance = (modelNearest - _meshMaxSpan);
+    const float cameraDistance = cameraDefaultDistance + _zoom * _meshMaxSpan / 20.0f;
     
     const float doTransX = _transX * cameraDistance * bilateralFactor;
     const float doTransY = _transY * cameraDistance * bilateralFactor;
@@ -352,8 +367,8 @@
     
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
-    const float near = -cameraDistance - modelSpan / 2.0 + 0.01;
-    const float far = near + modelSpan + 0.02;
+    const float near = -cameraDistance - _meshMaxSpan / 2.0 + 0.01;
+    const float far = near + _meshMaxSpan + 0.02;
     const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, _fieldOfView, near, far);
 
     ModelUniforms uniforms;
