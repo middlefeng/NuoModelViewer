@@ -3,7 +3,6 @@
 
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
-#import <simd/simd.h>
 
 #include "NuoTypes.h"
 #include "NuoMesh.h"
@@ -20,6 +19,7 @@
 @interface ModelRenderer ()
 
 
+@property (nonatomic, strong) NSArray<NuoMesh*>* mesh;
 @property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
 @property (strong) id<MTLBuffer> modelCharacterUnfiromBuffer;
@@ -52,6 +52,12 @@
 }
 
 
+- (matrix_float4x4)rotationMatrix
+{
+    return _rotationMatrix;
+}
+
+
 - (void)loadMesh:(NSString*)path
 {
     _modelLoader = [NuoModelLoader new];
@@ -59,6 +65,12 @@
     
     _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
                                       withDevice:self.device];
+}
+
+
+- (NSArray<NuoMesh*>*)mesh
+{
+    return _mesh;
 }
 
 
