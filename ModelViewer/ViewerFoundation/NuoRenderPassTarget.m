@@ -47,7 +47,7 @@
         
         self.depthTexture = [_device newTextureWithDescriptor:desc];
         
-        MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float
+        MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                                               width:[self drawableSize].width
                                                                                              height:[self drawableSize].height
                                                                                           mipmapped:NO];
