@@ -110,7 +110,7 @@ matrix_float3x3 matrix_float4x4_extract_linear(matrix_float4x4 m)
 }
 
 
-matrix_float4x4 matrix_rotate(vector_float4 startVec, float rotationX, float rotationY)
+matrix_float4x4 matrix_rotate(float rotationX, float rotationY)
 {
     const vector_float3 xAxis = { 1, 0, 0 };
     const vector_float3 yAxis = { 0, 1, 0 };
