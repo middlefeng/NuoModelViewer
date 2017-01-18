@@ -156,10 +156,11 @@
     
     MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
     shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project"];
-    shadowPipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"shadow"];
+    shadowPipelineDescriptor.fragmentFunction = nil;
     shadowPipelineDescriptor.sampleCount = kSampleCount;
-    shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
-    pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    shadowPipelineDescriptor.rasterizationEnabled = NO;
+    shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
+    shadowPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     _shadowPipelineState = [self.device newRenderPipelineStateWithDescriptor:shadowPipelineDescriptor
                                                                        error:&error];
