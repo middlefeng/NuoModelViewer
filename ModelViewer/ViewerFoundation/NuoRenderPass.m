@@ -31,4 +31,11 @@ static const unsigned int kInFlightBufferCount = 3;
 }
 
 
+
+- (BOOL)isPipelinePass
+{
+    return NO;
+}
+
+
 @end

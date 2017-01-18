@@ -10,7 +10,7 @@
 #import <Metal/Metal.h>
 
 #import "NuoMetalView.h"
-#import "NuoRenderPass.h"
+#import "NuoRenderPipelinePass.h"
 
 /**
  *  an intermeidate render pass takes the result from its immediate previous
@@ -18,7 +18,7 @@
  *  add additional objects
  */
 
-@interface NuoIntermediateRenderPass : NuoRenderPass
+@interface NuoIntermediateRenderPass : NuoRenderPipelinePass
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
