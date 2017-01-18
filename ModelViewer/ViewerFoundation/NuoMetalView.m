@@ -2,7 +2,7 @@
 #import "NuoMetalView.h"
 
 #import "NuoTypes.h"
-#import "NuoRenderPass.h"
+#import "NuoRenderPipelinePass.h"
 #import "NuoRenderPassTarget.h"
 
 
@@ -156,11 +156,15 @@
     
     for (size_t i = 0; i < [_renderPasses count]; ++i)
     {
-        NuoRenderPass* render1 = [_renderPasses objectAtIndex:i];
-        NuoRenderPass* render2 = nil;
+        NuoRenderPass* renderStep = [_renderPasses objectAtIndex:i];
+        if (!renderStep.isPipelinePass)
+            continue;
+        
+        NuoRenderPipelinePass* render1 = (NuoRenderPipelinePass*)renderStep;
+        NuoRenderPipelinePass* render2 = nil;
         
         if (i < [_renderPasses count] - 1)
-            render2 = [_renderPasses objectAtIndex:i + 1];
+            render2 = (NuoRenderPipelinePass*)[_renderPasses objectAtIndex:i + 1];
         
         if (render2)
         {

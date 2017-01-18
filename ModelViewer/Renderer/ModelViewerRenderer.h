@@ -1,6 +1,6 @@
 
 #import "ModelView.h"
-#import "NuoRenderPass.h"
+#import "NuoRenderPipelinePass.h"
 
 
 @class NuoMeshOption;
@@ -10,7 +10,7 @@
 
 
 
-@interface ModelRenderer : NuoRenderPass
+@interface ModelRenderer : NuoRenderPipelinePass
 
 
 @property (nonatomic, strong) NSArray<LightSource*>* lights;
