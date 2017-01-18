@@ -367,11 +367,10 @@
     lighting.ambientDensity = _ambientDensity;
     for (unsigned int i = 0; i < 4; ++i)
     {
-        vector_float4 lightVector { 0, 0, 1, 0 };
-        const matrix_float4x4 rotationMatrix = matrix_rotate(lightVector,
-                                                             _lights[i].lightingRotationX,
+        const matrix_float4x4 rotationMatrix = matrix_rotate(_lights[i].lightingRotationX,
                                                              _lights[i].lightingRotationY);
         
+        vector_float4 lightVector { 0, 0, 1, 0 };
         lightVector = matrix_multiply(rotationMatrix, lightVector);
         lighting.direction[i] = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
         lighting.density[i] = _lights[i].lightingDensity;
