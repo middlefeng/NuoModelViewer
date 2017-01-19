@@ -2,8 +2,6 @@
 #import "ModelView.h"
 #import "NuoRenderPipelinePass.h"
 
-#import <simd/simd.h>
-
 
 @class NuoMeshOption;
 @class NuoLua;
@@ -36,10 +34,6 @@
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
-/**
- *  The rotation matrix of the model, which is culmulated from all the delta of X and Y.
- */
-- (matrix_float4x4)rotationMatrix;
 
 - (void)loadMesh:(NSString*)path;
 - (NSArray<NuoMesh*>*)mesh;

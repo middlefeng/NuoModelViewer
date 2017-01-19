@@ -3,6 +3,7 @@
 
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
+#import <simd/simd.h>
 
 #include "NuoTypes.h"
 #include "NuoMesh.h"
@@ -57,12 +58,6 @@
     }
 
     return self;
-}
-
-
-- (matrix_float4x4)rotationMatrix
-{
-    return _rotationMatrix;
 }
 
 
@@ -336,7 +331,7 @@
     memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(ModelCharacterUniforms));
 }
 
-- (void)updateUniformsForView
+- (void)updateUniformsForView:(matrix_float4x4*)modelMatrixOut
 {
     {
         float scaleFactor = 1;
@@ -360,6 +355,8 @@
     };
     const matrix_float4x4 modelCenteringMatrix = matrix_float4x4_translation(translationToCenter);
     const matrix_float4x4 modelMatrix = matrix_multiply(self.rotationMatrix, modelCenteringMatrix);
+    
+    *modelMatrixOut = modelMatrix;
     
     const float modelNearest = - _meshMaxSpan / 2.0;
     const float bilateralFactor = 1 / 750.0f;
@@ -413,7 +410,8 @@
     if (!passDescriptor)
         return;
     
-    [self updateUniformsForView];
+    matrix_float4x4 modelMatrix;
+    [self updateUniformsForView:&modelMatrix];
 
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     

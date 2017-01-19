@@ -27,6 +27,8 @@ matrix_float3x3 matrix_float4x4_extract_linear(matrix_float4x4);
     
 matrix_float4x4 matrix_rotate(float rotationX, float rotationY);
     
+matrix_float4x4 matrix_lookAt(vector_float3 eye, vector_float3 center, vector_float3 up);
+    
     
 #if __cplusplus
 } // extern "C"
