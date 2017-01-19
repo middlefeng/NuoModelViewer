@@ -1,4 +1,6 @@
 #import "ModelViewerRenderer.h"
+#import "ShadowMapRenderer.h"
+
 #import "NuoUniforms.h"
 
 #import <Metal/Metal.h>
@@ -38,6 +40,8 @@
 {
     NuoMeshBox* _meshBounding;
     float _meshMaxSpan;
+    
+    ShadowMapRenderer* _shadowMapRenderer;
 }
 
 
@@ -55,9 +59,25 @@
         
         _cullEnabled = YES;
         _fieldOfView = (2 * M_PI) / 8;
+        
+        _shadowMapRenderer = [[ShadowMapRenderer alloc] initWithDevice:device];
     }
 
     return self;
+}
+
+
+- (void)setDrawableSize:(CGSize)drawableSize
+{
+    [super setDrawableSize:drawableSize];
+    [_shadowMapRenderer setDrawableSize:drawableSize];
+}
+
+
+- (void)setRenderTarget:(NuoRenderPassTarget *)renderTarget
+{
+    [super setRenderTarget:renderTarget];
+    [_shadowMapRenderer.renderTarget setSampleCount:renderTarget.sampleCount];
 }
 
 
@@ -412,6 +432,13 @@
     
     matrix_float4x4 modelMatrix;
     [self updateUniformsForView:&modelMatrix];
+    
+    _shadowMapRenderer.modelMatrix = modelMatrix;
+    _shadowMapRenderer.mesh = _mesh;
+    _shadowMapRenderer.lightSource = _lights[0];
+    _shadowMapRenderer.meshMaxSpan = _meshMaxSpan;
+    
+    [_shadowMapRenderer drawWithCommandBuffer:commandBuffer];
 
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     

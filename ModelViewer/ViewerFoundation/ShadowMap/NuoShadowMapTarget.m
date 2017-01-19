@@ -22,31 +22,24 @@
 @implementation NuoShadowMapTarget
 
 
-- (void)setDrawableSize:(CGSize)drawableSize
-{
-    _drawableSize = drawableSize;
-    
-    [self makeTextures];
-}
-
 
 - (void)makeTextures
 {
     if ([_depthSampleTexture width] != [self drawableSize].width ||
         [_depthSampleTexture height] != [self drawableSize].height)
     {
-        if (_sampleCount > 1)
+        if (self.sampleCount > 1)
         {
             MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float
                                                                                             width:[self drawableSize].width
                                                                                            height:[self drawableSize].height
                                                                                         mipmapped:NO];
-            sampleDesc.sampleCount = _sampleCount;
-            sampleDesc.textureType = (_sampleCount == 1) ? MTLTextureType2D : MTLTextureType2DMultisample;
+            sampleDesc.sampleCount = self.sampleCount;
+            sampleDesc.textureType = (self.sampleCount == 1) ? MTLTextureType2D : MTLTextureType2DMultisample;
             sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
             sampleDesc.usage = MTLTextureUsageRenderTarget;
             
-            _depthSampleTexture = [_device newTextureWithDescriptor:sampleDesc];
+            _depthSampleTexture = [self.device newTextureWithDescriptor:sampleDesc];
             
             if (_name)
             {
@@ -55,7 +48,7 @@
             }
         }
         
-        MTLTextureDescriptor *desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
+        MTLTextureDescriptor *desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float
                                                                                               width:[self drawableSize].width
                                                                                              height:[self drawableSize].height
                                                                                           mipmapped:NO];
@@ -65,12 +58,12 @@
         desc.resourceOptions = MTLResourceStorageModePrivate;
         desc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
             
-        _targetTexture = [_device newTextureWithDescriptor:desc];
+        self.targetTexture = [self.device newTextureWithDescriptor:desc];
         
         if (_name)
         {
             NSString* label = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"depth target"];
-            [_targetTexture setLabel:label];
+            [self.targetTexture setLabel:label];
         }
     }
 }
@@ -81,15 +74,15 @@
 {
     MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
     
-    if (!_targetTexture)
+    if (!self.targetTexture)
         return nil;
     
-    passDescriptor.depthAttachment.texture = (_sampleCount == 1) ? _targetTexture : _depthSampleTexture;
+    passDescriptor.depthAttachment.texture = (self.sampleCount == 1) ? self.targetTexture : _depthSampleTexture;
     passDescriptor.depthAttachment.clearDepth = 1.0;
     passDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
-    passDescriptor.depthAttachment.storeAction = (_sampleCount == 1) ? MTLStoreActionStore : MTLStoreActionMultisampleResolve;
-    if (_sampleCount > 1)
-        passDescriptor.depthAttachment.resolveTexture = _targetTexture;
+    passDescriptor.depthAttachment.storeAction = (self.sampleCount == 1) ? MTLStoreActionStore : MTLStoreActionMultisampleResolve;
+    if (self.sampleCount > 1)
+        passDescriptor.depthAttachment.resolveTexture = self.targetTexture;
     
     return passDescriptor;
 }

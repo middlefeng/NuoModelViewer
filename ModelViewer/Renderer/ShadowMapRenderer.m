@@ -9,6 +9,8 @@
 #import "ShadowMapRenderer.h"
 #import "LightSource.h"
 
+#import "NuoShadowMapTarget.h"
+
 #include "NuoMesh.h"
 #include "NuoUniforms.h"
 #include "NuoMathUtilities.h"
@@ -26,6 +28,40 @@
 @implementation ShadowMapRenderer
 
 
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+{
+    self = [super init];
+    
+    if (self)
+    {
+        self.renderTarget = [[NuoShadowMapTarget alloc] init];
+        self.renderTarget.device = device;
+        self.device = device;
+        
+        ((NuoShadowMapTarget*)self.renderTarget).name = @"Model";
+        
+        [self makeResources];
+    }
+    
+    return self;
+}
+
+
+- (void)makeResources
+{
+    id<MTLBuffer> modelBuffers[kInFlightBufferCount];
+    
+    for (size_t i = 0; i < kInFlightBufferCount; ++i)
+    {
+        modelBuffers[i] = [self.device newBufferWithLength:sizeof(ModelUniforms)
+                                                   options:MTLResourceOptionCPUCacheModeDefault];
+    }
+    
+    _modelUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers[0], modelBuffers[1], modelBuffers[2], nil];
+}
+
+
 - (void)updateUniformsForView
 {
     vector_float3 center = {0, 0, 0};
@@ -39,15 +75,44 @@
     vector_float3 lightAsEye3 = {lightAsEye.x, lightAsEye.y, lightAsEye.z};
     const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye3, center, up);
     
+    CGSize drawableSize = self.renderTarget.drawableSize;
     float meshRadius = _meshMaxSpan / 2.0;
-    const matrix_float4x4 projectionMatrix = matrix_float4x4_orthor(-meshRadius, meshRadius,
-                                                                    meshRadius, -meshRadius,
+    float aspectRatio = drawableSize.width / drawableSize.height;
+    float viewPortHeight = meshRadius;
+    float viewPortWidth = aspectRatio * viewPortHeight;
+    const matrix_float4x4 projectionMatrix = matrix_float4x4_orthor(-viewPortWidth, viewPortWidth,
+                                                                    viewPortHeight, -viewPortHeight,
                                                                     -meshRadius, meshRadius);
     
     ModelUniforms uniforms;
     uniforms.modelViewMatrix = matrix_multiply(viewMatrix, _modelMatrix);
     uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
     uniforms.normalMatrix = matrix_float4x4_extract_linear(uniforms.modelViewMatrix);
+    
+    memcpy([self.modelUniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
+}
+
+
+- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+{
+    MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
+    if (!passDescriptor)
+        return;
+    
+    [self updateUniformsForView];
+    
+    id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    
+    [renderPass setVertexBuffer:self.modelUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
+    [renderPass setCullMode:MTLCullModeNone];
+    
+    for (NuoMesh* mesh in _mesh)
+    {
+        if (![mesh hasTransparency] && [mesh enabled])
+            [mesh drawShadow:renderPass];
+    }
+    
+    [renderPass endEncoding];
 }
 
 

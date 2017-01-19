@@ -23,10 +23,15 @@
 
 
 @property (nonatomic, weak) LightSource* lightSource;
+@property (nonatomic, weak) NSArray<NuoMesh*>* mesh;
+
 @property (nonatomic, assign) float meshMaxSpan;
 @property (nonatomic, assign) matrix_float4x4 modelMatrix;
 
 @property (nonatomic, strong) NuoShadowMapTarget* shadowMap;
+
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device;
 
 
 @end

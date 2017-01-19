@@ -7,23 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-
 #import <Metal/Metal.h>
 
+#import "NuoRenderPassTarget.h"
 
 
-@interface NuoShadowMapTarget : NSObject
 
+@interface NuoShadowMapTarget : NuoRenderPassTarget
 
-@property (nonatomic, weak) id<MTLDevice> device;
-
-@property (nonatomic, assign) uint sampleCount;
-@property (nonatomic, assign) CGSize drawableSize;
-
-/**
- *  the texture that holds the shadow map
- */
-@property (nonatomic, strong) id<MTLTexture> targetTexture;
 
 @property (nonatomic, strong) NSString* name;
 
