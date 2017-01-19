@@ -20,6 +20,14 @@ static const unsigned int kInFlightBufferCount = 3;
 @implementation NuoRenderPass
 
 
+
+- (void)setDrawableSize:(CGSize)drawableSize
+{
+    [_renderTarget setDrawableSize:drawableSize];
+}
+
+
+
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
 }
