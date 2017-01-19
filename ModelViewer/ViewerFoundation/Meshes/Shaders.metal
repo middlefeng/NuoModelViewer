@@ -17,6 +17,32 @@ struct ProjectedVertex
     float3 normal;
 };
 
+
+
+struct ShadowMap
+{
+    float4 position [[position]];
+};
+
+
+
+vertex ShadowMap vertex_shadow(device Vertex *vertices [[buffer(0)]],
+                               constant ModelUniforms &uniforms [[buffer(1)]],
+                               uint vid [[vertex_id]])
+{
+    ShadowMap outShadow;
+    outShadow.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
+    return outShadow;
+}
+
+
+
+fragment void fragment_shadow(ProjectedVertex vert [[stage_in]])
+{
+}
+
+
+
 vertex ProjectedVertex vertex_project(device Vertex *vertices [[buffer(0)]],
                                       constant ModelUniforms &uniforms [[buffer(1)]],
                                       uint vid [[vertex_id]])
@@ -27,11 +53,6 @@ vertex ProjectedVertex vertex_project(device Vertex *vertices [[buffer(0)]],
     outVert.normal = uniforms.normalMatrix * vertices[vid].normal.xyz;
     
     return outVert;
-}
-
-
-fragment void shadow(ProjectedVertex vert [[stage_in]])
-{
 }
 
 
