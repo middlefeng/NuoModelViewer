@@ -122,8 +122,7 @@
     for (size_t i = 0; i < [_renderPasses count]; ++i)
     {
         NuoRenderPass* render = _renderPasses[i];
-        NuoRenderPassTarget* target = render.renderTarget;
-        [target setDrawableSize:drawableSize];
+        [render setDrawableSize:drawableSize];
     }
     
     [self render];

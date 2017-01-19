@@ -26,6 +26,9 @@
 @property (nonatomic, strong) NuoRenderPassTarget* renderTarget;
 
 
+- (void)setDrawableSize:(CGSize)drawableSize;
+
+
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
 - (void)drawablePresented;
 
