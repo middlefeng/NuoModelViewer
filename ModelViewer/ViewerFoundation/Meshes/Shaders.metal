@@ -32,7 +32,7 @@ vertex PositionSimple vertex_shadow(device Vertex *vertices [[buffer(0)]],
 
 
 
-fragment void fragment_shadow(PositionSimple vert [[stage_in]])
+fragment void fragement_shadow(PositionSimple vert [[stage_in]])
 {
 }
 
