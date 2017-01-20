@@ -44,7 +44,7 @@ static CIContext* sCIContext = nil;
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
+    [renderPass setFragmentTexture:self.diffuseTex atIndex:1];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
     
     [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle

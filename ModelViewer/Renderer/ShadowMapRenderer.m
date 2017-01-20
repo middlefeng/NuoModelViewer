@@ -26,6 +26,9 @@
 
 
 @implementation ShadowMapRenderer
+{
+    matrix_float4x4 _lightCastMatrix;
+}
 
 
 
@@ -89,6 +92,8 @@
     uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
     uniforms.normalMatrix = matrix_float4x4_extract_linear(uniforms.modelViewMatrix);
     
+    _lightCastMatrix = uniforms.modelViewProjectionMatrix;
+    
     memcpy([self.modelUniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
 
@@ -102,7 +107,7 @@
     [self updateUniformsForView];
     
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
-    
+
     [renderPass setVertexBuffer:self.modelUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
     [renderPass setCullMode:MTLCullModeNone];
     
@@ -113,6 +118,12 @@
     }
     
     [renderPass endEncoding];
+}
+
+
+- (matrix_float4x4)lightCastMatrix
+{
+    return _lightCastMatrix;
 }
 
 

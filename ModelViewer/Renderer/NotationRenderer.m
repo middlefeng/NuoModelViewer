@@ -55,6 +55,8 @@
         _lightVectors = lightVectors;
         _lightSources = lightSourcesDesc;
         _currentLightVector = lightVectors[0];
+        _lightSources[0].lightingRotationX = 3.14/2.0;
+        _lightSources[0].lightingRotationY = 3.14/8.0;
         
         // the direction of light used to render the "light vector"
         

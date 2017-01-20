@@ -32,6 +32,7 @@
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
+- (matrix_float4x4)lightCastMatrix;
 
 
 @end

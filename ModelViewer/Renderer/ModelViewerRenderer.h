@@ -16,6 +16,9 @@
 @property (nonatomic, strong) NSArray<LightSource*>* lights;
 
 
+@property (nonatomic, readonly) id<MTLSamplerState> samplerState;
+
+
 @property (nonatomic, assign) float zoom;
 
 

@@ -24,6 +24,7 @@
 
 @property (nonatomic, strong) NSArray<NuoMesh*>* mesh;
 @property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
+@property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
 @property (strong) id<MTLBuffer> modelCharacterUnfiromBuffer;
 
@@ -330,6 +331,7 @@
 {
     id<MTLBuffer> modelBuffers[kInFlightBufferCount];
     id<MTLBuffer> lightingBuffers[kInFlightBufferCount];
+    id<MTLBuffer> lightCastModelBuffers[kInFlightBufferCount];
     
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
@@ -337,18 +339,33 @@
                                                    options:MTLResourceOptionCPUCacheModeDefault];
         lightingBuffers[i] = [self.device newBufferWithLength:sizeof(LightUniform)
                                                       options:MTLResourceOptionCPUCacheModeDefault];
+        lightCastModelBuffers[i] = [self.device newBufferWithLength:sizeof(ModelUniforms)
+                                                        options:MTLResourceOptionCPUCacheModeDefault];
+        
     }
     
     _modelUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers[0], modelBuffers[1], modelBuffers[2], nil];
     _lightingUniformBuffers = [[NSArray alloc] initWithObjects:lightingBuffers[0],
                                                                lightingBuffers[1],
                                                                lightingBuffers[2], nil];
+    _lightCastBuffers = [[NSArray alloc] initWithObjects:lightCastModelBuffers[0],
+                         lightCastModelBuffers[1],
+                         lightCastModelBuffers[2], nil];
     
     ModelCharacterUniforms modelCharacter;
     modelCharacter.opacity = 1.0f;
     _modelCharacterUnfiromBuffer = [self.device newBufferWithLength:sizeof(ModelCharacterUniforms)
                                                             options:MTLResourceOptionCPUCacheModeDefault];
     memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(ModelCharacterUniforms));
+    
+    // create sampler state
+    MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
+    samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
+    samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
+    samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
+    samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
+    samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
+    _samplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 
 - (void)updateUniformsForView:(matrix_float4x4*)modelMatrixOut
@@ -443,8 +460,17 @@
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     
     [renderPass setVertexBuffer:self.modelUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
+    
+    ModelUniforms lightUniforms;
+    lightUniforms.modelViewProjectionMatrix = _shadowMapRenderer.lightCastMatrix;
+    memcpy([_lightCastBuffers[self.bufferIndex] contents], &lightUniforms, sizeof(LightUniform));
+    [renderPass setVertexBuffer:_lightCastBuffers[self.bufferIndex] offset:0 atIndex:2];
+    
+    
     [renderPass setFragmentBuffer:self.lightingUniformBuffers[self.bufferIndex] offset:0 atIndex:0];
     [renderPass setFragmentBuffer:self.modelCharacterUnfiromBuffer offset:0 atIndex:1];
+    [renderPass setFragmentTexture:_shadowMapRenderer.renderTarget.targetTexture atIndex:0];
+    [renderPass setFragmentSamplerState:_samplerState atIndex:0];
     
     if (_cullEnabled)
         [renderPass setCullMode:MTLCullModeBack];
