@@ -151,7 +151,10 @@
     NSError *error = nil;
     _renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineDescriptor
                                                                        error:&error];
+}
     
+- (void)makePipelineShadowState
+{
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
@@ -161,6 +164,7 @@
     shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
     shadowPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
+    NSError *error = nil;
     _shadowPipelineState = [self.device newRenderPipelineStateWithDescriptor:shadowPipelineDescriptor
                                                                        error:&error];
 }
@@ -194,16 +198,19 @@
 
 - (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass
 {
-    [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
-    [renderPass setRenderPipelineState:_shadowPipelineState];
-    [renderPass setDepthStencilState:_depthStencilState];
-    
-    [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[_indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:_indexBuffer
-                    indexBufferOffset:0];
+    if (_shadowPipelineState)
+    {
+        [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
+        [renderPass setRenderPipelineState:_shadowPipelineState];
+        [renderPass setDepthStencilState:_depthStencilState];
+        
+        [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
+        [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                               indexCount:[_indexBuffer length] / sizeof(uint32_t)
+                                indexType:MTLIndexTypeUInt32
+                              indexBuffer:_indexBuffer
+                        indexBufferOffset:0];
+    }
 }
 
 
@@ -239,6 +246,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         
         [mesh setRawModel:model.get()];
         [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
+        [mesh makePipelineShadowState];
         [mesh makeDepthStencilState];
         return mesh;
     }
@@ -256,6 +264,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         [mesh setRawModel:model.get()];
         [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency];
         [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
+        [mesh makePipelineShadowState];
         [mesh makeDepthStencilState];
         
         return mesh;

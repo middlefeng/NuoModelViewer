@@ -18,6 +18,21 @@ struct ProjectedVertex
     float2 texCoord;
 };
 
+vertex PositionSimple vertex_shadow_textured(device Vertex *vertices [[buffer(0)]],
+                                             constant ModelUniforms &uniforms [[buffer(1)]],
+                                             uint vid [[vertex_id]])
+{
+    PositionSimple outShadow;
+    outShadow.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
+    return outShadow;
+}
+
+
+fragment void fragment_shadow_textured(PositionSimple vert [[stage_in]])
+{
+}
+
+
 vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(0)]],
                                                constant ModelUniforms &uniforms [[buffer(1)]],
                                                uint vid [[vertex_id]])

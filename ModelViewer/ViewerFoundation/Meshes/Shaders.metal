@@ -19,25 +19,18 @@ struct ProjectedVertex
 
 
 
-struct ShadowMap
-{
-    float4 position [[position]];
-};
-
-
-
-vertex ShadowMap vertex_shadow(device Vertex *vertices [[buffer(0)]],
+vertex PositionSimple vertex_shadow(device Vertex *vertices [[buffer(0)]],
                                constant ModelUniforms &uniforms [[buffer(1)]],
                                uint vid [[vertex_id]])
 {
-    ShadowMap outShadow;
+    PositionSimple outShadow;
     outShadow.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
     return outShadow;
 }
 
 
 
-fragment void fragment_shadow(ProjectedVertex vert [[stage_in]])
+fragment void fragment_shadow(PositionSimple vert [[stage_in]])
 {
 }
 

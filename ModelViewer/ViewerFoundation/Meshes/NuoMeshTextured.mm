@@ -119,7 +119,21 @@ static CIContext* sCIContext = nil;
     return pipelineDescriptor;
 }
 
-
+- (void)makePipelineShadowState
+{
+    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    
+    MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
+    shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_shadow_textured"];
+    shadowPipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_shadow_textured"];;
+    shadowPipelineDescriptor.sampleCount = kSampleCount;
+    shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
+    shadowPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    
+    NSError *error = nil;
+    self.shadowPipelineState = [self.device newRenderPipelineStateWithDescriptor:shadowPipelineDescriptor
+                                                                           error:&error];
+}
 
 - (void)setTransparency:(BOOL)transparent
 {

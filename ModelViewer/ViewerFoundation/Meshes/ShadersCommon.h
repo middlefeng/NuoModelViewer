@@ -54,6 +54,12 @@ struct VertexFragmentCharacters
 };
 
 
+struct PositionSimple
+{
+    metal::float4 position [[position]];
+};
+
+
 metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                                    metal::float3 normal,
                                                    constant LightUniform &lighting,
