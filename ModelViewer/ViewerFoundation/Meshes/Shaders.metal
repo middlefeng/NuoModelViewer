@@ -37,7 +37,7 @@ vertex PositionSimple vertex_shadow(device Vertex *vertices [[buffer(0)]],
 
 
 
-fragment void fragement_shadow(PositionSimple vert [[stage_in]])
+fragment void fragment_shadow(PositionSimple vert [[stage_in]])
 {
 }
 
@@ -77,10 +77,6 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
         
         colorForLights += diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i];
     }
-    
-    float2 shadowCoord = float2(vert.shadowPosition.x, vert.shadowPosition.y) / vert.shadowPosition.w;
-    shadowCoord.x = (shadowCoord.x + 1) * 0.5;
-    shadowCoord.y = (-shadowCoord.y + 1) * 0.5;
     
     return float4(ambientTerm + colorForLights, modelCharacterUniforms.opacity);
 }
