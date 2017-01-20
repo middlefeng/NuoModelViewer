@@ -128,9 +128,12 @@
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
+    NSString* vertexFunc = _shadowPipelineState ? @"vertex_project_shadow" : @"vertex_project";
+    NSString* fragmnFunc = _shadowPipelineState ? @"fragment_light_shadow" : @"fragment_light";
+    
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
-    pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project"];
-    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light"];
+    pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];
+    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmnFunc];
     pipelineDescriptor.sampleCount = kSampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
@@ -245,8 +248,8 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                              withLength:model->IndicesLength()];
         
         [mesh setRawModel:model.get()];
-        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
         [mesh makePipelineShadowState];
+        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
         [mesh makeDepthStencilState];
         return mesh;
     }
@@ -263,8 +266,8 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         
         [mesh setRawModel:model.get()];
         [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency];
-        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
         [mesh makePipelineShadowState];
+        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
         [mesh makeDepthStencilState];
         
         return mesh;
