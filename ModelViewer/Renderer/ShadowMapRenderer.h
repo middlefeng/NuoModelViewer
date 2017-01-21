@@ -42,6 +42,11 @@
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
+
+
+/**
+ *  The projection matrix from the view point of the lightSource.
+ */
 - (matrix_float4x4)lightCastMatrix;
 
 
