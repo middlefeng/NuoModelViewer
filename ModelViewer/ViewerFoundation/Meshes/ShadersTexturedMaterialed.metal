@@ -27,10 +27,33 @@ struct ProjectedVertex
     float3 specularColor;
     float specularPower;
     float dissolve [[flat]];
+    
+    float4 shadowPosition;
 };
+
+
+
+
+
+/**
+ *  shaders that generate shadow-map texture from the light view point
+ */
+
+vertex PositionSimple vertex_shadow_tex_materialed(device Vertex *vertices [[buffer(0)]],
+                                                   constant ModelUniforms &uniforms [[buffer(1)]],
+                                                   uint vid [[vertex_id]])
+{
+    PositionSimple outShadow;
+    outShadow.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
+    return outShadow;
+}
+
+
+
 
 vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[buffer(0)]],
                                                      constant ModelUniforms &uniforms [[buffer(1)]],
+                                                     constant ModelUniforms &lightCast [[buffer(2)]],
                                                      uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
@@ -45,6 +68,8 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
     outVert.specularPower = vertices[vid].specularPowerDisolve.x;
     outVert.dissolve = vertices[vid].specularPowerDisolve.y;
     
+    outVert.shadowPosition = lightCast.modelViewProjectionMatrix * vertices[vid].position;
+    
     return outVert;
 }
 
@@ -56,7 +81,8 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert);
 
 fragment float4 fragment_light_tex_a_materialed(ProjectedVertex vert [[stage_in]],
                                                 constant LightUniform &lighting [[buffer(0)]],
-                                                texture2d<float> diffuseTexture [[texture(0)]],
+                                                texture2d<float> shadowMap [[texture(0)]],
+                                                texture2d<float> diffuseTexture [[texture(1)]],
                                                 sampler samplr [[sampler(0)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
@@ -69,7 +95,8 @@ fragment float4 fragment_light_tex_a_materialed(ProjectedVertex vert [[stage_in]
 
 fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
                                               constant LightUniform &lighting [[buffer(0)]],
-                                              texture2d<float> diffuseTexture [[texture(0)]],
+                                              texture2d<float> shadowMap [[texture(0)]],
+                                              texture2d<float> diffuseTexture [[texture(1)]],
                                               sampler samplr [[sampler(0)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
@@ -87,8 +114,9 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
 
 fragment float4 fragment_light_tex_materialed_tex_opacity(ProjectedVertex vert [[stage_in]],
                                                           constant LightUniform &lighting [[buffer(0)]],
-                                                          texture2d<float> diffuseTexture [[texture(0)]],
-                                                          texture2d<float> opacityTexture [[texture(1)]],
+                                                          texture2d<float> shadowMap [[texture(0)]],
+                                                          texture2d<float> diffuseTexture [[texture(1)]],
+                                                          texture2d<float> opacityTexture [[texture(2)]],
                                                           sampler samplr [[sampler(0)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);

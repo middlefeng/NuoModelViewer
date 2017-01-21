@@ -79,46 +79,14 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
             specularTerm = material.specularColor * specularFactor;
         }
         
-        colorForLights += diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i];
-    }
-    
-    
-    float2 shadowCoord = float2(vert.shadowPosition.x / vert.shadowPosition.w, vert.shadowPosition.y / vert.shadowPosition.w);
-    shadowCoord.x = (shadowCoord.x + 1) * 0.5;
-    shadowCoord.y = (-shadowCoord.y + 1) * 0.5;
-    
-    float texelSize = 1.0 / 4096;
-    int shadowCoverage = 0;
-    int shadowSoftRadius = 16;
-    
-    /*float4 shadowDepth = shadowMap.sample(samplr, shadowCoord);
-    if (shadowDepth.x < (vert.shadowPosition.z / vert.shadowPosition.w) - 0.001)
-    {
-        return float4(ambientTerm, diffuseTexel.a);
-    }*/
-    
-    float xCurrent = shadowCoord.x - shadowSoftRadius * texelSize;
-    for (int i = 0; i < shadowSoftRadius * 2; ++i)
-    {
-        float yCurrent = shadowCoord.y - shadowSoftRadius * texelSize;
-        for (int j = 0; j < shadowSoftRadius * 2; ++j)
+        float shadowPercent = 0.0;
+        if (i == 0)
         {
-            float4 shadowDepth = shadowMap.sample(samplr, float2(xCurrent, yCurrent));
-            if (shadowDepth.x < (vert.shadowPosition.z / vert.shadowPosition.w) - 0.001)
-            {
-                shadowCoverage += 1;
-            }
-            
-            yCurrent += texelSize;
+            shadowPercent = shadow_coverage_common(vert.shadowPosition, 1.0 / 4096.0, 16,
+                                                   shadowMap, samplr);
         }
         
-        xCurrent += texelSize;
-    }
-    
-    if (shadowCoverage > 0)
-    {
-        float shadowPercent = shadowCoverage / (shadowSoftRadius * shadowSoftRadius * 4.0);
-        return float4(ambientTerm + colorForLights * (1 - shadowPercent), diffuseTexel.a);
+        colorForLights += (diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i]) * (1 - shadowPercent);
     }
     
     return float4(ambientTerm + colorForLights, diffuseTexel.a);

@@ -26,6 +26,10 @@ ProjectedVertex vertex_project_common(device Vertex *vertices [[buffer(0)]],
 
 
 
+/**
+ *  shaders that generate shadow-map texture from the light view point
+ */
+
 vertex PositionSimple vertex_shadow(device Vertex *vertices [[buffer(0)]],
                                     constant ModelUniforms &uniforms [[buffer(1)]],
                                     uint vid [[vertex_id]])
@@ -42,6 +46,12 @@ fragment void fragment_shadow(PositionSimple vert [[stage_in]])
 }
 
 
+
+
+/**
+ *  shaders that generate phong result without shadow casting,
+ *  used for simple annotation.
+ */
 
 vertex ProjectedVertex vertex_project(device Vertex *vertices [[buffer(0)]],
                                       constant ModelUniforms &uniforms [[buffer(1)]],
@@ -83,6 +93,10 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
 
 
 
+/**
+ *  shaders that generate phong result wit shadow casting,
+ */
+
 vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)]],
                                              constant ModelUniforms &uniforms [[buffer(1)]],
                                              constant ModelUniforms &lightCast [[buffer(2)]],
@@ -118,17 +132,14 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
             specularTerm = material.specularColor * specularFactor;
         }
         
-        colorForLights += diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i];
-    }
-    
-    float2 shadowCoord = float2(vert.shadowPosition.x, vert.shadowPosition.y) / vert.shadowPosition.w;
-    shadowCoord.x = (shadowCoord.x + 1) * 0.5;
-    shadowCoord.y = (-shadowCoord.y + 1) * 0.5;
-    
-    float4 shadowDepth = shadowMap.sample(samplr, shadowCoord);
-    if (shadowDepth.x < (vert.shadowPosition.z / vert.shadowPosition.w) - 0.001)
-    {
-        return float4(ambientTerm, modelCharacterUniforms.opacity);
+        float shadowPercent = 0.0;
+        if (i == 0)
+        {
+            shadowPercent = shadow_coverage_common(vert.shadowPosition, 1.0 / 4096.0, 16,
+                                                   shadowMap, samplr);
+        }
+        
+        colorForLights += (diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i]) * (1.0 - shadowPercent);
     }
     
     return float4(ambientTerm + colorForLights, modelCharacterUniforms.opacity);
@@ -190,4 +201,47 @@ ProjectedVertex vertex_project_common(device Vertex *vertices [[buffer(0)]],
     return outVert;
 }
 
+
+
+
+float shadow_coverage_common(metal::float4 shadowCastModelPostion,
+                             float shadowMapSampleSize, float shadowMapSampleRadius,
+                             metal::texture2d<float> shadowMap, metal::sampler samplr)
+{
+    float2 shadowCoord = float2(shadowCastModelPostion.x, shadowCastModelPostion.y) / shadowCastModelPostion.w;
+    shadowCoord.x = (shadowCoord.x + 1) * 0.5;
+    shadowCoord.y = (-shadowCoord.y + 1) * 0.5;
+    
+    int shadowCoverage = 0;
+    int shadowSampleCount = 0;
+    
+    float xCurrent = shadowCoord.x - shadowMapSampleRadius * shadowMapSampleSize;
+    
+    for (int i = 0; i < shadowMapSampleRadius * 2; ++i)
+    {
+        float yCurrent = shadowCoord.y - shadowMapSampleRadius * shadowMapSampleSize;
+        for (int j = 0; j < shadowMapSampleRadius * 2; ++j)
+        {
+            shadowSampleCount += 1;
+            
+            float4 shadowDepth = shadowMap.sample(samplr, float2(xCurrent, yCurrent));
+            if (shadowDepth.x < (shadowCastModelPostion.z / shadowCastModelPostion.w) - 0.001)
+            {
+                shadowCoverage += 1;
+            }
+            
+            yCurrent += shadowMapSampleSize;
+        }
+        
+        xCurrent += shadowMapSampleSize;
+    }
+    
+    if (shadowCoverage > 0)
+    {
+        float shadowPercent = shadowCoverage / (float)shadowSampleCount;
+        return shadowPercent;
+    }
+    
+    return 0.0;
+}
 

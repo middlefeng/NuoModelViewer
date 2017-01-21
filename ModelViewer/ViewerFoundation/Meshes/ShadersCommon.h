@@ -66,5 +66,13 @@ metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert
                                                    metal::float4 diffuseTexel);
 
 
+fragment void fragment_shadow(PositionSimple vert [[stage_in]]);
+
+
+float shadow_coverage_common(metal::float4 shadowCastModelPostion,
+                             float shadowMapSampleSize, float shadowMapSampleRadius,
+                             metal::texture2d<float> shadowMap, metal::sampler samplr);
+
+
 
 #endif /* ShadersCommon_h */
