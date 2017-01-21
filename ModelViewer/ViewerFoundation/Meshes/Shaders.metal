@@ -182,7 +182,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         float shadowPercent = 0.0;
         if (i == 0)
         {
-            shadowPercent = shadow_coverage_common(vert.shadowPosition, 1.0 / 4096.0, 16,
+            shadowPercent = shadow_coverage_common(vert.shadowPosition, 1.0 / 1800.0, 3,
                                                    shadowMap, samplr);
         }
         
@@ -222,20 +222,26 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     shadowCoord.x = (shadowCoord.x + 1) * 0.5;
     shadowCoord.y = (-shadowCoord.y + 1) * 0.5;
     
+    const float shadowMapBias = 0.002;
+    float modelDepth = (shadowCastModelPostion.z / shadowCastModelPostion.w) - shadowMapBias;
+    
     int shadowCoverage = 0;
     int shadowSampleCount = 0;
     
-    float xCurrent = shadowCoord.x - shadowMapSampleRadius * shadowMapSampleSize;
+    const float shadowRegion = shadowMapSampleRadius * shadowMapSampleSize;
+    const float shadowDiameter = shadowMapSampleRadius * 2;
     
-    for (int i = 0; i < shadowMapSampleRadius * 2; ++i)
+    float xCurrent = shadowCoord.x - shadowRegion;
+    
+    for (int i = 0; i < shadowDiameter; ++i)
     {
-        float yCurrent = shadowCoord.y - shadowMapSampleRadius * shadowMapSampleSize;
-        for (int j = 0; j < shadowMapSampleRadius * 2; ++j)
+        float yCurrent = shadowCoord.y - shadowRegion;
+        for (int j = 0; j < shadowDiameter; ++j)
         {
             shadowSampleCount += 1;
             
-            float4 shadowDepth = shadowMap.sample(samplr, float2(xCurrent, yCurrent));
-            if (shadowDepth.x < (shadowCastModelPostion.z / shadowCastModelPostion.w) - 0.001)
+            float shadowDepth = shadowMap.sample(samplr, float2(xCurrent, yCurrent)).x;
+            if (shadowDepth < modelDepth)
             {
                 shadowCoverage += 1;
             }
@@ -251,6 +257,12 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
         float shadowPercent = shadowCoverage / (float)shadowSampleCount;
         return shadowPercent;
     }
+    
+    /** simpler shadow without PCF
+     *
+    float shadowDepth = shadowMap.sample(samplr, shadowCoord).x;
+    if (shadowDepth < modelDepth)
+        return 1.0; */
     
     return 0.0;
 }
