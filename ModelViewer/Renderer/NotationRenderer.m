@@ -22,6 +22,8 @@
 
 @interface NotationRenderer()
 
+// light to illuminate the notations
+//
 @property (nonatomic, strong) id<MTLBuffer> lightBuffer;
 
 @property (nonatomic, strong) NSArray<NotationLight*>* lightVectors;
@@ -55,23 +57,17 @@
         _lightVectors = lightVectors;
         _lightSources = lightSourcesDesc;
         _currentLightVector = lightVectors[0];
-        _lightSources[0].lightingRotationX = 3.14/2.0;
-        _lightSources[0].lightingRotationY = 3.14/8.0;
-        
-        // the direction of light used to render the "light vector"
-        
         lightSourcesDesc[0].lightingDensity = 1.0f;
         
-        LightUniform lightUniform;
+        // the direction of light used to render the "light vector"
+        //
+        LightUniform lightUniform; memset(&lightUniform, 0, sizeof(LightUniform));
+        
         lightUniform.direction[0].x = 0.13;
         lightUniform.direction[0].y = 0.72;
         lightUniform.direction[0].z = 0.68;
-        lightUniform.direction[0].w = 0.0;
-        
-        lightUniform.density[0] = lightSourcesDesc[0].lightingDensity;
-        lightUniform.density[1] = 0.0f;
-        lightUniform.density[2] = 0.0f;
-        lightUniform.density[3] = 0.0f;
+        lightUniform.density[0] = 1.0f;
+        lightUniform.spacular[0] = 0.6f;
         
         _lightBuffer = [self.device newBufferWithLength:sizeof(LightUniform)
                                                 options:MTLResourceOptionCPUCacheModeDefault];
