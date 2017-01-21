@@ -33,6 +33,8 @@
 
 - (void)makeTextures
 {
+    assert(_name);
+    
     if ([_depthTexture width] != [self drawableSize].width ||
         [_depthTexture height] != [self drawableSize].height)
     {
@@ -47,6 +49,9 @@
         
         self.depthTexture = [_device newTextureWithDescriptor:desc];
         
+        NSString* name = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"depth sample"];
+        [self.sampleTexture setLabel:name];
+        
         MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                                               width:[self drawableSize].width
                                                                                              height:[self drawableSize].height
@@ -60,6 +65,9 @@
             sampleDesc.usage = MTLTextureUsageRenderTarget;
             
             self.sampleTexture = [_device newTextureWithDescriptor:sampleDesc];
+            
+            NSString* sampleName = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"sample"];
+            [self.sampleTexture setLabel:sampleName];
         }
         
         if (_manageTargetTexture)
@@ -70,6 +78,9 @@
             sampleDesc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
             
             _targetTexture = [_device newTextureWithDescriptor:sampleDesc];
+            
+            NSString* name = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"target"];
+            [self.sampleTexture setLabel:name];
         }
     }
 }

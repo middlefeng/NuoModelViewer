@@ -247,6 +247,7 @@
         modelRenderTarget.sampleCount = kSampleCount;
         modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         modelRenderTarget.manageTargetTexture = YES;
+        modelRenderTarget.name = @"Model";
         
         [_modelRender setRenderTarget:modelRenderTarget];
         
@@ -255,6 +256,7 @@
         notationRenderTarget.sampleCount = 1;
         notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         notationRenderTarget.manageTargetTexture = NO;
+        notationRenderTarget.name = @"Notation";
         
         [_notationRender setRenderTarget:notationRenderTarget];
     }
@@ -267,6 +269,7 @@
         modelRenderTarget.sampleCount = kSampleCount;
         modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         modelRenderTarget.manageTargetTexture = NO;
+        modelRenderTarget.name = @"Model";
         
         [_modelRender setRenderTarget:modelRenderTarget];
     }

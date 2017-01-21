@@ -16,8 +16,6 @@
 @interface NuoShadowMapTarget : NuoRenderPassTarget
 
 
-@property (nonatomic, strong) NSString* name;
-
 - (void)makeTextures;
 - (MTLRenderPassDescriptor *)currentRenderPassDescriptor;
 

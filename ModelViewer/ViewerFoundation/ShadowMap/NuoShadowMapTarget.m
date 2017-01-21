@@ -41,9 +41,9 @@
             
             _depthSampleTexture = [self.device newTextureWithDescriptor:sampleDesc];
             
-            if (_name)
+            if (self.name)
             {
-                NSString* label = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"depth sample"];
+                NSString* label = [[NSString alloc] initWithFormat:@"%@ - %@", self.name, @"depth sample"];
                 [_depthSampleTexture setLabel:label];
             }
         }
@@ -60,9 +60,9 @@
             
         self.targetTexture = [self.device newTextureWithDescriptor:desc];
         
-        if (_name)
+        if (self.name)
         {
-            NSString* label = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"depth target"];
+            NSString* label = [[NSString alloc] initWithFormat:@"%@ - %@", self.name, @"depth target"];
             [self.targetTexture setLabel:label];
         }
     }

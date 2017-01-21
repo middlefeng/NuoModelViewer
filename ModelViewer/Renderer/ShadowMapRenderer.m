@@ -42,7 +42,7 @@
         self.renderTarget.device = device;
         self.device = device;
         
-        ((NuoShadowMapTarget*)self.renderTarget).name = @"Model";
+        ((NuoShadowMapTarget*)self.renderTarget).name = @"Shadow";
         
         [self makeResources];
     }

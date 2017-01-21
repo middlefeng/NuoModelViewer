@@ -15,6 +15,9 @@
 @interface NuoRenderPassTarget : NSObject
 
 
+@property (nonatomic, strong) NSString* name;
+
+
 @property (nonatomic, weak) id<MTLDevice> device;
 
 @property (nonatomic, assign) uint sampleCount;
