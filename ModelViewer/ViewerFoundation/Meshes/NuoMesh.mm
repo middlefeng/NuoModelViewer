@@ -303,6 +303,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         else if (!embeddedAlpha)
             [mesh setTransparency:NO];
         
+        [mesh makePipelineShadowState];
         [mesh makePipelineState:[mesh makePipelineStateDescriptor:!embeddedAlpha]];
         [mesh makeDepthStencilState];
         

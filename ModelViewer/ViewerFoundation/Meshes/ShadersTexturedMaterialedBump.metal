@@ -31,10 +31,13 @@ struct ProjectedVertex
     float3 specularColor;
     float specularPower;
     float dissolve [[flat]];
+    
+    float4 shadowPosition;
 };
 
 vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[buffer(0)]],
                                                      constant ModelUniforms &uniforms [[buffer(1)]],
+                                                     constant ModelUniforms &lightCast [[buffer(2)]],
                                                      uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
@@ -51,6 +54,8 @@ vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[b
     outVert.specularPower = vertices[vid].specularPowerDisolve.x;
     outVert.dissolve = vertices[vid].specularPowerDisolve.y;
     
+    outVert.shadowPosition = lightCast.modelViewProjectionMatrix * vertices[vid].position;
+    
     return outVert;
 }
 
@@ -61,11 +66,27 @@ static float3 bumpped_normal(float3 normal, float3 tangent, float3 bitangent, fl
 
 
 
+/**
+ *  shaders that generate shadow-map texture from the light view point
+ */
+
+vertex PositionSimple vertex_shadow_tex_materialed_bump(device Vertex *vertices [[buffer(0)]],
+                                                        constant ModelUniforms &uniforms [[buffer(1)]],
+                                                        uint vid [[vertex_id]])
+{
+    PositionSimple outShadow;
+    outShadow.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
+    return outShadow;
+}
+
+
+
 
 fragment float4 fragment_tex_a_materialed_bump(ProjectedVertex vert [[stage_in]],
                                                constant LightUniform &lighting [[buffer(0)]],
-                                               texture2d<float> diffuseTexture [[texture(0)]],
-                                               texture2d<float> bumpTexture [[texture(1)]],
+                                               texture2d<float> shadowMap [[texture(0)]],
+                                               texture2d<float> diffuseTexture [[texture(1)]],
+                                               texture2d<float> bumpTexture [[texture(2)]],
                                                sampler samplr [[sampler(0)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
@@ -76,14 +97,15 @@ fragment float4 fragment_tex_a_materialed_bump(ProjectedVertex vert [[stage_in]]
     float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
     float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
     
-    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel);
+    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel, shadowMap, samplr);
 }
 
 
 fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
                                              constant LightUniform &lighting [[buffer(0)]],
-                                             texture2d<float> diffuseTexture [[texture(0)]],
-                                             texture2d<float> bumpTexture [[texture(1)]],
+                                             texture2d<float> shadowMap [[texture(0)]],
+                                             texture2d<float> diffuseTexture [[texture(1)]],
+                                             texture2d<float> bumpTexture [[texture(2)]],
                                              sampler samplr [[sampler(0)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
@@ -98,15 +120,16 @@ fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
     float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
     float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
     
-    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel);
+    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel, shadowMap, samplr);
 }
 
 
 fragment float4 fragment_tex_materialed_tex_opacity_bump(ProjectedVertex vert [[stage_in]],
                                                          constant LightUniform &lighting [[buffer(0)]],
-                                                         texture2d<float> diffuseTexture [[texture(0)]],
-                                                         texture2d<float> opacityTexture [[texture(1)]],
-                                                         texture2d<float> bumpTexture [[texture(2)]],
+                                                         texture2d<float> shadowMap [[texture(0)]],
+                                                         texture2d<float> diffuseTexture [[texture(1)]],
+                                                         texture2d<float> opacityTexture [[texture(2)]],
+                                                         texture2d<float> bumpTexture [[texture(3)]],
                                                          sampler samplr [[sampler(0)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
@@ -119,7 +142,7 @@ fragment float4 fragment_tex_materialed_tex_opacity_bump(ProjectedVertex vert [[
     float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
     float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
     
-    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel);
+    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel, shadowMap, samplr);
 }
 
 
@@ -133,6 +156,7 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
     outVert.specularColor = vert.specularColor;
     outVert.specularPower = vert.specularPower;
     outVert.opacity = vert.dissolve;
+    outVert.shadowPosition = vert.shadowPosition;
     
     return outVert;
 }

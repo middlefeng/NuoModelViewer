@@ -89,7 +89,7 @@ fragment float4 fragment_light_tex_a_materialed(ProjectedVertex vert [[stage_in]
     
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     diffuseTexel = float4(diffuseTexel.rgb / diffuseTexel.a, diffuseTexel.a);
-    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel);
+    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel, shadowMap, samplr);
 }
 
 
@@ -108,7 +108,7 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
         diffuseTexel = diffuseTexel / diffuseTexel.a;
     
     diffuseTexel.a = 1.0;
-    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel);
+    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel, shadowMap, samplr);
 }
 
 
@@ -125,7 +125,7 @@ fragment float4 fragment_light_tex_materialed_tex_opacity(ProjectedVertex vert [
     float4 opacityTexel = opacityTexture.sample(samplr, vert.texCoord);
     diffuseTexel = diffuseTexel / diffuseTexel.a;
     diffuseTexel.a = opacityTexel.a;
-    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel);
+    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel, shadowMap, samplr);
 }
 
 
@@ -139,6 +139,7 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
     outVert.specularColor = vert.specularColor;
     outVert.specularPower = vert.specularPower;
     outVert.opacity = vert.dissolve;
+    outVert.shadowPosition = vert.shadowPosition;
     
     return outVert;
 }

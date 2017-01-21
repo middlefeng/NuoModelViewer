@@ -149,7 +149,9 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
 float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                             float3 normal,
                                             constant LightUniform &lightingUniform,
-                                            float4 diffuseTexel)
+                                            float4 diffuseTexel,
+                                            texture2d<float> shadowMap,
+                                            sampler samplr)
 {
     normal = normalize(normal);
     
@@ -177,7 +179,15 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             specularTerm = vert.specularColor * specularFactor;
         }
         
-        colorForLights += diffuseTerm * lightingUniform.density[i] + specularTerm * lightingUniform.spacular[i];
+        float shadowPercent = 0.0;
+        if (i == 0)
+        {
+            shadowPercent = shadow_coverage_common(vert.shadowPosition, 1.0 / 4096.0, 16,
+                                                   shadowMap, samplr);
+        }
+        
+        colorForLights += (diffuseTerm * lightingUniform.density[i] + specularTerm * lightingUniform.spacular[i]) *
+                          (1 - shadowPercent);
     }
     
     if (opacity < 1.0 && transparency < 1.0)
