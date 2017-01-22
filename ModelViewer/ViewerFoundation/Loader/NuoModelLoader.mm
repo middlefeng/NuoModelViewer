@@ -201,6 +201,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
 
 - (NSArray<NuoMesh*>*)createMeshsWithOptions:(NuoMeshOption*)loadOption
                                   withDevice:(id<MTLDevice>)device
+                            withCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
     typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
     
@@ -281,7 +282,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         NuoBox boundingBox = model->GetBoundingBox();
         
         NuoModelOption options = modelOptions[model];
-        NuoMesh* mesh = CreateMesh(options, device, model);
+        NuoMesh* mesh = CreateMesh(options, device, commandQueue, model);
         
         NuoMeshBox* meshBounding = [[NuoMeshBox alloc] init];
         meshBounding.spanX = boundingBox._spanX;

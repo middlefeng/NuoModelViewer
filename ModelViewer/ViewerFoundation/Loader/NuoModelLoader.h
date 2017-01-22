@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Metal/Metal.h>
 #import "NuoTypes.h"
 
 
@@ -24,7 +25,8 @@
  *  is stored, the associated textures, and the associated pipeline state used for rendering.
  */
 - (NSArray<NuoMesh*>*)createMeshsWithOptions:(NuoMeshOption*)loadOption
-                                  withDevice:(id<MTLDevice>)device;
+                                  withDevice:(id<MTLDevice>)device
+                            withCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 
 @end

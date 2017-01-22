@@ -68,7 +68,7 @@ class NuoModelBase;
 class NuoModelOption;
 
 NuoMesh* CreateMesh(const NuoModelOption& options,
-                    id<MTLDevice> device,
+                    id<MTLDevice> device, id<MTLCommandQueue> commandQueue,
                     const std::shared_ptr<NuoModelBase> model);
 
 #endif

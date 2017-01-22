@@ -199,7 +199,7 @@
 
 
 NuoMesh* CreateMesh(const NuoModelOption& options,
-                    id<MTLDevice> device,
+                    id<MTLDevice> device, id<MTLCommandQueue> commandQueue,
                     const std::shared_ptr<NuoModelBase> model)
 {
     if (!options._textured && !options._basicMaterialized)
@@ -227,7 +227,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                                              withLength:model->IndicesLength()];
         
         [mesh setRawModel:model.get()];
-        [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency];
+        [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency withCommandQueue:commandQueue];
         [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
         [mesh makeDepthStencilState];
         
@@ -245,19 +245,19 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                                  withLength:model->IndicesLength()];
         
         [mesh setRawModel:model.get()];
-        [mesh makeTexture:modelTexturePath checkTransparency:embeddedAlpha];
+        [mesh makeTexture:modelTexturePath checkTransparency:embeddedAlpha withCommandQueue:commandQueue];
         
         NSString* modelTexturePathOpacity = [NSString stringWithUTF8String:model->GetTexturePathOpacity().c_str()];
         if ([modelTexturePathOpacity isEqualToString:@""])
             modelTexturePathOpacity = nil;
         if (modelTexturePathOpacity)
-            [mesh makeTextureOpacity:modelTexturePathOpacity];
+            [mesh makeTextureOpacity:modelTexturePathOpacity withCommandQueue:commandQueue];
         
         NSString* modelTexturePathBump = [NSString stringWithUTF8String:model->GetTexturePathBump().c_str()];
         if ([modelTexturePathBump isEqualToString:@""])
             modelTexturePathBump = nil;
         if (modelTexturePathBump)
-            [mesh makeTextureBump:modelTexturePathBump];
+            [mesh makeTextureBump:modelTexturePathBump withCommandQueue:commandQueue];
         
         if (model->HasTransparent() || modelTexturePathOpacity)
             [mesh setTransparency:YES];
