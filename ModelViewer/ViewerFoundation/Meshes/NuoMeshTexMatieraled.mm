@@ -169,7 +169,7 @@
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
+    [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
     NSUInteger texBufferIndex = 1;
     [renderPass setFragmentTexture:self.diffuseTex atIndex:texBufferIndex++];

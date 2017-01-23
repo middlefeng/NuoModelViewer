@@ -83,13 +83,15 @@ fragment float4 fragment_light_tex_a_materialed(ProjectedVertex vert [[stage_in]
                                                 constant LightUniform &lighting [[buffer(0)]],
                                                 texture2d<float> shadowMap [[texture(0)]],
                                                 texture2d<float> diffuseTexture [[texture(1)]],
-                                                sampler samplr [[sampler(0)]])
+                                                sampler depthSamplr [[sampler(0)]],
+                                                sampler samplr [[sampler(1)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
     
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     diffuseTexel = float4(diffuseTexel.rgb / diffuseTexel.a, diffuseTexel.a);
-    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel, shadowMap, samplr);
+    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel,
+                                                shadowMap, depthSamplr);
 }
 
 
@@ -97,7 +99,8 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
                                               constant LightUniform &lighting [[buffer(0)]],
                                               texture2d<float> shadowMap [[texture(0)]],
                                               texture2d<float> diffuseTexture [[texture(1)]],
-                                              sampler samplr [[sampler(0)]])
+                                              sampler depthSamplr [[sampler(0)]],
+                                              sampler samplr [[sampler(1)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
     
@@ -108,7 +111,8 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
         diffuseTexel = diffuseTexel / diffuseTexel.a;
     
     diffuseTexel.a = 1.0;
-    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel, shadowMap, samplr);
+    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel,
+                                                shadowMap, depthSamplr);
 }
 
 
@@ -117,7 +121,8 @@ fragment float4 fragment_light_tex_materialed_tex_opacity(ProjectedVertex vert [
                                                           texture2d<float> shadowMap [[texture(0)]],
                                                           texture2d<float> diffuseTexture [[texture(1)]],
                                                           texture2d<float> opacityTexture [[texture(2)]],
-                                                          sampler samplr [[sampler(0)]])
+                                                          sampler depthSamplr [[sampler(0)]],
+                                                          sampler samplr [[sampler(1)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
     
@@ -125,7 +130,8 @@ fragment float4 fragment_light_tex_materialed_tex_opacity(ProjectedVertex vert [
     float4 opacityTexel = opacityTexture.sample(samplr, vert.texCoord);
     diffuseTexel = diffuseTexel / diffuseTexel.a;
     diffuseTexel.a = opacityTexel.a;
-    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel, shadowMap, samplr);
+    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseTexel,
+                                                shadowMap, depthSamplr);
 }
 
 

@@ -28,6 +28,9 @@
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
 @property (strong) id<MTLBuffer> modelCharacterUnfiromBuffer;
 
+@property (nonatomic, readonly) id<MTLSamplerState> shadowMapSamplerState;
+
+
 @property (strong) NuoModelLoader* modelLoader;
 
 @property (nonatomic, assign) matrix_float4x4 rotationMatrix;
@@ -358,14 +361,14 @@
                                                             options:MTLResourceOptionCPUCacheModeDefault];
     memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(ModelCharacterUniforms));
     
-    // create sampler state
+    // create sampler state for shadow map sampling
     MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
     samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
     samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
     samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
     samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
     samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
-    _samplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
+    _shadowMapSamplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 
 - (void)updateUniformsForView:(matrix_float4x4*)modelMatrixOut
@@ -450,27 +453,31 @@
     matrix_float4x4 modelMatrix;
     [self updateUniformsForView:&modelMatrix];
     
+    // generate shadow map
+    //
     _shadowMapRenderer.modelMatrix = modelMatrix;
     _shadowMapRenderer.mesh = _mesh;
     _shadowMapRenderer.lightSource = _lights[0];
     _shadowMapRenderer.meshMaxSpan = _meshMaxSpan;
-    
     [_shadowMapRenderer drawWithCommandBuffer:commandBuffer];
-
-    id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     
-    [renderPass setVertexBuffer:self.modelUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
-    
+    // store the light view point projection for shadow map detection in the scene
+    //
     ModelUniforms lightUniforms;
     lightUniforms.modelViewProjectionMatrix = _shadowMapRenderer.lightCastMatrix;
     memcpy([_lightCastBuffers[self.bufferIndex] contents], &lightUniforms, sizeof(LightUniform));
-    [renderPass setVertexBuffer:_lightCastBuffers[self.bufferIndex] offset:0 atIndex:2];
     
+    // get the target render pass and draw the scene
+    //
+    id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    
+    [renderPass setVertexBuffer:self.modelUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:_lightCastBuffers[self.bufferIndex] offset:0 atIndex:2];
     
     [renderPass setFragmentBuffer:self.lightingUniformBuffers[self.bufferIndex] offset:0 atIndex:0];
     [renderPass setFragmentBuffer:self.modelCharacterUnfiromBuffer offset:0 atIndex:1];
     [renderPass setFragmentTexture:_shadowMapRenderer.renderTarget.targetTexture atIndex:0];
-    [renderPass setFragmentSamplerState:_samplerState atIndex:0];
+    [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
     
     if (_cullEnabled)
         [renderPass setCullMode:MTLCullModeBack];

@@ -87,7 +87,8 @@ fragment float4 fragment_tex_a_materialed_bump(ProjectedVertex vert [[stage_in]]
                                                texture2d<float> shadowMap [[texture(0)]],
                                                texture2d<float> diffuseTexture [[texture(1)]],
                                                texture2d<float> bumpTexture [[texture(2)]],
-                                               sampler samplr [[sampler(0)]])
+                                               sampler depthSamplr [[sampler(0)]],
+                                               sampler samplr [[sampler(1)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
     
@@ -97,7 +98,8 @@ fragment float4 fragment_tex_a_materialed_bump(ProjectedVertex vert [[stage_in]]
     float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
     float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
     
-    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel, shadowMap, samplr);
+    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel,
+                                                shadowMap, depthSamplr);
 }
 
 
@@ -106,7 +108,8 @@ fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
                                              texture2d<float> shadowMap [[texture(0)]],
                                              texture2d<float> diffuseTexture [[texture(1)]],
                                              texture2d<float> bumpTexture [[texture(2)]],
-                                             sampler samplr [[sampler(0)]])
+                                             sampler depthSamplr [[sampler(0)]],
+                                             sampler samplr [[sampler(1)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
     
@@ -120,7 +123,8 @@ fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
     float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
     float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
     
-    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel, shadowMap, samplr);
+    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel,
+                                                shadowMap, depthSamplr);
 }
 
 
@@ -130,7 +134,8 @@ fragment float4 fragment_tex_materialed_tex_opacity_bump(ProjectedVertex vert [[
                                                          texture2d<float> diffuseTexture [[texture(1)]],
                                                          texture2d<float> opacityTexture [[texture(2)]],
                                                          texture2d<float> bumpTexture [[texture(3)]],
-                                                         sampler samplr [[sampler(0)]])
+                                                         sampler depthSamplr [[sampler(0)]],
+                                                         sampler samplr [[sampler(1)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
     
@@ -142,7 +147,8 @@ fragment float4 fragment_tex_materialed_tex_opacity_bump(ProjectedVertex vert [[
     float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
     float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
     
-    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel, shadowMap, samplr);
+    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel,
+                                                shadowMap, depthSamplr);
 }
 
 

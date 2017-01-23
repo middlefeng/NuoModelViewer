@@ -55,7 +55,8 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
                                         constant LightUniform &lightUniform [[buffer(0)]],
                                         texture2d<float> shadowMap [[texture(0)]],
                                         texture2d<float> diffuseTexture [[texture(1)]],
-                                        sampler samplr [[sampler(0)]])
+                                        sampler depthSamplr [[sampler(0)]],
+                                        sampler samplr [[sampler(1)]])
 {
     float3 normal = normalize(vert.normal);
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
@@ -83,7 +84,7 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
         if (i == 0)
         {
             shadowPercent = shadow_coverage_common(vert.shadowPosition, 1.0 / 4096.0, 16,
-                                                   shadowMap, samplr);
+                                                   shadowMap, depthSamplr);
         }
         
         colorForLights += (diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i]) * (1 - shadowPercent);
