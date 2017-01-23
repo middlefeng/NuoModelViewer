@@ -85,19 +85,20 @@
 }
 
 
-- (void)loadMesh:(NSString*)path
+- (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
     _modelLoader = [NuoModelLoader new];
     [_modelLoader loadModel:path];
     
-    [self createMeshs];
+    [self createMeshs:commandQueue];
 }
 
 
-- (void)createMeshs
+- (void)createMeshs:(id<MTLCommandQueue>)commandQueue
 {
     _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
-                                      withDevice:self.device];
+                                      withDevice:self.device
+                                withCommandQueue:commandQueue];
     
     NuoMeshBox* bounding = _mesh[0].boundingBox;
     for (size_t i = 1; i < _mesh.count; ++i)
@@ -320,12 +321,13 @@
 
 
 - (void)setModelOptions:(NuoMeshOption *)modelOptions
+       withCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
     _modelOptions = modelOptions;
     
     if (_modelLoader)
     {
-        [self createMeshs];
+        [self createMeshs:commandQueue];
     }
 }
 

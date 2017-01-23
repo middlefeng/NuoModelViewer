@@ -21,8 +21,8 @@
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor:(BOOL)ignoreTextureAlpha;
 
-- (void)makeTextureOpacity:(NSString*)texPath;
-- (void)makeTextureBump:(NSString*)texPath;
+- (void)makeTextureOpacity:(NSString*)texPath withCommandQueue:(id<MTLCommandQueue>)queue;
+- (void)makeTextureBump:(NSString*)texPath withCommandQueue:(id<MTLCommandQueue>)queue;
 
 
 @end

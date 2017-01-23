@@ -57,10 +57,11 @@ static CIContext* sCIContext = nil;
 
 
 
-- (void)makeTexture:(NSString*)texPath checkTransparency:(BOOL)check
+- (void)makeTexture:(NSString*)texPath checkTransparency:(BOOL)check withCommandQueue:(id<MTLCommandQueue>)queue
 {
     NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.device];
-    NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:NO checkTransparency:check];
+    NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:YES
+                                             checkTransparency:check commandQueue:queue];
     
     assert(texture.texture != nil);
     
@@ -73,7 +74,7 @@ static CIContext* sCIContext = nil;
     samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
     samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
     samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
-    samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
+    samplerDesc.mipFilter = MTLSamplerMipFilterLinear;
     _samplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 

@@ -32,19 +32,21 @@
 
 
 
-- (void)makeTextureOpacity:(NSString*)texPath
+- (void)makeTextureOpacity:(NSString*)texPath withCommandQueue:(id<MTLCommandQueue>)queue
 {
     NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.device];
-    NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:NO checkTransparency:NO];
+    NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:YES
+                                             checkTransparency:NO commandQueue:queue];
     _textureOpacity = texture.texture;
 }
 
 
 
-- (void)makeTextureBump:(NSString*)texPath
+- (void)makeTextureBump:(NSString*)texPath withCommandQueue:(id<MTLCommandQueue>)queue
 {
     NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.device];
-    NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:NO checkTransparency:NO];
+    NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:YES
+                                             checkTransparency:NO commandQueue:queue];
     _textureBump = texture.texture;
 }
 
