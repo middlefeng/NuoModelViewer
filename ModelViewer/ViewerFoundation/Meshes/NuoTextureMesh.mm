@@ -80,8 +80,8 @@
     samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
     samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
     samplerDesc.minFilter = MTLSamplerMinMagFilterNearest;
-    samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
-    samplerDesc.mipFilter = MTLSamplerMipFilterLinear;
+    samplerDesc.magFilter = MTLSamplerMinMagFilterNearest;
+    samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
     _samplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 
