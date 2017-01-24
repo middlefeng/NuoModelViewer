@@ -52,7 +52,7 @@ struct VertexFragmentCharacters
     float specularPower;
     float opacity;
     
-    metal::float4 shadowPosition;
+    metal::float4 shadowPosition[2];
 };
 
 
@@ -66,7 +66,7 @@ metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert
                                                    metal::float3 normal,
                                                    constant LightUniform &lighting,
                                                    metal::float4 diffuseTexel,
-                                                   metal::texture2d<float> shadowMap,
+                                                   metal::texture2d<float> shadowMap[2],
                                                    metal::sampler samplr);
 
 

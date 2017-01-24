@@ -53,20 +53,8 @@
 
 - (void)makePipelineShadowState
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
-    
     NSString* shadowShader = _textureBump ? @"vertex_shadow_tex_materialed_bump" : @"vertex_shadow_tex_materialed";
-    
-    MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
-    shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:shadowShader];
-    shadowPipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_shadow"];;
-    shadowPipelineDescriptor.sampleCount = kSampleCount;
-    shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
-    shadowPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
-    
-    NSError *error = nil;
-    self.shadowPipelineState = [self.device newRenderPipelineStateWithDescriptor:shadowPipelineDescriptor
-                                                                           error:&error];
+    [super makePipelineShadowState:shadowShader];
 }
 
 
@@ -173,7 +161,8 @@
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
-    NSUInteger texBufferIndex = 1;
+    NSUInteger texBufferIndex = 2; /* mesh texture starts after the shadow-map texture */
+    
     [renderPass setFragmentTexture:self.diffuseTex atIndex:texBufferIndex++];
     if (_textureOpacity)
         [renderPass setFragmentTexture:_textureOpacity atIndex:texBufferIndex++];
@@ -217,6 +206,12 @@
     return self;
 }
 
+
+
+- (void)makePipelineShadowState
+{
+    [super makePipelineShadowState:@"vertex_shadow_materialed"];
+}
 
 
 

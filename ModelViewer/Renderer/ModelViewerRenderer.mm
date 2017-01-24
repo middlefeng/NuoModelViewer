@@ -45,7 +45,7 @@
     NuoMeshBox* _meshBounding;
     float _meshMaxSpan;
     
-    ShadowMapRenderer* _shadowMapRenderer;
+    ShadowMapRenderer* _shadowMapRenderer[2];
 }
 
 
@@ -64,7 +64,8 @@
         _cullEnabled = YES;
         _fieldOfView = (2 * M_PI) / 8;
         
-        _shadowMapRenderer = [[ShadowMapRenderer alloc] initWithDevice:device];
+        _shadowMapRenderer[0] = [[ShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 0"];
+        _shadowMapRenderer[1] = [[ShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
     }
 
     return self;
@@ -74,14 +75,16 @@
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
-    [_shadowMapRenderer setDrawableSize:drawableSize];
+    [_shadowMapRenderer[0] setDrawableSize:drawableSize];
+    [_shadowMapRenderer[1] setDrawableSize:drawableSize];
 }
 
 
 - (void)setRenderTarget:(NuoRenderPassTarget *)renderTarget
 {
     [super setRenderTarget:renderTarget];
-    [_shadowMapRenderer.renderTarget setSampleCount:renderTarget.sampleCount];
+    [_shadowMapRenderer[0].renderTarget setSampleCount:renderTarget.sampleCount];
+    [_shadowMapRenderer[1].renderTarget setSampleCount:renderTarget.sampleCount];
 }
 
 
@@ -457,16 +460,20 @@
     
     // generate shadow map
     //
-    _shadowMapRenderer.modelMatrix = modelMatrix;
-    _shadowMapRenderer.mesh = _mesh;
-    _shadowMapRenderer.lightSource = _lights[0];
-    _shadowMapRenderer.meshMaxSpan = _meshMaxSpan;
-    [_shadowMapRenderer drawWithCommandBuffer:commandBuffer];
+    for (unsigned int i = 0; i < 2 /* for two light sources only */; ++i)
+    {
+        _shadowMapRenderer[i].modelMatrix = modelMatrix;
+        _shadowMapRenderer[i].mesh = _mesh;
+        _shadowMapRenderer[i].lightSource = _lights[i];
+        _shadowMapRenderer[i].meshMaxSpan = _meshMaxSpan;
+        [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer];
+    }
     
     // store the light view point projection for shadow map detection in the scene
     //
     LightVertexUniforms lightUniforms;
-    lightUniforms.lightCastMatrix[0] = _shadowMapRenderer.lightCastMatrix;
+    lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix;
+    lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix;
     memcpy([_lightCastBuffers[self.bufferIndex] contents], &lightUniforms, sizeof(lightUniforms));
     
     // get the target render pass and draw the scene
@@ -478,7 +485,8 @@
     
     [renderPass setFragmentBuffer:self.lightingUniformBuffers[self.bufferIndex] offset:0 atIndex:0];
     [renderPass setFragmentBuffer:self.modelCharacterUnfiromBuffer offset:0 atIndex:1];
-    [renderPass setFragmentTexture:_shadowMapRenderer.renderTarget.targetTexture atIndex:0];
+    [renderPass setFragmentTexture:_shadowMapRenderer[0].renderTarget.targetTexture atIndex:0];
+    [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.targetTexture atIndex:1];
     [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
     
     if (_cullEnabled)

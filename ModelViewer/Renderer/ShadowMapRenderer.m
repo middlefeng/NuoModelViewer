@@ -32,7 +32,7 @@
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithDevice:(id<MTLDevice>)device withName:(NSString*)name
 {
     self = [super init];
     
@@ -42,7 +42,7 @@
         self.renderTarget.device = device;
         self.device = device;
         
-        ((NuoShadowMapTarget*)self.renderTarget).name = @"Shadow";
+        ((NuoShadowMapTarget*)self.renderTarget).name = name;
         
         [self makeResources];
     }

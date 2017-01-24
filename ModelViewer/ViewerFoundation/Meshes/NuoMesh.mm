@@ -156,12 +156,12 @@
                                                                        error:&error];
 }
     
-- (void)makePipelineShadowState
+- (void)makePipelineShadowState:(NSString*)vertexShadowShader
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
-    shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_shadow"];
+    shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShadowShader];
     shadowPipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_shadow"];;
     shadowPipelineDescriptor.sampleCount = kSampleCount;
     shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
@@ -170,6 +170,11 @@
     NSError *error = nil;
     _shadowPipelineState = [self.device newRenderPipelineStateWithDescriptor:shadowPipelineDescriptor
                                                                        error:&error];
+}
+
+- (void)makePipelineShadowState
+{
+    return [self makePipelineShadowState:@"vertex_shadow"];
 }
 
 - (void)makeDepthStencilState
@@ -318,6 +323,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                                                  withLength:model->IndicesLength()];
         
         [mesh setRawModel:model.get()];
+        [mesh makePipelineShadowState];
         [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
         [mesh makeDepthStencilState];
         [mesh setTransparency:model->HasTransparent()];

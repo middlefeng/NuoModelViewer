@@ -16,7 +16,8 @@ struct ProjectedVertex
     float3 eye;
     float3 normal;
     
-    float4 shadowPosition;
+    float4 shadowPosition0;
+    float4 shadowPosition1;
 };
 
 
@@ -103,7 +104,8 @@ vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)
                                              uint vid [[vertex_id]])
 {
     ProjectedVertex outVert = vertex_project_common(vertices, uniforms, vid);
-    outVert.shadowPosition = lightCast.lightCastMatrix[0] * vertices[vid].position;
+    outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * vertices[vid].position;
+    outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * vertices[vid].position;
     return outVert;
 }
 
@@ -111,12 +113,16 @@ vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)
 fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                       constant LightUniform &lightUniform [[buffer(0)]],
                                       constant ModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
-                                      texture2d<float> shadowMap [[texture(0)]],
+                                      texture2d<float> shadowMap0 [[texture(0)]],
+                                      texture2d<float> shadowMap1 [[texture(1)]],
                                       sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
     float3 ambientTerm = lightUniform.ambientDensity * material.ambientColor;
     float3 colorForLights = 0.0;
+    
+    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
     for (unsigned i = 0; i < 4; ++i)
     {
@@ -133,10 +139,10 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         }
         
         float shadowPercent = 0.0;
-        if (i == 0)
+        if (i < 2)
         {
-            shadowPercent = shadow_coverage_common(vert.shadowPosition, 1.0 / 4096.0, 16,
-                                                   shadowMap, samplr);
+            shadowPercent = shadow_coverage_common(shadowPosition[i], 1.0 / 1800.0, 3,
+                                                   shadowMap[i], samplr);
         }
         
         colorForLights += (diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i]) * (1.0 - shadowPercent);
@@ -150,7 +156,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                             float3 normal,
                                             constant LightUniform &lightingUniform,
                                             float4 diffuseTexel,
-                                            texture2d<float> shadowMap,
+                                            texture2d<float> shadowMap[2],
                                             sampler samplr)
 {
     normal = normalize(normal);
@@ -180,10 +186,10 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         }
         
         float shadowPercent = 0.0;
-        if (i == 0)
+        if (i < 2)
         {
-            shadowPercent = shadow_coverage_common(vert.shadowPosition, 1.0 / 1800.0, 3,
-                                                   shadowMap, samplr);
+            shadowPercent = shadow_coverage_common(vert.shadowPosition[i], 1.0 / 1800.0, 3,
+                                                   shadowMap[i], samplr);
         }
         
         colorForLights += (diffuseTerm * lightingUniform.density[i] + specularTerm * lightingUniform.spacular[i]) *

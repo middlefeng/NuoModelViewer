@@ -17,7 +17,8 @@ struct ProjectedVertex
     float3 normal;
     float2 texCoord;
     
-    float4 shadowPosition;
+    float4 shadowPosition0;
+    float4 shadowPosition1;
 };
 
 vertex PositionSimple vertex_shadow_textured(device Vertex *vertices [[buffer(0)]],
@@ -46,15 +47,17 @@ vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(
     outVert.normal = uniforms.normalMatrix * vertices[vid].normal.xyz;
     outVert.texCoord = vertices[vid].texCoord;
     
-    outVert.shadowPosition = lightCast.lightCastMatrix[0] * vertices[vid].position;
+    outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * vertices[vid].position;
+    outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * vertices[vid].position;
 
     return outVert;
 }
 
 fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
                                         constant LightUniform &lightUniform [[buffer(0)]],
-                                        texture2d<float> shadowMap [[texture(0)]],
-                                        texture2d<float> diffuseTexture [[texture(1)]],
+                                        texture2d<float> shadowMap0 [[texture(0)]],
+                                        texture2d<float> shadowMap1 [[texture(1)]],
+                                        texture2d<float> diffuseTexture [[texture(2)]],
                                         sampler depthSamplr [[sampler(0)]],
                                         sampler samplr [[sampler(1)]])
 {
@@ -65,6 +68,9 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
     float3 ambientTerm = lightUniform.ambientDensity * material.ambientColor;
     
     float3 colorForLights = 0.0;
+    
+    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
     for (unsigned i = 0; i < 4; ++i)
     {
@@ -81,10 +87,10 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
         }
         
         float shadowPercent = 0.0;
-        if (i == 0)
+        if (i < 2)
         {
-            shadowPercent = shadow_coverage_common(vert.shadowPosition, 1.0 / 4096.0, 16,
-                                                   shadowMap, depthSamplr);
+            shadowPercent = shadow_coverage_common(shadowPosition[i], 1.0 / 1800.0, 3,
+                                                   shadowMap[i], depthSamplr);
         }
         
         colorForLights += (diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i]) * (1 - shadowPercent);

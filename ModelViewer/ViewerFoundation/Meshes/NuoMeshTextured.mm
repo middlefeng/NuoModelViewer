@@ -44,7 +44,7 @@ static CIContext* sCIContext = nil;
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setFragmentTexture:self.diffuseTex atIndex:1];
+    [renderPass setFragmentTexture:self.diffuseTex atIndex:2];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
     [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
@@ -122,18 +122,7 @@ static CIContext* sCIContext = nil;
 
 - (void)makePipelineShadowState
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
-    
-    MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
-    shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_shadow_textured"];
-    shadowPipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_shadow_textured"];;
-    shadowPipelineDescriptor.sampleCount = kSampleCount;
-    shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
-    shadowPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
-    
-    NSError *error = nil;
-    self.shadowPipelineState = [self.device newRenderPipelineStateWithDescriptor:shadowPipelineDescriptor
-                                                                           error:&error];
+    [super makePipelineShadowState:@"vertex_shadow_textured"];
 }
 
 - (void)setTransparency:(BOOL)transparent

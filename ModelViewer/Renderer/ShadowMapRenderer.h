@@ -41,7 +41,7 @@
 @property (nonatomic, strong) NuoShadowMapTarget* shadowMap;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device;
+- (instancetype)initWithDevice:(id<MTLDevice>)device withName:(NSString*)name;
 
 
 /**

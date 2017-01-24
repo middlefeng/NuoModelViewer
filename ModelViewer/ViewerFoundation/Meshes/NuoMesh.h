@@ -43,6 +43,7 @@
                    withIndices:(void*)indices withLength:(size_t)indicesLength;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
+- (void)makePipelineShadowState:(NSString*)vertexShadowShader;
 - (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor;
 - (void)makeDepthStencilState;
 
