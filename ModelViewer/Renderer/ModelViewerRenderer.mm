@@ -344,7 +344,7 @@
                                                    options:MTLResourceOptionCPUCacheModeDefault];
         lightingBuffers[i] = [self.device newBufferWithLength:sizeof(LightUniform)
                                                       options:MTLResourceOptionCPUCacheModeDefault];
-        lightCastModelBuffers[i] = [self.device newBufferWithLength:sizeof(ModelUniforms)
+        lightCastModelBuffers[i] = [self.device newBufferWithLength:sizeof(LightVertexUniforms)
                                                         options:MTLResourceOptionCPUCacheModeDefault];
         
     }
@@ -465,9 +465,9 @@
     
     // store the light view point projection for shadow map detection in the scene
     //
-    ModelUniforms lightUniforms;
-    lightUniforms.modelViewProjectionMatrix = _shadowMapRenderer.lightCastMatrix;
-    memcpy([_lightCastBuffers[self.bufferIndex] contents], &lightUniforms, sizeof(LightUniform));
+    LightVertexUniforms lightUniforms;
+    lightUniforms.lightCastMatrix[0] = _shadowMapRenderer.lightCastMatrix;
+    memcpy([_lightCastBuffers[self.bufferIndex] contents], &lightUniforms, sizeof(lightUniforms));
     
     // get the target render pass and draw the scene
     //

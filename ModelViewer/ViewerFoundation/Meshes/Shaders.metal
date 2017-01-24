@@ -99,11 +99,11 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
 
 vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)]],
                                              constant ModelUniforms &uniforms [[buffer(1)]],
-                                             constant ModelUniforms &lightCast [[buffer(2)]],
+                                             constant LightVertexUniforms &lightCast [[buffer(2)]],
                                              uint vid [[vertex_id]])
 {
     ProjectedVertex outVert = vertex_project_common(vertices, uniforms, vid);
-    outVert.shadowPosition = lightCast.modelViewProjectionMatrix * vertices[vid].position;
+    outVert.shadowPosition = lightCast.lightCastMatrix[0] * vertices[vid].position;
     return outVert;
 }
 

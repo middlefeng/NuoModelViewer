@@ -37,7 +37,7 @@ fragment void fragment_shadow_textured(PositionSimple vert [[stage_in]])
 
 vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(0)]],
                                                constant ModelUniforms &uniforms [[buffer(1)]],
-                                               constant ModelUniforms &lightCast [[buffer(2)]],
+                                               constant LightVertexUniforms &lightCast [[buffer(2)]],
                                                uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
@@ -46,7 +46,7 @@ vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(
     outVert.normal = uniforms.normalMatrix * vertices[vid].normal.xyz;
     outVert.texCoord = vertices[vid].texCoord;
     
-    outVert.shadowPosition = lightCast.modelViewProjectionMatrix * vertices[vid].position;
+    outVert.shadowPosition = lightCast.lightCastMatrix[0] * vertices[vid].position;
 
     return outVert;
 }

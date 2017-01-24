@@ -53,7 +53,7 @@ vertex PositionSimple vertex_shadow_tex_materialed(device Vertex *vertices [[buf
 
 vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[buffer(0)]],
                                                      constant ModelUniforms &uniforms [[buffer(1)]],
-                                                     constant ModelUniforms &lightCast [[buffer(2)]],
+                                                     constant LightVertexUniforms &lightCast [[buffer(2)]],
                                                      uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
@@ -68,7 +68,7 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
     outVert.specularPower = vertices[vid].specularPowerDisolve.x;
     outVert.dissolve = vertices[vid].specularPowerDisolve.y;
     
-    outVert.shadowPosition = lightCast.modelViewProjectionMatrix * vertices[vid].position;
+    outVert.shadowPosition = lightCast.lightCastMatrix[0] * vertices[vid].position;
     
     return outVert;
 }

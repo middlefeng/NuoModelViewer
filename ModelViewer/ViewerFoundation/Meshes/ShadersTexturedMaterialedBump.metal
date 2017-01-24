@@ -37,7 +37,7 @@ struct ProjectedVertex
 
 vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[buffer(0)]],
                                                      constant ModelUniforms &uniforms [[buffer(1)]],
-                                                     constant ModelUniforms &lightCast [[buffer(2)]],
+                                                     constant LightVertexUniforms &lightCast [[buffer(2)]],
                                                      uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
@@ -54,7 +54,7 @@ vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[b
     outVert.specularPower = vertices[vid].specularPowerDisolve.x;
     outVert.dissolve = vertices[vid].specularPowerDisolve.y;
     
-    outVert.shadowPosition = lightCast.modelViewProjectionMatrix * vertices[vid].position;
+    outVert.shadowPosition = lightCast.lightCastMatrix[0] * vertices[vid].position;
     
     return outVert;
 }
