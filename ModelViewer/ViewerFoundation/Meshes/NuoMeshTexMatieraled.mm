@@ -14,6 +14,7 @@
 {
     id<MTLTexture> _textureOpacity;
     id<MTLTexture> _textureBump;
+    BOOL _ignoreTextureAlpha;
 }
 
 
@@ -59,7 +60,14 @@
 
 
 
-- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor:(BOOL)ignoreTextureAlpha
+- (void)setIgnoreTexutreAlpha:(BOOL)ignoreAlpha
+{
+    _ignoreTextureAlpha = ignoreAlpha;
+}
+
+
+
+- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
@@ -70,7 +78,7 @@
     if (!_textureBump)
     {
         pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_tex_materialed"];
-        if (ignoreTextureAlpha)
+        if (_ignoreTextureAlpha)
         {
             if (_textureOpacity)
                 pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed_tex_opacity"];
@@ -85,7 +93,7 @@
     else
     {
         pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_tex_materialed_tangent"];
-        if (ignoreTextureAlpha)
+        if (_ignoreTextureAlpha)
         {
             if (_textureOpacity)
                 pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_tex_materialed_tex_opacity_bump"];

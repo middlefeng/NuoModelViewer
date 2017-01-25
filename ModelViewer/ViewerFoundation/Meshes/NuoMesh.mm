@@ -244,6 +244,8 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                     id<MTLDevice> device, id<MTLCommandQueue> commandQueue,
                     const std::shared_ptr<NuoModelBase> model)
 {
+    NuoMesh* resultMesh = nil;
+    
     if (!options._textured && !options._basicMaterialized)
     {
         NuoMesh* mesh = [[NuoMesh alloc] initWithDevice:device
@@ -252,11 +254,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                             withIndices:model->IndicesPtr()
                                              withLength:model->IndicesLength()];
         
-        [mesh setRawModel:model.get()];
-        [mesh makePipelineShadowState];
-        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
-        [mesh makeDepthStencilState];
-        return mesh;
+        resultMesh = mesh;
     }
     else if (options._textured && !options._basicMaterialized)
     {
@@ -269,13 +267,9 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                                             withIndices:model->IndicesPtr()
                                                              withLength:model->IndicesLength()];
         
-        [mesh setRawModel:model.get()];
         [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency withCommandQueue:commandQueue];
-        [mesh makePipelineShadowState];
-        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
-        [mesh makeDepthStencilState];
         
-        return mesh;
+        resultMesh = mesh;
     }
     else if (options._textured && options._basicMaterialized)
     {
@@ -288,7 +282,6 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                                 withIndices:model->IndicesPtr()
                                                  withLength:model->IndicesLength()];
         
-        [mesh setRawModel:model.get()];
         [mesh makeTexture:modelTexturePath checkTransparency:embeddedAlpha withCommandQueue:commandQueue];
         
         NSString* modelTexturePathOpacity = [NSString stringWithUTF8String:model->GetTexturePathOpacity().c_str()];
@@ -308,11 +301,9 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         else if (!embeddedAlpha)
             [mesh setTransparency:NO];
         
-        [mesh makePipelineShadowState];
-        [mesh makePipelineState:[mesh makePipelineStateDescriptor:!embeddedAlpha]];
-        [mesh makeDepthStencilState];
+        [mesh setIgnoreTexutreAlpha:!embeddedAlpha];
         
-        return mesh;
+        resultMesh = mesh;
     }
     else if (!options._textured && options._basicMaterialized)
     {
@@ -322,16 +313,16 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                                                 withIndices:model->IndicesPtr()
                                                                  withLength:model->IndicesLength()];
         
-        [mesh setRawModel:model.get()];
-        [mesh makePipelineShadowState];
-        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
-        [mesh makeDepthStencilState];
         [mesh setTransparency:model->HasTransparent()];
         
-        return mesh;
+        resultMesh = mesh;
     }
     
-    return nil;
+    [resultMesh setRawModel:model.get()];
+    [resultMesh makePipelineShadowState];
+    [resultMesh makePipelineState:[resultMesh makePipelineStateDescriptor]];
+    [resultMesh makeDepthStencilState];
+    return resultMesh;
 }
 
 

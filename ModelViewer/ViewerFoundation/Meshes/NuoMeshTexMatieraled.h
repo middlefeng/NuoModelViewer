@@ -19,10 +19,11 @@
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength;
 
-- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor:(BOOL)ignoreTextureAlpha;
+- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 
 - (void)makeTextureOpacity:(NSString*)texPath withCommandQueue:(id<MTLCommandQueue>)queue;
 - (void)makeTextureBump:(NSString*)texPath withCommandQueue:(id<MTLCommandQueue>)queue;
+- (void)setIgnoreTexutreAlpha:(BOOL)ignoreAlpha;
 
 
 @end
