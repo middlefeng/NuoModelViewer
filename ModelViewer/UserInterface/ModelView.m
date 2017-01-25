@@ -133,7 +133,7 @@
     if (panel)
     {
         NuoMeshOption* options = panel.meshOptions;
-        [_modelRender setModelOptions:options];
+        [_modelRender setModelOptions:options withCommandQueue:[self commandQueue]];
     }
     
     [_modelPartsPanel setMesh:_modelRender.mesh];
@@ -212,7 +212,7 @@
     _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
     _notationRender.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
-    _modelRender.modelOptions = _modelPanel.meshOptions;
+    [_modelRender setModelOptions:_modelPanel.meshOptions withCommandQueue:[self commandQueue]];
     
     [self setupPipelineSettings];
     [self registerForDraggedTypes:@[@"public.data"]];
@@ -247,6 +247,7 @@
         modelRenderTarget.sampleCount = kSampleCount;
         modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         modelRenderTarget.manageTargetTexture = YES;
+        modelRenderTarget.name = @"Model";
         
         [_modelRender setRenderTarget:modelRenderTarget];
         
@@ -255,6 +256,7 @@
         notationRenderTarget.sampleCount = 1;
         notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         notationRenderTarget.manageTargetTexture = NO;
+        notationRenderTarget.name = @"Notation";
         
         [_notationRender setRenderTarget:notationRenderTarget];
     }
@@ -267,6 +269,7 @@
         modelRenderTarget.sampleCount = kSampleCount;
         modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         modelRenderTarget.manageTargetTexture = NO;
+        modelRenderTarget.name = @"Model";
         
         [_modelRender setRenderTarget:modelRenderTarget];
     }
@@ -420,7 +423,7 @@
 
 - (void)loadMesh:(NSString*)path
 {
-    [_modelRender loadMesh:path];
+    [_modelRender loadMesh:path withCommandQueue:[self commandQueue]];
     [_modelPartsPanel setMesh:_modelRender.mesh];
     
     NSString* documentName = [path lastPathComponent];

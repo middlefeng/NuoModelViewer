@@ -25,6 +25,7 @@
 
 @property (nonatomic, strong) id<MTLDevice> device;
 @property (nonatomic, strong) id<MTLRenderPipelineState> renderPipelineState;
+@property (nonatomic, strong) id<MTLRenderPipelineState> shadowPipelineState;
 @property (nonatomic, strong) id<MTLDepthStencilState> depthStencilState;
 
 @property (nonatomic, readonly, assign) float smoothTolerance;
@@ -42,6 +43,7 @@
                    withIndices:(void*)indices withLength:(size_t)indicesLength;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
+- (void)makePipelineShadowState:(NSString*)vertexShadowShader;
 - (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor;
 - (void)makeDepthStencilState;
 
@@ -52,6 +54,7 @@
 
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass;
+- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass;
 - (BOOL)hasTransparency;
 - (void)setTransparency:(BOOL)transparent;
 
@@ -68,7 +71,7 @@ class NuoModelBase;
 class NuoModelOption;
 
 NuoMesh* CreateMesh(const NuoModelOption& options,
-                    id<MTLDevice> device,
+                    id<MTLDevice> device, id<MTLCommandQueue> commandQueue,
                     const std::shared_ptr<NuoModelBase> model);
 
 #endif

@@ -61,6 +61,7 @@ static NuoTextureBase* sInstance;
 - (NuoTexture*)texture2DWithImageNamed:(NSString *)imagePath
                              mipmapped:(BOOL)mipmapped
                      checkTransparency:(BOOL)checkTransparency
+                          commandQueue:(id<MTLCommandQueue>)commandQueue
 {
     NuoTexture* result = [_texturePool objectForKey:imagePath];
     if (result)
@@ -97,6 +98,15 @@ static NuoTextureBase* sInstance;
         result = [NuoTexture new];
         result.texture = texture;
         result.hasTransparency = hasTransparency;
+        
+        if (mipmapped)
+        {
+            id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
+            id<MTLBlitCommandEncoder> commandEncoder = [commandBuffer blitCommandEncoder];
+            [commandEncoder generateMipmapsForTexture:texture];
+            [commandEncoder endEncoding];
+            [commandBuffer commit];
+        }
         
         [_texturePool setObject:result forKey:imagePath];
     }

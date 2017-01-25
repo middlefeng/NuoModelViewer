@@ -29,7 +29,7 @@
 @property (nonatomic, readonly) NSInteger bufferIndex;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device;
+- (instancetype)initWithDevice:(id<MTLDevice>)device isBold:(BOOL)bold;
 
 - (void)drawWithRenderPass:(id<MTLRenderCommandEncoder>)renderPass;
 - (void)drawablePresented;

@@ -1,4 +1,6 @@
 #import "ModelViewerRenderer.h"
+#import "ShadowMapRenderer.h"
+
 #import "NuoUniforms.h"
 
 #import <Metal/Metal.h>
@@ -20,9 +22,14 @@
 @interface ModelRenderer ()
 
 
+@property (nonatomic, strong) NSArray<NuoMesh*>* mesh;
 @property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
+@property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
 @property (strong) id<MTLBuffer> modelCharacterUnfiromBuffer;
+
+@property (nonatomic, readonly) id<MTLSamplerState> shadowMapSamplerState;
+
 
 @property (strong) NuoModelLoader* modelLoader;
 
@@ -37,6 +44,8 @@
 {
     NuoMeshBox* _meshBounding;
     float _meshMaxSpan;
+    
+    ShadowMapRenderer* _shadowMapRenderer[2];
 }
 
 
@@ -54,25 +63,45 @@
         
         _cullEnabled = YES;
         _fieldOfView = (2 * M_PI) / 8;
+        
+        _shadowMapRenderer[0] = [[ShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 0"];
+        _shadowMapRenderer[1] = [[ShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
     }
 
     return self;
 }
 
 
-- (void)loadMesh:(NSString*)path
+- (void)setDrawableSize:(CGSize)drawableSize
+{
+    [super setDrawableSize:drawableSize];
+    [_shadowMapRenderer[0] setDrawableSize:drawableSize];
+    [_shadowMapRenderer[1] setDrawableSize:drawableSize];
+}
+
+
+- (void)setRenderTarget:(NuoRenderPassTarget *)renderTarget
+{
+    [super setRenderTarget:renderTarget];
+    [_shadowMapRenderer[0].renderTarget setSampleCount:renderTarget.sampleCount];
+    [_shadowMapRenderer[1].renderTarget setSampleCount:renderTarget.sampleCount];
+}
+
+
+- (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
     _modelLoader = [NuoModelLoader new];
     [_modelLoader loadModel:path];
     
-    [self createMeshs];
+    [self createMeshs:commandQueue];
 }
 
 
-- (void)createMeshs
+- (void)createMeshs:(id<MTLCommandQueue>)commandQueue
 {
     _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
-                                      withDevice:self.device];
+                                      withDevice:self.device
+                                withCommandQueue:commandQueue];
     
     NuoMeshBox* bounding = _mesh[0].boundingBox;
     for (size_t i = 1; i < _mesh.count; ++i)
@@ -83,6 +112,12 @@
     float modelSpan = std::max(bounding.spanZ, bounding.spanX);
     modelSpan = std::max(bounding.spanY, modelSpan);
     _meshMaxSpan = 1.41 * modelSpan;
+}
+
+
+- (NSArray<NuoMesh*>*)mesh
+{
+    return _mesh;
 }
 
 
@@ -289,12 +324,13 @@
 
 
 - (void)setModelOptions:(NuoMeshOption *)modelOptions
+       withCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
     _modelOptions = modelOptions;
     
     if (_modelLoader)
     {
-        [self createMeshs];
+        [self createMeshs:commandQueue];
     }
 }
 
@@ -303,6 +339,7 @@
 {
     id<MTLBuffer> modelBuffers[kInFlightBufferCount];
     id<MTLBuffer> lightingBuffers[kInFlightBufferCount];
+    id<MTLBuffer> lightCastModelBuffers[kInFlightBufferCount];
     
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
@@ -310,21 +347,36 @@
                                                    options:MTLResourceOptionCPUCacheModeDefault];
         lightingBuffers[i] = [self.device newBufferWithLength:sizeof(LightUniform)
                                                       options:MTLResourceOptionCPUCacheModeDefault];
+        lightCastModelBuffers[i] = [self.device newBufferWithLength:sizeof(LightVertexUniforms)
+                                                        options:MTLResourceOptionCPUCacheModeDefault];
+        
     }
     
     _modelUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers[0], modelBuffers[1], modelBuffers[2], nil];
     _lightingUniformBuffers = [[NSArray alloc] initWithObjects:lightingBuffers[0],
                                                                lightingBuffers[1],
                                                                lightingBuffers[2], nil];
+    _lightCastBuffers = [[NSArray alloc] initWithObjects:lightCastModelBuffers[0],
+                         lightCastModelBuffers[1],
+                         lightCastModelBuffers[2], nil];
     
     ModelCharacterUniforms modelCharacter;
     modelCharacter.opacity = 1.0f;
     _modelCharacterUnfiromBuffer = [self.device newBufferWithLength:sizeof(ModelCharacterUniforms)
                                                             options:MTLResourceOptionCPUCacheModeDefault];
     memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(ModelCharacterUniforms));
+    
+    // create sampler state for shadow map sampling
+    MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
+    samplerDesc.sAddressMode = MTLSamplerAddressModeClampToEdge;
+    samplerDesc.tAddressMode = MTLSamplerAddressModeClampToEdge;
+    samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
+    samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
+    samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
+    _shadowMapSamplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 
-- (void)updateUniformsForView
+- (void)updateUniformsForView:(matrix_float4x4*)modelMatrixOut
 {
     {
         float scaleFactor = 1;
@@ -348,6 +400,8 @@
     };
     const matrix_float4x4 modelCenteringMatrix = matrix_float4x4_translation(translationToCenter);
     const matrix_float4x4 modelMatrix = matrix_multiply(self.rotationMatrix, modelCenteringMatrix);
+    
+    *modelMatrixOut = modelMatrix;
     
     const float modelNearest = - _meshMaxSpan / 2.0;
     const float bilateralFactor = 1 / 750.0f;
@@ -401,13 +455,39 @@
     if (!passDescriptor)
         return;
     
-    [self updateUniformsForView];
-
+    matrix_float4x4 modelMatrix;
+    [self updateUniformsForView:&modelMatrix];
+    
+    // generate shadow map
+    //
+    for (unsigned int i = 0; i < 2 /* for two light sources only */; ++i)
+    {
+        _shadowMapRenderer[i].modelMatrix = modelMatrix;
+        _shadowMapRenderer[i].mesh = _mesh;
+        _shadowMapRenderer[i].lightSource = _lights[i];
+        _shadowMapRenderer[i].meshMaxSpan = _meshMaxSpan;
+        [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer];
+    }
+    
+    // store the light view point projection for shadow map detection in the scene
+    //
+    LightVertexUniforms lightUniforms;
+    lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix;
+    lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix;
+    memcpy([_lightCastBuffers[self.bufferIndex] contents], &lightUniforms, sizeof(lightUniforms));
+    
+    // get the target render pass and draw the scene
+    //
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     
     [renderPass setVertexBuffer:self.modelUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:_lightCastBuffers[self.bufferIndex] offset:0 atIndex:2];
+    
     [renderPass setFragmentBuffer:self.lightingUniformBuffers[self.bufferIndex] offset:0 atIndex:0];
     [renderPass setFragmentBuffer:self.modelCharacterUnfiromBuffer offset:0 atIndex:1];
+    [renderPass setFragmentTexture:_shadowMapRenderer[0].renderTarget.targetTexture atIndex:0];
+    [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.targetTexture atIndex:1];
+    [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
     
     if (_cullEnabled)
         [renderPass setCullMode:MTLCullModeBack];

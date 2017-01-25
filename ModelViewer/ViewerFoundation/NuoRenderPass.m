@@ -22,7 +22,7 @@ static const unsigned int kInFlightBufferCount = 3;
 
 
 - (void)setDrawableSize:(CGSize)drawableSize
-{
+{ 
     [_renderTarget setDrawableSize:drawableSize];
 }
 

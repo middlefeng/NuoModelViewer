@@ -30,7 +30,8 @@
 
 - (NuoTexture*)texture2DWithImageNamed:(NSString *)imagePath
                              mipmapped:(BOOL)mipmapped
-                     checkTransparency:(BOOL)checkTransparency;
+                     checkTransparency:(BOOL)checkTransparency
+                          commandQueue:(id<MTLCommandQueue>)commandQueue;
 
 
 

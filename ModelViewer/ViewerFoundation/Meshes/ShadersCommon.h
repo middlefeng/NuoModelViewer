@@ -51,13 +51,31 @@ struct VertexFragmentCharacters
     metal::float3 specularColor;
     float specularPower;
     float opacity;
+    
+    metal::float4 shadowPosition[2];
+};
+
+
+struct PositionSimple
+{
+    metal::float4 position [[position]];
 };
 
 
 metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                                    metal::float3 normal,
                                                    constant LightUniform &lighting,
-                                                   metal::float4 diffuseTexel);
+                                                   metal::float4 diffuseTexel,
+                                                   metal::texture2d<float> shadowMap[2],
+                                                   metal::sampler samplr);
+
+
+fragment void fragment_shadow(PositionSimple vert [[stage_in]]);
+
+
+float shadow_coverage_common(metal::float4 shadowCastModelPostion,
+                             float shadowMapSampleSize, float shadowMapSampleRadius,
+                             metal::texture2d<float> shadowMap, metal::sampler samplr);
 
 
 

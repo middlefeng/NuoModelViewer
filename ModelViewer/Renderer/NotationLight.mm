@@ -37,7 +37,7 @@
 @implementation NotationLight
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithDevice:(id<MTLDevice>)device isBold:(BOOL)bold
 {
     self = [super init];
     
@@ -47,7 +47,12 @@
         
         [self makeResources];
         
-        PNuoModelArrow arrow = std::make_shared<NuoModelArrow>(1.0, 0.2, 1.0, 0.3);
+        float bodyLength = bold ? 1.2 : 1.0;
+        float bodyRadius = bold ? 0.24 : 0.2;
+        float headLength = bold ? 1.2 : 1.0;
+        float headRadius = bold ? 0.36 : 0.3;
+        
+        PNuoModelArrow arrow = std::make_shared<NuoModelArrow>(bodyLength, bodyRadius, headLength, headRadius);
         arrow->CreateBuffer();
         
         NuoBox boundingBox = arrow->GetBoundingBox();

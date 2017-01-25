@@ -24,6 +24,9 @@
 
 
 
+/**
+ *  vertex shader uniform to calculate interpolatable per-vertex data
+ */
 typedef struct
 {
     matrix44 modelViewProjectionMatrix;
@@ -33,6 +36,22 @@ typedef struct
 ModelUniforms;
 
 
+/**
+ *  vertex shader uniform to calculate interpolatable per-vertex *shadow* data.
+ *  it is separated from ModelUniforms because the dependencies to the shadow map
+ *  render-pass
+ */
+typedef struct
+{
+    // enabling shadow casting for two light sources
+    matrix44 lightCastMatrix[2];
+}
+LightVertexUniforms;
+
+
+/**
+ *  fragement shader uniform to calulate lighted color
+ */
 typedef struct
 {
     vector4 direction[4];

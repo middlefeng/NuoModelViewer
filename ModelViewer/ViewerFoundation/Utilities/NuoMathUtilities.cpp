@@ -121,3 +121,14 @@ matrix_float4x4 matrix_rotate(float rotationX, float rotationY)
 }
 
 
+matrix_float4x4 matrix_lookAt(vector_float3 eye, vector_float3 center, vector_float3 up)
+{
+    glm::vec3 aeye(eye.x, eye.y, eye.z);
+    glm::vec3 acenter(center.x, center.y, center.z);
+    glm::vec3 aup(up.x, up.y, up.z);
+    
+    glm::mat4x4 gmat = glm::lookAt(aeye, acenter, aup);
+    return to_matrix(gmat);
+}
+
+

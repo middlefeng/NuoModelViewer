@@ -47,7 +47,8 @@
         
         for (unsigned int index = 0; index < 4; ++index)
         {
-            NotationLight* lightNotation = [[NotationLight alloc] initWithDevice:device];
+            NotationLight* lightNotation = [[NotationLight alloc] initWithDevice:device
+                                                                          isBold:index < 2 /* the first two with shadow casting */];
             [lightVectors addObject:lightNotation];
             
             LightSource* lightSource = [[LightSource alloc] init];

@@ -128,9 +128,12 @@
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
+    NSString* vertexFunc = _shadowPipelineState ? @"vertex_project_shadow" : @"vertex_project";
+    NSString* fragmnFunc = _shadowPipelineState ? @"fragment_light_shadow" : @"fragment_light";
+    
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
-    pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project"];
-    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light"];
+    pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];
+    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmnFunc];
     pipelineDescriptor.sampleCount = kSampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
@@ -151,6 +154,27 @@
     NSError *error = nil;
     _renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineDescriptor
                                                                        error:&error];
+}
+    
+- (void)makePipelineShadowState:(NSString*)vertexShadowShader
+{
+    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    
+    MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
+    shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShadowShader];
+    shadowPipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_shadow"];;
+    shadowPipelineDescriptor.sampleCount = kSampleCount;
+    shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
+    shadowPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    
+    NSError *error = nil;
+    _shadowPipelineState = [self.device newRenderPipelineStateWithDescriptor:shadowPipelineDescriptor
+                                                                       error:&error];
+}
+
+- (void)makePipelineShadowState
+{
+    return [self makePipelineShadowState:@"vertex_shadow"];
 }
 
 - (void)makeDepthStencilState
@@ -180,6 +204,24 @@
 }
 
 
+- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass
+{
+    if (_shadowPipelineState)
+    {
+        [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
+        [renderPass setRenderPipelineState:_shadowPipelineState];
+        [renderPass setDepthStencilState:_depthStencilState];
+        
+        [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
+        [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                               indexCount:[_indexBuffer length] / sizeof(uint32_t)
+                                indexType:MTLIndexTypeUInt32
+                              indexBuffer:_indexBuffer
+                        indexBufferOffset:0];
+    }
+}
+
+
 - (BOOL)hasTransparency
 {
     return _hasTransparency;
@@ -199,9 +241,11 @@
 
 
 NuoMesh* CreateMesh(const NuoModelOption& options,
-                    id<MTLDevice> device,
+                    id<MTLDevice> device, id<MTLCommandQueue> commandQueue,
                     const std::shared_ptr<NuoModelBase> model)
 {
+    NuoMesh* resultMesh = nil;
+    
     if (!options._textured && !options._basicMaterialized)
     {
         NuoMesh* mesh = [[NuoMesh alloc] initWithDevice:device
@@ -210,10 +254,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                             withIndices:model->IndicesPtr()
                                              withLength:model->IndicesLength()];
         
-        [mesh setRawModel:model.get()];
-        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
-        [mesh makeDepthStencilState];
-        return mesh;
+        resultMesh = mesh;
     }
     else if (options._textured && !options._basicMaterialized)
     {
@@ -226,12 +267,9 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                                             withIndices:model->IndicesPtr()
                                                              withLength:model->IndicesLength()];
         
-        [mesh setRawModel:model.get()];
-        [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency];
-        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
-        [mesh makeDepthStencilState];
+        [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency withCommandQueue:commandQueue];
         
-        return mesh;
+        resultMesh = mesh;
     }
     else if (options._textured && options._basicMaterialized)
     {
@@ -244,30 +282,28 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                                 withIndices:model->IndicesPtr()
                                                  withLength:model->IndicesLength()];
         
-        [mesh setRawModel:model.get()];
-        [mesh makeTexture:modelTexturePath checkTransparency:embeddedAlpha];
+        [mesh makeTexture:modelTexturePath checkTransparency:embeddedAlpha withCommandQueue:commandQueue];
         
         NSString* modelTexturePathOpacity = [NSString stringWithUTF8String:model->GetTexturePathOpacity().c_str()];
         if ([modelTexturePathOpacity isEqualToString:@""])
             modelTexturePathOpacity = nil;
         if (modelTexturePathOpacity)
-            [mesh makeTextureOpacity:modelTexturePathOpacity];
+            [mesh makeTextureOpacity:modelTexturePathOpacity withCommandQueue:commandQueue];
         
         NSString* modelTexturePathBump = [NSString stringWithUTF8String:model->GetTexturePathBump().c_str()];
         if ([modelTexturePathBump isEqualToString:@""])
             modelTexturePathBump = nil;
         if (modelTexturePathBump)
-            [mesh makeTextureBump:modelTexturePathBump];
+            [mesh makeTextureBump:modelTexturePathBump withCommandQueue:commandQueue];
         
         if (model->HasTransparent() || modelTexturePathOpacity)
             [mesh setTransparency:YES];
         else if (!embeddedAlpha)
             [mesh setTransparency:NO];
         
-        [mesh makePipelineState:[mesh makePipelineStateDescriptor:!embeddedAlpha]];
-        [mesh makeDepthStencilState];
+        [mesh setIgnoreTexutreAlpha:!embeddedAlpha];
         
-        return mesh;
+        resultMesh = mesh;
     }
     else if (!options._textured && options._basicMaterialized)
     {
@@ -277,15 +313,16 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                                                 withIndices:model->IndicesPtr()
                                                                  withLength:model->IndicesLength()];
         
-        [mesh setRawModel:model.get()];
-        [mesh makePipelineState:[mesh makePipelineStateDescriptor]];
-        [mesh makeDepthStencilState];
         [mesh setTransparency:model->HasTransparent()];
         
-        return mesh;
+        resultMesh = mesh;
     }
     
-    return nil;
+    [resultMesh setRawModel:model.get()];
+    [resultMesh makePipelineShadowState];
+    [resultMesh makePipelineState:[resultMesh makePipelineStateDescriptor]];
+    [resultMesh makeDepthStencilState];
+    return resultMesh;
 }
 
 

@@ -14,6 +14,7 @@
 {
     id<MTLTexture> _textureOpacity;
     id<MTLTexture> _textureBump;
+    BOOL _ignoreTextureAlpha;
 }
 
 
@@ -32,25 +33,41 @@
 
 
 
-- (void)makeTextureOpacity:(NSString*)texPath
+- (void)makeTextureOpacity:(NSString*)texPath withCommandQueue:(id<MTLCommandQueue>)queue
 {
     NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.device];
-    NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:NO checkTransparency:NO];
+    NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:YES
+                                             checkTransparency:NO commandQueue:queue];
     _textureOpacity = texture.texture;
 }
 
 
 
-- (void)makeTextureBump:(NSString*)texPath
+- (void)makeTextureBump:(NSString*)texPath withCommandQueue:(id<MTLCommandQueue>)queue
 {
     NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.device];
-    NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:NO checkTransparency:NO];
+    NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:YES
+                                             checkTransparency:NO commandQueue:queue];
     _textureBump = texture.texture;
 }
 
 
+- (void)makePipelineShadowState
+{
+    NSString* shadowShader = _textureBump ? @"vertex_shadow_tex_materialed_bump" : @"vertex_shadow_tex_materialed";
+    [super makePipelineShadowState:shadowShader];
+}
 
-- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor:(BOOL)ignoreTextureAlpha
+
+
+- (void)setIgnoreTexutreAlpha:(BOOL)ignoreAlpha
+{
+    _ignoreTextureAlpha = ignoreAlpha;
+}
+
+
+
+- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
@@ -61,7 +78,7 @@
     if (!_textureBump)
     {
         pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_tex_materialed"];
-        if (ignoreTextureAlpha)
+        if (_ignoreTextureAlpha)
         {
             if (_textureOpacity)
                 pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed_tex_opacity"];
@@ -76,7 +93,7 @@
     else
     {
         pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_tex_materialed_tangent"];
-        if (ignoreTextureAlpha)
+        if (_ignoreTextureAlpha)
         {
             if (_textureOpacity)
                 pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_tex_materialed_tex_opacity_bump"];
@@ -150,9 +167,10 @@
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
+    [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
-    NSUInteger texBufferIndex = 0;
+    NSUInteger texBufferIndex = 2; /* mesh texture starts after the shadow-map texture */
+    
     [renderPass setFragmentTexture:self.diffuseTex atIndex:texBufferIndex++];
     if (_textureOpacity)
         [renderPass setFragmentTexture:_textureOpacity atIndex:texBufferIndex++];
@@ -196,6 +214,12 @@
     return self;
 }
 
+
+
+- (void)makePipelineShadowState
+{
+    [super makePipelineShadowState:@"vertex_shadow_materialed"];
+}
 
 
 

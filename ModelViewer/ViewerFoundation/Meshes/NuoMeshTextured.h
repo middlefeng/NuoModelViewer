@@ -24,7 +24,7 @@
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength;
 
-- (void)makeTexture:(NSString*)texPath checkTransparency:(BOOL)check;
+- (void)makeTexture:(NSString*)texPath checkTransparency:(BOOL)check withCommandQueue:(id<MTLCommandQueue>)queue;
 
 
 @end

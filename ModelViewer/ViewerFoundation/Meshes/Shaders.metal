@@ -15,23 +15,58 @@ struct ProjectedVertex
     float4 position [[position]];
     float3 eye;
     float3 normal;
+    
+    float4 shadowPosition0;
+    float4 shadowPosition1;
 };
+
+
+ProjectedVertex vertex_project_common(device Vertex *vertices [[buffer(0)]],
+                                      constant ModelUniforms &uniforms [[buffer(1)]],
+                                      uint vid [[vertex_id]]);
+
+
+
+/**
+ *  shaders that generate shadow-map texture from the light view point
+ */
+
+vertex PositionSimple vertex_shadow(device Vertex *vertices [[buffer(0)]],
+                                    constant ModelUniforms &uniforms [[buffer(1)]],
+                                    uint vid [[vertex_id]])
+{
+    PositionSimple outShadow;
+    outShadow.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
+    return outShadow;
+}
+
+
+
+fragment void fragment_shadow(PositionSimple vert [[stage_in]])
+{
+}
+
+
+
+
+/**
+ *  shaders that generate phong result without shadow casting,
+ *  used for simple annotation.
+ */
 
 vertex ProjectedVertex vertex_project(device Vertex *vertices [[buffer(0)]],
                                       constant ModelUniforms &uniforms [[buffer(1)]],
                                       uint vid [[vertex_id]])
 {
-    ProjectedVertex outVert;
-    outVert.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
-    outVert.eye =  -(uniforms.modelViewMatrix * vertices[vid].position).xyz;
-    outVert.normal = uniforms.normalMatrix * vertices[vid].normal.xyz;
-    
-    return outVert;
+    return vertex_project_common(vertices, uniforms, vid);
 }
+
+
 
 fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
                                constant LightUniform &lightUniform [[buffer(0)]],
-                               constant ModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]])
+                               constant ModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
+                               sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
     float3 ambientTerm = lightUniform.ambientDensity * material.ambientColor;
@@ -58,10 +93,71 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
 }
 
 
+
+/**
+ *  shaders that generate phong result wit shadow casting,
+ */
+
+vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)]],
+                                             constant ModelUniforms &uniforms [[buffer(1)]],
+                                             constant LightVertexUniforms &lightCast [[buffer(2)]],
+                                             uint vid [[vertex_id]])
+{
+    ProjectedVertex outVert = vertex_project_common(vertices, uniforms, vid);
+    outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * vertices[vid].position;
+    outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * vertices[vid].position;
+    return outVert;
+}
+
+
+fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
+                                      constant LightUniform &lightUniform [[buffer(0)]],
+                                      constant ModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
+                                      texture2d<float> shadowMap0 [[texture(0)]],
+                                      texture2d<float> shadowMap1 [[texture(1)]],
+                                      sampler samplr [[sampler(0)]])
+{
+    float3 normal = normalize(vert.normal);
+    float3 ambientTerm = lightUniform.ambientDensity * material.ambientColor;
+    float3 colorForLights = 0.0;
+    
+    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
+    
+    for (unsigned i = 0; i < 4; ++i)
+    {
+        float diffuseIntensity = saturate(dot(normal, normalize(lightUniform.direction[i].xyz)));
+        float3 diffuseTerm = material.diffuseColor * diffuseIntensity;
+        
+        float3 specularTerm(0);
+        if (diffuseIntensity > 0)
+        {
+            float3 eyeDirection = normalize(vert.eye);
+            float3 halfway = normalize(normalize(lightUniform.direction[i].xyz) + eyeDirection);
+            float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower);
+            specularTerm = material.specularColor * specularFactor;
+        }
+        
+        float shadowPercent = 0.0;
+        if (i < 2)
+        {
+            shadowPercent = shadow_coverage_common(shadowPosition[i], 1.0 / 1800.0, 3,
+                                                   shadowMap[i], samplr);
+        }
+        
+        colorForLights += (diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i]) * (1.0 - shadowPercent);
+    }
+    
+    return float4(ambientTerm + colorForLights, modelCharacterUniforms.opacity);
+}
+
+
 float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                             float3 normal,
                                             constant LightUniform &lightingUniform,
-                                            float4 diffuseTexel)
+                                            float4 diffuseTexel,
+                                            texture2d<float> shadowMap[2],
+                                            sampler samplr)
 {
     normal = normalize(normal);
     
@@ -89,7 +185,15 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             specularTerm = vert.specularColor * specularFactor;
         }
         
-        colorForLights += diffuseTerm * lightingUniform.density[i] + specularTerm * lightingUniform.spacular[i];
+        float shadowPercent = 0.0;
+        if (i < 2)
+        {
+            shadowPercent = shadow_coverage_common(vert.shadowPosition[i], 1.0 / 1800.0, 3,
+                                                   shadowMap[i], samplr);
+        }
+        
+        colorForLights += (diffuseTerm * lightingUniform.density[i] + specularTerm * lightingUniform.spacular[i]) *
+                          (1 - shadowPercent);
     }
     
     if (opacity < 1.0 && transparency < 1.0)
@@ -97,3 +201,75 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
     
     return float4(ambientTerm + colorForLights, opacity);
 }
+
+
+
+ProjectedVertex vertex_project_common(device Vertex *vertices [[buffer(0)]],
+                                      constant ModelUniforms &uniforms [[buffer(1)]],
+                                      uint vid [[vertex_id]])
+{
+    ProjectedVertex outVert;
+    
+    outVert.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
+    outVert.eye =  -(uniforms.modelViewMatrix * vertices[vid].position).xyz;
+    outVert.normal = uniforms.normalMatrix * vertices[vid].normal.xyz;
+    
+    return outVert;
+}
+
+
+
+
+float shadow_coverage_common(metal::float4 shadowCastModelPostion,
+                             float shadowMapSampleSize, float shadowMapSampleRadius,
+                             metal::texture2d<float> shadowMap, metal::sampler samplr)
+{
+    float2 shadowCoord = float2(shadowCastModelPostion.x, shadowCastModelPostion.y) / shadowCastModelPostion.w;
+    shadowCoord.x = (shadowCoord.x + 1) * 0.5;
+    shadowCoord.y = (-shadowCoord.y + 1) * 0.5;
+    
+    const float shadowMapBias = 0.002;
+    float modelDepth = (shadowCastModelPostion.z / shadowCastModelPostion.w) - shadowMapBias;
+    
+    int shadowCoverage = 0;
+    int shadowSampleCount = 0;
+    
+    const float shadowRegion = shadowMapSampleRadius * shadowMapSampleSize;
+    const float shadowDiameter = shadowMapSampleRadius * 2;
+    
+    float xCurrent = shadowCoord.x - shadowRegion;
+    
+    for (int i = 0; i < shadowDiameter; ++i)
+    {
+        float yCurrent = shadowCoord.y - shadowRegion;
+        for (int j = 0; j < shadowDiameter; ++j)
+        {
+            shadowSampleCount += 1;
+            
+            float shadowDepth = shadowMap.sample(samplr, float2(xCurrent, yCurrent)).x;
+            if (shadowDepth < modelDepth)
+            {
+                shadowCoverage += 1;
+            }
+            
+            yCurrent += shadowMapSampleSize;
+        }
+        
+        xCurrent += shadowMapSampleSize;
+    }
+    
+    if (shadowCoverage > 0)
+    {
+        float shadowPercent = shadowCoverage / (float)shadowSampleCount;
+        return shadowPercent;
+    }
+    
+    /** simpler shadow without PCF
+     *
+    float shadowDepth = shadowMap.sample(samplr, shadowCoord).x;
+    if (shadowDepth < modelDepth)
+        return 1.0; */
+    
+    return 0.0;
+}
+
