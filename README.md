@@ -4,6 +4,12 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Preliminary shadowing for two of the four light sources.
+
+<p align="left">
+  <img width="400" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/FA-18-shadow.png"/>
+</p>
+
 * Load/save scene parameters (postion, light source direction, etc.).
 * Normal texture.
 * Light source configuration.
@@ -33,9 +39,11 @@ A simple Wavefront OBJ viewer.
 * <del>Direction of lgiht source.</del>
 * <del>Intensity of light source.</del>
 * <del>Mutilple light sources.</del>
-* Selectable list of object.
-* Surface smooth.
-* Shadow (to model and to ground).
+* <del>Selectable list of object.</del>
+* <del>Surface smooth.</del>
+* <del>Shadow to model</del>
+* Shadow to ground.
+* Per light-source, per-surface shadow properties (bias, soft edge).
 * <del>Cull mode.</del>
 * Surrounding (cube map).
 * Reflection.
