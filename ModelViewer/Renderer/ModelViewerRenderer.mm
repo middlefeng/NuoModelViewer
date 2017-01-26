@@ -444,6 +444,12 @@
         lighting.direction[i] = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
         lighting.density[i] = _lights[i].lightingDensity;
         lighting.spacular[i] = _lights[i].lightingSpacular;
+        
+        if (i < 2)
+        {
+            lighting.shadowSoften[i] = _lights[i].shadowSoften;
+            lighting.shadowBias[i] = _lights[i].shadowBias;
+        }
     }
     
     memcpy([self.lightingUniformBuffers[self.bufferIndex] contents], &lighting, sizeof(LightUniform));

@@ -58,6 +58,9 @@ typedef struct
     float density[4];
     float spacular[4];
     float ambientDensity;
+    
+    float shadowSoften[2];
+    float shadowBias[2];
 }
 LightUniform;
 

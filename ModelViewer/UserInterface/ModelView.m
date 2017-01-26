@@ -295,6 +295,13 @@
             LightSource* source = _notationRender.selectedLightSource;
             [_lightPanel setLightDensity:source.lightingDensity];
             [_lightPanel setLightSpacular:source.lightingSpacular];
+            [_lightPanel setShadowEnabled:source.enableShadow];
+            
+            if (source.enableShadow)
+            {
+                [_lightPanel setShadowSoften:source.shadowSoften];
+                [_lightPanel setShadowBias:source.shadowBias];
+            }
         }
     }
     else

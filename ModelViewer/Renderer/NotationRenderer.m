@@ -52,6 +52,8 @@
             [lightVectors addObject:lightNotation];
             
             LightSource* lightSource = [[LightSource alloc] init];
+            lightSource.enableShadow = (index < 2);
+            
             lightNotation.lightSourceDesc = lightSource;
             [lightSourcesDesc addObject:lightSource];
         }
@@ -185,6 +187,18 @@
 - (void)setRotateY:(float)rotateY
 {
     _currentLightVector.lightSourceDesc.lightingRotationY = rotateY;
+}
+
+
+- (void)setShadowSoften:(float)soften
+{
+    _currentLightVector.lightSourceDesc.shadowSoften = soften;
+}
+
+
+- (void)setShadowBias:(float)bias
+{
+    _currentLightVector.lightSourceDesc.shadowBias = bias;
 }
 
 
