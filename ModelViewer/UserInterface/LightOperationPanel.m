@@ -20,6 +20,12 @@
     
     NSTextField* _lightSpacularLabel;
     NSSlider* _lightSpacularSlider;
+    
+    NSTextField* _shadowSoftenLabel;
+    NSSlider* _shadowSoftenSlider;
+    
+    NSTextField* _shadowBiasLabel;
+    NSSlider* _shadowBiasSlider;
 }
 
 
@@ -31,42 +37,47 @@
     {
         [self setWantsLayer:YES];
         
-        _lightDensityLabel = [[NSTextField alloc] init];
-        [_lightDensityLabel setEditable:NO];
-        [_lightDensityLabel setSelectable:NO];
-        [_lightDensityLabel setBordered:NO];
-        [_lightDensityLabel setBackgroundColor:[NSColor colorWithWhite:0.0 alpha:0.0]];
-        [_lightDensityLabel setStringValue:@"Density:"];
-        [_lightDensityLabel setAlignment:NSTextAlignmentRight];
-        [self addSubview:_lightDensityLabel];
+        _lightDensityLabel = [self createLabel:@"Density:"];
+        _lightDensitySlider = [self createSliderMax:3.0 min:0.0 value:1.0];
         
-        _lightDensitySlider = [[NSSlider alloc] init];
-        [_lightDensitySlider setMaxValue:3.0f];
-        [_lightDensitySlider setMinValue:0.0f];
-        [_lightDensitySlider setFloatValue:1.0f];
-        [_lightDensitySlider setTarget:self];
-        [_lightDensitySlider setAction:@selector(lightDensityChange:)];
-        [self addSubview:_lightDensitySlider];
+        _lightSpacularLabel = [self createLabel:@"Spacular:"];
+        _lightSpacularSlider = [self createSliderMax:3.0 min:0.0 value:1.0];
+
+        _shadowSoftenLabel = [self createLabel:@"Penumbra:"];
+        _shadowSoftenSlider = [self createSliderMax:3.0 min:-3.0 value:0.0];
         
-        _lightSpacularLabel = [[NSTextField alloc] init];
-        [_lightSpacularLabel setEditable:NO];
-        [_lightSpacularLabel setSelectable:NO];
-        [_lightSpacularLabel setBordered:NO];
-        [_lightSpacularLabel setBackgroundColor:[NSColor colorWithWhite:0.0 alpha:0.0]];
-        [_lightSpacularLabel setStringValue:@"Spacular:"];
-        [_lightSpacularLabel setAlignment:NSTextAlignmentRight];
-        [self addSubview:_lightSpacularLabel];
-        
-        _lightSpacularSlider = [[NSSlider alloc] init];
-        [_lightSpacularSlider setMaxValue:3.0f];
-        [_lightSpacularSlider setMinValue:0.0f];
-        [_lightSpacularSlider setFloatValue:1.0f];
-        [_lightSpacularSlider setTarget:self];
-        [_lightSpacularSlider setAction:@selector(lightSpacularChange:)];
-        [self addSubview:_lightSpacularSlider];
+        _shadowBiasLabel = [self createLabel:@"Bias:"];
+        _shadowBiasSlider = [self createSliderMax:3.0 min:-3.0 value:0.0];
     }
     
     return self;
+}
+
+
+- (NSTextField*)createLabel:(NSString*)text
+{
+    NSTextField* label = [[NSTextField alloc] init];
+    [label setEditable:NO];
+    [label setSelectable:NO];
+    [label setBordered:NO];
+    [label setBackgroundColor:[NSColor colorWithWhite:0.0 alpha:0.0]];
+    [label setStringValue:text];
+    [label setAlignment:NSTextAlignmentRight];
+    [self addSubview:label];
+    return label;
+}
+
+
+- (NSSlider*)createSliderMax:(float)max min:(float)min value:(float)value
+{
+    NSSlider* slider = [[NSSlider alloc] init];
+    [slider setMaxValue:max];
+    [slider setMinValue:min];
+    [slider setFloatValue:value];
+    [slider setTarget:self];
+    [self addSubview:slider];
+    [slider setAction:@selector(lightSettingsChange:)];
+    return slider;
 }
 
 
@@ -86,20 +97,20 @@
 {
     CGSize viewSize = [self bounds].size;
     
-    float labelWidth = 60;
+    float labelWidth = 75;
     float labelSpace = 2;
     float entryHeight = 18;
     float lineSpace = 6;
     
     CGRect labelFrame;
     labelFrame.size = CGSizeMake(labelWidth, entryHeight);
-    labelFrame.origin = CGPointMake(0, entryHeight + lineSpace + 5);
+    labelFrame.origin = CGPointMake(0, (entryHeight + lineSpace) * 3 + 5);
     
     [_lightDensityLabel setFrame:labelFrame];
     
     CGRect sliderFrame;
     sliderFrame.size = CGSizeMake(viewSize.width - labelWidth - labelSpace, entryHeight);
-    sliderFrame.origin = CGPointMake(labelWidth + labelSpace, entryHeight + lineSpace + 5);
+    sliderFrame.origin = CGPointMake(labelWidth + labelSpace, (entryHeight + lineSpace) * 3 + 5);
     [_lightDensitySlider setFrame:sliderFrame];
     
     labelFrame.origin.y -= entryHeight + lineSpace;
@@ -107,6 +118,18 @@
     
     [_lightSpacularLabel setFrame:labelFrame];
     [_lightSpacularSlider setFrame:sliderFrame];
+    
+    labelFrame.origin.y -= entryHeight + lineSpace;
+    sliderFrame.origin.y -= entryHeight + lineSpace;
+    
+    [_shadowSoftenLabel setFrame:labelFrame];
+    [_shadowSoftenSlider setFrame:sliderFrame];
+    
+    labelFrame.origin.y -= entryHeight + lineSpace;
+    sliderFrame.origin.y -= entryHeight + lineSpace;
+    
+    [_shadowBiasLabel setFrame:labelFrame];
+    [_shadowBiasSlider setFrame:sliderFrame];
 }
 
 
@@ -123,12 +146,6 @@
 }
 
 
-- (void)lightDensityChange:(id)sender
-{
-    [_optionUpdateDelegate lightOptionUpdate:self];
-}
-
-
 - (float)lightSpacular
 {
     return [_lightSpacularSlider floatValue];
@@ -140,11 +157,49 @@
     [_lightSpacularSlider setFloatValue:lightSpacular];
 }
 
+- (void)setShadowEnabled:(BOOL)shadowEnabled
+{
+    _shadowEnabled = shadowEnabled;
+    [_shadowSoftenLabel setHidden:!shadowEnabled];
+    [_shadowSoftenSlider setHidden:!shadowEnabled];
+    [_shadowBiasLabel setHidden:!shadowEnabled];
+    [_shadowBiasSlider setHidden:!shadowEnabled];
+}
 
-- (void)lightSpacularChange:(id)sender
+
+- (float)shadowSoften
+{
+    return [_shadowSoftenSlider floatValue];
+}
+
+
+
+- (void)setShadowSoften:(float)shadowSoften
+{
+    [_shadowSoftenSlider setFloatValue:shadowSoften];
+}
+
+
+
+- (float)shadowBias
+{
+    return [_shadowBiasSlider floatValue];
+}
+
+
+
+- (void)setShadowBias:(float)shadowBias
+{
+    [_shadowBiasSlider setFloatValue:shadowBias];
+}
+
+
+
+- (void)lightSettingsChange:(id)sender
 {
     [_optionUpdateDelegate lightOptionUpdate:self];
 }
+
 
 
 @end

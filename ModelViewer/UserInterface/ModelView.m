@@ -221,15 +221,13 @@
 
 - (NSRect)lightPanelRect
 {
-    const CGFloat margin = 8;
-    
     CGRect area = [_notationRender notationArea];
     NSRect result = area;
     CGFloat width = area.size.width;
     width = width * 0.8;
     result.size.width = width;
-    result.size.height = 50;
-    result.origin.y = area.origin.y + margin - result.size.height;
+    result.size.height = 120;
+    result.origin.y = 10;//area.origin.y + margin - result.size.height;
     result.origin.x += (area.size.width - width) / 2.0;
     
     return result;
