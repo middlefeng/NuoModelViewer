@@ -162,6 +162,8 @@
 {
     _notationRender.density = [panel lightDensity];
     _notationRender.spacular = [panel lightSpacular];
+    _notationRender.shadowSoften = [panel shadowSoften];
+    _notationRender.shadowBias = [panel shadowBias];
     [self render];
 }
 

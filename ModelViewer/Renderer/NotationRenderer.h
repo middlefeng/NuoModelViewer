@@ -39,8 +39,8 @@
 - (void)setRotateY:(float)rotateY;
 - (void)setDensity:(float)density;
 - (void)setSpacular:(float)spacular;
-- (void)setShadowSoften:(float)soften;
-- (void)setShadowBias:(float)bias;
+- (void)setShadowSoften:(float)shadowSoften;
+- (void)setShadowBias:(float)shadowBias;
 
 
 @end

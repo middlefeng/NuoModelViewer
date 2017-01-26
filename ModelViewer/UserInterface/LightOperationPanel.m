@@ -44,10 +44,10 @@
         _lightSpacularSlider = [self createSliderMax:3.0 min:0.0 value:1.0];
 
         _shadowSoftenLabel = [self createLabel:@"Penumbra:"];
-        _shadowSoftenSlider = [self createSliderMax:3.0 min:-3.0 value:0.0];
+        _shadowSoftenSlider = [self createSliderMax:3.0 min:-1.0 value:0.0];
         
         _shadowBiasLabel = [self createLabel:@"Bias:"];
-        _shadowBiasSlider = [self createSliderMax:3.0 min:-3.0 value:0.0];
+        _shadowBiasSlider = [self createSliderMax:0.01 min:0.0 value:0.0];
     }
     
     return self;
