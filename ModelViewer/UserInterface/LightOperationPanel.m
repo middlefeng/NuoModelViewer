@@ -8,7 +8,7 @@
 
 #import "LightOperationPanel.h"
 #import "ModelOptionUpdate.h"
-
+#import "LightSource.h"
 
 
 
@@ -198,6 +198,21 @@
 - (void)lightSettingsChange:(id)sender
 {
     [_optionUpdateDelegate lightOptionUpdate:self];
+}
+
+
+
+- (void)updateControls:(LightSource*)lightSource
+{
+    [self setLightDensity:lightSource.lightingDensity];
+    [self setLightSpacular:lightSource.lightingSpacular];
+    [self setShadowEnabled:lightSource.enableShadow];
+    
+    if (lightSource.enableShadow)
+    {
+        [self setShadowSoften:lightSource.shadowSoften];
+        [self setShadowBias:lightSource.shadowBias];
+    }
 }
 
 

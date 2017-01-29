@@ -61,6 +61,7 @@
         _lightSources = lightSourcesDesc;
         _currentLightVector = lightVectors[0];
         lightSourcesDesc[0].lightingDensity = 1.0f;
+        lightSourcesDesc[0].lightingSpacular = 0.4f;
         
         // the direction of light used to render the "light vector"
         //

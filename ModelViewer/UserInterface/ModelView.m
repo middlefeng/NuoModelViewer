@@ -214,7 +214,8 @@
     _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
     _notationRender.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
-    [_modelRender setModelOptions:_modelPanel.meshOptions withCommandQueue:[self commandQueue]];
+    [self modelOptionUpdate:_modelPanel];
+    [_lightPanel updateControls:_notationRender.selectedLightSource];
     
     [self setupPipelineSettings];
     [self registerForDraggedTypes:@[@"public.data"]];
@@ -295,15 +296,8 @@
         {
             [_notationRender selectCurrentLightVector:location];
             LightSource* source = _notationRender.selectedLightSource;
-            [_lightPanel setLightDensity:source.lightingDensity];
-            [_lightPanel setLightSpacular:source.lightingSpacular];
-            [_lightPanel setShadowEnabled:source.enableShadow];
             
-            if (source.enableShadow)
-            {
-                [_lightPanel setShadowSoften:source.shadowSoften];
-                [_lightPanel setShadowBias:source.shadowBias];
-            }
+            [_lightPanel updateControls:source];
         }
     }
     else

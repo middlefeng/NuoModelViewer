@@ -11,6 +11,7 @@
 
 
 @protocol ModelOptionUpdate;
+@class LightSource;
 
 
 
@@ -26,6 +27,9 @@
 @property (nonatomic) float shadowBias;
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
+
+
+- (void)updateControls:(LightSource*)lightSource;
 
 
 @end
