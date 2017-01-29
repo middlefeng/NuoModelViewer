@@ -38,16 +38,16 @@
         [self setWantsLayer:YES];
         
         _lightDensityLabel = [self createLabel:@"Density:"];
-        _lightDensitySlider = [self createSliderMax:3.0 min:0.0 value:1.0];
+        _lightDensitySlider = [self createSliderMax:3.0 min:0.0];
         
         _lightSpacularLabel = [self createLabel:@"Spacular:"];
-        _lightSpacularSlider = [self createSliderMax:3.0 min:0.0 value:1.0];
+        _lightSpacularSlider = [self createSliderMax:3.0 min:0.0];
 
         _shadowSoftenLabel = [self createLabel:@"Penumbra:"];
-        _shadowSoftenSlider = [self createSliderMax:3.0 min:-1.0 value:0.0];
+        _shadowSoftenSlider = [self createSliderMax:3.0 min:-1.0];
         
         _shadowBiasLabel = [self createLabel:@"Bias:"];
-        _shadowBiasSlider = [self createSliderMax:0.01 min:0.0 value:0.0];
+        _shadowBiasSlider = [self createSliderMax:0.01 min:0.0];
     }
     
     return self;
@@ -68,12 +68,11 @@
 }
 
 
-- (NSSlider*)createSliderMax:(float)max min:(float)min value:(float)value
+- (NSSlider*)createSliderMax:(float)max min:(float)min
 {
     NSSlider* slider = [[NSSlider alloc] init];
     [slider setMaxValue:max];
     [slider setMinValue:min];
-    [slider setFloatValue:value];
     [slider setTarget:self];
     [self addSubview:slider];
     [slider setAction:@selector(lightSettingsChange:)];

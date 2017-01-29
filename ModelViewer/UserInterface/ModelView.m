@@ -214,7 +214,13 @@
     _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
     _notationRender.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
+    // sync the model renderer with the initial settings in the model panel
+    //
     [self modelOptionUpdate:_modelPanel];
+    
+    // sync the light panel with the current initial light vector in the
+    // notation renderer
+    //
     [_lightPanel updateControls:_notationRender.selectedLightSource];
     
     [self setupPipelineSettings];
@@ -224,13 +230,15 @@
 
 - (NSRect)lightPanelRect
 {
+    const CGFloat margin = 10;
+    
     CGRect area = [_notationRender notationArea];
     NSRect result = area;
     CGFloat width = area.size.width;
     width = width * 0.8;
     result.size.width = width;
     result.size.height = 120;
-    result.origin.y = 10;//area.origin.y + margin - result.size.height;
+    result.origin.y = margin;
     result.origin.x += (area.size.width - width) / 2.0;
     
     return result;
