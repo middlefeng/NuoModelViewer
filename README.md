@@ -4,6 +4,7 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Adjustable shadowing PCF and bias to alliviate artifacts.
 * Preliminary shadowing for two of the four light sources.
 
 <p align="left">
@@ -43,9 +44,12 @@ A simple Wavefront OBJ viewer.
 * <del>Surface smooth.</del>
 * <del>Shadow to model</del>
 * Shadow to ground.
-* Per light-source, per-surface shadow properties (bias, soft edge).
+* <del>Per light-source, per-surface shadow properties (bias, soft edge).</del>
 * <del>Cull mode.</del>
 * Surrounding (cube map).
+* Detailed properties panel for indiviudal model parts.
+  * Smooth options (everywhere, texture discontinuiation only, etc).
+  * Material adjustment (opacity, colors, etc).
 * Reflection.
 * Model visualization
   * Triangle mesh
