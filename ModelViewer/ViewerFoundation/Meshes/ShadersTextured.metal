@@ -89,7 +89,9 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
         float shadowPercent = 0.0;
         if (i < 2)
         {
-            shadowPercent = shadow_coverage_common(shadowPosition[i], 1.0 / 1800.0, 3,
+            shadowPercent = shadow_coverage_common(shadowPosition[i],
+                                                   lightUniform.shadowBias[i], diffuseIntensity,
+                                                   lightUniform.shadowSoften[i], 3,
                                                    shadowMap[i], depthSamplr);
         }
         

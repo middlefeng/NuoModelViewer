@@ -52,6 +52,8 @@
             [lightVectors addObject:lightNotation];
             
             LightSource* lightSource = [[LightSource alloc] init];
+            lightSource.enableShadow = (index < 2);
+            
             lightNotation.lightSourceDesc = lightSource;
             [lightSourcesDesc addObject:lightSource];
         }
@@ -59,6 +61,7 @@
         _lightSources = lightSourcesDesc;
         _currentLightVector = lightVectors[0];
         lightSourcesDesc[0].lightingDensity = 1.0f;
+        lightSourcesDesc[0].lightingSpacular = 0.4f;
         
         // the direction of light used to render the "light vector"
         //
@@ -188,6 +191,18 @@
 }
 
 
+- (void)setShadowSoften:(float)soften
+{
+    _currentLightVector.lightSourceDesc.shadowSoften = soften;
+}
+
+
+- (void)setShadowBias:(float)bias
+{
+    _currentLightVector.lightSourceDesc.shadowBias = bias;
+}
+
+
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
     self.renderTarget.clearColor = MTLClearColorMake(0.0, 0.95, 0.95, 1);
@@ -198,7 +213,7 @@
     self.lastRenderPass = nil;
     
     const float lightSettingAreaFactor = 0.28;
-    const float lightDensitySliderHeight = 100;
+    const float lightSlidersHeight = 280;
     const CGFloat factor = [[NSScreen mainScreen] backingScaleFactor];
     
     CGSize drawableSize = self.renderTarget.drawableSize;
@@ -206,7 +221,7 @@
     viewPort.width = fmin(drawableSize.width * lightSettingAreaFactor, _notationWidthCap * factor);
     viewPort.height = fmin(drawableSize.height * lightSettingAreaFactor, _notationWidthCap * factor);
     viewPort.originX = drawableSize.width - viewPort.width;
-    viewPort.originY = drawableSize.height - viewPort.height - lightDensitySliderHeight;
+    viewPort.originY = drawableSize.height - viewPort.height - lightSlidersHeight;
     viewPort.znear = 0.0;
     viewPort.zfar = 1.0;
     [renderPass setViewport:viewPort];

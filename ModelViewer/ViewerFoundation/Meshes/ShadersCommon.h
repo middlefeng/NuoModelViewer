@@ -74,7 +74,8 @@ fragment void fragment_shadow(PositionSimple vert [[stage_in]]);
 
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
-                             float shadowMapSampleSize, float shadowMapSampleRadius,
+                             float shadowBiasFactor, float shadowedSurfaceAngle,
+                             float shadowSoftenFactor, float shadowMapSampleRadius,
                              metal::texture2d<float> shadowMap, metal::sampler samplr);
 
 

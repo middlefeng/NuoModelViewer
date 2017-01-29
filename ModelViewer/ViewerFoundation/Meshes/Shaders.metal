@@ -141,7 +141,9 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         float shadowPercent = 0.0;
         if (i < 2)
         {
-            shadowPercent = shadow_coverage_common(shadowPosition[i], 1.0 / 1800.0, 3,
+            shadowPercent = shadow_coverage_common(shadowPosition[i],
+                                                   lightUniform.shadowBias[i], diffuseIntensity,
+                                                   lightUniform.shadowSoften[i], 3,
                                                    shadowMap[i], samplr);
         }
         
@@ -188,7 +190,9 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         float shadowPercent = 0.0;
         if (i < 2)
         {
-            shadowPercent = shadow_coverage_common(vert.shadowPosition[i], 1.0 / 1800.0, 3,
+            shadowPercent = shadow_coverage_common(vert.shadowPosition[i],
+                                                   lightingUniform.shadowBias[i], diffuseIntensity,
+                                                   lightingUniform.shadowSoften[i], 3,
                                                    shadowMap[i], samplr);
         }
         
@@ -221,20 +225,26 @@ ProjectedVertex vertex_project_common(device Vertex *vertices [[buffer(0)]],
 
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
-                             float shadowMapSampleSize, float shadowMapSampleRadius,
+                             float shadowBiasFactor, float shadowedSurfaceAngle,
+                             float shadowSoftenFactor, float shadowMapSampleRadius,
                              metal::texture2d<float> shadowMap, metal::sampler samplr)
 {
+    float shadowMapBias = 0.002;
+    shadowMapBias += shadowBiasFactor * (1 - shadowedSurfaceAngle);
+    
+    float sampleSize = 1.0 / 1800.0;
+    sampleSize += sampleSize * shadowSoftenFactor;
+    
     float2 shadowCoord = float2(shadowCastModelPostion.x, shadowCastModelPostion.y) / shadowCastModelPostion.w;
     shadowCoord.x = (shadowCoord.x + 1) * 0.5;
     shadowCoord.y = (-shadowCoord.y + 1) * 0.5;
     
-    const float shadowMapBias = 0.002;
     float modelDepth = (shadowCastModelPostion.z / shadowCastModelPostion.w) - shadowMapBias;
     
     int shadowCoverage = 0;
     int shadowSampleCount = 0;
     
-    const float shadowRegion = shadowMapSampleRadius * shadowMapSampleSize;
+    const float shadowRegion = shadowMapSampleRadius * sampleSize;
     const float shadowDiameter = shadowMapSampleRadius * 2;
     
     float xCurrent = shadowCoord.x - shadowRegion;
@@ -252,10 +262,10 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                 shadowCoverage += 1;
             }
             
-            yCurrent += shadowMapSampleSize;
+            yCurrent += sampleSize;
         }
         
-        xCurrent += shadowMapSampleSize;
+        xCurrent += sampleSize;
     }
     
     if (shadowCoverage > 0)

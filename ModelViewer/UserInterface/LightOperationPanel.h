@@ -11,6 +11,7 @@
 
 
 @protocol ModelOptionUpdate;
+@class LightSource;
 
 
 
@@ -21,7 +22,14 @@
 @property (nonatomic) float lightDensity;
 @property (nonatomic) float lightSpacular;
 
+@property (nonatomic) BOOL shadowEnabled;
+@property (nonatomic) float shadowSoften;
+@property (nonatomic) float shadowBias;
+
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
+
+
+- (void)updateControls:(LightSource*)lightSource;
 
 
 @end

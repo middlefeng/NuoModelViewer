@@ -16,4 +16,8 @@
 @property (nonatomic, assign) float lightingDensity;
 @property (nonatomic, assign) float lightingSpacular;
 
+@property (nonatomic, assign) float enableShadow;
+@property (nonatomic, assign) float shadowSoften;
+@property (nonatomic, assign) float shadowBias;
+
 @end
