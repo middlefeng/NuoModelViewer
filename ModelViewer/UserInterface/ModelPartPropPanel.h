@@ -8,8 +8,21 @@
 
 #import "NuoRoundedView.h"
 
+
+
+@class NuoMesh;
+@protocol ModelOptionUpdate;
+
+
+
 @interface ModelPartPropPanel : NuoRoundedView
 
+
+@property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
+
+
 - (void)updateControlsLayout;
+- (void)updateForMesh:(NuoMesh*)mesh;
+
 
 @end

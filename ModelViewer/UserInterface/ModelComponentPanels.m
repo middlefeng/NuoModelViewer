@@ -28,6 +28,8 @@
 {
     ModelPartsPanel* _modelPartsPanel;
     ModelPartPropPanel* _modelPartPropPanel;
+    
+    __weak NSArray<NuoMesh*>* _mesh;
 }
 
 
@@ -58,6 +60,7 @@
 - (NSRect)modelPartPropPanelLocation
 {
     NSRect viewRect = [self modelPartsPanelLocation];
+    viewRect.size.height = 100;
     viewRect.origin.y -= viewRect.size.height;
     viewRect.origin.y -= 20;
     
@@ -93,6 +96,7 @@
 - (void)setMesh:(NSArray<NuoMesh*>*)mesh
 {
     [_modelPartsPanel setMesh:mesh];
+    _mesh = mesh;
 }
 
 
@@ -114,6 +118,7 @@
     else
     {
         [_modelPartPropPanel setHidden:NO];
+        [_modelPartPropPanel updateForMesh:_mesh[selection]];
     }
 }
 
