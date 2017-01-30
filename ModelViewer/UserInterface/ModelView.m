@@ -150,6 +150,7 @@
         [_modelRender setCullEnabled:[panel cullEnabled]];
         [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
         [_modelRender setAmbientDensity:[panel ambientDensity]];
+        [_modelRender setModelOptions:panel.meshOptions withCommandQueue:self.commandQueue];
         [self setupPipelineSettings];
     }
     
