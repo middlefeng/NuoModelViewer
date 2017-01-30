@@ -27,6 +27,7 @@
 {
     [_modelPartsPanel setFrame:[self modelPartsPanelLocation]];
     [_modelPartPropPanel setFrame:[self modelPartPropPanelLocation]];
+    [_modelPartPropPanel updateControlsLayout];
 }
 
 

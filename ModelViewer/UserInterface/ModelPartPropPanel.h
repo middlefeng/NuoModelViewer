@@ -10,4 +10,6 @@
 
 @interface ModelPartPropPanel : NuoRoundedView
 
+- (void)updateControlsLayout;
+
 @end
