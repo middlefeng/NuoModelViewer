@@ -9,9 +9,17 @@
 #import "ModelComponentPanels.h"
 #import "ModelOptionUpdate.h"
 #import "NuoMesh.h"
+#import "ModelPanelUpdate.h"
 
 #import "ModelPartsPanel.h"
 #import "ModelPartPropPanel.h"
+
+
+
+
+@interface ModelComponentPanels() < ModelPanelUpdate>
+
+@end
 
 
 
@@ -69,13 +77,14 @@
     [_containerView addSubview:_modelPartsPanel];
     [_modelPartsPanel setFrame:listRect];
     [_modelPartsPanel setOptionUpdateDelegate:_modelOptionDelegate];
+    [_modelPartsPanel setPanelUpdateDelegate:self];
     
     _modelPartPropPanel =  [[ModelPartPropPanel alloc] init];
     _modelPartPropPanel.layer.opacity = 0.8f;
     _modelPartPropPanel.layer.backgroundColor = [NSColor colorWithWhite:1.0 alpha:1.0].CGColor;
     
     [_containerView addSubview:_modelPartPropPanel];
-    [_modelPartPropPanel setHidden:NO];
+    [_modelPartPropPanel setHidden:YES];
     [_modelPartPropPanel setFrame:[self modelPartPropPanelLocation]];
 }
 
@@ -91,7 +100,21 @@
 - (void)setHidden:(BOOL)hidden
 {
     [_modelPartsPanel setHidden:hidden];
-    [_modelPartPropPanel setHidden:hidden];
+}
+
+
+
+
+- (void)modelPartSelectionChanged:(NSUInteger)selection
+{
+    if (selection == NSNotFound)
+    {
+        [_modelPartPropPanel setHidden:YES];
+    }
+    else
+    {
+        [_modelPartPropPanel setHidden:NO];
+    }
 }
 
 

@@ -9,6 +9,7 @@
 #import "ModelPartsPanel.h"
 #import "NuoMesh.h"
 #import "ModelOptionUpdate.h"
+#import "ModelPanelUpdate.h"
 
 
 
@@ -34,6 +35,7 @@
 
 
 @property (nonatomic, weak) id<ModelOptionUpdate> updateDelegate;
+@property (nonatomic, weak) id<ModelPanelUpdate> panelUpdateDelegate;
 @property (nonatomic, weak) NSArray<NuoMesh*>* mesh;
 
 - (void)cellEnablingChanged:(id)sender;
@@ -119,6 +121,7 @@
     self = [super initWithCoder:aDecoder];
     if (self)
     {
+        [self setAllowsMultipleSelection:YES];
         [self setDataSource:self];
         [self setDelegate:self];
     }
@@ -166,6 +169,15 @@
     }
     
     return result;
+}
+
+
+- (NSIndexSet *)tableView:(NSTableView *)tableView selectionIndexesForProposedSelection:(NSIndexSet *)proposedSelectionIndexes
+{
+    NSUInteger selected = [proposedSelectionIndexes firstIndex];
+    [_panelUpdateDelegate modelPartSelectionChanged:selected];
+    
+    return proposedSelectionIndexes;
 }
 
 
@@ -266,6 +278,12 @@
 - (void)setOptionUpdateDelegate:(id<ModelOptionUpdate>)optionUpdateDelegate
 {
     _partsTable.updateDelegate = optionUpdateDelegate;
+}
+
+
+- (void)setPanelUpdateDelegate:(id<ModelPanelUpdate>)panelUpdateDelegate
+{
+    _partsTable.panelUpdateDelegate = panelUpdateDelegate;
 }
 
 

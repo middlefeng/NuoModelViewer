@@ -11,6 +11,7 @@
 
 @class NuoMesh;
 @protocol ModelOptionUpdate;
+@protocol ModelPanelUpdate;
 
 
 
@@ -18,6 +19,7 @@
 
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
+@property (nonatomic, weak) id<ModelPanelUpdate> panelUpdateDelegate;
 
 - (void)setMesh:(NSArray<NuoMesh*>*)mesh;
 

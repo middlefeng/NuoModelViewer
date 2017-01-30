@@ -7,6 +7,8 @@
 //
 
 #import "ModelPartPropPanel.h"
+#import "ModelPanelUpdate.h"
+
 
 
 
