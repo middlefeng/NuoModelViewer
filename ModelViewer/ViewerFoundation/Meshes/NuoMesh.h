@@ -29,6 +29,7 @@
 @property (nonatomic, strong) id<MTLDepthStencilState> depthStencilState;
 
 @property (nonatomic, readonly, assign) float smoothTolerance;
+@property (nonatomic, assign) BOOL smoothConservative;
 
 
 @property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;

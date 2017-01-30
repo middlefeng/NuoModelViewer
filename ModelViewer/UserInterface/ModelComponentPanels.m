@@ -89,6 +89,7 @@
     [_containerView addSubview:_modelPartPropPanel];
     [_modelPartPropPanel setHidden:YES];
     [_modelPartPropPanel setFrame:[self modelPartPropPanelLocation]];
+    [_modelPartPropPanel setOptionUpdateDelegate:_modelOptionDelegate];
 }
 
 

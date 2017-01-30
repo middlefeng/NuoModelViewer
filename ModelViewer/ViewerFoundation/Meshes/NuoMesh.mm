@@ -77,6 +77,7 @@
         _enabled = true;
         
         _smoothTolerance = 0.0f;
+        _smoothConservative = YES;
     }
     
     return self;
@@ -92,7 +93,7 @@
     if (_smoothTolerance > 0.001)
     {
         clonedModel = _rawModel->Clone();
-        clonedModel->SmoothSurface(tolerance, true);
+        clonedModel->SmoothSurface(tolerance, _smoothConservative);
     }
     
     _vertexBuffer = [_device newBufferWithBytes:clonedModel->Ptr()
@@ -102,6 +103,13 @@
     _indexBuffer = [_device newBufferWithBytes:clonedModel->IndicesPtr()
                                         length:clonedModel->IndicesLength()
                                        options:MTLResourceOptionCPUCacheModeDefault];
+}
+
+
+- (void)setSmoothConservative:(BOOL)smoothConservative
+{
+    _smoothConservative = smoothConservative;
+    [self smoothWithTolerance:_smoothTolerance];
 }
 
 

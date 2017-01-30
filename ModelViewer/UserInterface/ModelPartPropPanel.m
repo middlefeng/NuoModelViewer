@@ -21,6 +21,8 @@
     NSTextField* _nameField;
     
     NSButton* _modelSmoothOption;
+    
+    __weak NuoMesh* _selectedMesh;
 }
 
 
@@ -37,6 +39,7 @@
         _nameField = [self createLabel:@"" align:NSTextAlignmentLeft];
         
         _modelSmoothOption = [self createCheckButton:@"Smooth conservative"];
+        [_modelSmoothOption setAction:@selector(modelPartsChanged:)];
         
         [self addSubview:_nameLabel];
         [self addSubview:_nameField];
@@ -78,6 +81,7 @@
     NSButton* button = [NSButton new];
     [button setButtonType:NSSwitchButton];
     [button setTitle:text];
+    [button setTarget:self];
     [self addSubview:button];
     return button;
 }
@@ -116,13 +120,16 @@
 - (void)updateForMesh:(NuoMesh*)mesh
 {
     [_nameField setStringValue:mesh.modelName];
+    [_modelSmoothOption setState:mesh.smoothConservative ? NSOnState : NSOffState];
+    _selectedMesh = mesh;
 }
 
 
 
 - (void)modelPartsChanged:(id)sender
 {
-    
+    _selectedMesh.smoothConservative = [_modelSmoothOption state] == NSOnState;
+    [_optionUpdateDelegate modelUpdate:nil];
 }
 
 
