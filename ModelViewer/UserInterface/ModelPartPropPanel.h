@@ -23,6 +23,7 @@
 
 - (void)updateControlsLayout;
 - (void)updateForMesh:(NuoMesh*)mesh;
+- (void)unhideIfSelected;
 
 
 @end

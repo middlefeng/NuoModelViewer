@@ -60,7 +60,7 @@
 - (NSRect)modelPartPropPanelLocation
 {
     NSRect viewRect = [self modelPartsPanelLocation];
-    viewRect.size.height = 100;
+    viewRect.size.height = 105;
     viewRect.origin.y -= viewRect.size.height;
     viewRect.origin.y -= 20;
     
@@ -105,6 +105,11 @@
 - (void)setHidden:(BOOL)hidden
 {
     [_modelPartsPanel setHidden:hidden];
+    
+    if (hidden)
+        [_modelPartPropPanel setHidden:YES];
+    else
+        [_modelPartPropPanel unhideIfSelected];
 }
 
 
@@ -115,6 +120,7 @@
     if (selection == NSNotFound)
     {
         [_modelPartPropPanel setHidden:YES];
+        [_modelPartPropPanel updateForMesh:nil];
     }
     else
     {

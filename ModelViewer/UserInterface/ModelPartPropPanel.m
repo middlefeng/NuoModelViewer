@@ -91,7 +91,7 @@
 {
     CGSize viewSize = [self bounds].size;
     
-    float labelWidth = 70;
+    float labelWidth = 60;
     float labelSpace = 2;
     float entryHeight = 18;
     float lineSpace = 6;
@@ -119,9 +119,13 @@
 
 - (void)updateForMesh:(NuoMesh*)mesh
 {
+    _selectedMesh = mesh;
+    
+    if (!mesh)
+        return;
+    
     [_nameField setStringValue:mesh.modelName];
     [_modelSmoothOption setState:mesh.smoothConservative ? NSOnState : NSOffState];
-    _selectedMesh = mesh;
 }
 
 
@@ -130,6 +134,13 @@
 {
     _selectedMesh.smoothConservative = [_modelSmoothOption state] == NSOnState;
     [_optionUpdateDelegate modelUpdate:nil];
+}
+
+
+- (void)unhideIfSelected
+{
+    if (_selectedMesh)
+        self.hidden = NO;
 }
 
 
