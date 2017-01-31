@@ -36,8 +36,8 @@
 		2C840D0E1D7001C2000D2956 /* NuoMetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C840D0D1D7001C2000D2956 /* NuoMetalView.m */; };
 		2C8974931D8BBAEF00460648 /* NuoMeshOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8974921D8BBAEF00460648 /* NuoMeshOptions.m */; };
 		2C8B80ED1E2D6654001746FE /* NuoShadowMapTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8B80EB1E2D6654001746FE /* NuoShadowMapTarget.m */; };
-		2C8B80F01E2D6D8B001746FE /* ShadowMapRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8B80EF1E2D6D8B001746FE /* ShadowMapRenderer.m */; };
 		2C8B80FD1E2EDB01001746FE /* NuoRenderPipelinePass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.m */; };
+		2C8B80F01E2D6D8B001746FE /* ShadowMapRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8B80EF1E2D6D8B001746FE /* ShadowMapRenderer.m */; };
 		2C9D9AAA1D658F0800283E46 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AA91D658F0800283E46 /* AppDelegate.m */; };
 		2C9D9AAD1D658F0800283E46 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAC1D658F0800283E46 /* main.m */; };
 		2C9D9AAF1D658F0800283E46 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAE1D658F0800283E46 /* Assets.xcassets */; };
@@ -156,10 +156,10 @@
 		2C8974921D8BBAEF00460648 /* NuoMeshOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoMeshOptions.m; sourceTree = "<group>"; };
 		2C8B80EB1E2D6654001746FE /* NuoShadowMapTarget.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoShadowMapTarget.m; sourceTree = "<group>"; };
 		2C8B80EC1E2D6654001746FE /* NuoShadowMapTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoShadowMapTarget.h; sourceTree = "<group>"; };
-		2C8B80EE1E2D6D8B001746FE /* ShadowMapRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadowMapRenderer.h; sourceTree = "<group>"; };
-		2C8B80EF1E2D6D8B001746FE /* ShadowMapRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShadowMapRenderer.m; sourceTree = "<group>"; };
 		2C8B80FB1E2EDB01001746FE /* NuoRenderPipelinePass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRenderPipelinePass.h; sourceTree = "<group>"; };
 		2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoRenderPipelinePass.m; sourceTree = "<group>"; };
+		2C8B80EE1E2D6D8B001746FE /* ShadowMapRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadowMapRenderer.h; sourceTree = "<group>"; };
+		2C8B80EF1E2D6D8B001746FE /* ShadowMapRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShadowMapRenderer.m; sourceTree = "<group>"; };
 		2C9D9AA51D658F0800283E46 /* ModelViewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ModelViewer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C9D9AA81D658F0800283E46 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		2C9D9AA91D658F0800283E46 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
