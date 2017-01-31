@@ -107,12 +107,12 @@
     
     CGRect labelFrame;
     labelFrame.size = CGSizeMake(labelWidth, entryHeight);
-    labelFrame.origin = CGPointMake(0, (entryHeight + lineSpace) * 3 + 5);
+    labelFrame.origin = CGPointMake(0, (entryHeight + lineSpace) * 2 + 15);
     [_nameLabel setFrame:labelFrame];
     
     CGRect fieldFrame;
     fieldFrame.size = CGSizeMake(viewSize.width - labelWidth - labelSpace * 2 - 10, entryHeight);
-    fieldFrame.origin = CGPointMake(labelWidth + labelSpace, (entryHeight + lineSpace) * 3 + 5);
+    fieldFrame.origin = CGPointMake(labelWidth + labelSpace, (entryHeight + lineSpace) * 2 + 15);
     [_nameField setFrame:fieldFrame];
     
     labelFrame.origin.y -= entryHeight + lineSpace;
