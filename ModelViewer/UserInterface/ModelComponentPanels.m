@@ -110,7 +110,7 @@
     if (hidden)
         [_modelPartPropPanel setHidden:YES];
     else
-        [_modelPartPropPanel unhideIfSelected];
+        [_modelPartPropPanel showIfSelected];
 }
 
 

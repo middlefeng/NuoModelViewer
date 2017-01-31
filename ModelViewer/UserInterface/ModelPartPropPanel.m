@@ -166,7 +166,7 @@
 }
 
 
-- (void)unhideIfSelected
+- (void)showIfSelected
 {
     if (_selectedMesh)
         self.hidden = NO;
