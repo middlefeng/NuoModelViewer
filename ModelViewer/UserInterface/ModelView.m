@@ -8,9 +8,7 @@
 
 #import "ModelView.h"
 
-//#import "ModelPartsPanel.h"
 #import "ModelComponentPanels.h"
-
 #import "ModelOperationPanel.h"
 #import "LightOperationPanel.h"
 
@@ -37,9 +35,7 @@
     NotationRenderer* _notationRender;
     NSArray<NuoRenderPass*>* _renders;
     
-    //ModelPartsPanel* _modelPartsPanel;
     ModelComponentPanels* _modelComponentPanels;
-    
     ModelOperationPanel* _modelPanel;
     LightOperationPanel* _lightPanel;
     
