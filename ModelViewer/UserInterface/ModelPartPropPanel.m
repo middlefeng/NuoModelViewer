@@ -22,6 +22,9 @@
     
     NSButton* _modelSmoothOption;
     
+    NSTextField* _opacityLabel;
+    NSSlider* _opacitySlider;
+    
     __weak NuoMesh* _selectedMesh;
 }
 
@@ -41,8 +44,13 @@
         _modelSmoothOption = [self createCheckButton:@"Smooth conservative"];
         [_modelSmoothOption setAction:@selector(modelPartsChanged:)];
         
+        _opacityLabel = [self createLabel:@"Opacity:" align:NSTextAlignmentRight];
+        _opacitySlider = [self createSliderMax:1.0 min:0.0];
+        
         [self addSubview:_nameLabel];
         [self addSubview:_nameField];
+        [self addSubview:_opacityLabel];
+        [self addSubview:_opacitySlider];
         [self addSubview:_modelSmoothOption];
     }
     
@@ -102,9 +110,15 @@
     [_nameLabel setFrame:labelFrame];
     
     CGRect fieldFrame;
-    fieldFrame.size = CGSizeMake(viewSize.width - labelWidth - labelSpace * 2, entryHeight);
+    fieldFrame.size = CGSizeMake(viewSize.width - labelWidth - labelSpace * 2 - 10, entryHeight);
     fieldFrame.origin = CGPointMake(labelWidth + labelSpace, (entryHeight + lineSpace) * 3 + 5);
     [_nameField setFrame:fieldFrame];
+    
+    labelFrame.origin.y -= entryHeight + lineSpace;
+    fieldFrame.origin.y -= entryHeight + lineSpace;
+    
+    [_opacityLabel setFrame:labelFrame];
+    [_opacitySlider setFrame:fieldFrame];
     
     labelFrame.origin.y -= entryHeight + lineSpace;
     fieldFrame.origin.y -= entryHeight + lineSpace;

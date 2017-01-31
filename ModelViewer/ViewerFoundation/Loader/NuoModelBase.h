@@ -136,6 +136,7 @@ public:
     virtual const std::string& GetName() const = 0;
     
     virtual bool HasTransparent() = 0;
+    virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() = 0;
 };
 
 
@@ -220,6 +221,7 @@ public:
     virtual std::string GetTexturePathBump() override;
     
     virtual bool HasTransparent() override;
+    virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
 };
 
 
