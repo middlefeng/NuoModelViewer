@@ -197,4 +197,9 @@ std::shared_ptr<NuoMaterial> NuoModelSimple::GetUnifiedMaterial()
 
 
 
+void NuoModelSimple::UpdateBufferWithUnifiedMaterial()
+{
+}
+
+
 

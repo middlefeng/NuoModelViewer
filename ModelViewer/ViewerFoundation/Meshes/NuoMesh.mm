@@ -85,6 +85,7 @@
 }
 
 
+
 - (void)smoothWithTolerance:(float)tolerance
 {
     _smoothTolerance = tolerance;
@@ -119,6 +120,26 @@
 {
     const std::shared_ptr<NuoMaterial>& material = _rawModel->GetUnifiedMaterial();
     return material != nullptr;
+}
+
+
+
+- (void)setUnifiedOpacity:(float)unifiedOpacity
+{
+    const std::shared_ptr<NuoMaterial>& material = _rawModel->GetUnifiedMaterial();
+    material.get()->dissolve = unifiedOpacity;
+    
+    _rawModel->UpdateBufferWithUnifiedMaterial();
+    _vertexBuffer = [_device newBufferWithBytes:_rawModel->Ptr()
+                                         length:_rawModel->Length()
+                                        options:MTLResourceOptionCPUCacheModeDefault];
+    
+    _indexBuffer = [_device newBufferWithBytes:_rawModel->IndicesPtr()
+                                        length:_rawModel->IndicesLength()
+                                       options:MTLResourceOptionCPUCacheModeDefault];
+
+    
+    _hasTransparency = (unifiedOpacity < 0.99999);
 }
 
 

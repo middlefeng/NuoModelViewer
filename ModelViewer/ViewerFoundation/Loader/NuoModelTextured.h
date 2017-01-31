@@ -77,6 +77,7 @@ public:
     virtual void AddMaterial(const NuoMaterial& material) override;
     virtual bool HasTransparent() override;
     virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
+    virtual void UpdateBufferWithUnifiedMaterial() override;
     
     virtual void GenerateTangents() override;
     

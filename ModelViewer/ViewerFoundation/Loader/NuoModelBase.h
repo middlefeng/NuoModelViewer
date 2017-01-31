@@ -137,6 +137,7 @@ public:
     
     virtual bool HasTransparent() = 0;
     virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() = 0;
+    virtual void UpdateBufferWithUnifiedMaterial() = 0;
 };
 
 
@@ -222,6 +223,7 @@ public:
     
     virtual bool HasTransparent() override;
     virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
+    virtual void UpdateBufferWithUnifiedMaterial() override;
 };
 
 

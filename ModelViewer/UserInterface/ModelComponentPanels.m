@@ -97,6 +97,7 @@
 - (void)setMesh:(NSArray<NuoMesh*>*)mesh
 {
     [_modelPartsPanel setMesh:mesh];
+    [_modelPartPropPanel setHidden:YES];
     _mesh = mesh;
 }
 

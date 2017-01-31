@@ -80,3 +80,10 @@ std::shared_ptr<NuoMaterial> NuoModelTextured::GetUnifiedMaterial()
 {
     return nullptr;
 }
+
+
+void NuoModelTextured::UpdateBufferWithUnifiedMaterial()
+{
+}
+
+

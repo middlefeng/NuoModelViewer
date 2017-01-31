@@ -35,7 +35,7 @@
 // unified material (common to all vertices)
 //
 @property (nonatomic, assign, readonly) BOOL hasUnifiedMaterial;
-@property (nonatomic, assign, readonly) float unifiedOpacity;
+@property (nonatomic, assign) float unifiedOpacity;
 
 
 @property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;

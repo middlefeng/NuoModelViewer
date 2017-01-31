@@ -46,6 +46,7 @@
         
         _opacityLabel = [self createLabel:@"Opacity:" align:NSTextAlignmentRight];
         _opacitySlider = [self createSliderMax:1.0 min:0.0];
+        [_opacitySlider setAction:@selector(modelPartsChanged:)];
         
         [self addSubview:_nameLabel];
         [self addSubview:_nameField];
@@ -154,8 +155,14 @@
 
 - (void)modelPartsChanged:(id)sender
 {
+    if (_selectedMesh.hasUnifiedMaterial)
+        _selectedMesh.unifiedOpacity = [_opacitySlider floatValue];
+    
+    // change the smooth at the last because it may clone the vertex buffer
+    //
     _selectedMesh.smoothConservative = [_modelSmoothOption state] == NSOnState;
-    [_optionUpdateDelegate modelUpdate:nil];
+
+    [_optionUpdateDelegate modelOptionUpdate:nil];
 }
 
 
