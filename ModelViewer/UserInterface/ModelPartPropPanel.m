@@ -140,6 +140,14 @@
     
     [_nameField setStringValue:mesh.modelName];
     [_modelSmoothOption setState:mesh.smoothConservative ? NSOnState : NSOffState];
+    
+    [_opacityLabel setEnabled:mesh.hasUnifiedMaterial];
+    [_opacitySlider setEnabled:mesh.hasUnifiedMaterial];
+    
+    if (mesh.hasUnifiedMaterial)
+    {
+        [_opacitySlider setFloatValue:mesh.unifiedOpacity];
+    }
 }
 
 

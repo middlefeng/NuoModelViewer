@@ -5,6 +5,7 @@
 
 #include "NuoModelBase.h"
 #include "NuoTypes.h"
+#include "NuoMaterial.h"
 
 #import <Cocoa/Cocoa.h>
 #import "NuoMeshTextured.h"
@@ -111,6 +112,23 @@
     _smoothConservative = smoothConservative;
     [self smoothWithTolerance:_smoothTolerance];
 }
+
+
+
+- (BOOL)hasUnifiedMaterial
+{
+    const std::shared_ptr<NuoMaterial>& material = _rawModel->GetUnifiedMaterial();
+    return material != nullptr;
+}
+
+
+
+- (float)unifiedOpacity
+{
+    const std::shared_ptr<NuoMaterial>& material = _rawModel->GetUnifiedMaterial();
+    return material->dissolve;
+}
+
 
 
 - (void)setRawModel:(void*)model

@@ -173,7 +173,7 @@ void NuoModelMaterialedBasicBase<ItemBase>::AddMaterial(const NuoMaterial& mater
     
     if (!_material)
         _material.reset(new NuoMaterial(material));
-    else if (!(*(_material.get()) < material)  && (!(material < (*(_material.get())))))
+    else if ((*(_material.get()) < material) || ((material < (*(_material.get())))))
         _material.reset();
     
     if (material.dissolve - 1.0 < -1e-3)
