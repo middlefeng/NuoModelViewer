@@ -211,6 +211,7 @@
     // sync the model renderer with the initial settings in the model panel
     //
     [self modelOptionUpdate:_modelPanel];
+    [self modelUpdate:_modelPanel];
     
     // sync the light panel with the current initial light vector in the
     // notation renderer
