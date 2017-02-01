@@ -23,12 +23,19 @@
 
 @interface NuoMesh : NSObject
 
+
 @property (nonatomic, strong) id<MTLDevice> device;
 @property (nonatomic, strong) id<MTLRenderPipelineState> renderPipelineState;
 @property (nonatomic, strong) id<MTLRenderPipelineState> shadowPipelineState;
 @property (nonatomic, strong) id<MTLDepthStencilState> depthStencilState;
 
 @property (nonatomic, readonly, assign) float smoothTolerance;
+@property (nonatomic, assign) BOOL smoothConservative;
+
+// unified material (common to all vertices)
+//
+@property (nonatomic, assign, readonly) BOOL hasUnifiedMaterial;
+@property (nonatomic, assign) float unifiedOpacity;
 
 
 @property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;

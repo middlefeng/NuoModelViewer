@@ -8,7 +8,7 @@
 
 #import "ModelView.h"
 
-#import "ModelPartsPanel.h"
+#import "ModelComponentPanels.h"
 #import "ModelOperationPanel.h"
 #import "LightOperationPanel.h"
 
@@ -35,7 +35,7 @@
     NotationRenderer* _notationRender;
     NSArray<NuoRenderPass*>* _renders;
     
-    ModelPartsPanel* _modelPartsPanel;
+    ModelComponentPanels* _modelComponentPanels;
     ModelOperationPanel* _modelPanel;
     LightOperationPanel* _lightPanel;
     
@@ -85,19 +85,13 @@
 }
 
 
-- (void)addModelPartsPanel
+- (void)addModelComponentPanels
 {
-    NSRect listRect = [self modelPartsPanelLocation];
+    _modelComponentPanels = [ModelComponentPanels new];
+    _modelComponentPanels.containerView = self;
+    _modelComponentPanels.modelOptionDelegate = self;
     
-    _modelPartsPanel = [ModelPartsPanel new];
-    _modelPartsPanel.layer.backgroundColor = CGColorCreateGenericGray(0.0, 0.0);
-    _modelPartsPanel.layer.borderWidth = 1.0;
-    _modelPartsPanel.layer.borderColor = CGColorCreateGenericGray(0.6, 0.5);
-    
-    [self addSubview:_modelPartsPanel];
-    [_modelPartsPanel setFrame:listRect];
-    [_modelPartsPanel setHidden:YES];
-    [_modelPartsPanel setOptionUpdateDelegate:self];
+    [_modelComponentPanels addPanels];
 }
 
 
@@ -136,7 +130,7 @@
         [_modelRender setModelOptions:options withCommandQueue:[self commandQueue]];
     }
     
-    [_modelPartsPanel setMesh:_modelRender.mesh];
+    [_modelComponentPanels setMesh:_modelRender.mesh];
     [self render];
 }
 
@@ -145,12 +139,11 @@
 {
     if (panel)
     {
-        [_modelPartsPanel setHidden:![panel showModelParts]];
+        [_modelComponentPanels setHidden:![panel showModelParts]];
         
         [_modelRender setCullEnabled:[panel cullEnabled]];
         [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
         [_modelRender setAmbientDensity:[panel ambientDensity]];
-        [_modelRender setModelOptions:panel.meshOptions withCommandQueue:self.commandQueue];
         [self setupPipelineSettings];
     }
     
@@ -189,9 +182,9 @@
         [self addModelOperationPanel];
     }
     
-    if (!_modelPartsPanel)
+    if (!_modelComponentPanels)
     {
-        [self addModelPartsPanel];
+        [self addModelComponentPanels];
     }
     
     [_modelPanel setFrame:[self operationPanelLocation]];
@@ -202,7 +195,7 @@
     }
     
     [_lightPanel setFrame:[self lightPanelRect]];
-    [_modelPartsPanel setFrame:[self modelPartsPanelLocation]];
+    [_modelComponentPanels containerViewResized];
 }
 
 
@@ -218,6 +211,7 @@
     // sync the model renderer with the initial settings in the model panel
     //
     [self modelOptionUpdate:_modelPanel];
+    [self modelUpdate:_modelPanel];
     
     // sync the light panel with the current initial light vector in the
     // notation renderer
@@ -434,7 +428,7 @@
 - (void)loadMesh:(NSString*)path
 {
     [_modelRender loadMesh:path withCommandQueue:[self commandQueue]];
-    [_modelPartsPanel setMesh:_modelRender.mesh];
+    [_modelComponentPanels setMesh:_modelRender.mesh];
     
     NSString* documentName = [path lastPathComponent];
     _documentName = [documentName stringByDeletingPathExtension];
@@ -461,7 +455,7 @@
     [_modelRender importScene:lua];
     [_notationRender importScene:lua];
     
-    [_modelPartsPanel setMesh:_modelRender.mesh];
+    [_modelComponentPanels setMesh:_modelRender.mesh];
     [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];
     [_modelPanel setAmbientDensity:_modelRender.ambientDensity];
     [_modelPanel updateControls];

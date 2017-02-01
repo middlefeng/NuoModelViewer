@@ -190,4 +190,16 @@ bool NuoModelSimple::HasTransparent()
 
 
 
+std::shared_ptr<NuoMaterial> NuoModelSimple::GetUnifiedMaterial()
+{
+    return nullptr;
+}
+
+
+
+void NuoModelSimple::UpdateBufferWithUnifiedMaterial()
+{
+}
+
+
 

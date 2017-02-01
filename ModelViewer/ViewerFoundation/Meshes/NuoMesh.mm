@@ -5,6 +5,7 @@
 
 #include "NuoModelBase.h"
 #include "NuoTypes.h"
+#include "NuoMaterial.h"
 
 #import <Cocoa/Cocoa.h>
 #import "NuoMeshTextured.h"
@@ -77,10 +78,12 @@
         _enabled = true;
         
         _smoothTolerance = 0.0f;
+        _smoothConservative = YES;
     }
     
     return self;
 }
+
 
 
 - (void)smoothWithTolerance:(float)tolerance
@@ -92,7 +95,7 @@
     if (_smoothTolerance > 0.001)
     {
         clonedModel = _rawModel->Clone();
-        clonedModel->SmoothSurface(tolerance, true);
+        clonedModel->SmoothSurface(tolerance, _smoothConservative);
     }
     
     _vertexBuffer = [_device newBufferWithBytes:clonedModel->Ptr()
@@ -103,6 +106,50 @@
                                         length:clonedModel->IndicesLength()
                                        options:MTLResourceOptionCPUCacheModeDefault];
 }
+
+
+- (void)setSmoothConservative:(BOOL)smoothConservative
+{
+    _smoothConservative = smoothConservative;
+    [self smoothWithTolerance:_smoothTolerance];
+}
+
+
+
+- (BOOL)hasUnifiedMaterial
+{
+    const std::shared_ptr<NuoMaterial>& material = _rawModel->GetUnifiedMaterial();
+    return material != nullptr;
+}
+
+
+
+- (void)setUnifiedOpacity:(float)unifiedOpacity
+{
+    const std::shared_ptr<NuoMaterial>& material = _rawModel->GetUnifiedMaterial();
+    material.get()->dissolve = unifiedOpacity;
+    
+    _rawModel->UpdateBufferWithUnifiedMaterial();
+    _vertexBuffer = [_device newBufferWithBytes:_rawModel->Ptr()
+                                         length:_rawModel->Length()
+                                        options:MTLResourceOptionCPUCacheModeDefault];
+    
+    _indexBuffer = [_device newBufferWithBytes:_rawModel->IndicesPtr()
+                                        length:_rawModel->IndicesLength()
+                                       options:MTLResourceOptionCPUCacheModeDefault];
+
+    
+    _hasTransparency = (unifiedOpacity < 0.99999);
+}
+
+
+
+- (float)unifiedOpacity
+{
+    const std::shared_ptr<NuoMaterial>& material = _rawModel->GetUnifiedMaterial();
+    return material->dissolve;
+}
+
 
 
 - (void)setRawModel:(void*)model

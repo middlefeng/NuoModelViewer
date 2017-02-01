@@ -73,3 +73,17 @@ std::string NuoModelTextured::GetTexturePathBump()
 void NuoModelTextured::AddMaterial(const NuoMaterial& material)
 {
 }
+
+
+
+std::shared_ptr<NuoMaterial> NuoModelTextured::GetUnifiedMaterial()
+{
+    return nullptr;
+}
+
+
+void NuoModelTextured::UpdateBufferWithUnifiedMaterial()
+{
+}
+
+

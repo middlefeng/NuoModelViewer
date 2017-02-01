@@ -15,6 +15,8 @@
 #include "NuoModelTextured.h"
 #include "NuoMaterial.h"
 
+#include <memory>
+
 
 
 
@@ -23,12 +25,21 @@ class NuoModelMaterialedBasicBase : virtual public NuoModelCommon<ItemBase>
 {
 
 private:
+    
     bool _hasTransparent { false };
+    
+    /**
+     *  the common material shared by all vertices.
+     *  null if any of the per-vertex material are different from each other
+     */
+    std::shared_ptr<NuoMaterial> _material;
     
 public:
     
     virtual void AddMaterial(const NuoMaterial& material) override;
     virtual bool HasTransparent() override;
+    virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
+    virtual void UpdateBufferWithUnifiedMaterial() override;
     
 };
 
@@ -161,6 +172,11 @@ void NuoModelMaterialedBasicBase<ItemBase>::AddMaterial(const NuoMaterial& mater
     NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.x = material.shininess;
     NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.y = material.dissolve;
     
+    if (!_material)
+        _material.reset(new NuoMaterial(material));
+    else if ((*(_material.get()) < material) || ((material < (*(_material.get())))))
+        _material.reset();
+    
     if (material.dissolve - 1.0 < -1e-3)
         _hasTransparent = true;
 }
@@ -170,6 +186,40 @@ template <class ItemBase>
 bool NuoModelMaterialedBasicBase<ItemBase>::HasTransparent()
 {
     return _hasTransparent;
+}
+
+
+template <class ItemBase>
+std::shared_ptr<NuoMaterial> NuoModelMaterialedBasicBase<ItemBase>::GetUnifiedMaterial()
+{
+    return _material;
+}
+
+
+template <class ItemBase>
+void NuoModelMaterialedBasicBase<ItemBase>::UpdateBufferWithUnifiedMaterial()
+{
+    NuoMaterial material = *(_material.get());
+    
+    for (size_t targetOffset = 0; targetOffset < NuoModelCommon<ItemBase>::_buffer.size();
+         ++targetOffset)
+    {
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._diffuse.x = material.diffuse[0];
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._diffuse.y = material.diffuse[1];
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._diffuse.z = material.diffuse[2];
+        
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._ambient.x = material.ambient[0];
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._ambient.y = material.ambient[1];
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._ambient.z = material.ambient[2];
+        
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.x = material.specular[0];
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.y = material.specular[1];
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.z = material.specular[2];
+        
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.x = material.shininess;
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.y = material.dissolve;
+    }
+    
 }
 
 
