@@ -10,9 +10,12 @@
 #define ModelPanelUpdate_h
 
 
+@class NuoMesh;
+
+
 @protocol ModelPanelUpdate
 
-- (void)modelPartSelectionChanged:(NSUInteger)selection;
+- (void)modelPartSelectionChanged:(NSArray<NuoMesh*>*)selection;
 
 @end
 

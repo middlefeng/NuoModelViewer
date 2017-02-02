@@ -174,8 +174,16 @@
 
 - (NSIndexSet *)tableView:(NSTableView *)tableView selectionIndexesForProposedSelection:(NSIndexSet *)proposedSelectionIndexes
 {
+    NSMutableArray<NuoMesh*>* result = [[NSMutableArray alloc] init];
+    
     NSUInteger selected = [proposedSelectionIndexes firstIndex];
-    [_panelUpdateDelegate modelPartSelectionChanged:selected];
+    while (selected != NSNotFound)
+    {
+        [result addObject:_mesh[selected]];
+        selected = [proposedSelectionIndexes indexGreaterThanIndex:selected];
+    }
+    
+    [_panelUpdateDelegate modelPartSelectionChanged:result];
     
     return proposedSelectionIndexes;
 }

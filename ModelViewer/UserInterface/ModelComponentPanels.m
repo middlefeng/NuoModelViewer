@@ -13,6 +13,7 @@
 
 #import "ModelPartsPanel.h"
 #import "ModelPartPropPanel.h"
+#import "ModelPartDimensionPanel.h"
 
 
 
@@ -28,8 +29,7 @@
 {
     ModelPartsPanel* _modelPartsPanel;
     ModelPartPropPanel* _modelPartPropPanel;
-    
-    __weak NSArray<NuoMesh*>* _mesh;
+    ModelPartDimensionPanel* _modelPartDimensionPanel;
 }
 
 
@@ -37,7 +37,9 @@
 {
     [_modelPartsPanel setFrame:[self modelPartsPanelLocation]];
     [_modelPartPropPanel setFrame:[self modelPartPropPanelLocation]];
+    [_modelPartDimensionPanel setFrame:[self modelPartDimensionPanelLocation]];
     [_modelPartPropPanel updateControlsLayout];
+    [_modelPartDimensionPanel updateControlsLayout];
 }
 
 
@@ -68,6 +70,17 @@
 }
 
 
+- (NSRect)modelPartDimensionPanelLocation
+{
+    NSRect viewRect = [self modelPartPropPanelLocation];
+    viewRect.size.height = 65;
+    viewRect.origin.y -= viewRect.size.height;
+    viewRect.origin.y -= 20;
+    
+    return viewRect;
+}
+
+
 - (void)addPanels
 {
     NSRect listRect = [self modelPartsPanelLocation];
@@ -90,6 +103,14 @@
     [_modelPartPropPanel setHidden:YES];
     [_modelPartPropPanel setFrame:[self modelPartPropPanelLocation]];
     [_modelPartPropPanel setOptionUpdateDelegate:_modelOptionDelegate];
+    
+    _modelPartDimensionPanel = [[ModelPartDimensionPanel alloc] init];
+    _modelPartDimensionPanel.layer.opacity = 0.8f;
+    _modelPartDimensionPanel.layer.backgroundColor = [NSColor colorWithWhite:1.0 alpha:1.0].CGColor;
+    
+    [_containerView addSubview:_modelPartDimensionPanel];
+    [_modelPartDimensionPanel setHidden:YES];
+    [_modelPartDimensionPanel setFrame:[self modelPartDimensionPanelLocation]];
 }
 
 
@@ -98,7 +119,9 @@
 {
     [_modelPartsPanel setMesh:mesh];
     [_modelPartPropPanel setHidden:YES];
-    _mesh = mesh;
+    
+    [_modelPartDimensionPanel updateForMesh:nil];
+    [_modelPartDimensionPanel setHidden:YES];
 }
 
 
@@ -108,25 +131,35 @@
     [_modelPartsPanel setHidden:hidden];
     
     if (hidden)
+    {
         [_modelPartPropPanel setHidden:YES];
+        [_modelPartDimensionPanel setHidden:YES];
+    }
     else
+    {
         [_modelPartPropPanel showIfSelected];
+        [_modelPartDimensionPanel showIfSelected];
+    }
 }
 
 
 
 
-- (void)modelPartSelectionChanged:(NSUInteger)selection
+- (void)modelPartSelectionChanged:(NSArray<NuoMesh*>*)selection
 {
-    if (selection == NSNotFound)
+    if (selection.count == 0)
     {
         [_modelPartPropPanel setHidden:YES];
+        [_modelPartDimensionPanel setHidden:YES];
         [_modelPartPropPanel updateForMesh:nil];
+        [_modelPartDimensionPanel updateForMesh:nil];
     }
     else
     {
         [_modelPartPropPanel setHidden:NO];
-        [_modelPartPropPanel updateForMesh:_mesh[selection]];
+        [_modelPartDimensionPanel setHidden:NO];
+        [_modelPartPropPanel updateForMesh:selection[0]];
+        [_modelPartDimensionPanel updateForMesh:selection];
     }
 }
 
