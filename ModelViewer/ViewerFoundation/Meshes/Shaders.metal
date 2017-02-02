@@ -21,8 +21,8 @@ struct ProjectedVertex
 };
 
 
-ProjectedVertex vertex_project_common(device Vertex *vertices [[buffer(0)]],
-                                      constant ModelUniforms &uniforms [[buffer(1)]],
+ProjectedVertex vertex_project_common(device Vertex *vertices,
+                                      constant ModelUniforms &uniforms,
                                       uint vid [[vertex_id]]);
 
 
@@ -208,8 +208,8 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
 
 
 
-ProjectedVertex vertex_project_common(device Vertex *vertices [[buffer(0)]],
-                                      constant ModelUniforms &uniforms [[buffer(1)]],
+ProjectedVertex vertex_project_common(device Vertex *vertices,
+                                      constant ModelUniforms &uniforms,
                                       uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
