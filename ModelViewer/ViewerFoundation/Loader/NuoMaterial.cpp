@@ -59,6 +59,8 @@ bool NuoMaterial::operator < (const NuoMaterial& other) const
             if (a > other.a) return false;
     
     compare_element(id)
+    compare_element(dissolve)
+    
     compare_element(ambient_texname)
     compare_element(diffuse_texname)
     compare_element(specular_texname)
@@ -66,7 +68,6 @@ bool NuoMaterial::operator < (const NuoMaterial& other) const
     compare_element(bump_texname)
     compare_element(displacement_texname)
     compare_element(alpha_texname)
-    
     
     // PBR extension
     compare_element(roughness_texname)
