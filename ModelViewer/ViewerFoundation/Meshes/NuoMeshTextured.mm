@@ -37,13 +37,16 @@ static CIContext* sCIContext = nil;
 
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>) renderPass
+- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
+    [self updateUniform:index];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
+    [renderPass setVertexBuffer:self.rotationBuffers[index] offset:0 atIndex:3];
     [renderPass setFragmentTexture:self.diffuseTex atIndex:2];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     

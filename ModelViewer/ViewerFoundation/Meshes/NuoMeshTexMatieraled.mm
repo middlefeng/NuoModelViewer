@@ -160,13 +160,16 @@
 }
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>) renderPass
+- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
+    [self updateUniform:index];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
+    [renderPass setVertexBuffer:self.rotationBuffers[index] offset:0 atIndex:3];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
     NSUInteger texBufferIndex = 2; /* mesh texture starts after the shadow-map texture */

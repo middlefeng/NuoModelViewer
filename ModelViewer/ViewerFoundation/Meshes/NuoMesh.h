@@ -35,7 +35,9 @@
 
 // mesh rotation in model coordinate
 //
-@property (nonatomic, assign) NuoMeshRotation* rotation;
+@property (nonatomic, strong) NuoMeshRotation* rotation;
+@property (nonatomic, strong) NSArray<id<MTLBuffer>>* rotationBuffers;
+@property (nonatomic, strong) NSArray<id<MTLBuffer>>* rotationBuffersShadow;
 
 // unified material (common to all vertices)
 //
@@ -65,8 +67,9 @@
 - (void)smoothWithTolerance:(float)tolerance;
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass;
-- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass;
+- (void)updateUniform:(NSInteger)bufferIndex;
+- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
+- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
 - (BOOL)hasTransparency;
 - (void)setTransparency:(BOOL)transparent;
 
