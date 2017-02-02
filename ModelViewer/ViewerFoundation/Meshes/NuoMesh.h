@@ -2,6 +2,7 @@
 #import <Metal/Metal.h>
 
 #include "NuoMeshOptions.h"
+#include "NuoMeshRotation.h"
 
 
 
@@ -31,6 +32,10 @@
 
 @property (nonatomic, readonly, assign) float smoothTolerance;
 @property (nonatomic, assign) BOOL smoothConservative;
+
+// mesh rotation in model coordinate
+//
+@property (nonatomic, assign) NuoMeshRotation* rotation;
 
 // unified material (common to all vertices)
 //

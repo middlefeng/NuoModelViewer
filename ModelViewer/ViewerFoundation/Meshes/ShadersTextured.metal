@@ -23,10 +23,11 @@ struct ProjectedVertex
 
 vertex PositionSimple vertex_shadow_textured(device Vertex *vertices [[buffer(0)]],
                                              constant ModelUniforms &uniforms [[buffer(1)]],
+                                             constant MeshUniforms &meshUniforms [[buffer(2)]],
                                              uint vid [[vertex_id]])
 {
     PositionSimple outShadow;
-    outShadow.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
+    outShadow.position = uniforms.modelViewProjectionMatrix * meshUniforms.transform * vertices[vid].position;
     return outShadow;
 }
 
@@ -39,12 +40,15 @@ fragment void fragment_shadow_textured(PositionSimple vert [[stage_in]])
 vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(0)]],
                                                constant ModelUniforms &uniforms [[buffer(1)]],
                                                constant LightVertexUniforms &lightCast [[buffer(2)]],
+                                               constant MeshUniforms &meshUniforms [[buffer(3)]],
                                                uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
-    outVert.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
-    outVert.eye =  -(uniforms.modelViewMatrix * vertices[vid].position).xyz;
-    outVert.normal = uniforms.normalMatrix * vertices[vid].normal.xyz;
+    
+    float4 meshPosition = meshUniforms.transform * vertices[vid].position;
+    outVert.position = uniforms.modelViewProjectionMatrix * meshPosition;
+    outVert.eye =  -(uniforms.modelViewMatrix * meshPosition).xyz;
+    outVert.normal = uniforms.normalMatrix * meshUniforms.normalTransform * vertices[vid].normal.xyz;
     outVert.texCoord = vertices[vid].texCoord;
     
     outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * vertices[vid].position;

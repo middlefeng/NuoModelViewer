@@ -23,6 +23,7 @@ struct ProjectedVertex
 
 ProjectedVertex vertex_project_common(device Vertex *vertices,
                                       constant ModelUniforms &uniforms,
+                                      constant MeshUniforms &meshUniform,
                                       uint vid [[vertex_id]]);
 
 
@@ -33,10 +34,12 @@ ProjectedVertex vertex_project_common(device Vertex *vertices,
 
 vertex PositionSimple vertex_shadow(device Vertex *vertices [[buffer(0)]],
                                     constant ModelUniforms &uniforms [[buffer(1)]],
+                                    constant MeshUniforms &meshUniform [[buffer(2)]],
                                     uint vid [[vertex_id]])
 {
     PositionSimple outShadow;
-    outShadow.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
+    outShadow.position = uniforms.modelViewProjectionMatrix *
+                         meshUniform.transform * vertices[vid].position;
     return outShadow;
 }
 
@@ -56,9 +59,10 @@ fragment void fragment_shadow(PositionSimple vert [[stage_in]])
 
 vertex ProjectedVertex vertex_project(device Vertex *vertices [[buffer(0)]],
                                       constant ModelUniforms &uniforms [[buffer(1)]],
+                                      constant MeshUniforms &meshUniform [[buffer(2)]],
                                       uint vid [[vertex_id]])
 {
-    return vertex_project_common(vertices, uniforms, vid);
+    return vertex_project_common(vertices, uniforms, meshUniform, vid);
 }
 
 
@@ -101,11 +105,13 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
 vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)]],
                                              constant ModelUniforms &uniforms [[buffer(1)]],
                                              constant LightVertexUniforms &lightCast [[buffer(2)]],
+                                             constant MeshUniforms &meshUniform [[buffer(3)]],
                                              uint vid [[vertex_id]])
 {
-    ProjectedVertex outVert = vertex_project_common(vertices, uniforms, vid);
-    outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * vertices[vid].position;
-    outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * vertices[vid].position;
+    ProjectedVertex outVert = vertex_project_common(vertices, uniforms, meshUniform, vid);
+    float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * meshPosition;
+    outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * meshPosition;
     return outVert;
 }
 
@@ -210,13 +216,16 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
 
 ProjectedVertex vertex_project_common(device Vertex *vertices,
                                       constant ModelUniforms &uniforms,
+                                      constant MeshUniforms &meshUniform,
                                       uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
+    float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
     
-    outVert.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
-    outVert.eye =  -(uniforms.modelViewMatrix * vertices[vid].position).xyz;
-    outVert.normal = uniforms.normalMatrix * vertices[vid].normal.xyz;
+    outVert.position = uniforms.modelViewProjectionMatrix * meshPosition;
+    outVert.eye =  -(uniforms.modelViewMatrix * meshPosition).xyz;
+    outVert.normal = uniforms.normalMatrix * meshNormal;
     
     return outVert;
 }
