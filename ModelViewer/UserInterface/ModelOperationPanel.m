@@ -80,7 +80,7 @@
     
     CGRect docViewFrame = CGRectMake(0, 0, 0, 0);
     docViewFrame.size = rootViewFrame.size;
-    docViewFrame.size.height += 200.0;
+    docViewFrame.size.height += 180.0;
     
     _rootScroll.frame = rootViewFrame;
     scrollDocumentView.frame = docViewFrame;
@@ -260,6 +260,17 @@
     
     [self addSubview:_rootScroll];
     [_rootScroll.contentView scrollToPoint:CGPointMake(0, docViewFrame.size.height)];
+    
+    NSSlider* animationProgressSlider = [[NSSlider alloc] init];
+    [animationProgressSlider setMaxValue:1.0];
+    [animationProgressSlider setMinValue:0.0];
+    [animationProgressSlider setDoubleValue:0.0];
+    
+    NSRect animationProgressRect = animationRect;
+    animationProgressRect.size.height = 18;
+    animationProgressRect.origin.y -= 10.0 + animationProgressRect.size.height;
+    [animationProgressSlider setFrame:animationProgressRect];
+    [scrollDocumentView addSubview:animationProgressSlider];
     
     [self updateControls];
 }
