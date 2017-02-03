@@ -18,6 +18,7 @@
 #import "NuoLua.h"
 #import "NuoMeshOptions.h"
 #import "LightSource.h"
+#import "NuoMeshAnimation.h"
 
 
 
@@ -154,7 +155,32 @@
 
 - (void)animationLoad
 {
+    NSOpenPanel* openPanel = [NSOpenPanel openPanel];
+    openPanel.allowedFileTypes = @[@"anm"];
     
+    [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
+         {
+             if (result == NSFileHandlingPanelOKButton)
+             {
+                 NuoLua* lua = [self lua];
+                 [lua loadFile:openPanel.URL.path];
+                 NSArray* keys = [lua getKeysFromTable:-1];
+                 
+                 NSMutableArray<NuoMeshAnimation*>* animations;
+                 for (NSString* key in keys)
+                 {
+                     NuoMeshAnimation* current = [NuoMeshAnimation new];
+                     current.animationName = key;
+                     
+                     [lua getField:key fromTable:-1];
+                     [current importAnimation:lua forMesh:_modelRender.mesh];
+                     [lua removeField];
+                     
+                     if (current.mesh.count)
+                         [animations addObject:current];
+                 }
+             }
+         }];
 }
 
 

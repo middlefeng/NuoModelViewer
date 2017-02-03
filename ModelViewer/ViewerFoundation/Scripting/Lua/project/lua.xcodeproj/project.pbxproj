@@ -106,6 +106,7 @@
 		2C3171BD157CEF5100F12776 /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = 2C317127157CEAAD00F12776 /* lzio.c */; };
 		2C3E905E1E15985F009A5DC7 /* libreadline.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C3E905C1E15983D009A5DC7 /* libreadline.tbd */; };
 		2C3E905F1E159870009A5DC7 /* libluad.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C57C8E0163F909000C9AA4A /* libluad.dylib */; };
+		2C545CF91E44ECFC0024E05F /* libreadline.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C3E905C1E15983D009A5DC7 /* libreadline.tbd */; };
 		2C57C8E4163F910400C9AA4A /* lapi.c in Sources */ = {isa = PBXBuildFile; fileRef = 2C3170F1157CE9D600F12776 /* lapi.c */; };
 		2C57C8E6163F910400C9AA4A /* lcode.c in Sources */ = {isa = PBXBuildFile; fileRef = 2C3170F4157CEA2600F12776 /* lcode.c */; };
 		2C57C8E8163F910400C9AA4A /* lctype.c in Sources */ = {isa = PBXBuildFile; fileRef = 2C3170F6157CEA2600F12776 /* lctype.c */; };
@@ -258,6 +259,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C545CF91E44ECFC0024E05F /* libreadline.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

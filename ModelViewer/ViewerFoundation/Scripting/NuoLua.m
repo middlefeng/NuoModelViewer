@@ -37,6 +37,24 @@
 
 
 
+- (NSArray*)getKeysFromTable:(int)index
+{
+    NSMutableArray* result = [[NSMutableArray alloc] init];
+    
+    lua_pushnil(_luaState);  /* first key */
+    while (lua_next(_luaState, index - 1) != 0)
+    {
+        const char* key = lua_tostring(_luaState, -2);
+        lua_pop(_luaState, 1);
+        
+        [result addObject:[[NSString alloc] initWithUTF8String:key]];
+    }
+    
+    return result;
+}
+
+
+
 - (void)getField:(NSString*)key fromTable:(int)index
 {
     lua_getfield(_luaState, index, key.UTF8String);
@@ -84,6 +102,15 @@
     return result;
 }
 
+
+- (NSString*)getArrayItemAsString:(size_t)item fromTable:(int)index
+{
+    lua_geti(_luaState, index, item);
+    const char* result = lua_tostring(_luaState, -1);
+    lua_pop(_luaState, 1);
+    
+    return [[NSString alloc] initWithUTF8String:result];
+}
 
 
 - (NSString*)getFieldAsString:(NSString*)key fromTable:(int)index
