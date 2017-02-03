@@ -36,6 +36,9 @@
 
 
 @implementation ModelOperationPanel
+{
+    IBOutlet NSScrollView* _animationScroll;
+}
 
 
 - (instancetype)init
@@ -210,8 +213,36 @@
     [scrollDocumentView addSubview:lightSettings];
     _lightSettings = lightSettings;
     
+    rowCoord += 1.8;
+    
+    NSTextField* labelAnimation = [NSTextField new];
+    [labelAnimation setEditable:NO];
+    [labelAnimation setSelectable:NO];
+    [labelAnimation setBordered:NO];
+    [labelAnimation setStringValue:@"Animations:"];
+    [labelAnimation setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [scrollDocumentView addSubview:labelAnimation];
+    
+    [[NSBundle mainBundle] loadNibNamed:@"ModelPartsAnimations" owner:self topLevelObjects:nil];
+    
+    rowCoord += 1.2;
+    
+    NSRect animationRect = [self buttonLoactionAtRow:rowCoord withLeading:0];
+    animationRect.size.height = 90;
+    animationRect.origin.y -= 70;
+    NSView* animationRoot = [[NSView alloc] init];
+    [animationRoot setWantsLayer:YES];
+    animationRoot.layer = [CALayer new];
+    animationRoot.frame = animationRect;
+    animationRoot.layer.borderWidth = 1.0;
+    animationRoot.layer.borderColor = CGColorCreateGenericGray(0.6, 0.5);
+    [_animationScroll setFrame:animationRoot.bounds];
+    [animationRoot addSubview:_animationScroll];
+    [scrollDocumentView addSubview:animationRoot];
+    
     [self addSubview:_rootScroll];
     [_rootScroll.contentView scrollToPoint:CGPointMake(0, docViewFrame.size.height)];
+    
     [self updateControls];
 }
 
