@@ -14,6 +14,8 @@
 @interface ModelOperationPanel()
 
 
+@property (nonatomic, strong) NSScrollView* rootScroll;
+
 @property (nonatomic, strong) NSButton* checkModelParts;
 
 @property (nonatomic, strong) NSButton* checkMaterial;
@@ -56,8 +58,28 @@
 }
 
 
-- (void)addCheckbox
+- (void)addSubviews
 {
+    NSView* scrollDocumentView = [[NSView alloc] init];
+    
+    _rootScroll = [[NSScrollView alloc] init];
+    _rootScroll.documentView = scrollDocumentView;
+    _rootScroll.hasVerticalScroller = YES;
+    
+    CGSize viewSize = [self bounds].size;
+    CGRect rootViewFrame;
+    rootViewFrame.origin.x = 0.0;
+    rootViewFrame.origin.y = 0.0;
+    rootViewFrame.size.width = viewSize.width;
+    rootViewFrame.size.height = viewSize.height;
+    
+    CGRect docViewFrame = CGRectMake(0, 0, 0, 0);
+    docViewFrame.size = rootViewFrame.size;
+    docViewFrame.size.height += 200.0;
+    
+    _rootScroll.frame = rootViewFrame;
+    scrollDocumentView.frame = docViewFrame;
+    
     float rowCoord = 0.0;
     
     NSButton* checkModelParts = [NSButton new];
@@ -66,7 +88,7 @@
     [checkModelParts setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [checkModelParts setTarget:self];
     [checkModelParts setAction:@selector(showModelPartsChanged:)];
-    [self addSubview:checkModelParts];
+    [scrollDocumentView addSubview:checkModelParts];
     _checkModelParts = checkModelParts;
     
     rowCoord += 1.2;
@@ -77,7 +99,7 @@
     [checkMaterial setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [checkMaterial setTarget:self];
     [checkMaterial setAction:@selector(basicMaterializedChanged:)];
-    [self addSubview:checkMaterial];
+    [scrollDocumentView addSubview:checkMaterial];
     _checkMaterial = checkMaterial;
     
     rowCoord += 1;
@@ -88,7 +110,7 @@
     [checkTexture setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [checkTexture setTarget:self];
     [checkTexture setAction:@selector(texturedChanged:)];
-    [self addSubview:checkTexture];
+    [scrollDocumentView addSubview:checkTexture];
     _checkTexture = checkTexture;
     
     rowCoord += 1;
@@ -99,7 +121,7 @@
     [checkTextureEmbedTrans setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [checkTextureEmbedTrans setTarget:self];
     [checkTextureEmbedTrans setAction:@selector(textureEmbedTransChanged:)];
-    [self addSubview:checkTextureEmbedTrans];
+    [scrollDocumentView addSubview:checkTextureEmbedTrans];
     _checkTextureEmbedTrans = checkTextureEmbedTrans;
     
     rowCoord += 1;
@@ -110,7 +132,7 @@
     [checkTextureBump setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [checkTextureBump setTarget:self];
     [checkTextureBump setAction:@selector(textureBumpChanged:)];
-    [self addSubview:checkTextureBump];
+    [scrollDocumentView addSubview:checkTextureBump];
     _checkTextureBump = checkTextureBump;
     
     rowCoord += 1.2;
@@ -121,7 +143,7 @@
     [cull setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [cull setTarget:self];
     [cull setAction:@selector(cullChanged:)];
-    [self addSubview:cull];
+    [scrollDocumentView addSubview:cull];
     _cull = cull;
     
     rowCoord += 1;
@@ -132,7 +154,7 @@
     [combine setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [combine setTarget:self];
     [combine setAction:@selector(combineChanged:)];
-    [self addSubview:combine];
+    [scrollDocumentView addSubview:combine];
     _combine = combine;
     
     rowCoord += 1.2;
@@ -143,7 +165,7 @@
     [labelFOV setBordered:NO];
     [labelFOV setStringValue:@"Field of View:"];
     [labelFOV setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
-    [self addSubview:labelFOV];
+    [scrollDocumentView addSubview:labelFOV];
     
     rowCoord += 0.8;
     
@@ -153,7 +175,7 @@
     [fieldOfView setMinValue:1e-6];
     [fieldOfView setTarget:self];
     [fieldOfView setAction:@selector(fieldOfViewChanged:)];
-    [self addSubview:fieldOfView];
+    [scrollDocumentView addSubview:fieldOfView];
     _fieldOfView = fieldOfView;
     
     rowCoord += 1.0;
@@ -164,7 +186,7 @@
     [labelambientDensity setBordered:NO];
     [labelambientDensity setStringValue:@"Ambient Density:"];
     [labelambientDensity setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
-    [self addSubview:labelambientDensity];
+    [scrollDocumentView addSubview:labelambientDensity];
     
     rowCoord += 0.9;
     
@@ -174,7 +196,7 @@
     [ambientDensity setMinValue:0];
     [ambientDensity setTarget:self];
     [ambientDensity setAction:@selector(ambientDensityChanged:)];
-    [self addSubview:ambientDensity];
+    [scrollDocumentView addSubview:ambientDensity];
     _ambientDensitySlider = ambientDensity;
     
     rowCoord += 1.0;
@@ -185,9 +207,11 @@
     [lightSettings setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [lightSettings setTarget:self];
     [lightSettings setAction:@selector(lightSettingsChanged:)];
-    [self addSubview:lightSettings];
+    [scrollDocumentView addSubview:lightSettings];
     _lightSettings = lightSettings;
     
+    [self addSubview:_rootScroll];
+    [_rootScroll.contentView scrollToPoint:CGPointMake(0, docViewFrame.size.height)];
     [self updateControls];
 }
 
@@ -294,7 +318,7 @@
 
 - (NSRect)buttonLoactionAtRow:(float)row withLeading:(float)leading
 {
-    NSRect parentBounds = [self bounds];
+    NSRect parentBounds = [_rootScroll.documentView bounds];
     float parentHeight = parentBounds.size.height;
     float parentWidth = parentBounds.size.width;
     

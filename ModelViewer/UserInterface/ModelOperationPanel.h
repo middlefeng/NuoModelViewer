@@ -36,7 +36,7 @@
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 
 
-- (void)addCheckbox;
+- (void)addSubviews;
 - (void)updateControls;
 
 @end

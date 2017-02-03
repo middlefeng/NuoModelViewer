@@ -104,7 +104,7 @@
     _modelPanel.layer.opacity = 0.8f;
     _modelPanel.layer.backgroundColor = [NSColor colorWithWhite:1.0 alpha:1.0].CGColor;
     
-    [_modelPanel addCheckbox];
+    [_modelPanel addSubviews];
     [_modelPanel setOptionUpdateDelegate:self];
     
     [self addSubview:_modelPanel];
