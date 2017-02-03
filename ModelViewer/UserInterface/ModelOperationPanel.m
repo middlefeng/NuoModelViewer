@@ -8,6 +8,9 @@
 
 #import "ModelOperationPanel.h"
 #import "NuoMeshOptions.h"
+
+#import "NuoMesh.h"
+#import "NuoMeshRotation.h"
 #import "NuoMeshAnimation.h"
 
 
@@ -30,6 +33,8 @@
 
 @property (nonatomic, strong) NSSlider* ambientDensitySlider;
 @property (nonatomic, strong) NSButton* lightSettings;
+
+@property (nonatomic, strong) NSSlider* animationSlider;
 
 @end
 
@@ -265,12 +270,15 @@
     [animationProgressSlider setMaxValue:1.0];
     [animationProgressSlider setMinValue:0.0];
     [animationProgressSlider setDoubleValue:0.0];
+    [animationProgressSlider setTarget:self];
+    [animationProgressSlider setAction:@selector(animationUpdate:)];
     
     NSRect animationProgressRect = animationRect;
     animationProgressRect.size.height = 18;
     animationProgressRect.origin.y -= 10.0 + animationProgressRect.size.height;
     [animationProgressSlider setFrame:animationProgressRect];
     [scrollDocumentView addSubview:animationProgressSlider];
+    _animationSlider = animationProgressSlider;
     
     [self updateControls];
 }
@@ -364,6 +372,25 @@
 {
     [_optionUpdateDelegate animationLoad];
 }
+                                                 
+                                                 
+- (void)animationUpdate:(id)sender
+{
+    for (NuoMeshAnimation* animation in _animations)
+    {
+        for (NuoMesh* mesh in animation.mesh)
+        {
+            double progress = _animationSlider.doubleValue;
+            NuoMeshRotation* rotation = [[NuoMeshRotation alloc] initWith:animation.animationEndPoint];
+            rotation.radius *= progress;
+            
+            [mesh setRotation:rotation];
+        }
+    }
+    
+    [_optionUpdateDelegate modelOptionUpdate:self];
+}
+                                                 
 
 
 - (void)updateControls

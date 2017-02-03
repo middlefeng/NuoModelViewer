@@ -33,6 +33,26 @@
 }
 
 
+
+- (instancetype)initWith:(NuoMeshRotation*)rotation
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _x = rotation.x;
+        _y = rotation.y;
+        _z = rotation.z;
+        _xAxis = rotation.xAxis;
+        _yAxis = rotation.yAxis;
+        _zAxis = rotation.zAxis;
+        _radius = rotation.radius;
+    }
+    
+    return self;
+}
+
+
 - (matrix_float4x4)rotationMatrix
 {
     vector_float3 transformVector = { _x, _y, _z };
