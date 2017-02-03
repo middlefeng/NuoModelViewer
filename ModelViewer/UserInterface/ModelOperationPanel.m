@@ -8,10 +8,10 @@
 
 #import "ModelOperationPanel.h"
 #import "NuoMeshOptions.h"
+#import "NuoMeshAnimation.h"
 
 
-
-@interface ModelOperationPanel()
+@interface ModelOperationPanel() < NSTableViewDataSource, NSTableViewDelegate >
 
 
 @property (nonatomic, strong) NSScrollView* rootScroll;
@@ -38,6 +38,8 @@
 @implementation ModelOperationPanel
 {
     IBOutlet NSScrollView* _animationScroll;
+    IBOutlet NSTableView* _animationTable;
+    __weak NSArray<NuoMeshAnimation*>* _animations;
 }
 
 
@@ -251,6 +253,8 @@
     animationRoot.layer.borderWidth = 1.0;
     animationRoot.layer.borderColor = CGColorCreateGenericGray(0.6, 0.5);
     [_animationScroll setFrame:animationRoot.bounds];
+    [_animationTable setDataSource:self];
+    [_animationTable setDelegate:self];
     [animationRoot addSubview:_animationScroll];
     [scrollDocumentView addSubview:animationRoot];
     
@@ -381,6 +385,45 @@
     
     NSRect result = NSMakeRect(overhead + leading, originalY,
                                parentWidth - overhead * 2.0 - leading * 2.0, buttonHeight);
+    return result;
+}
+
+
+#pragma mark - Table Data Source
+
+
+- (void)setModelPartAnimations:(NSArray<NuoMeshAnimation*>*)animations
+{
+    _animations = animations;
+    [_animationTable reloadData];
+}
+
+
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
+{
+    return _animations.count;
+}
+
+
+
+- (NSView *)tableView:(NSTableView *)tableView viewForTableColumn:(NSTableColumn *)tableColumn
+                  row:(NSInteger)row
+{
+    NSView* result = [tableView makeViewWithIdentifier:tableColumn.identifier owner:self];
+    
+    if ([tableColumn.identifier isEqualToString:@"name"])
+    {
+        NSTableCellView* cell = (NSTableCellView*)result;
+        NSTextField* textField = cell.textField;
+        textField.stringValue = _animations[row].animationName;
+    }
+    else
+    {
+        NSTableCellView* cell = (NSTableCellView*)result;
+        NSTextField* textField = cell.textField;
+        textField.stringValue = @"";
+    }
+    
     return result;
 }
 

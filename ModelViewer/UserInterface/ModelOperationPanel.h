@@ -14,6 +14,7 @@
 
 
 @class NuoMeshOption;
+@class NuoMeshAnimation;
 
 
 
@@ -38,5 +39,6 @@
 
 - (void)addSubviews;
 - (void)updateControls;
+- (void)setModelPartAnimations:(NSArray<NuoMeshAnimation*>*)animations;
 
 @end
