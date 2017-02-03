@@ -36,6 +36,8 @@
     NotationRenderer* _notationRender;
     NSArray<NuoRenderPass*>* _renders;
     
+    NSMutableArray<NuoMeshAnimation*>* _animations;
+    
     ModelComponentPanels* _modelComponentPanels;
     ModelOperationPanel* _modelPanel;
     LightOperationPanel* _lightPanel;
@@ -179,6 +181,10 @@
                      if (current.mesh.count)
                          [animations addObject:current];
                  }
+                 
+                 if (!_animations)
+                     _animations = [[NSMutableArray alloc] init];
+                 [_animations addObjectsFromArray:animations];
              }
          }];
 }
