@@ -152,6 +152,13 @@
 
 
 
+- (void)animationLoad
+{
+    
+}
+
+
+
 - (void)lightOptionUpdate:(LightOperationPanel*)panel;
 {
     _notationRender.density = [panel lightDensity];

@@ -223,6 +223,20 @@
     [labelAnimation setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
     [scrollDocumentView addSubview:labelAnimation];
     
+    NSRect animationLoadRect = [self buttonLoactionAtRow:rowCoord withLeading:0];
+    animationLoadRect.origin.x += 131;
+    animationLoadRect.origin.y -= 4;
+    animationLoadRect.size.width -= 131;
+    animationLoadRect.size.height = 27;
+    NSButton* animationLoad = [[NSButton alloc] init];
+    [animationLoad setTitle:@"Load ..."];
+    [animationLoad setFrame:animationLoadRect];
+    [animationLoad setBezelStyle:NSRoundedBezelStyle];
+    [animationLoad setControlSize:NSControlSizeSmall];
+    [animationLoad setTarget:self];
+    [animationLoad setAction:@selector(loadAnimation:)];
+    [scrollDocumentView addSubview:animationLoad];
+    
     [[NSBundle mainBundle] loadNibNamed:@"ModelPartsAnimations" owner:self topLevelObjects:nil];
     
     rowCoord += 1.2;
@@ -328,6 +342,12 @@
     _showLightSettings = [_lightSettings state] == NSOnState;
     
     [_optionUpdateDelegate modelOptionUpdate:self];
+}
+
+
+- (void)loadAnimation:(id)sender
+{
+    [_optionUpdateDelegate animationLoad];
 }
 
 
