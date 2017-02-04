@@ -4,6 +4,12 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Rotate individual parts (mandatory for the F-14 model!).
+
+<p align="left">
+  <img width="800" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F-14-wing.png"/>
+</p>
+
 * Adjustable shadowing PCF and bias to alliviate artifacts.
 * Preliminary shadowing for two of the four light sources.
 
