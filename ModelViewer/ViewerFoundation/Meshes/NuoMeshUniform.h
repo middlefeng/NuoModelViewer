@@ -9,29 +9,7 @@
 #ifndef NuoMeshUniform_h
 #define NuoMeshUniform_h
 
-
-#ifndef matrix44
-#ifndef matrix33
-
-#ifndef Metal
-
-#import <simd/simd.h>
-
-#define matrix44 matrix_float4x4
-#define matrix33 matrix_float3x3
-
-#else
-
-#include <metal_stdlib>
-#include <metal_matrix>
-
-#define matrix44 metal::float4x4
-#define matrix33 matrix_float3x3
-
-#endif
-
-#endif
-#endif
+#include "NuoMatrixTypes.h"
 
 
 /**

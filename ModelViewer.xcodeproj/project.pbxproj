@@ -154,6 +154,7 @@
 		2C5DDAD91D65949E00A9DC9A /* ModelViewerRenderer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ModelViewerRenderer.mm; sourceTree = "<group>"; };
 		2C62C72B1DE0CAEF00406D27 /* LightSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LightSource.h; sourceTree = "<group>"; };
 		2C62C72C1DE0CAEF00406D27 /* LightSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LightSource.m; sourceTree = "<group>"; };
+		2C6C7CDF1E45AB1200CEC76D /* NuoMatrixTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoMatrixTypes.h; sourceTree = "<group>"; };
 		2C723A971E42D05700484992 /* ModelPartDimensionPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelPartDimensionPanel.h; sourceTree = "<group>"; };
 		2C723A981E42D05700484992 /* ModelPartDimensionPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ModelPartDimensionPanel.m; sourceTree = "<group>"; };
 		2C723AA21E43973200484992 /* NuoMeshUniform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoMeshUniform.h; sourceTree = "<group>"; };
@@ -284,6 +285,7 @@
 				9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */,
 				2C52F12C1DCC03380034ACDC /* NuoTextureMesh.h */,
 				2C52F12D1DCC03380034ACDC /* NuoTextureMesh.mm */,
+				2C6C7CDF1E45AB1200CEC76D /* NuoMatrixTypes.h */,
 				2CE2D7F31E2042F3000CCD2D /* NuoUniforms.h */,
 				2C723AA21E43973200484992 /* NuoMeshUniform.h */,
 				2C235FC81DD6CBD700E68295 /* ShadersCommon.h */,
