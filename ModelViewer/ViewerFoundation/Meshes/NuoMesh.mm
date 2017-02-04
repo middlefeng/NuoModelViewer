@@ -10,7 +10,6 @@
 #import <Cocoa/Cocoa.h>
 #import "NuoMeshTextured.h"
 #import "NuoMeshTexMatieraled.h"
-#import "NuoMeshRotation.h"
 #import "NuoMeshUniform.h"
 
 
@@ -85,14 +84,14 @@
         _rotation = [[NuoMeshRotation alloc] init];
         
         {
-            id<MTLBuffer> buffers1[3], buffers2[3];
-            for (unsigned int i = 0; i < 3; ++i)
+            id<MTLBuffer> buffers1[kInFlightBufferCount], buffers2[kInFlightBufferCount];
+            for (unsigned int i = 0; i < kInFlightBufferCount; ++i)
             {
                 buffers1[i] = [device newBufferWithLength:sizeof(MeshUniforms) options:MTLResourceOptionCPUCacheModeDefault];
                 buffers2[i] = [device newBufferWithLength:sizeof(MeshUniforms) options:MTLResourceOptionCPUCacheModeDefault];
             }
-            _rotationBuffers = [[NSArray alloc] initWithObjects:buffers1 count:3];
-            _rotationBuffersShadow = [[NSArray alloc] initWithObjects:buffers2 count:3];
+            _rotationBuffers = [[NSArray alloc] initWithObjects:buffers1 count:kInFlightBufferCount];
+            _rotationBuffersShadow = [[NSArray alloc] initWithObjects:buffers2 count:kInFlightBufferCount];
         }
     }
     

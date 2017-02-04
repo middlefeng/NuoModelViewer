@@ -352,13 +352,9 @@
         
     }
     
-    _modelUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers[0], modelBuffers[1], modelBuffers[2], nil];
-    _lightingUniformBuffers = [[NSArray alloc] initWithObjects:lightingBuffers[0],
-                                                               lightingBuffers[1],
-                                                               lightingBuffers[2], nil];
-    _lightCastBuffers = [[NSArray alloc] initWithObjects:lightCastModelBuffers[0],
-                         lightCastModelBuffers[1],
-                         lightCastModelBuffers[2], nil];
+    _modelUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers count:kInFlightBufferCount];
+    _lightingUniformBuffers = [[NSArray alloc] initWithObjects:lightingBuffers count:kInFlightBufferCount];
+    _lightCastBuffers = [[NSArray alloc] initWithObjects:lightCastModelBuffers count:kInFlightBufferCount];
     
     ModelCharacterUniforms modelCharacter;
     modelCharacter.opacity = 1.0f;
