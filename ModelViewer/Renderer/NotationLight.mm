@@ -75,6 +75,11 @@
         [_lightVector setBoundingBox:meshBounding];
         [_lightVector makePipelineState:pipelineDesc];
         [_lightVector makeDepthStencilState];
+        
+        // the light vector notation does not have varying uniform,
+        // use only the 0th buffer
+        //
+        [_lightVector updateUniform:0];
     }
     
     return self;
@@ -169,7 +174,11 @@
     [self updateUniformsForView];
     [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
     [renderPass setFragmentBuffer:self.characterUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
-    [_lightVector drawMesh:renderPass indexBuffer:self.bufferIndex];
+    
+    // the light vector notation does not have varying uniform,
+    // use only the 0th buffer
+    //
+    [_lightVector drawMesh:renderPass indexBuffer:0];
 }
 
 

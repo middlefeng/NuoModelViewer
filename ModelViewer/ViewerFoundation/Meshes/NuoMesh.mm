@@ -260,12 +260,6 @@
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
-    // per-mesh part uniform should be alrady updated in the drawShadow
-    // when the shadow pipeline is presented
-    //
-    if (!_shadowPipelineState)
-        [self updateUniform:index];
-    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_renderPipelineState];
     [renderPass setDepthStencilState:_depthStencilState];
@@ -284,8 +278,6 @@
 
 - (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
-    [self updateUniform:index];
-    
     if (_shadowPipelineState)
     {
         [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];

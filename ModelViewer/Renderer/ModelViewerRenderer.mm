@@ -449,6 +449,9 @@
     }
     
     memcpy([self.lightingUniformBuffers[self.bufferIndex] contents], &lighting, sizeof(LightUniform));
+    
+    for (NuoMesh* item in _mesh)
+        [item updateUniform:self.bufferIndex];
 }
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
@@ -469,6 +472,11 @@
         _shadowMapRenderer[i].lightSource = _lights[i];
         _shadowMapRenderer[i].meshMaxSpan = _meshMaxSpan;
         [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer];
+        
+        // only to enforce the buffer index update,
+        // shadow-map renderer does not have on-screen view so it does not need a presented callback
+        //
+        [_shadowMapRenderer[i] drawablePresented];
     }
     
     // store the light view point projection for shadow map detection in the scene
