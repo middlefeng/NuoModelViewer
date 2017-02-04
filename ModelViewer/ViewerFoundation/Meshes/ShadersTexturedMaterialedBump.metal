@@ -60,8 +60,8 @@ vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[b
     outVert.specularPower = vertices[vid].specularPowerDisolve.x;
     outVert.dissolve = vertices[vid].specularPowerDisolve.y;
     
-    outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * vertices[vid].position;
-    outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * vertices[vid].position;
+    outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * meshPosition;
+    outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * meshPosition;
     
     return outVert;
 }

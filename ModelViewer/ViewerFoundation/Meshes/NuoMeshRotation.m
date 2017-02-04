@@ -60,7 +60,7 @@
     
     matrix_float4x4 transMatrix = matrix_float4x4_translation(transformVector);
     matrix_float4x4 transMatrixInv = matrix_float4x4_translation(-transformVector);
-    matrix_float4x4 rotationMatrix = matrix_float4x4_rotation(rotationVector, _radius);
+    matrix_float4x4 rotationMatrix = matrix_float4x4_rotation(vector_normalize(rotationVector), _radius);
     
     return matrix_multiply(transMatrixInv, matrix_multiply(rotationMatrix, transMatrix));
 }

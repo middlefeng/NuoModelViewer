@@ -62,6 +62,7 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
     ProjectedVertex outVert;
     
     float4 meshPosition = meshUniforms.transform * vertices[vid].position;
+    
     outVert.position = uniforms.modelViewProjectionMatrix * meshPosition;
     outVert.eye =  -(uniforms.modelViewMatrix * meshPosition).xyz;
     outVert.normal = uniforms.normalMatrix * meshUniforms.normalTransform * vertices[vid].normal.xyz;
@@ -73,8 +74,8 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
     outVert.specularPower = vertices[vid].specularPowerDisolve.x;
     outVert.dissolve = vertices[vid].specularPowerDisolve.y;
     
-    outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * vertices[vid].position;
-    outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * vertices[vid].position;
+    outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * meshPosition;
+    outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * meshPosition;
     
     return outVert;
 }
