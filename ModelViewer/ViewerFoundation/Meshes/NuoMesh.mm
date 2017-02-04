@@ -10,6 +10,7 @@
 #import <Cocoa/Cocoa.h>
 #import "NuoMeshTextured.h"
 #import "NuoMeshTexMatieraled.h"
+#import "NuoMeshUniform.h"
 
 
 
@@ -79,6 +80,17 @@
         
         _smoothTolerance = 0.0f;
         _smoothConservative = YES;
+        
+        _rotation = [[NuoMeshRotation alloc] init];
+        
+        {
+            id<MTLBuffer> buffers1[kInFlightBufferCount];
+            for (unsigned int i = 0; i < kInFlightBufferCount; ++i)
+            {
+                buffers1[i] = [device newBufferWithLength:sizeof(MeshUniforms) options:MTLResourceOptionCPUCacheModeDefault];
+            }
+            _rotationBuffers = [[NSArray alloc] initWithObjects:buffers1 count:kInFlightBufferCount];
+        }
     }
     
     return self;
@@ -236,13 +248,32 @@
 
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>) renderPass
+- (void)updateUniform:(NSInteger)bufferIndex
 {
+    MeshUniforms uniforms;
+    uniforms.transform = _rotation.rotationMatrix;
+    uniforms.normalTransform = _rotation.rotationNormalMatrix;
+    memcpy([_rotationBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
+}
+
+
+
+- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+{
+    // per-mesh part uniform should be alrady updated in the drawShadow
+    // when the shadow pipeline is presented
+    //
+    if (!_shadowPipelineState)
+        [self updateUniform:index];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_renderPipelineState];
     [renderPass setDepthStencilState:_depthStencilState];
     
+    NSUInteger rotationIndex = _shadowPipelineState ? 3 : 2;
+    
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
+    [renderPass setVertexBuffer:_rotationBuffers[index] offset:0 atIndex:rotationIndex];
     [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
                            indexCount:[_indexBuffer length] / sizeof(uint32_t)
                             indexType:MTLIndexTypeUInt32
@@ -251,8 +282,10 @@
 }
 
 
-- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass
+- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
+    [self updateUniform:index];
+    
     if (_shadowPipelineState)
     {
         [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
@@ -260,6 +293,7 @@
         [renderPass setDepthStencilState:_depthStencilState];
         
         [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
+        [renderPass setVertexBuffer:_rotationBuffers[index] offset:0 atIndex:2];
         [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
                                indexCount:[_indexBuffer length] / sizeof(uint32_t)
                                 indexType:MTLIndexTypeUInt32

@@ -17,6 +17,7 @@
 - (void)modelUpdate:(ModelOperationPanel*)panel;
 - (void)modelOptionUpdate:(ModelOperationPanel*)panel;
 - (void)lightOptionUpdate:(LightOperationPanel*)panel;
+- (void)animationLoad;
 
 @end
 

@@ -2,6 +2,7 @@
 #import <Metal/Metal.h>
 
 #include "NuoMeshOptions.h"
+#include "NuoMeshRotation.h"
 
 
 
@@ -32,6 +33,11 @@
 @property (nonatomic, readonly, assign) float smoothTolerance;
 @property (nonatomic, assign) BOOL smoothConservative;
 
+// mesh rotation in model coordinate
+//
+@property (nonatomic, strong) NuoMeshRotation* rotation;
+@property (nonatomic, strong) NSArray<id<MTLBuffer>>* rotationBuffers;
+
 // unified material (common to all vertices)
 //
 @property (nonatomic, assign, readonly) BOOL hasUnifiedMaterial;
@@ -60,8 +66,9 @@
 - (void)smoothWithTolerance:(float)tolerance;
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass;
-- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass;
+- (void)updateUniform:(NSInteger)bufferIndex;
+- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
+- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
 - (BOOL)hasTransparency;
 - (void)setTransparency:(BOOL)transparent;
 

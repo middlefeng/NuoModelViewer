@@ -169,7 +169,7 @@
     [self updateUniformsForView];
     [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
     [renderPass setFragmentBuffer:self.characterUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
-    [_lightVector drawMesh:renderPass];
+    [_lightVector drawMesh:renderPass indexBuffer:self.bufferIndex];
 }
 
 

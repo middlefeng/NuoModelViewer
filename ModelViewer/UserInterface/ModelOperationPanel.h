@@ -14,6 +14,7 @@
 
 
 @class NuoMeshOption;
+@class NuoMeshAnimation;
 
 
 
@@ -35,8 +36,11 @@
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 
+@property (nonatomic, assign) float animationProgress;
 
-- (void)addCheckbox;
+
+- (void)addSubviews;
 - (void)updateControls;
+- (void)setModelPartAnimations:(NSArray<NuoMeshAnimation*>*)animations;
 
 @end

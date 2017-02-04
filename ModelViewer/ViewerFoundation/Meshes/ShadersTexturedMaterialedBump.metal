@@ -39,14 +39,19 @@ struct ProjectedVertex
 vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[buffer(0)]],
                                                      constant ModelUniforms &uniforms [[buffer(1)]],
                                                      constant LightVertexUniforms &lightCast [[buffer(2)]],
+                                                     constant MeshUniforms &meshUniforms [[buffer(3)]],
                                                      uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
-    outVert.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
-    outVert.eye =  -(uniforms.modelViewMatrix * vertices[vid].position).xyz;
-    outVert.normal = uniforms.normalMatrix * vertices[vid].normal.xyz;
-    outVert.tangent = uniforms.normalMatrix * (vertices[vid].tangent.xyz);
-    outVert.bitangent = uniforms.normalMatrix * (vertices[vid].bitangent.xyz);
+    
+    float4 meshPosition = meshUniforms.transform * vertices[vid].position;
+    float3x3 normalMatrix = uniforms.normalMatrix * meshUniforms.normalTransform;
+    
+    outVert.position = uniforms.modelViewProjectionMatrix * meshPosition;
+    outVert.eye =  -(uniforms.modelViewMatrix * meshPosition).xyz;
+    outVert.normal = normalMatrix * vertices[vid].normal.xyz;
+    outVert.tangent = normalMatrix * (vertices[vid].tangent.xyz);
+    outVert.bitangent = normalMatrix * (vertices[vid].bitangent.xyz);
     outVert.texCoord = vertices[vid].texCoord;
     
     outVert.ambientColor = vertices[vid].ambientColor;
@@ -55,8 +60,8 @@ vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[b
     outVert.specularPower = vertices[vid].specularPowerDisolve.x;
     outVert.dissolve = vertices[vid].specularPowerDisolve.y;
     
-    outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * vertices[vid].position;
-    outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * vertices[vid].position;
+    outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * meshPosition;
+    outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * meshPosition;
     
     return outVert;
 }
@@ -74,10 +79,12 @@ static float3 bumpped_normal(float3 normal, float3 tangent, float3 bitangent, fl
 
 vertex PositionSimple vertex_shadow_tex_materialed_bump(device Vertex *vertices [[buffer(0)]],
                                                         constant ModelUniforms &uniforms [[buffer(1)]],
+                                                        constant MeshUniforms &meshUniforms [[buffer(2)]],
                                                         uint vid [[vertex_id]])
 {
     PositionSimple outShadow;
-    outShadow.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
+    outShadow.position = uniforms.modelViewProjectionMatrix *
+                         meshUniforms.transform * vertices[vid].position;
     return outShadow;
 }
 

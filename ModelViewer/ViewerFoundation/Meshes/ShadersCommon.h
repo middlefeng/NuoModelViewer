@@ -13,6 +13,7 @@
 #include <metal_matrix>
 
 #include "NuoUniforms.h"
+#include "NuoMeshUniform.h"
 
 
 struct Material

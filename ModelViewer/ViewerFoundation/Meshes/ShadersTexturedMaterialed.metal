@@ -42,10 +42,11 @@ struct ProjectedVertex
 
 vertex PositionSimple vertex_shadow_tex_materialed(device Vertex *vertices [[buffer(0)]],
                                                    constant ModelUniforms &uniforms [[buffer(1)]],
+                                                   constant MeshUniforms &meshUniforms [[buffer(2)]],
                                                    uint vid [[vertex_id]])
 {
     PositionSimple outShadow;
-    outShadow.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
+    outShadow.position = uniforms.modelViewProjectionMatrix * meshUniforms.transform * vertices[vid].position;
     return outShadow;
 }
 
@@ -55,12 +56,16 @@ vertex PositionSimple vertex_shadow_tex_materialed(device Vertex *vertices [[buf
 vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[buffer(0)]],
                                                      constant ModelUniforms &uniforms [[buffer(1)]],
                                                      constant LightVertexUniforms &lightCast [[buffer(2)]],
+                                                     constant MeshUniforms &meshUniforms [[buffer(3)]],
                                                      uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
-    outVert.position = uniforms.modelViewProjectionMatrix * vertices[vid].position;
-    outVert.eye =  -(uniforms.modelViewMatrix * vertices[vid].position).xyz;
-    outVert.normal = uniforms.normalMatrix * vertices[vid].normal.xyz;
+    
+    float4 meshPosition = meshUniforms.transform * vertices[vid].position;
+    
+    outVert.position = uniforms.modelViewProjectionMatrix * meshPosition;
+    outVert.eye =  -(uniforms.modelViewMatrix * meshPosition).xyz;
+    outVert.normal = uniforms.normalMatrix * meshUniforms.normalTransform * vertices[vid].normal.xyz;
     outVert.texCoord = vertices[vid].texCoord;
     
     outVert.ambientColor = vertices[vid].ambientColor;
@@ -69,8 +74,8 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
     outVert.specularPower = vertices[vid].specularPowerDisolve.x;
     outVert.dissolve = vertices[vid].specularPowerDisolve.y;
     
-    outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * vertices[vid].position;
-    outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * vertices[vid].position;
+    outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * meshPosition;
+    outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * meshPosition;
     
     return outVert;
 }

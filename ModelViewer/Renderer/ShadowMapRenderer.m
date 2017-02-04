@@ -114,7 +114,7 @@
     for (NuoMesh* mesh in _mesh)
     {
         if (![mesh hasTransparency] && [mesh enabled])
-            [mesh drawShadow:renderPass];
+            [mesh drawShadow:renderPass indexBuffer:self.bufferIndex];
     }
     
     [renderPass endEncoding];

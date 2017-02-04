@@ -19,6 +19,10 @@
 #import "NuoMeshOptions.h"
 #import "LightSource.h"
 
+#import "NuoMesh.h"
+#import "NuoMeshRotation.h"
+#import "NuoMeshAnimation.h"
+
 
 
 @interface ModelView() <ModelOptionUpdate>
@@ -34,6 +38,8 @@
     ModelRenderer* _modelRender;
     NotationRenderer* _notationRender;
     NSArray<NuoRenderPass*>* _renders;
+    
+    NSMutableArray<NuoMeshAnimation*>* _animations;
     
     ModelComponentPanels* _modelComponentPanels;
     ModelOperationPanel* _modelPanel;
@@ -104,7 +110,7 @@
     _modelPanel.layer.opacity = 0.8f;
     _modelPanel.layer.backgroundColor = [NSColor colorWithWhite:1.0 alpha:1.0].CGColor;
     
-    [_modelPanel addCheckbox];
+    [_modelPanel addSubviews];
     [_modelPanel setOptionUpdateDelegate:self];
     
     [self addSubview:_modelPanel];
@@ -122,15 +128,25 @@
 }
 
 
+- (void)modelMeshInvalid
+{
+    // clear all table and data structures that depends on the mesh
+    //
+    [_modelComponentPanels setMesh:_modelRender.mesh];
+    [_animations removeAllObjects];
+    [_modelPanel setModelPartAnimations:_animations];
+}
+
+
 - (void)modelUpdate:(ModelOperationPanel *)panel
 {
     if (panel)
     {
         NuoMeshOption* options = panel.meshOptions;
         [_modelRender setModelOptions:options withCommandQueue:[self commandQueue]];
+        [self modelMeshInvalid];
     }
     
-    [_modelComponentPanels setMesh:_modelRender.mesh];
     [self render];
 }
 
@@ -145,9 +161,47 @@
         [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
         [_modelRender setAmbientDensity:[panel ambientDensity]];
         [self setupPipelineSettings];
+        
+        for (NuoMeshAnimation* animation in _animations)
+            [animation setProgress:panel.animationProgress];
     }
     
     [self render];
+}
+
+
+
+- (void)animationLoad
+{
+    NSOpenPanel* openPanel = [NSOpenPanel openPanel];
+    openPanel.allowedFileTypes = @[@"anm"];
+    
+    [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
+         {
+             if (result == NSFileHandlingPanelOKButton)
+             {
+                 NuoLua* lua = [self lua];
+                 [lua loadFile:openPanel.URL.path];
+                 NSArray* keys = [lua getKeysFromTable:-1];
+                 
+                 NSMutableArray<NuoMeshAnimation*>* animations = [[NSMutableArray alloc] init];
+                 for (NSString* key in keys)
+                 {
+                     NuoMeshAnimation* current = [NuoMeshAnimation new];
+                     current.animationName = key;
+                     
+                     [lua getField:key fromTable:-1];
+                     [current importAnimation:lua forMesh:_modelRender.mesh];
+                     [lua removeField];
+                     
+                     if (current.mesh.count)
+                         [animations addObject:current];
+                 }
+                 
+                 _animations = animations;
+                 [_modelPanel setModelPartAnimations:_animations];
+             }
+         }];
 }
 
 
@@ -428,7 +482,7 @@
 - (void)loadMesh:(NSString*)path
 {
     [_modelRender loadMesh:path withCommandQueue:[self commandQueue]];
-    [_modelComponentPanels setMesh:_modelRender.mesh];
+    [self modelMeshInvalid];
     
     NSString* documentName = [path lastPathComponent];
     _documentName = [documentName stringByDeletingPathExtension];
