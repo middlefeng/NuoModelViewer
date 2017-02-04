@@ -37,7 +37,6 @@
 //
 @property (nonatomic, strong) NuoMeshRotation* rotation;
 @property (nonatomic, strong) NSArray<id<MTLBuffer>>* rotationBuffers;
-@property (nonatomic, strong) NSArray<id<MTLBuffer>>* rotationBuffersShadow;
 
 // unified material (common to all vertices)
 //

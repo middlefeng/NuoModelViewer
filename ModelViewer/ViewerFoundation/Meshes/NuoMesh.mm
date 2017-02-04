@@ -84,14 +84,12 @@
         _rotation = [[NuoMeshRotation alloc] init];
         
         {
-            id<MTLBuffer> buffers1[kInFlightBufferCount], buffers2[kInFlightBufferCount];
+            id<MTLBuffer> buffers1[kInFlightBufferCount];
             for (unsigned int i = 0; i < kInFlightBufferCount; ++i)
             {
                 buffers1[i] = [device newBufferWithLength:sizeof(MeshUniforms) options:MTLResourceOptionCPUCacheModeDefault];
-                buffers2[i] = [device newBufferWithLength:sizeof(MeshUniforms) options:MTLResourceOptionCPUCacheModeDefault];
             }
             _rotationBuffers = [[NSArray alloc] initWithObjects:buffers1 count:kInFlightBufferCount];
-            _rotationBuffersShadow = [[NSArray alloc] initWithObjects:buffers2 count:kInFlightBufferCount];
         }
     }
     
@@ -256,14 +254,17 @@
     uniforms.transform = _rotation.rotationMatrix;
     uniforms.normalTransform = _rotation.rotationNormalMatrix;
     memcpy([_rotationBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
-    memcpy([_rotationBuffersShadow[bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
 
 
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
-    [self updateUniform:index];
+    // per-mesh part uniform should be alrady updated in the drawShadow
+    // when the shadow pipeline is presented
+    //
+    if (!_shadowPipelineState)
+        [self updateUniform:index];
     
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_renderPipelineState];
@@ -292,7 +293,7 @@
         [renderPass setDepthStencilState:_depthStencilState];
         
         [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-        [renderPass setVertexBuffer:_rotationBuffersShadow[index] offset:0 atIndex:2];
+        [renderPass setVertexBuffer:_rotationBuffers[index] offset:0 atIndex:2];
         [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
                                indexCount:[_indexBuffer length] / sizeof(uint32_t)
                                 indexType:MTLIndexTypeUInt32
