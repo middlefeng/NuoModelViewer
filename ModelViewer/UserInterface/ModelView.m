@@ -128,15 +128,25 @@
 }
 
 
+- (void)modelMeshInvalid
+{
+    // clear all table and data structures that depends on the mesh
+    //
+    [_modelComponentPanels setMesh:_modelRender.mesh];
+    [_animations removeAllObjects];
+    [_modelPanel setModelPartAnimations:_animations];
+}
+
+
 - (void)modelUpdate:(ModelOperationPanel *)panel
 {
     if (panel)
     {
         NuoMeshOption* options = panel.meshOptions;
         [_modelRender setModelOptions:options withCommandQueue:[self commandQueue]];
+        [self modelMeshInvalid];
     }
     
-    [_modelComponentPanels setMesh:_modelRender.mesh];
     [self render];
 }
 
@@ -472,7 +482,7 @@
 - (void)loadMesh:(NSString*)path
 {
     [_modelRender loadMesh:path withCommandQueue:[self commandQueue]];
-    [_modelComponentPanels setMesh:_modelRender.mesh];
+    [self modelMeshInvalid];
     
     NSString* documentName = [path lastPathComponent];
     _documentName = [documentName stringByDeletingPathExtension];
