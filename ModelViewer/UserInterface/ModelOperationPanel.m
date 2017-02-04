@@ -376,17 +376,7 @@
                                                  
 - (void)animationUpdate:(id)sender
 {
-    for (NuoMeshAnimation* animation in _animations)
-    {
-        for (NuoMesh* mesh in animation.mesh)
-        {
-            double progress = _animationSlider.doubleValue;
-            NuoMeshRotation* rotation = [[NuoMeshRotation alloc] initWith:animation.animationEndPoint];
-            rotation.radius *= progress;
-            
-            [mesh setRotation:rotation];
-        }
-    }
+    _animationProgress = _animationSlider.floatValue;
     
     [_optionUpdateDelegate modelOptionUpdate:self];
 }

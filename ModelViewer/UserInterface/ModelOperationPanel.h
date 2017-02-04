@@ -36,6 +36,8 @@
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 
+@property (nonatomic, assign) float animationProgress;
+
 
 - (void)addSubviews;
 - (void)updateControls;

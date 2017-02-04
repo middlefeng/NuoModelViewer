@@ -18,6 +18,9 @@
 #import "NuoLua.h"
 #import "NuoMeshOptions.h"
 #import "LightSource.h"
+
+#import "NuoMesh.h"
+#import "NuoMeshRotation.h"
 #import "NuoMeshAnimation.h"
 
 
@@ -148,6 +151,18 @@
         [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
         [_modelRender setAmbientDensity:[panel ambientDensity]];
         [self setupPipelineSettings];
+        
+        for (NuoMeshAnimation* animation in _animations)
+        {
+            for (NuoMesh* mesh in animation.mesh)
+            {
+                double progress = panel.animationProgress;
+                NuoMeshRotation* rotation = [[NuoMeshRotation alloc] initWith:animation.animationEndPoint];
+                rotation.radius *= progress;
+
+                [mesh setRotation:rotation];
+            }
+        }
     }
     
     [self render];
