@@ -22,7 +22,6 @@
     if (self)
     {
         _mesh = [[NSMutableArray alloc] init];
-        _progress = 0.0;
     }
     
     return self;
