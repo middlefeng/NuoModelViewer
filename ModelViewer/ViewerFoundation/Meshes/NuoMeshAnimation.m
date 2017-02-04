@@ -81,4 +81,17 @@
 
 
 
+- (void)setProgress:(float)progress
+{
+    for (NuoMesh* mesh in _mesh)
+    {
+        NuoMeshRotation* rotation = [[NuoMeshRotation alloc] initWith:_animationEndPoint];
+        rotation.radius *= progress;
+        
+        [mesh setRotation:rotation];
+    }
+}
+
+
+
 @end
