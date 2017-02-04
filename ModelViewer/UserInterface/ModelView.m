@@ -197,10 +197,7 @@
                          [animations addObject:current];
                  }
                  
-                 if (!_animations)
-                     _animations = [[NSMutableArray alloc] init];
-                 [_animations addObjectsFromArray:animations];
-                 
+                 _animations = animations;
                  [_modelPanel setModelPartAnimations:_animations];
              }
          }];
