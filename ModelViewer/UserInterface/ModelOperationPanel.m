@@ -8,16 +8,11 @@
 
 #import "ModelOperationPanel.h"
 #import "NuoMeshOptions.h"
-
-#import "NuoMesh.h"
-#import "NuoMeshRotation.h"
 #import "NuoMeshAnimation.h"
 
 
 @interface ModelOperationPanel() < NSTableViewDataSource, NSTableViewDelegate >
 
-
-@property (nonatomic, strong) NSScrollView* rootScroll;
 
 @property (nonatomic, strong) NSButton* checkModelParts;
 
@@ -70,11 +65,13 @@
 
 - (void)addSubviews
 {
-    NSView* scrollDocumentView = [[NSView alloc] init];
+    // scroll view and its document view initialization
+    //
     
-    _rootScroll = [[NSScrollView alloc] init];
-    _rootScroll.documentView = scrollDocumentView;
-    _rootScroll.hasVerticalScroller = YES;
+    NSView* scrollDocumentView = [[NSView alloc] init];
+    NSScrollView* rootScroll = [[NSScrollView alloc] init];
+    rootScroll.documentView = scrollDocumentView;
+    rootScroll.hasVerticalScroller = YES;
     
     CGSize viewSize = [self bounds].size;
     CGRect rootViewFrame;
@@ -87,15 +84,18 @@
     docViewFrame.size = rootViewFrame.size;
     docViewFrame.size.height += 180.0;
     
-    _rootScroll.frame = rootViewFrame;
+    rootScroll.frame = rootViewFrame;
     scrollDocumentView.frame = docViewFrame;
+    
+    // rows of labels and checkboxs/sliders
+    //
     
     float rowCoord = 0.0;
     
     NSButton* checkModelParts = [NSButton new];
     [checkModelParts setButtonType:NSSwitchButton];
     [checkModelParts setTitle:@"Show Model Parts"];
-    [checkModelParts setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [checkModelParts setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [checkModelParts setTarget:self];
     [checkModelParts setAction:@selector(showModelPartsChanged:)];
     [scrollDocumentView addSubview:checkModelParts];
@@ -106,7 +106,7 @@
     NSButton* checkMaterial = [NSButton new];
     [checkMaterial setButtonType:NSSwitchButton];
     [checkMaterial setTitle:@"Basic Material"];
-    [checkMaterial setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [checkMaterial setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [checkMaterial setTarget:self];
     [checkMaterial setAction:@selector(basicMaterializedChanged:)];
     [scrollDocumentView addSubview:checkMaterial];
@@ -117,7 +117,7 @@
     NSButton* checkTexture = [NSButton new];
     [checkTexture setButtonType:NSSwitchButton];
     [checkTexture setTitle:@"Texture"];
-    [checkTexture setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [checkTexture setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [checkTexture setTarget:self];
     [checkTexture setAction:@selector(texturedChanged:)];
     [scrollDocumentView addSubview:checkTexture];
@@ -128,7 +128,7 @@
     NSButton* checkTextureEmbedTrans = [NSButton new];
     [checkTextureEmbedTrans setButtonType:NSSwitchButton];
     [checkTextureEmbedTrans setTitle:@"Texture Alpha as Transparency"];
-    [checkTextureEmbedTrans setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [checkTextureEmbedTrans setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [checkTextureEmbedTrans setTarget:self];
     [checkTextureEmbedTrans setAction:@selector(textureEmbedTransChanged:)];
     [scrollDocumentView addSubview:checkTextureEmbedTrans];
@@ -139,7 +139,7 @@
     NSButton* checkTextureBump = [NSButton new];
     [checkTextureBump setButtonType:NSSwitchButton];
     [checkTextureBump setTitle:@"Texture Bump"];
-    [checkTextureBump setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [checkTextureBump setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [checkTextureBump setTarget:self];
     [checkTextureBump setAction:@selector(textureBumpChanged:)];
     [scrollDocumentView addSubview:checkTextureBump];
@@ -150,7 +150,8 @@
     NSButton* cull = [NSButton new];
     [cull setButtonType:NSSwitchButton];
     [cull setTitle:@"Enable Culling"];
-    [cull setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [cull setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0
+                                      inView:scrollDocumentView]];
     [cull setTarget:self];
     [cull setAction:@selector(cullChanged:)];
     [scrollDocumentView addSubview:cull];
@@ -161,7 +162,7 @@
     NSButton* combine = [NSButton new];
     [combine setButtonType:NSSwitchButton];
     [combine setTitle:@"Combine Shapes by Material"];
-    [combine setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [combine setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [combine setTarget:self];
     [combine setAction:@selector(combineChanged:)];
     [scrollDocumentView addSubview:combine];
@@ -174,13 +175,13 @@
     [labelFOV setSelectable:NO];
     [labelFOV setBordered:NO];
     [labelFOV setStringValue:@"Field of View:"];
-    [labelFOV setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [labelFOV setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelFOV];
     
     rowCoord += 0.8;
     
     NSSlider* fieldOfView = [NSSlider new];
-    [fieldOfView setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6]];
+    [fieldOfView setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6 inView:scrollDocumentView]];
     [fieldOfView setMaxValue:_fieldOfViewRadian];
     [fieldOfView setMinValue:1e-6];
     [fieldOfView setTarget:self];
@@ -195,13 +196,13 @@
     [labelambientDensity setSelectable:NO];
     [labelambientDensity setBordered:NO];
     [labelambientDensity setStringValue:@"Ambient Density:"];
-    [labelambientDensity setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [labelambientDensity setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelambientDensity];
     
     rowCoord += 0.9;
     
     NSSlider* ambientDensity = [NSSlider new];
-    [ambientDensity setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6]];
+    [ambientDensity setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6 inView:scrollDocumentView]];
     [ambientDensity setMaxValue:2.0];
     [ambientDensity setMinValue:0];
     [ambientDensity setTarget:self];
@@ -214,7 +215,7 @@
     NSButton* lightSettings = [NSButton new];
     [lightSettings setButtonType:NSSwitchButton];
     [lightSettings setTitle:@"Light Settings"];
-    [lightSettings setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [lightSettings setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [lightSettings setTarget:self];
     [lightSettings setAction:@selector(lightSettingsChanged:)];
     [scrollDocumentView addSubview:lightSettings];
@@ -222,15 +223,18 @@
     
     rowCoord += 1.8;
     
+    // animation list/slider
+    //
+    
     NSTextField* labelAnimation = [NSTextField new];
     [labelAnimation setEditable:NO];
     [labelAnimation setSelectable:NO];
     [labelAnimation setBordered:NO];
     [labelAnimation setStringValue:@"Animations:"];
-    [labelAnimation setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0]];
+    [labelAnimation setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelAnimation];
     
-    NSRect animationLoadRect = [self buttonLoactionAtRow:rowCoord withLeading:0];
+    NSRect animationLoadRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
     animationLoadRect.origin.x += 131;
     animationLoadRect.origin.y -= 4;
     animationLoadRect.size.width -= 131;
@@ -248,7 +252,7 @@
     
     rowCoord += 1.2;
     
-    NSRect animationRect = [self buttonLoactionAtRow:rowCoord withLeading:0];
+    NSRect animationRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
     animationRect.size.height = 90;
     animationRect.origin.y -= 70;
     NSView* animationRoot = [[NSView alloc] init];
@@ -263,8 +267,8 @@
     [animationRoot addSubview:_animationScroll];
     [scrollDocumentView addSubview:animationRoot];
     
-    [self addSubview:_rootScroll];
-    [_rootScroll.contentView scrollToPoint:CGPointMake(0, docViewFrame.size.height)];
+    [self addSubview:rootScroll];
+    [rootScroll.contentView scrollToPoint:CGPointMake(0, docViewFrame.size.height)];
     
     NSSlider* animationProgressSlider = [[NSSlider alloc] init];
     [animationProgressSlider setMaxValue:1.0];
@@ -399,9 +403,9 @@
 }
 
 
-- (NSRect)buttonLoactionAtRow:(float)row withLeading:(float)leading
+- (NSRect)buttonLoactionAtRow:(float)row withLeading:(float)leading inView:(NSView*)view
 {
-    NSRect parentBounds = [_rootScroll.documentView bounds];
+    NSRect parentBounds = [view bounds];
     float parentHeight = parentBounds.size.height;
     float parentWidth = parentBounds.size.width;
     
