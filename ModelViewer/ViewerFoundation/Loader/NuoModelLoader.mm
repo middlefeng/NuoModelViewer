@@ -223,56 +223,120 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         options._basicMaterialized = loadOption.basicMaterialized;
         
         PNuoModelBase modelBase = CreateModel(options, material, shape.name);
+        PNuoModelBase modelBase2;
+        
+        if (shape.name == "WINGS_Circle.017")
+        {
+            modelBase2 = CreateModel(options, material, "WINGS_Circle.017.2");
+        }
         
         for (size_t i = 0; i < shape.mesh.indices.size(); ++i)
         {
             tinyobj::index_t index = shape.mesh.indices[i];
             
-            modelBase->AddPosition(index.vertex_index, _attrib.vertices);
-            if (_attrib.normals.size())
-                modelBase->AddNormal(index.normal_index, _attrib.normals);
-            if (material.HasTextureDiffuse())
-                modelBase->AddTexCoord(index.texcoord_index, _attrib.texcoords);
+            float x = _attrib.vertices[index.vertex_index * 3];
             
-            int materialID = shape.mesh.material_ids[i / 3];
-            if (materialID >= 0)
+            if (x > 0 || shape.name != "WINGS_Circle.017")
             {
-                NuoMaterial vertexMaterial(_materials[materialID], false /* ignored */);
-                modelBase->AddMaterial(vertexMaterial);
+                modelBase->AddPosition(index.vertex_index, _attrib.vertices);
+                if (_attrib.normals.size())
+                    modelBase->AddNormal(index.normal_index, _attrib.normals);
+                if (material.HasTextureDiffuse())
+                    modelBase->AddTexCoord(index.texcoord_index, _attrib.texcoords);
+                
+                int materialID = shape.mesh.material_ids[i / 3];
+                if (materialID >= 0)
+                {
+                    NuoMaterial vertexMaterial(_materials[materialID], false /* ignored */);
+                    modelBase->AddMaterial(vertexMaterial);
+                }
+            }
+            else
+            {
+                modelBase2->AddPosition(index.vertex_index, _attrib.vertices);
+                if (_attrib.normals.size())
+                    modelBase2->AddNormal(index.normal_index, _attrib.normals);
+                if (material.HasTextureDiffuse())
+                    modelBase2->AddTexCoord(index.texcoord_index, _attrib.texcoords);
+                
+                int materialID = shape.mesh.material_ids[i / 3];
+                if (materialID >= 0)
+                {
+                    NuoMaterial vertexMaterial(_materials[materialID], false /* ignored */);
+                    modelBase2->AddMaterial(vertexMaterial);
+                }
             }
         }
         
-        modelBase->GenerateIndices();
-        if (!_attrib.normals.size())
-            modelBase->GenerateNormals();
         
-        if (material.HasTextureDiffuse())
         {
-            NSString* diffuseTexName = [NSString stringWithUTF8String:material.diffuse_texname.c_str()];
-            NSString* diffuseTexPath = [_basePath stringByAppendingPathComponent:diffuseTexName];
+            modelBase->GenerateIndices();
+            if (!_attrib.normals.size())
+                modelBase->GenerateNormals();
             
-            modelBase->SetTexturePathDiffuse(diffuseTexPath.UTF8String);
+            if (material.HasTextureDiffuse())
+            {
+                NSString* diffuseTexName = [NSString stringWithUTF8String:material.diffuse_texname.c_str()];
+                NSString* diffuseTexPath = [_basePath stringByAppendingPathComponent:diffuseTexName];
+                
+                modelBase->SetTexturePathDiffuse(diffuseTexPath.UTF8String);
+            }
+            
+            if (material.HasTextureOpacity())
+            {
+                NSString* opacityTexName = [NSString stringWithUTF8String:material.alpha_texname.c_str()];
+                NSString* opacityTexPath = [_basePath stringByAppendingPathComponent:opacityTexName];
+                
+                modelBase->SetTexturePathOpacity(opacityTexPath.UTF8String);
+            }
+            
+            if (material.HasTextureBump())
+            {
+                NSString* bumpTexName = [NSString stringWithUTF8String:material.bump_texname.c_str()];
+                NSString* bumpTexPath = [_basePath stringByAppendingPathComponent:bumpTexName];
+                
+                modelBase->GenerateTangents();
+                modelBase->SetTexturePathBump(bumpTexPath.UTF8String);
+            }
+            
+            models.push_back(modelBase);
+            modelOptions.insert(std::make_pair(modelBase, options));
         }
         
-        if (material.HasTextureOpacity())
+        if (shape.name == "WINGS_Circle.017")
         {
-            NSString* opacityTexName = [NSString stringWithUTF8String:material.alpha_texname.c_str()];
-            NSString* opacityTexPath = [_basePath stringByAppendingPathComponent:opacityTexName];
+            modelBase2->GenerateIndices();
+            if (!_attrib.normals.size())
+                modelBase2->GenerateNormals();
             
-            modelBase->SetTexturePathOpacity(opacityTexPath.UTF8String);
-        }
-        
-        if (material.HasTextureBump())
-        {
-            NSString* bumpTexName = [NSString stringWithUTF8String:material.bump_texname.c_str()];
-            NSString* bumpTexPath = [_basePath stringByAppendingPathComponent:bumpTexName];
+            if (material.HasTextureDiffuse())
+            {
+                NSString* diffuseTexName = [NSString stringWithUTF8String:material.diffuse_texname.c_str()];
+                NSString* diffuseTexPath = [_basePath stringByAppendingPathComponent:diffuseTexName];
+                
+                modelBase2->SetTexturePathDiffuse(diffuseTexPath.UTF8String);
+            }
             
-            modelBase->GenerateTangents();
-            modelBase->SetTexturePathBump(bumpTexPath.UTF8String);
+            if (material.HasTextureOpacity())
+            {
+                NSString* opacityTexName = [NSString stringWithUTF8String:material.alpha_texname.c_str()];
+                NSString* opacityTexPath = [_basePath stringByAppendingPathComponent:opacityTexName];
+                
+                modelBase2->SetTexturePathOpacity(opacityTexPath.UTF8String);
+            }
+            
+            if (material.HasTextureBump())
+            {
+                NSString* bumpTexName = [NSString stringWithUTF8String:material.bump_texname.c_str()];
+                NSString* bumpTexPath = [_basePath stringByAppendingPathComponent:bumpTexName];
+                
+                modelBase2->GenerateTangents();
+                modelBase2->SetTexturePathBump(bumpTexPath.UTF8String);
+            }
+            
+            models.push_back(modelBase2);
+            modelOptions.insert(std::make_pair(modelBase2, options));
         }
-        
-        models.push_back(modelBase);
-        modelOptions.insert(std::make_pair(modelBase, options));
     }
     
     NSMutableArray<NuoMesh*>* result = [[NSMutableArray<NuoMesh*> alloc] init];
