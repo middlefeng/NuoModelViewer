@@ -1,0 +1,28 @@
+
+
+-- anchor = { 2.8, 1.75, 0.6 }
+anchor = { 2.8, 1.875, 0.6 }
+axis = { -0.0, 0.0, 1 }
+radius = 0.9
+
+animations =
+{
+	["Wing on Left"] =
+	{
+		object = { "WingL", "FlapL", "FlapLidBtt", "FlapEyebro", "SpoilerL", "SlatL" },
+		axis = axis,
+		anchor = anchor,
+		radius = -radius
+	},
+
+	["Wing on Right"] =
+	{
+		object = { "WingR", "FlapR", "FlapLidBt0", "FlapEyebr0", "SpoilerR", "SlatR" },
+		axis = { -axis[1], axis[2], axis[3] },
+		anchor = { -anchor[1], anchor[2], anchor[3] },
+		radius = radius
+	}
+}
+
+
+return animations
