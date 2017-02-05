@@ -21,6 +21,7 @@
     NSTextField* _nameField;
     
     NSButton* _modelSmoothOption;
+    NSButton* _modelCullOption;
     
     NSTextField* _opacityLabel;
     NSSlider* _opacitySlider;
@@ -43,6 +44,8 @@
         
         _modelSmoothOption = [self createCheckButton:@"Smooth conservative"];
         [_modelSmoothOption setAction:@selector(modelPartsChanged:)];
+        _modelCullOption = [self createCheckButton:@"Reverse Cull Mode"];
+        [_modelCullOption setAction:@selector(modelPartsChanged:)];
         
         _opacityLabel = [self createLabel:@"Opacity:" align:NSTextAlignmentRight];
         _opacitySlider = [self createSliderMax:1.0 min:0.0];
@@ -53,6 +56,7 @@
         [self addSubview:_opacityLabel];
         [self addSubview:_opacitySlider];
         [self addSubview:_modelSmoothOption];
+        [self addSubview:_modelCullOption];
     }
     
     return self;
@@ -107,12 +111,12 @@
     
     CGRect labelFrame;
     labelFrame.size = CGSizeMake(labelWidth, entryHeight);
-    labelFrame.origin = CGPointMake(0, (entryHeight + lineSpace) * 2 + 15);
+    labelFrame.origin = CGPointMake(0, (entryHeight + lineSpace) * 3 + 15);
     [_nameLabel setFrame:labelFrame];
     
     CGRect fieldFrame;
     fieldFrame.size = CGSizeMake(viewSize.width - labelWidth - labelSpace * 2 - 10, entryHeight);
-    fieldFrame.origin = CGPointMake(labelWidth + labelSpace, (entryHeight + lineSpace) * 2 + 15);
+    fieldFrame.origin = CGPointMake(labelWidth + labelSpace, (entryHeight + lineSpace) * 3 + 15);
     [_nameField setFrame:fieldFrame];
     
     labelFrame.origin.y -= entryHeight + lineSpace;
@@ -122,12 +126,16 @@
     [_opacitySlider setFrame:fieldFrame];
     
     labelFrame.origin.y -= entryHeight + lineSpace;
-    fieldFrame.origin.y -= entryHeight + lineSpace;
     
     CGRect checkButtonFrame = labelFrame;
     checkButtonFrame.origin.x = 10;
     checkButtonFrame.size.width = viewSize.width - 20;
+    
     [_modelSmoothOption setFrame:checkButtonFrame];
+    
+    checkButtonFrame.origin.y -= entryHeight + lineSpace;
+
+    [_modelCullOption setFrame:checkButtonFrame];
 }
 
 
@@ -149,6 +157,8 @@
     {
         [_opacitySlider setFloatValue:mesh.unifiedOpacity];
     }
+    
+    [_modelCullOption setState:mesh.reverseCommonCullMode ? NSOnState : NSOffState];
 }
 
 
@@ -157,6 +167,8 @@
 {
     if (_selectedMesh.hasUnifiedMaterial)
         _selectedMesh.unifiedOpacity = [_opacitySlider floatValue];
+    
+    _selectedMesh.reverseCommonCullMode = [_modelCullOption state] == NSOnState;
     
     // change the smooth at the last because it may clone the vertex buffer
     //

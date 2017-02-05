@@ -499,17 +499,28 @@
     [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.targetTexture atIndex:1];
     [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
     
-    if (_cullEnabled)
-        [renderPass setCullMode:MTLCullModeBack];
-    else
-        [renderPass setCullMode:MTLCullModeNone];
+    NSArray* cullModes = _cullEnabled ?
+                            @[@(MTLCullModeBack), @(MTLCullModeNone)] :
+                            @[@(MTLCullModeNone), @(MTLCullModeBack)];
+    NSUInteger cullMode = [cullModes[0] unsignedLongValue];
+    [renderPass setCullMode:(MTLCullMode)cullMode];
 
-    for (uint8 renderPassStep = 0; renderPassStep < 2; ++renderPassStep)
+    for (uint8 renderPassStep = 0; renderPassStep < 4; ++renderPassStep)
     {
+        // reverse the cull mode in pass 1 and 3
+        //
+        if (renderPassStep == 1 || renderPassStep == 3)
+        {
+            NSUInteger cullMode = [cullModes[renderPassStep % 3] unsignedLongValue];
+            [renderPass setCullMode:(MTLCullMode)cullMode];
+        }
+        
         for (NuoMesh* mesh : _mesh)
         {
-            if (((renderPassStep == 0) && ![mesh hasTransparency]) /* first pass for opaque */ ||
-                ((renderPassStep == 1) && [mesh hasTransparency])  /* second pass for transparent */)
+            if (((renderPassStep == 0) && ![mesh hasTransparency] && ![mesh reverseCommonCullMode]) /* 1/2 pass for opaque */ ||
+                ((renderPassStep == 1) && ![mesh hasTransparency] && [mesh reverseCommonCullMode])                              ||
+                ((renderPassStep == 2) && [mesh hasTransparency] && [mesh reverseCommonCullMode])  /* 3/4 pass for transparent */ ||
+                ((renderPassStep == 3) && [mesh hasTransparency] && ![mesh reverseCommonCullMode]))
                 if ([mesh enabled])
                     [mesh drawMesh:renderPass indexBuffer:self.bufferIndex];
         }

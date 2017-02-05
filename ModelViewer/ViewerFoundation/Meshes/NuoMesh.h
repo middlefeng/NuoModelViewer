@@ -43,6 +43,8 @@
 @property (nonatomic, assign, readonly) BOOL hasUnifiedMaterial;
 @property (nonatomic, assign) float unifiedOpacity;
 
+@property (nonatomic, assign) BOOL reverseCommonCullMode;
+
 
 @property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
