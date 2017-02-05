@@ -205,7 +205,8 @@
         
         for (NuoMesh* meshItem : _mesh)
         {
-            if (meshItem.smoothTolerance > 0.001 || !meshItem.enabled)
+            if (meshItem.smoothTolerance > 0.001 || !meshItem.enabled ||
+                meshItem.reverseCommonCullMode || meshItem.unifiedOpacity != 1.0)
             {
                 exporter.StartArrayIndex(++index);
                 exporter.StartTable();
@@ -220,6 +221,18 @@
                 
                 exporter.StartEntry("smooth");
                 exporter.SetEntryValueFloat(meshItem.smoothTolerance);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("smoothConservative");
+                exporter.SetEntryValueBool(meshItem.smoothConservative);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("cullModeReverse");
+                exporter.SetEntryValueBool(meshItem.reverseCommonCullMode);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("opacity");
+                exporter.SetEntryValueFloat(meshItem.unifiedOpacity);
                 exporter.EndEntry(false);
                 
                 exporter.EndTable();
@@ -307,6 +320,9 @@
             if ([mesh.modelName isEqualToString:name])
             {
                 [mesh setEnabled:[lua getFieldAsBool:@"enabled" fromTable:-1]];
+                [mesh setReverseCommonCullMode:[lua getFieldAsBool:@"cullModeReverse" fromTable:-1]];
+                [mesh setUnifiedOpacity:[lua getFieldAsBool:@"opacity" fromTable:-1]];
+                [mesh setSmoothConservative:[lua getFieldAsBool:@"smoothConservative" fromTable:-1]];
                 [mesh smoothWithTolerance:[lua getFieldAsNumber:@"smooth" fromTable:-1]];
                 
                 passedModel = ++i;
