@@ -206,7 +206,7 @@
         for (NuoMesh* meshItem : _mesh)
         {
             if (meshItem.smoothTolerance > 0.001 || !meshItem.enabled ||
-                meshItem.reverseCommonCullMode || meshItem.unifiedOpacity != 1.0)
+                meshItem.reverseCommonCullMode || (meshItem.hasUnifiedMaterial && meshItem.unifiedOpacity != 1.0))
             {
                 exporter.StartArrayIndex(++index);
                 exporter.StartTable();
@@ -321,7 +321,7 @@
             {
                 [mesh setEnabled:[lua getFieldAsBool:@"enabled" fromTable:-1]];
                 [mesh setReverseCommonCullMode:[lua getFieldAsBool:@"cullModeReverse" fromTable:-1]];
-                [mesh setUnifiedOpacity:[lua getFieldAsBool:@"opacity" fromTable:-1]];
+                [mesh setUnifiedOpacity:[lua getFieldAsNumber:@"opacity" fromTable:-1]];
                 [mesh setSmoothConservative:[lua getFieldAsBool:@"smoothConservative" fromTable:-1]];
                 [mesh smoothWithTolerance:[lua getFieldAsNumber:@"smooth" fromTable:-1]];
                 

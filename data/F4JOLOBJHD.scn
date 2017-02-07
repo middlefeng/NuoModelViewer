@@ -1,0 +1,231 @@
+return
+{
+    canvas = 
+    {
+        width = 1147.000000,
+        height = 735.000000,
+    },
+
+    rotationMatrix = 
+    {
+        [0] = 
+        {
+            [0] = 0.753847,
+            [1] = -0.346693,
+            [2] = 0.558128,
+            [3] = 0.000000,
+        },
+        [1] = 
+        {
+            [0] = 0.652697,
+            [1] = 0.492693,
+            [2] = -0.575526,
+            [3] = 0.000000,
+        },
+        [2] = 
+        {
+            [0] = -0.075455,
+            [1] = 0.798153,
+            [2] = 0.597704,
+            [3] = 0.000000,
+        },
+        [3] = 
+        {
+            [0] = 0.000000,
+            [1] = 0.000000,
+            [2] = 0.000000,
+            [3] = 1.000000,
+        },
+    },
+
+    view = 
+    {
+        zoom = 0.000000,
+        transX = 40.600250,
+        transY = 0.000000,
+        FOV = 0.392553,
+    },
+
+    models = 
+    {
+        [1] = 
+        {
+            name = "CONTROL_Circle.005",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [2] = 
+        {
+            name = "WEAPONS_Circle.026",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [3] = 
+        {
+            name = "MARCOR_Circle.008",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [4] = 
+        {
+            name = "GLASSR_Circle.001",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 0.150000,
+        },
+
+        [5] = 
+        {
+            name = "MARCOFW_Circle.003",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [6] = 
+        {
+            name = "GLASSFW_Circle.010",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 0.137560,
+        },
+
+        [7] = 
+        {
+            name = "GLASS_Circle.012",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 0.150000,
+        },
+
+        [8] = 
+        {
+            name = "GEAR_Circle.014",
+            enabled = false,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [9] = 
+        {
+            name = "FUELTANKS_Circle.029",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [10] = 
+        {
+            name = "FLAPS_Circle.013",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [11] = 
+        {
+            name = "COCKPIT_Plane",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = true,
+            opacity = 1.000000,
+        },
+
+        [12] = 
+        {
+            name = "PILOT1_Cube.003",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = true,
+            opacity = 1.000000,
+        },
+
+        [13] = 
+        {
+            name = "PILOT_2_Cube.004",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = true,
+            opacity = 1.000000,
+        },
+
+        [14] = 
+        {
+            name = "ENGINES_Circle.007",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+    },
+
+    lights = 
+    {
+        [0] = 
+        {
+            rotateX = 0.282742,
+            rotateY = -0.534070,
+            density = 1.437243,
+            spacular = 1.138613,
+        },
+
+        [1] = 
+        {
+            rotateX = 0.534070,
+            rotateY = -0.251328,
+            density = 0.239571,
+            spacular = 2.261719,
+        },
+
+        [2] = 
+        {
+            rotateX = -0.628319,
+            rotateY = 0.376992,
+            density = 0.775096,
+            spacular = 0.000000,
+        },
+
+        [3] = 
+        {
+            rotateX = -0.251327,
+            rotateY = 0.691150,
+            density = 0.000000,
+            spacular = 0.000000,
+        },
+
+        ambient = 0.280000,
+
+    },
+
+}
