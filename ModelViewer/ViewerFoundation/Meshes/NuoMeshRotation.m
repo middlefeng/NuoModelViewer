@@ -12,6 +12,10 @@
 
 
 @implementation NuoMeshRotation
+{
+    matrix_float4x4 _rotationMatrix;
+    matrix_float3x3 _rotationNormalMatrix;
+}
 
 
 - (instancetype)init
@@ -28,6 +32,8 @@
         _zAxis = 1;
         _radius = 0;
     }
+    
+    [self generateMatrices];
     
     return self;
 }
@@ -49,11 +55,13 @@
         _radius = rotation.radius;
     }
     
+    [self generateMatrices];
+    
     return self;
 }
 
 
-- (matrix_float4x4)rotationMatrix
+- (void)generateMatrices
 {
     vector_float3 transformVector = { _x, _y, _z };
     vector_float3 rotationVector = { _xAxis, _yAxis, _zAxis };
@@ -62,13 +70,29 @@
     matrix_float4x4 transMatrixInv = matrix_float4x4_translation(-transformVector);
     matrix_float4x4 rotationMatrix = matrix_float4x4_rotation(vector_normalize(rotationVector), _radius);
     
-    return matrix_multiply(transMatrixInv, matrix_multiply(rotationMatrix, transMatrix));
+    _rotationMatrix = matrix_multiply(transMatrixInv, matrix_multiply(rotationMatrix, transMatrix));
+    _rotationNormalMatrix = matrix_float4x4_extract_linear(_rotationMatrix);
+}
+
+
+
+- (void)setRadius:(float)radius
+{
+    _radius = radius;
+    [self generateMatrices];
+}
+
+
+
+- (matrix_float4x4)rotationMatrix
+{
+    return _rotationMatrix;
 }
 
 
 - (matrix_float3x3)rotationNormalMatrix
 {
-    return matrix_float4x4_extract_linear([self rotationMatrix]);
+    return _rotationNormalMatrix;
 }
 
 
