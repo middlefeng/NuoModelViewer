@@ -252,6 +252,8 @@
     
     rowCoord += 1.2;
     
+    CGColorRef border = CGColorCreateGenericGray(0.6, 0.5);
+    
     NSRect animationRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
     animationRect.size.height = 90;
     animationRect.origin.y -= 70;
@@ -260,12 +262,14 @@
     animationRoot.layer = [CALayer new];
     animationRoot.frame = animationRect;
     animationRoot.layer.borderWidth = 1.0;
-    animationRoot.layer.borderColor = CGColorCreateGenericGray(0.6, 0.5);
+    animationRoot.layer.borderColor = border;
     [_animationScroll setFrame:animationRoot.bounds];
     [_animationTable setDataSource:self];
     [_animationTable setDelegate:self];
     [animationRoot addSubview:_animationScroll];
     [scrollDocumentView addSubview:animationRoot];
+    
+    CGColorRelease(border);
     
     [self addSubview:rootScroll];
     [rootScroll.contentView scrollToPoint:CGPointMake(0, docViewFrame.size.height)];
