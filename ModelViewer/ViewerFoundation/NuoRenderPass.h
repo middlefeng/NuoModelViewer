@@ -18,19 +18,13 @@
 
 @property (nonatomic, weak) id<MTLDevice> device;
 
-/**
- *  current index in the tri-buffer flow
- */
-@property (nonatomic, readonly) NSInteger bufferIndex;
-
 @property (nonatomic, strong) NuoRenderPassTarget* renderTarget;
 
 
 - (void)setDrawableSize:(CGSize)drawableSize;
 
-
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
-- (void)drawablePresented;
+- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+            withInFlightIndex:(unsigned int)inFlight;
 
 - (BOOL)isPipelinePass;
 

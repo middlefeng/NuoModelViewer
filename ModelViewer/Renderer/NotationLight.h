@@ -26,13 +26,10 @@
 @property (nonatomic, assign) BOOL selected;
 
 
-@property (nonatomic, readonly) NSInteger bufferIndex;
-
-
 - (instancetype)initWithDevice:(id<MTLDevice>)device isBold:(BOOL)bold;
 
-- (void)drawWithRenderPass:(id<MTLRenderCommandEncoder>)renderPass;
-- (void)drawablePresented;
+- (void)drawWithRenderPass:(id<MTLRenderCommandEncoder>)renderPass
+              withInFlight:(unsigned int)inFlight;
 
 
 - (NuoMeshBox*)boundingBox;

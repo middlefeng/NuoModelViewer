@@ -12,6 +12,11 @@
 @property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
 @property (strong) dispatch_semaphore_t displaySemaphore;
 
+/**
+ *  current index in the tri-buffer flow
+ */
+@property (nonatomic, assign) unsigned int inFlightIndex;
+
 @end
 
 
@@ -149,6 +154,8 @@
 {
     dispatch_semaphore_wait(self.displaySemaphore, DISPATCH_TIME_FOREVER);
     
+    _inFlightIndex = (_inFlightIndex + 1) % kInFlightBufferCount;
+    
     _currentDrawable = [self.metalLayer nextDrawable];
     if (!_currentDrawable)
         return;
@@ -182,18 +189,13 @@
     for (size_t i = 0; i < [_renderPasses count]; ++i)
     {
         NuoRenderPass* render = [_renderPasses objectAtIndex:i];
-        [render drawWithCommandBuffer:commandBuffer];
+        [render drawWithCommandBuffer:commandBuffer withInFlightIndex:_inFlightIndex];
     }
     
     __block dispatch_semaphore_t displaySem = self.displaySemaphore;
     
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer)
      {
-         for (size_t i = 0; i < [_renderPasses count]; ++i)
-         {
-             [_renderPasses[i] drawablePresented];
-         }
-         
          dispatch_semaphore_signal(displaySem);
      }];
     

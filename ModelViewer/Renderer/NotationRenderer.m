@@ -204,10 +204,11 @@
 
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+            withInFlightIndex:(unsigned int)inFlight
 {
     self.renderTarget.clearColor = MTLClearColorMake(0.0, 0.95, 0.95, 1);
     
-    [super drawWithCommandBuffer:commandBuffer];
+    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
     id<MTLRenderCommandEncoder> renderPass = self.lastRenderPass;
     self.lastRenderPass = nil;
@@ -240,21 +241,12 @@
     
     for (size_t i = 0; i < _lightVectors.count; ++i)
     {
-        [_lightVectors[i] drawWithRenderPass:renderPass];
+        [_lightVectors[i] drawWithRenderPass:renderPass withInFlight:inFlight];
     }
     
     [renderPass endEncoding];
 }
 
-
-
-- (void)drawablePresented
-{
-    [super drawablePresented];
-    
-    for (size_t i = 0; i < _lightVectors.count; ++i)
-        [_lightVectors[i] drawablePresented];
-}
 
 
 @end
