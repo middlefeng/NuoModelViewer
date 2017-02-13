@@ -16,6 +16,7 @@
  *  current index in the tri-buffer flow
  */
 @property (nonatomic, assign) unsigned int inFlightIndex;
+@property (nonatomic, assign) unsigned int inFlightNumber;
 
 @end
 
@@ -66,6 +67,7 @@
     {
         [self commonInit];
         self.metalLayer.device = device;
+        _displaySemaphore = dispatch_semaphore_create(kInFlightBufferCount);
     }
 
     return self;
@@ -152,13 +154,20 @@
 
 - (void)render
 {
-    dispatch_semaphore_wait(self.displaySemaphore, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait(_displaySemaphore, DISPATCH_TIME_FOREVER);
     
+    _inFlightNumber += 1;
     _inFlightIndex = (_inFlightIndex + 1) % kInFlightBufferCount;
+    
+    NSLog(@"In flight frame: %u.", _inFlightNumber);
     
     _currentDrawable = [self.metalLayer nextDrawable];
     if (!_currentDrawable)
+    {
+        dispatch_semaphore_signal(_displaySemaphore);
+        _inFlightNumber -= 1;
         return;
+    }
     
     for (size_t i = 0; i < [_renderPasses count]; ++i)
     {
@@ -196,7 +205,8 @@
     
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer)
      {
-         dispatch_semaphore_signal(displaySem);
+         _inFlightNumber -= 1;
+         dispatch_semaphore_signal(_displaySemaphore);
      }];
     
     [commandBuffer presentDrawable:_currentDrawable];
