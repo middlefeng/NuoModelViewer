@@ -5,6 +5,11 @@
 #import "NuoRenderPipelinePass.h"
 #import "NuoRenderPassTarget.h"
 
+#import <sys/time.h>
+
+
+#define MEASURE_PERFORMANCE 0
+
 
 @interface NuoMetalView ()
 
@@ -16,10 +21,12 @@
  *  current index in the tri-buffer flow
  */
 @property (nonatomic, assign) unsigned int inFlightIndex;
+
+#if MEASURE_PERFORMANCE
 @property (nonatomic, assign) unsigned int inFlightNumber;
+#endif
 
 @end
-
 
 
 
@@ -156,16 +163,24 @@
 {
     dispatch_semaphore_wait(_displaySemaphore, DISPATCH_TIME_FOREVER);
     
-    _inFlightNumber += 1;
     _inFlightIndex = (_inFlightIndex + 1) % kInFlightBufferCount;
     
+#if MEASURE_PERFORMANCE
+    _inFlightNumber += 1;
+
     NSLog(@"In flight frame: %u.", _inFlightNumber);
+    
+    struct timeval begin, __block end, __block presented;
+    gettimeofday(&begin, NULL);
+#endif
     
     _currentDrawable = [self.metalLayer nextDrawable];
     if (!_currentDrawable)
     {
         dispatch_semaphore_signal(_displaySemaphore);
+#if MEASURE_PERFORMANCE
         _inFlightNumber -= 1;
+#endif
         return;
     }
     
@@ -205,9 +220,22 @@
     
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer)
      {
+#if MEASURE_PERFORMANCE
+         gettimeofday(&presented, NULL);
+         
+         float encodeVal = (end.tv_sec - begin.tv_sec) * 1e6 + (end.tv_usec - begin.tv_usec);
+         float presentVal = (presented.tv_sec - begin.tv_sec) * 1e6 + (presented.tv_usec - begin.tv_usec);
+         NSLog(@"Time spent: %f, %f.", encodeVal, presentVal);
+         
          _inFlightNumber -= 1;
-         dispatch_semaphore_signal(_displaySemaphore);
+#endif
+         
+         dispatch_semaphore_signal(displaySem);
      }];
+    
+#if MEASURE_PERFORMANCE
+    gettimeofday(&end, NULL);
+#endif
     
     [commandBuffer presentDrawable:_currentDrawable];
     [commandBuffer commit];
