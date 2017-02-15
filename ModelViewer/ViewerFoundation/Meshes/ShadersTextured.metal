@@ -86,7 +86,7 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
         {
             float3 eyeDirection = normalize(vert.eye);
             float3 halfway = normalize(normalize(lightUniform.direction[i].xyz) + eyeDirection);
-            float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower);
+            float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower) * diffuseIntensity;
             specularTerm = material.specularColor * specularFactor;
         }
         
