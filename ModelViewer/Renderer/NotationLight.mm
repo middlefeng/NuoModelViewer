@@ -112,7 +112,7 @@
 }
 
 
-- (void)updateUniformsForView
+- (void)updateUniformsForView:(unsigned int)inFlight
 {
     LightSource* desc = _lightSourceDesc;
     
@@ -136,12 +136,12 @@
     uniforms.modelViewProjectionMatrix = matrix_multiply(_projMatrix, uniforms.modelViewMatrix);
     uniforms.normalMatrix = matrix_float4x4_extract_linear(uniforms.modelViewMatrix);
     
-    memcpy([self.uniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
+    memcpy([self.uniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
     
     ModelCharacterUniforms characters;
     characters.opacity = _selected ? 1.0f : 0.1f;
     
-    memcpy([self.characterUniformBuffers[self.bufferIndex] contents], &characters, sizeof(characters));
+    memcpy([self.characterUniformBuffers[inFlight] contents], &characters, sizeof(characters));
 }
 
 
@@ -170,10 +170,11 @@
 
 
 - (void)drawWithRenderPass:(id<MTLRenderCommandEncoder>)renderPass
+              withInFlight:(unsigned int)inFlight
 {
-    [self updateUniformsForView];
-    [renderPass setVertexBuffer:self.uniformBuffers[self.bufferIndex] offset:0 atIndex:1];
-    [renderPass setFragmentBuffer:self.characterUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
+    [self updateUniformsForView:inFlight];
+    [renderPass setVertexBuffer:self.uniformBuffers[inFlight] offset:0 atIndex:1];
+    [renderPass setFragmentBuffer:self.characterUniformBuffers[inFlight] offset:0 atIndex:1];
     
     // the light vector notation does not have varying uniform,
     // use only the 0th buffer
@@ -181,12 +182,6 @@
     [_lightVector drawMesh:renderPass indexBuffer:0];
 }
 
-
-
-- (void)drawablePresented
-{
-    _bufferIndex = (_bufferIndex + 1) % kInFlightBufferCount;
-}
 
 
 @end

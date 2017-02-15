@@ -85,10 +85,16 @@
 {
     NSRect listRect = [self modelPartsPanelLocation];
     
+    CGColorRef background = CGColorCreateGenericGray(0.0, 0.0);
+    CGColorRef border = CGColorCreateGenericGray(0.6, 0.5);
+    
     _modelPartsPanel = [ModelPartsPanel new];
-    _modelPartsPanel.layer.backgroundColor = CGColorCreateGenericGray(0.0, 0.0);
+    _modelPartsPanel.layer.backgroundColor = background;
     _modelPartsPanel.layer.borderWidth = 1.0;
-    _modelPartsPanel.layer.borderColor = CGColorCreateGenericGray(0.6, 0.5);
+    _modelPartsPanel.layer.borderColor = border;
+    
+    CGColorRelease(background);
+    CGColorRelease(border);
     
     [_containerView addSubview:_modelPartsPanel];
     [_modelPartsPanel setFrame:listRect];

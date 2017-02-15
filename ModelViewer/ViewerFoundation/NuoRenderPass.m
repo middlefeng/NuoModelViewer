@@ -9,9 +9,6 @@
 #import "NuoRenderPass.h"
 
 
-static const unsigned int kInFlightBufferCount = 3;
-
-
 @interface NuoRenderPass()
 
 @end
@@ -27,17 +24,16 @@ static const unsigned int kInFlightBufferCount = 3;
 }
 
 
+- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+               withInFlightIndex:(unsigned int)inFlight
+{
+}
+
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+            withInFlightIndex:(unsigned int)inFlight
 {
 }
-
-
-- (void)drawablePresented
-{
-    _bufferIndex = (_bufferIndex + 1) % kInFlightBufferCount;
-}
-
 
 
 - (BOOL)isPipelinePass

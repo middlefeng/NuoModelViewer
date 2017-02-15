@@ -269,6 +269,23 @@
                 exporter.StartEntry("spacular");
                 exporter.SetEntryValueFloat(light.lightingSpacular);
                 exporter.EndEntry(false);
+                
+                exporter.StartEntry("enableShadow");
+                exporter.SetEntryValueBool(light.enableShadow);
+                exporter.EndEntry(false);
+                
+                assert(light.enableShadow == (lightIndex < 2));
+                
+                if (light.enableShadow)
+                {
+                    exporter.StartEntry("shadowSoften");
+                    exporter.SetEntryValueFloat(light.shadowSoften);
+                    exporter.EndEntry(false);
+                    
+                    exporter.StartEntry("shadowBias");
+                    exporter.SetEntryValueFloat(light.shadowBias);
+                    exporter.EndEntry(false);
+                }
             }
             
             exporter.EndTable();
@@ -388,7 +405,7 @@
     _shadowMapSamplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 
-- (void)updateUniformsForView:(matrix_float4x4*)modelMatrixOut
+- (void)updateUniformsForView:(matrix_float4x4*)modelMatrixOut withInFlight:(unsigned int)inFlight
 {
     {
         float scaleFactor = 1;
@@ -442,7 +459,7 @@
     uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
     uniforms.normalMatrix = matrix_float4x4_extract_linear(uniforms.modelViewMatrix);
 
-    memcpy([self.modelUniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
+    memcpy([self.modelUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
     
     LightUniform lighting;
     lighting.ambientDensity = _ambientDensity;
@@ -464,20 +481,17 @@
         }
     }
     
-    memcpy([self.lightingUniformBuffers[self.bufferIndex] contents], &lighting, sizeof(LightUniform));
+    memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(LightUniform));
     
     for (NuoMesh* item in _mesh)
-        [item updateUniform:self.bufferIndex];
+        [item updateUniform:inFlight];
 }
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+               withInFlightIndex:(unsigned int)inFlight
 {
-    MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
-    if (!passDescriptor)
-        return;
-    
     matrix_float4x4 modelMatrix;
-    [self updateUniformsForView:&modelMatrix];
+    [self updateUniformsForView:&modelMatrix withInFlight:inFlight];
     
     // generate shadow map
     //
@@ -487,12 +501,7 @@
         _shadowMapRenderer[i].mesh = _mesh;
         _shadowMapRenderer[i].lightSource = _lights[i];
         _shadowMapRenderer[i].meshMaxSpan = _meshMaxSpan;
-        [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer];
-        
-        // only to enforce the buffer index update,
-        // shadow-map renderer does not have on-screen view so it does not need a presented callback
-        //
-        [_shadowMapRenderer[i] drawablePresented];
+        [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     }
     
     // store the light view point projection for shadow map detection in the scene
@@ -500,16 +509,23 @@
     LightVertexUniforms lightUniforms;
     lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix;
     lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix;
-    memcpy([_lightCastBuffers[self.bufferIndex] contents], &lightUniforms, sizeof(lightUniforms));
+    memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
+}
+
+- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+{
+    MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
+    if (!passDescriptor)
+        return;
     
     // get the target render pass and draw the scene
     //
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     
-    [renderPass setVertexBuffer:self.modelUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
-    [renderPass setVertexBuffer:_lightCastBuffers[self.bufferIndex] offset:0 atIndex:2];
+    [renderPass setVertexBuffer:self.modelUniformBuffers[inFlight] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:_lightCastBuffers[inFlight] offset:0 atIndex:2];
     
-    [renderPass setFragmentBuffer:self.lightingUniformBuffers[self.bufferIndex] offset:0 atIndex:0];
+    [renderPass setFragmentBuffer:self.lightingUniformBuffers[inFlight] offset:0 atIndex:0];
     [renderPass setFragmentBuffer:self.modelCharacterUnfiromBuffer offset:0 atIndex:1];
     [renderPass setFragmentTexture:_shadowMapRenderer[0].renderTarget.targetTexture atIndex:0];
     [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.targetTexture atIndex:1];
@@ -538,7 +554,7 @@
                 ((renderPassStep == 2) && [mesh hasTransparency] && [mesh reverseCommonCullMode])  /* 3/4 pass for transparent */ ||
                 ((renderPassStep == 3) && [mesh hasTransparency] && ![mesh reverseCommonCullMode]))
                 if ([mesh enabled])
-                    [mesh drawMesh:renderPass indexBuffer:self.bufferIndex];
+                    [mesh drawMesh:renderPass indexBuffer:inFlight];
         }
     }
     

@@ -5,6 +5,11 @@
 #import "NuoRenderPipelinePass.h"
 #import "NuoRenderPassTarget.h"
 
+#import <sys/time.h>
+
+
+#define MEASURE_PERFORMANCE 0
+
 
 @interface NuoMetalView ()
 
@@ -12,8 +17,16 @@
 @property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
 @property (strong) dispatch_semaphore_t displaySemaphore;
 
-@end
+/**
+ *  current index in the tri-buffer flow
+ */
+@property (nonatomic, assign) unsigned int inFlightIndex;
 
+#if MEASURE_PERFORMANCE
+@property (nonatomic, assign) unsigned int inFlightNumber;
+#endif
+
+@end
 
 
 
@@ -61,6 +74,7 @@
     {
         [self commonInit];
         self.metalLayer.device = device;
+        _displaySemaphore = dispatch_semaphore_create(kInFlightBufferCount);
     }
 
     return self;
@@ -147,11 +161,27 @@
 
 - (void)render
 {
-    dispatch_semaphore_wait(self.displaySemaphore, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait(_displaySemaphore, DISPATCH_TIME_FOREVER);
     
-    _currentDrawable = [self.metalLayer nextDrawable];
-    if (!_currentDrawable)
-        return;
+    _inFlightIndex = (_inFlightIndex + 1) % kInFlightBufferCount;
+    
+#if MEASURE_PERFORMANCE
+    _inFlightNumber += 1;
+
+    NSLog(@"In flight frame: %u.", _inFlightNumber);
+    
+    struct timeval begin, __block end, __block presented;
+    gettimeofday(&begin, NULL);
+#endif
+    
+    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
+    
+    for (NuoRenderPass* pass in _renderPasses)
+    {
+        [pass predrawWithCommandBuffer:commandBuffer withInFlightIndex:_inFlightIndex];
+    }
+    
+    id<CAMetalDrawable> currentDrawable = nil;
     
     for (size_t i = 0; i < [_renderPasses count]; ++i)
     {
@@ -172,32 +202,49 @@
         }
         else
         {
+            currentDrawable = [self.metalLayer nextDrawable];
+            if (!currentDrawable)
+            {
+                dispatch_semaphore_signal(_displaySemaphore);
+#if MEASURE_PERFORMANCE
+                _inFlightNumber -= 1;
+#endif
+                return;
+            }
+
             NuoRenderPassTarget* finalResult = render1.renderTarget;
-            [finalResult setTargetTexture:[_currentDrawable texture]];
+            [finalResult setTargetTexture:[currentDrawable texture]];
         }
     }
 
-    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
-    
     for (size_t i = 0; i < [_renderPasses count]; ++i)
     {
         NuoRenderPass* render = [_renderPasses objectAtIndex:i];
-        [render drawWithCommandBuffer:commandBuffer];
+        [render drawWithCommandBuffer:commandBuffer withInFlightIndex:_inFlightIndex];
     }
     
     __block dispatch_semaphore_t displaySem = self.displaySemaphore;
     
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer)
      {
-         for (size_t i = 0; i < [_renderPasses count]; ++i)
-         {
-             [_renderPasses[i] drawablePresented];
-         }
+#if MEASURE_PERFORMANCE
+         gettimeofday(&presented, NULL);
+         
+         float encodeVal = (end.tv_sec - begin.tv_sec) * 1e6 + (end.tv_usec - begin.tv_usec);
+         float presentVal = (presented.tv_sec - begin.tv_sec) * 1e6 + (presented.tv_usec - begin.tv_usec);
+         NSLog(@"Time spent: %f, %f.", encodeVal, presentVal);
+         
+         _inFlightNumber -= 1;
+#endif
          
          dispatch_semaphore_signal(displaySem);
      }];
     
-    [commandBuffer presentDrawable:_currentDrawable];
+#if MEASURE_PERFORMANCE
+    gettimeofday(&end, NULL);
+#endif
+    
+    [commandBuffer presentDrawable:currentDrawable];
     [commandBuffer commit];
 }
 

@@ -150,10 +150,25 @@
     for (int lightIndex = 0; lightIndex < _lightVectors.count; ++lightIndex)
     {
         [lua getItem:lightIndex fromTable:-1];
+        
         _lightSources[lightIndex].lightingRotationX = [lua getFieldAsNumber:@"rotateX" fromTable:-1];
         _lightSources[lightIndex].lightingRotationY = [lua getFieldAsNumber:@"rotateY" fromTable:-1];
         _lightSources[lightIndex].lightingDensity = [lua getFieldAsNumber:@"density" fromTable:-1];
         _lightSources[lightIndex].lightingSpacular = [lua getFieldAsNumber:@"spacular" fromTable:-1];
+        _lightSources[lightIndex].enableShadow = [lua getFieldAsBool:@"enableShadow" fromTable:-1];
+        
+        if (_lightSources[lightIndex].enableShadow)
+        {
+            assert(lightIndex < 2);
+            
+            _lightSources[lightIndex].shadowSoften = [lua getFieldAsNumber:@"shadowSoften" fromTable:-1];
+            _lightSources[lightIndex].shadowBias = [lua getFieldAsNumber:@"shadowBias" fromTable:-1];
+        }
+        else
+        {
+            assert(lightIndex >= 2);
+        }
+        
         [lua removeField];
     }
     [lua removeField];
@@ -204,10 +219,11 @@
 
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+            withInFlightIndex:(unsigned int)inFlight
 {
     self.renderTarget.clearColor = MTLClearColorMake(0.0, 0.95, 0.95, 1);
     
-    [super drawWithCommandBuffer:commandBuffer];
+    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
     id<MTLRenderCommandEncoder> renderPass = self.lastRenderPass;
     self.lastRenderPass = nil;
@@ -240,21 +256,12 @@
     
     for (size_t i = 0; i < _lightVectors.count; ++i)
     {
-        [_lightVectors[i] drawWithRenderPass:renderPass];
+        [_lightVectors[i] drawWithRenderPass:renderPass withInFlight:inFlight];
     }
     
     [renderPass endEncoding];
 }
 
-
-
-- (void)drawablePresented
-{
-    [super drawablePresented];
-    
-    for (size_t i = 0; i < _lightVectors.count; ++i)
-        [_lightVectors[i] drawablePresented];
-}
 
 
 @end

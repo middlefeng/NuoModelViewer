@@ -65,7 +65,7 @@
 }
 
 
-- (void)updateUniformsForView
+- (void)updateUniformsForView:(unsigned int)inFlight
 {
     vector_float3 center = {0, 0, 0};
     vector_float4 lightAsEye = {0, 0, 1, 0};
@@ -94,27 +94,27 @@
     
     _lightCastMatrix = uniforms.modelViewProjectionMatrix;
     
-    memcpy([self.modelUniformBuffers[self.bufferIndex] contents], &uniforms, sizeof(uniforms));
+    memcpy([self.modelUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
     MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
     if (!passDescriptor)
         return;
     
-    [self updateUniformsForView];
+    [self updateUniformsForView:inFlight];
     
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
 
-    [renderPass setVertexBuffer:self.modelUniformBuffers[self.bufferIndex] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:self.modelUniformBuffers[inFlight] offset:0 atIndex:1];
     [renderPass setCullMode:MTLCullModeNone];
     
     for (NuoMesh* mesh in _mesh)
     {
         if (![mesh hasTransparency] && [mesh enabled])
-            [mesh drawShadow:renderPass indexBuffer:self.bufferIndex];
+            [mesh drawShadow:renderPass indexBuffer:inFlight];
     }
     
     [renderPass endEncoding];
