@@ -274,6 +274,8 @@
                 exporter.SetEntryValueBool(light.enableShadow);
                 exporter.EndEntry(false);
                 
+                assert(light.enableShadow == (lightIndex < 2));
+                
                 if (light.enableShadow)
                 {
                     exporter.StartEntry("shadowSoften");

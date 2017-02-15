@@ -159,8 +159,14 @@
         
         if (_lightSources[lightIndex].enableShadow)
         {
+            assert(lightIndex < 2);
+            
             _lightSources[lightIndex].shadowSoften = [lua getFieldAsNumber:@"shadowSoften" fromTable:-1];
             _lightSources[lightIndex].shadowBias = [lua getFieldAsNumber:@"shadowBias" fromTable:-1];
+        }
+        else
+        {
+            assert(lightIndex >= 2);
         }
         
         [lua removeField];
