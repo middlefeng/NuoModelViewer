@@ -174,15 +174,14 @@
     gettimeofday(&begin, NULL);
 #endif
     
-    _currentDrawable = [self.metalLayer nextDrawable];
-    if (!_currentDrawable)
+    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
+    
+    for (NuoRenderPass* pass in _renderPasses)
     {
-        dispatch_semaphore_signal(_displaySemaphore);
-#if MEASURE_PERFORMANCE
-        _inFlightNumber -= 1;
-#endif
-        return;
+        [pass predrawWithCommandBuffer:commandBuffer withInFlightIndex:_inFlightIndex];
     }
+    
+    id<CAMetalDrawable> currentDrawable = nil;
     
     for (size_t i = 0; i < [_renderPasses count]; ++i)
     {
@@ -203,13 +202,21 @@
         }
         else
         {
+            currentDrawable = [self.metalLayer nextDrawable];
+            if (!currentDrawable)
+            {
+                dispatch_semaphore_signal(_displaySemaphore);
+#if MEASURE_PERFORMANCE
+                _inFlightNumber -= 1;
+#endif
+                return;
+            }
+
             NuoRenderPassTarget* finalResult = render1.renderTarget;
-            [finalResult setTargetTexture:[_currentDrawable texture]];
+            [finalResult setTargetTexture:[currentDrawable texture]];
         }
     }
 
-    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
-    
     for (size_t i = 0; i < [_renderPasses count]; ++i)
     {
         NuoRenderPass* render = [_renderPasses objectAtIndex:i];
@@ -237,7 +244,7 @@
     gettimeofday(&end, NULL);
 #endif
     
-    [commandBuffer presentDrawable:_currentDrawable];
+    [commandBuffer presentDrawable:currentDrawable];
     [commandBuffer commit];
 }
 

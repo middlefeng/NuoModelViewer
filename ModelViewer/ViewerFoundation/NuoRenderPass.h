@@ -23,6 +23,15 @@
 
 - (void)setDrawableSize:(CGSize)drawableSize;
 
+/**
+ *  draw calls that target to their own target (e.g. shadow map texture)
+ */
+- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+               withInFlightIndex:(unsigned int)inFlight;
+
+/**
+ *  draw calls that target to the *_renderTarget*
+ */
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
             withInFlightIndex:(unsigned int)inFlight;
 

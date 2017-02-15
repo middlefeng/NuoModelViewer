@@ -19,9 +19,6 @@
 
 @property (nonatomic) MTLPixelFormat colorPixelFormat;
 
-@property (nonatomic, readonly) id<CAMetalDrawable> currentDrawable;
-
-
 
 - (void)commonInit;
 

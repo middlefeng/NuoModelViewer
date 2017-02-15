@@ -24,6 +24,11 @@
 }
 
 
+- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+               withInFlightIndex:(unsigned int)inFlight
+{
+}
+
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
             withInFlightIndex:(unsigned int)inFlight

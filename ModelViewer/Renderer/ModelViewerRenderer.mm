@@ -470,12 +470,9 @@
         [item updateUniform:inFlight];
 }
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+               withInFlightIndex:(unsigned int)inFlight
 {
-    MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
-    if (!passDescriptor)
-        return;
-    
     matrix_float4x4 modelMatrix;
     [self updateUniformsForView:&modelMatrix withInFlight:inFlight];
     
@@ -496,6 +493,13 @@
     lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix;
     lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix;
     memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
+}
+
+- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+{
+    MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
+    if (!passDescriptor)
+        return;
     
     // get the target render pass and draw the scene
     //
