@@ -150,10 +150,19 @@
     for (int lightIndex = 0; lightIndex < _lightVectors.count; ++lightIndex)
     {
         [lua getItem:lightIndex fromTable:-1];
+        
         _lightSources[lightIndex].lightingRotationX = [lua getFieldAsNumber:@"rotateX" fromTable:-1];
         _lightSources[lightIndex].lightingRotationY = [lua getFieldAsNumber:@"rotateY" fromTable:-1];
         _lightSources[lightIndex].lightingDensity = [lua getFieldAsNumber:@"density" fromTable:-1];
         _lightSources[lightIndex].lightingSpacular = [lua getFieldAsNumber:@"spacular" fromTable:-1];
+        _lightSources[lightIndex].enableShadow = [lua getFieldAsBool:@"enableShadow" fromTable:-1];
+        
+        if (_lightSources[lightIndex].enableShadow)
+        {
+            _lightSources[lightIndex].shadowSoften = [lua getFieldAsNumber:@"shadowSoften" fromTable:-1];
+            _lightSources[lightIndex].shadowBias = [lua getFieldAsNumber:@"shadowBias" fromTable:-1];
+        }
+        
         [lua removeField];
     }
     [lua removeField];

@@ -269,6 +269,21 @@
                 exporter.StartEntry("spacular");
                 exporter.SetEntryValueFloat(light.lightingSpacular);
                 exporter.EndEntry(false);
+                
+                exporter.StartEntry("enableShadow");
+                exporter.SetEntryValueBool(light.enableShadow);
+                exporter.EndEntry(false);
+                
+                if (light.enableShadow)
+                {
+                    exporter.StartEntry("shadowSoften");
+                    exporter.SetEntryValueFloat(light.shadowSoften);
+                    exporter.EndEntry(false);
+                    
+                    exporter.StartEntry("shadowBias");
+                    exporter.SetEntryValueFloat(light.shadowBias);
+                    exporter.EndEntry(false);
+                }
             }
             
             exporter.EndTable();
