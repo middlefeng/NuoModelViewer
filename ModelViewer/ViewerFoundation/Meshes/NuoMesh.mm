@@ -150,8 +150,11 @@
                                         length:_rawModel->IndicesLength()
                                        options:MTLResourceOptionCPUCacheModeDefault];
 
-    
+    BOOL wasTrans = _hasTransparency;
     _hasTransparency = (unifiedOpacity < 0.99999);
+    
+    if (wasTrans != _hasTransparency)
+        [self makeDepthStencilState];
 }
 
 
@@ -241,7 +244,10 @@
     MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
     depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLess;
     
-    depthStencilDescriptor.depthWriteEnabled = !self.hasTransparency;
+    if (self.hasTransparency)
+        depthStencilDescriptor.depthWriteEnabled = NO;
+    else
+        depthStencilDescriptor.depthWriteEnabled = YES;
     
     _depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
 }

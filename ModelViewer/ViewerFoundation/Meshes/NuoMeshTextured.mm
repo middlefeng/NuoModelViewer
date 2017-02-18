@@ -29,7 +29,6 @@ static CIContext* sCIContext = nil;
     if ((self = [super initWithDevice:device withVerticesBuffer:buffer withLength:length
                           withIndices:indices withLength:indicesLength]))
     {
-        _hasTransparency = NO;
     }
     
     return self;
@@ -67,7 +66,8 @@ static CIContext* sCIContext = nil;
     assert(texture.texture != nil);
     
     _diffuseTex = texture.texture;
-    _hasTransparency = texture.hasTransparency;
+    _hasTextureTransparency = texture.hasTransparency;
+    [self setTransparency:texture.hasTransparency];
     
     // create sampler state
     MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
@@ -92,7 +92,7 @@ static CIContext* sCIContext = nil;
     
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
-    if (_hasTransparency)
+    if ([self hasTransparency])
     {
         colorAttachment.blendingEnabled = YES;
         colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
@@ -124,11 +124,6 @@ static CIContext* sCIContext = nil;
 - (void)makePipelineShadowState
 {
     [super makePipelineShadowState:@"vertex_shadow_textured"];
-}
-
-- (void)setTransparency:(BOOL)transparent
-{
-    _hasTransparency = transparent;
 }
 
 

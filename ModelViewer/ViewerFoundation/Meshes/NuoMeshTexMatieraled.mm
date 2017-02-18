@@ -186,6 +186,21 @@
 }
 
 
+- (BOOL)hasUnifiedMaterial
+{
+    if (_textureOpacity)
+        return NO;
+
+    if (_ignoreTextureAlpha)
+        return [super hasUnifiedMaterial];
+    
+    if ([self hasTextureTransparency])
+        return NO;
+    
+    return [super hasUnifiedMaterial];
+}
+
+
 
 
 @end
