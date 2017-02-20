@@ -38,7 +38,7 @@
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
 {
-    self = [super initWithDevice:device];
+    self = [super initWithDevice:device withPixelFormat:MTLPixelFormatBGRA8Unorm];
     
     if (self)
     {

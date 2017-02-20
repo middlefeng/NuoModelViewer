@@ -22,14 +22,14 @@
 @implementation NuoIntermediateRenderPass
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithDevice:(id<MTLDevice>)device withPixelFormat:(MTLPixelFormat)pixelFormat
 {
     self = [super init];
     if (self)
     {
         self.device = device;
         _textureMesh = [[NuoTextureMesh alloc] initWithDevice:device];
-        [_textureMesh makePipelineAndSampler];
+        [_textureMesh makePipelineAndSampler:pixelFormat];
     }
     
     return self;

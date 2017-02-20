@@ -17,6 +17,11 @@
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
-- (void)makePipelineAndSampler;
+/**
+ *  the pixelFormat is used for the target color attachement and
+ *  may or may not the same as to that of modelTexture. Metal supports
+ *  this as implicit pixel format conversion.
+ */
+- (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat;
 
 @end

@@ -63,7 +63,7 @@
         NSString* name = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"depth sample"];
         [self.sampleTexture setLabel:name];
         
-        MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
+        MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:_targetPixelFormat
                                                                                               width:[self drawableSize].width
                                                                                              height:[self drawableSize].height
                                                                                           mipmapped:NO];

@@ -29,6 +29,9 @@
 @property (nonatomic, readonly) LightSource* selectedLightSource;
 
 
+- (instancetype)initWithDevice:(id<MTLDevice>)device;
+
+
 - (void)selectCurrentLightVector:(CGPoint)point;
 - (void)importScene:(NuoLua*)lua;
 
