@@ -15,9 +15,8 @@
 @implementation NuoRenderPipeline
 
 
-- (void)renderWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (BOOL)renderWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                        inFlight:(uint)inFlight
-                     withCancel:(void (^)())cancelBlock
 {
     for (NuoRenderPass* pass in _renderPasses)
     {
@@ -45,10 +44,7 @@
         {
             id<MTLTexture> currentDrawable = [_renderPipelineDelegate nextFinalTexture];
             if (!currentDrawable)
-            {
-                cancelBlock();
-                return;
-            }
+                return NO;
             
             NuoRenderPassTarget* finalResult = render1.renderTarget;
             [finalResult setTargetTexture:currentDrawable];
@@ -60,6 +56,8 @@
         NuoRenderPass* render = [_renderPasses objectAtIndex:i];
         [render drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     }
+    
+    return YES;
 }
 
 

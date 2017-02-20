@@ -102,13 +102,20 @@
     CGSize displaySize = [displayTarget drawableSize];
     
     CGFloat aspectRation = displaySize.width / displaySize.height;
+    CGFloat drawEdge = _drawSize;
+    if (displaySize.width < displaySize.height)
+        drawEdge = drawEdge * aspectRation;
+    CGSize drawSize = CGSizeMake(drawEdge, drawEdge / aspectRation);
+    
     [lastScenePass setRenderTarget:_sceneTarget];
-    [_renderPipeline setDrawableSize:CGSizeMake(_drawSize, _drawSize / aspectRation)];
-    [_renderPipeline renderWithCommandBuffer:commandBuffer inFlight:0 withCancel:^{}];
+    [_renderPipeline setDrawableSize:drawSize];
+    
+    if (![_renderPipeline renderWithCommandBuffer:commandBuffer inFlight:0])
+        assert(false);
     
     [finalPass setSourceTexture:_sceneTarget.targetTexture];
     [finalPass setRenderTarget:_exportTarget];
-    [finalPass setDrawableSize:CGSizeMake(_drawSize, _drawSize / aspectRation)];
+    [finalPass setDrawableSize:drawSize];
     [finalPass drawWithCommandBuffer:commandBuffer withInFlightIndex:0];
     [finalPass.lastRenderPass endEncoding];
     

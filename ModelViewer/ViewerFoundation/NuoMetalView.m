@@ -190,15 +190,15 @@
     
     __block dispatch_semaphore_t displaySem = self.displaySemaphore;
     
-    [_renderPipeline renderWithCommandBuffer:commandBuffer
-                                    inFlight:_inFlightIndex withCancel:^
-                                        {
-                                            dispatch_semaphore_signal(displaySem);
-                                        #if MEASURE_PERFORMANCE
-                                            _inFlightNumber -= 1;
-                                        #endif
-                                            return;
-                                        }];
+    if (![_renderPipeline renderWithCommandBuffer:commandBuffer inFlight:_inFlightIndex])
+    {
+        dispatch_semaphore_signal(displaySem);
+#if MEASURE_PERFORMANCE
+        _inFlightNumber -= 1;
+        NSLog(@"In flight frame skipped: %u.", _inFlightNumber);
+#endif
+        return;
+    };
     
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer)
      {

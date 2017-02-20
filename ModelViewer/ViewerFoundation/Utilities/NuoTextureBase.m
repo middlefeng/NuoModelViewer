@@ -178,6 +178,8 @@ handleTransparency:
     size_t sizeOfBuffer = bytesPerRow * h * 8;
     
     void* buffer = malloc(sizeOfBuffer);
+    assert(buffer);
+    
     MTLRegion region = MTLRegionMake2D(0, 0, w, h);
     [texture getBytes:buffer bytesPerRow:bytesPerRow fromRegion:region mipmapLevel:0];
     

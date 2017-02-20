@@ -45,9 +45,8 @@
 @property (nonatomic, weak) id<NuoRenderPipelineDelegate> renderPipelineDelegate;
 
 
-- (void)renderWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                       inFlight:(uint)inFlight
-                     withCancel:(void (^)())cancelBlock;
+- (BOOL)renderWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+                       inFlight:(uint)inFlight;
 
 - (void)setDrawableSize:(CGSize)size;
 

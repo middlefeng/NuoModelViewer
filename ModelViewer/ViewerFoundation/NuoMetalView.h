@@ -28,7 +28,7 @@
 
 - (id<MTLCommandQueue>)commandQueue;
 
-- (void)setRenderPasses:(NSArray<NuoRenderPass *> *)renderPasses;
+- (void)setRenderPasses:(NSArray<NuoRenderPass*>*)renderPasses;
 
 /**
  *  Notify the view to render the model/scene (i.e. in turn notifying the delegate)

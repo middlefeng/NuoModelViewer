@@ -590,7 +590,7 @@
              __block __weak id<MTLDevice> device = self.metalLayer.device;
              
              NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:device
-                                                                         withTarget:4096 withScene:@[_modelRender]];
+                                                                         withTarget:3900 withScene:@[_modelRender]];
              NSString* path = savePanel.URL.path;
              
              [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
