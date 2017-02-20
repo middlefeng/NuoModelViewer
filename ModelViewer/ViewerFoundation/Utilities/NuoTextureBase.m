@@ -177,6 +177,10 @@ handleTransparency:
     size_t bytesPerRow = 4 * w;
     size_t sizeOfBuffer = bytesPerRow * h * 8;
     
+    // support RGBA for now
+    //
+    assert([texture pixelFormat] == MTLPixelFormatRGBA8Unorm);
+    
     void* buffer = malloc(sizeOfBuffer);
     assert(buffer);
     
