@@ -2,8 +2,8 @@
 #import <Metal/Metal.h>
 #import <Quartz/Quartz.h>
 
-@class NuoRenderPassTarget;
 @class NuoRenderPass;
+@class NuoRenderPipeline;
 
 
 
@@ -13,7 +13,7 @@
  *  The passes of the view's rendering, responsible for maintain the model/scene state,
  *  and the rendering.
  */
-@property (nonatomic, weak) NSArray<NuoRenderPass*>* renderPasses;
+@property (nonatomic, strong) NuoRenderPipeline* renderPipeline;
 
 @property (nonatomic) NSInteger preferredFramesPerSecond;
 
@@ -28,6 +28,7 @@
 
 - (id<MTLCommandQueue>)commandQueue;
 
+- (void)setRenderPasses:(NSArray<NuoRenderPass *> *)renderPasses;
 
 /**
  *  Notify the view to render the model/scene (i.e. in turn notifying the delegate)
