@@ -22,12 +22,15 @@
  *  The passes of the view's rendering, which is likely to be shared with the on-screen
  *  pipeline
  */
-@property (nonatomic, weak) NSArray<NuoRenderPass*>* renderPasses;
+@property (nonatomic, strong) NSArray<NuoRenderPass*>* renderPasses;
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
-                    withTarget:(CGSize)drawSize
+                    withTarget:(NSUInteger)drawSize
                      withScene:(NSArray<NuoRenderPass*>*) renderPasses;
+
+- (void)renderWithCommandQueue:(id<MTLCommandBuffer>)commandBuffer
+                withCompletion:(void (^)(id<MTLTexture>))completionBlock;
 
 
 @end
