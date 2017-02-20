@@ -10,17 +10,19 @@
 
 #import "NuoRenderPass.h"
 #import "NuoRenderPassTarget.h"
+#import "NuoRenderPipeline.h"
 #import "NuoIntermediateRenderPass.h"
 
 
 
-@interface NuoOffscreenView()
+@interface NuoOffscreenView() < NuoRenderPipelineDelegate >
 
 
 @property (nonatomic, weak) id<MTLDevice> device;
 
 @property (nonatomic, strong) NuoRenderPassTarget* sceneTarget;
 @property (nonatomic, strong) NuoRenderPassTarget* exportTarget;
+@property (nonatomic, strong) NSArray* renderPasses;
 
 @property (nonatomic, assign) NSUInteger drawSize;
 
@@ -42,7 +44,12 @@
     {
         _drawSize = drawSize;
         _device = device;
+        
         _renderPasses = renderPasses;
+        
+        _renderPipeline = [NuoRenderPipeline new];
+        _renderPipeline.renderPipelineDelegate = self;
+        _renderPipeline.renderPasses = _renderPasses;
         
         NSUInteger lastRender = [renderPasses count] - 1;
         NuoRenderPassTarget* lastTarget = renderPasses[lastRender].renderTarget;
@@ -77,6 +84,12 @@
 }
 
 
+- (id<MTLTexture>)nextFinalTexture
+{
+    return _sceneTarget.targetTexture;
+}
+
+
 
 - (void)renderWithCommandQueue:(id<MTLCommandBuffer>)commandBuffer
                 withCompletion:(void (^)(id<MTLTexture>))completionBlock;
@@ -90,11 +103,8 @@
     
     CGFloat aspectRation = displaySize.width / displaySize.height;
     [lastScenePass setRenderTarget:_sceneTarget];
-    [lastScenePass setDrawableSize:CGSizeMake(_drawSize, _drawSize / aspectRation)];
-    
-    [lastScenePass setRenderTarget:_sceneTarget];
-    [lastScenePass predrawWithCommandBuffer:commandBuffer withInFlightIndex:0];
-    [lastScenePass drawWithCommandBuffer:commandBuffer withInFlightIndex:0];
+    [_renderPipeline setDrawableSize:CGSizeMake(_drawSize, _drawSize / aspectRation)];
+    [_renderPipeline renderWithCommandBuffer:commandBuffer inFlight:0 withCancel:^{}];
     
     [finalPass setSourceTexture:_sceneTarget.targetTexture];
     [finalPass setRenderTarget:_exportTarget];
@@ -117,7 +127,6 @@
     
     [lastScenePass setRenderTarget:displayTarget];
     [lastScenePass setDrawableSize:displaySize];
-
 }
 
 

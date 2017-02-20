@@ -12,17 +12,14 @@
 
 
 @class NuoRenderPass;
+@class NuoRenderPipeline;
 
 
 
 @interface NuoOffscreenView : NSObject
 
 
-/**
- *  The passes of the view's rendering, which is likely to be shared with the on-screen
- *  pipeline
- */
-@property (nonatomic, strong) NSArray<NuoRenderPass*>* renderPasses;
+@property (nonatomic, strong) NuoRenderPipeline* renderPipeline;
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
@@ -31,6 +28,5 @@
 
 - (void)renderWithCommandQueue:(id<MTLCommandBuffer>)commandBuffer
                 withCompletion:(void (^)(id<MTLTexture>))completionBlock;
-
 
 @end
