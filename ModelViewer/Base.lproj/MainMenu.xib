@@ -110,7 +110,7 @@
                             </menuItem>
                             <menuItem title="Export..." keyEquivalent="e" id="jrs-AO-F1z">
                                 <connections>
-                                    <action selector="exportPNG:" target="-1" id="X2K-JW-5iL"/>
+                                    <action selector="exportPNG:" target="EiT-Mj-1SZ" id="5TD-yJ-Td5"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Revert to Saved" id="KaW-ft-85H">
