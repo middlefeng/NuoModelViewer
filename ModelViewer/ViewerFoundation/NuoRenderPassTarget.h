@@ -34,6 +34,13 @@
  */
 @property (nonatomic, assign) BOOL manageTargetTexture;
 
+/**
+ *  whether the target be read back to the CPU side
+ */
+@property (nonatomic, assign) BOOL sharedTargetTexture;
+
+@property (nonatomic, assign) MTLPixelFormat targetPixelFormat;
+
 @property (nonatomic, assign) MTLClearColor clearColor;
 
 - (void)makeTextures;

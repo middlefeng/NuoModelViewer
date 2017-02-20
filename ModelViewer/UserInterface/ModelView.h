@@ -17,5 +17,6 @@
 
 
 - (IBAction)openFile:(id)sender;
+- (IBAction)exportPNG:(id)sender;
 
 @end

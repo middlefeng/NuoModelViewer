@@ -22,6 +22,7 @@
 #import "NuoMesh.h"
 #import "NuoMeshRotation.h"
 #import "NuoMeshAnimation.h"
+#import "NuoTextureBase.h"
 
 
 
@@ -567,6 +568,61 @@
                  }
              }];
         }
+
+
+- (IBAction)exportPNG:(id)sender
+{
+    NSString* defaultName = _documentName;
+    if (!defaultName)
+        defaultName = @" ";
+    
+    NSSavePanel* savePanel = [NSSavePanel savePanel];
+    [savePanel setNameFieldStringValue:defaultName];
+    [savePanel setCanSelectHiddenExtension:YES];
+    [savePanel setAllowedFileTypes:@[@"png"]];
+    
+    [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
+     {
+         if (result == NSFileHandlingPanelOKButton)
+         {
+             NuoRenderPassTarget* target = [NuoRenderPassTarget new];
+             target.device = self.metalLayer.device;
+             target.sampleCount = kSampleCount;
+             target.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+             target.manageTargetTexture = YES;
+             target.sharedTargetTexture = YES;
+             target.targetPixelFormat = MTLPixelFormatRGBA8Unorm;
+             target.name = @"export_texture";
+             
+             NuoRenderPassTarget* displayTarget = [_modelRender renderTarget];
+             CGSize displaySize = [displayTarget drawableSize];
+             
+             CGFloat aspectRation = displaySize.width / displaySize.height;
+             [_modelRender setRenderTarget:target];
+             [_modelRender setDrawableSize:CGSizeMake(2000, 2000 / aspectRation)];
+             
+             id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
+             [_modelRender predrawWithCommandBuffer:commandBuffer withInFlightIndex:0];
+             [_modelRender drawWithCommandBuffer:commandBuffer withInFlightIndex:0];
+             
+             id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
+             [encoder synchronizeResource:target.targetTexture];
+             [encoder endEncoding];
+             
+             [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer)
+              {
+                  NSString* path = savePanel.URL.path;
+                  NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.metalLayer.device];
+                  [textureBase saveTexture:target.targetTexture toImage:path];
+              }];
+             
+             [commandBuffer commit];
+             
+             [_modelRender setRenderTarget:displayTarget];
+             [_modelRender setDrawableSize:displaySize];
+         }
+     }];
+}
 
 
 

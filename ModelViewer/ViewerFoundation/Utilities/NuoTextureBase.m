@@ -186,7 +186,7 @@ handleTransparency:
     NSURL* url = [[NSURL alloc] initFileURLWithPath:path];
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     CGImageRef image = CGImageCreate(w, h, 8, 8 * 4, bytesPerRow, colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big,
-                  dataProvider, NULL, false, kCGRenderingIntentDefault);
+                                     dataProvider, NULL, false, kCGRenderingIntentDefault);
     
     CGImageDestinationRef destination = CGImageDestinationCreateWithURL((__bridge CFURLRef)url, kUTTypePNG, 1, NULL);
     CGImageDestinationAddImage(destination, image, NULL);
