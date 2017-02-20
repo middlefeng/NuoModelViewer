@@ -12,6 +12,13 @@
 
 
 
+static void NuoDataProviderReleaseDataCallback(void * info, const void *  data, size_t size)
+{
+    free(info);
+}
+
+
+
 @implementation NuoTexture
 
 @end
@@ -159,6 +166,37 @@ handleTransparency:
     *hasTransparency = [self checkTransparency:rawData withWidth:width withHeight:height];
     
     return rawData;
+}
+
+
+
+- (void)saveTexture:(id<MTLTexture>)texture toImage:(NSString*)path
+{
+    size_t w = [texture width];
+    size_t h = [texture height];
+    size_t bytesPerRow = 4 * w;
+    size_t sizeOfBuffer = bytesPerRow * h * 8;
+    
+    void* buffer = malloc(sizeOfBuffer);
+    MTLRegion region = MTLRegionMake2D(0, 0, w, h);
+    [texture getBytes:buffer bytesPerRow:bytesPerRow fromRegion:region mipmapLevel:0];
+    
+    CGDataProviderRef dataProvider = CGDataProviderCreateWithData(buffer, buffer, sizeOfBuffer,
+                                                                  NuoDataProviderReleaseDataCallback);
+    NSURL* url = [[NSURL alloc] initFileURLWithPath:path];
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGImageRef image = CGImageCreate(w, h, 8, 8 * 4, bytesPerRow, colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big,
+                  dataProvider, NULL, false, kCGRenderingIntentDefault);
+    
+    CGImageDestinationRef destination = CGImageDestinationCreateWithURL((__bridge CFURLRef)url, kUTTypePNG, 1, NULL);
+    CGImageDestinationAddImage(destination, image, NULL);
+    CGImageDestinationFinalize(destination);
+    
+    CGColorSpaceRelease(colorSpace);
+    CGImageRelease(image);
+    CFRelease(destination);
+    
+    CGDataProviderRelease(dataProvider);
 }
 
 
