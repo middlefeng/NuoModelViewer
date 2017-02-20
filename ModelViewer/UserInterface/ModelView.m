@@ -587,13 +587,16 @@
      {
          if (result == NSFileHandlingPanelOKButton)
          {
-             NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:self.metalLayer.device
+             __block __weak id<MTLDevice> device = self.metalLayer.device;
+             
+             NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:device
                                                                          withTarget:4096 withScene:@[_modelRender]];
+             NSString* path = savePanel.URL.path;
+             
              [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
                                 withCompletion:^(id<MTLTexture> result)
                                     {
-                                        NSString* path = savePanel.URL.path;
-                                        NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.metalLayer.device];
+                                        NuoTextureBase* textureBase = [NuoTextureBase getInstance:device];
                                         [textureBase saveTexture:result toImage:path];
                                     }];
          }
