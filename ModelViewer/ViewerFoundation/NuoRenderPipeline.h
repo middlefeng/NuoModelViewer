@@ -16,7 +16,7 @@
 
 
 /**
- *  use this delegate to deferred the retrival of the final target texture.
+ *  use this delegate to defer the retrival of the final target texture.
  *  the retrival is time consuming in some case and should be deferred until
  *  the very last pass
  */
