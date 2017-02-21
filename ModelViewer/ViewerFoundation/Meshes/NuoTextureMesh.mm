@@ -43,7 +43,7 @@
 }
 
 
-- (void)makePipelineAndSampler
+- (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
@@ -51,7 +51,7 @@
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"texture_project"];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_texutre"];
     pipelineDescriptor.sampleCount = 1;
-    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
+    pipelineDescriptor.colorAttachments[0].pixelFormat = pixelFormat;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];

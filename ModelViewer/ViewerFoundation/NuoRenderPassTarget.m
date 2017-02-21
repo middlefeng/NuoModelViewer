@@ -23,6 +23,17 @@
 @implementation NuoRenderPassTarget
 
 
+- (instancetype)init
+{
+    self = [super init];
+    if (self)
+    {
+        _targetPixelFormat = MTLPixelFormatBGRA8Unorm;
+    }
+    return self;
+}
+
+
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     _drawableSize = drawableSize;
@@ -52,7 +63,7 @@
         NSString* name = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"depth sample"];
         [self.sampleTexture setLabel:name];
         
-        MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
+        MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:_targetPixelFormat
                                                                                               width:[self drawableSize].width
                                                                                              height:[self drawableSize].height
                                                                                           mipmapped:NO];
@@ -74,7 +85,7 @@
         {
             sampleDesc.sampleCount = 1;
             sampleDesc.textureType = MTLTextureType2D;
-            sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
+            sampleDesc.resourceOptions = _sharedTargetTexture ? MTLResourceStorageModeManaged : MTLResourceStorageModePrivate;
             sampleDesc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
             
             _targetTexture = [_device newTextureWithDescriptor:sampleDesc];

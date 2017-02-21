@@ -22,6 +22,9 @@
 #import "NuoMesh.h"
 #import "NuoMeshRotation.h"
 #import "NuoMeshAnimation.h"
+#import "NuoTextureBase.h"
+
+#include "NuoOffscreenView.h"
 
 
 
@@ -567,6 +570,38 @@
                  }
              }];
         }
+
+
+- (IBAction)exportPNG:(id)sender
+{
+    NSString* defaultName = _documentName;
+    if (!defaultName)
+        defaultName = @" ";
+    
+    NSSavePanel* savePanel = [NSSavePanel savePanel];
+    [savePanel setNameFieldStringValue:defaultName];
+    [savePanel setCanSelectHiddenExtension:YES];
+    [savePanel setAllowedFileTypes:@[@"png"]];
+    
+    [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
+     {
+         if (result == NSFileHandlingPanelOKButton)
+         {
+             __block __weak id<MTLDevice> device = self.metalLayer.device;
+             
+             NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:device
+                                                                         withTarget:3900 withScene:@[_modelRender]];
+             NSString* path = savePanel.URL.path;
+             
+             [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
+                                withCompletion:^(id<MTLTexture> result)
+                                    {
+                                        NuoTextureBase* textureBase = [NuoTextureBase getInstance:device];
+                                        [textureBase saveTexture:result toImage:path];
+                                    }];
+         }
+     }];
+}
 
 
 

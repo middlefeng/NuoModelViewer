@@ -177,7 +177,13 @@ handleTransparency:
     size_t bytesPerRow = 4 * w;
     size_t sizeOfBuffer = bytesPerRow * h * 8;
     
+    // support RGBA for now
+    //
+    assert([texture pixelFormat] == MTLPixelFormatRGBA8Unorm);
+    
     void* buffer = malloc(sizeOfBuffer);
+    assert(buffer);
+    
     MTLRegion region = MTLRegionMake2D(0, 0, w, h);
     [texture getBytes:buffer bytesPerRow:bytesPerRow fromRegion:region mipmapLevel:0];
     
@@ -186,7 +192,7 @@ handleTransparency:
     NSURL* url = [[NSURL alloc] initFileURLWithPath:path];
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     CGImageRef image = CGImageCreate(w, h, 8, 8 * 4, bytesPerRow, colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big,
-                  dataProvider, NULL, false, kCGRenderingIntentDefault);
+                                     dataProvider, NULL, false, kCGRenderingIntentDefault);
     
     CGImageDestinationRef destination = CGImageDestinationCreateWithURL((__bridge CFURLRef)url, kUTTypePNG, 1, NULL);
     CGImageDestinationAddImage(destination, image, NULL);

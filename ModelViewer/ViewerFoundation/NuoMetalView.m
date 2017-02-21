@@ -2,6 +2,7 @@
 #import "NuoMetalView.h"
 
 #import "NuoTypes.h"
+#import "NuoRenderPipeline.h"
 #import "NuoRenderPipelinePass.h"
 #import "NuoRenderPassTarget.h"
 
@@ -11,11 +12,12 @@
 #define MEASURE_PERFORMANCE 0
 
 
-@interface NuoMetalView ()
+@interface NuoMetalView () < NuoRenderPipelineDelegate >
 
 @property (nonatomic, readonly) CAMetalLayer *metalLayer;
 @property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
 @property (strong) dispatch_semaphore_t displaySemaphore;
+@property (nonatomic, strong) id<CAMetalDrawable> currentDrawable;
 
 /**
  *  current index in the tri-buffer flow
@@ -133,12 +135,7 @@
 
     self.metalLayer.drawableSize = drawableSize;
     
-    for (size_t i = 0; i < [_renderPasses count]; ++i)
-    {
-        NuoRenderPass* render = _renderPasses[i];
-        [render setDrawableSize:drawableSize];
-    }
-    
+    [self.renderPipeline setDrawableSize:drawableSize];
     [self render];
 }
 
@@ -159,6 +156,21 @@
 }
 
 
+- (void)setRenderPasses:(NSArray<NuoRenderPass *> *)renderPasses
+{
+    _renderPipeline = [[NuoRenderPipeline alloc] init];
+    _renderPipeline.renderPasses = renderPasses;
+    _renderPipeline.renderPipelineDelegate = self;
+}
+
+
+- (id<MTLTexture>)nextFinalTexture
+{
+    _currentDrawable = [self.metalLayer nextDrawable];
+    return [_currentDrawable texture];
+}
+
+
 - (void)render
 {
     dispatch_semaphore_wait(_displaySemaphore, DISPATCH_TIME_FOREVER);
@@ -176,54 +188,17 @@
     
     id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
     
-    for (NuoRenderPass* pass in _renderPasses)
-    {
-        [pass predrawWithCommandBuffer:commandBuffer withInFlightIndex:_inFlightIndex];
-    }
-    
-    id<CAMetalDrawable> currentDrawable = nil;
-    
-    for (size_t i = 0; i < [_renderPasses count]; ++i)
-    {
-        NuoRenderPass* renderStep = [_renderPasses objectAtIndex:i];
-        if (!renderStep.isPipelinePass)
-            continue;
-        
-        NuoRenderPipelinePass* render1 = (NuoRenderPipelinePass*)renderStep;
-        NuoRenderPipelinePass* render2 = nil;
-        
-        if (i < [_renderPasses count] - 1)
-            render2 = (NuoRenderPipelinePass*)[_renderPasses objectAtIndex:i + 1];
-        
-        if (render2)
-        {
-            NuoRenderPassTarget* interResult = render1.renderTarget;
-            [render2 setSourceTexture:interResult.targetTexture];
-        }
-        else
-        {
-            currentDrawable = [self.metalLayer nextDrawable];
-            if (!currentDrawable)
-            {
-                dispatch_semaphore_signal(_displaySemaphore);
-#if MEASURE_PERFORMANCE
-                _inFlightNumber -= 1;
-#endif
-                return;
-            }
-
-            NuoRenderPassTarget* finalResult = render1.renderTarget;
-            [finalResult setTargetTexture:[currentDrawable texture]];
-        }
-    }
-
-    for (size_t i = 0; i < [_renderPasses count]; ++i)
-    {
-        NuoRenderPass* render = [_renderPasses objectAtIndex:i];
-        [render drawWithCommandBuffer:commandBuffer withInFlightIndex:_inFlightIndex];
-    }
-    
     __block dispatch_semaphore_t displaySem = self.displaySemaphore;
+    
+    if (![_renderPipeline renderWithCommandBuffer:commandBuffer inFlight:_inFlightIndex])
+    {
+        dispatch_semaphore_signal(displaySem);
+#if MEASURE_PERFORMANCE
+        _inFlightNumber -= 1;
+        NSLog(@"In flight frame skipped: %u.", _inFlightNumber);
+#endif
+        return;
+    };
     
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer)
      {
@@ -244,7 +219,7 @@
     gettimeofday(&end, NULL);
 #endif
     
-    [commandBuffer presentDrawable:currentDrawable];
+    [commandBuffer presentDrawable:_currentDrawable];
     [commandBuffer commit];
 }
 
