@@ -84,14 +84,14 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert);
 
 
 
-fragment float4 fragment_light_tex_materialed_tex_opacity(ProjectedVertex vert [[stage_in]],
-                                                          constant LightUniform &lighting [[buffer(0)]],
-                                                          texture2d<float> shadowMap0 [[texture(0)]],
-                                                          texture2d<float> shadowMap1 [[texture(1)]],
-                                                          texture2d<float> diffuseTexture [[texture(2)]],
-                                                          texture2d<float> opacityTexture [[texture(3), function_constant(kAlphaChannelInSeparatedTexture)]],
-                                                          sampler depthSamplr [[sampler(0)]],
-                                                          sampler samplr [[sampler(1)]])
+fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
+                                              constant LightUniform &lighting [[buffer(0)]],
+                                              texture2d<float> shadowMap0 [[texture(0)]],
+                                              texture2d<float> shadowMap1 [[texture(1)]],
+                                              texture2d<float> diffuseTexture [[texture(2)]],
+                                              texture2d<float> opacityTexture [[texture(3), function_constant(kAlphaChannelInSeparatedTexture)]],
+                                              sampler depthSamplr [[sampler(0)]],
+                                              sampler samplr [[sampler(1)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
     

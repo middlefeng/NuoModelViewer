@@ -85,14 +85,14 @@
     if (!_textureBump)
     {
         pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_tex_materialed"];
-        pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed_tex_opacity"
+        pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed"
                                                             constantValues:funcConstant
                                                                      error:nil];
     }
     else
     {
         pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_tex_materialed_tangent"];
-        pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_tex_materialed_tex_opacity_bump"
+        pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_tex_materialed_bump"
                                                             constantValues:funcConstant
                                                                      error:nil];
     }
