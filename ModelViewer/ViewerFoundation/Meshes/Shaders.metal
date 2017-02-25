@@ -232,11 +232,6 @@ ProjectedVertex vertex_project_common(device Vertex *vertices,
 
 
 
-constant bool kAlphaChannelInTexture            [[ function_constant(0) ]];
-constant bool kAlphaChannelInSeparatedTexture   [[ function_constant(1) ]];
-
-
-
 float4 diffuse_common(float4 diffuseTexel, float extraOpacity)
 {
     if (kAlphaChannelInSeparatedTexture)

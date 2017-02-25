@@ -37,9 +37,6 @@ struct ProjectedVertex
 };
 
 
-constant bool kAlphaChannelInTexture            [[ function_constant(0) ]];
-constant bool kAlphaChannelInSeparatedTexture   [[ function_constant(1) ]];
-
 
 vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[buffer(0)]],
                                                      constant ModelUniforms &uniforms [[buffer(1)]],

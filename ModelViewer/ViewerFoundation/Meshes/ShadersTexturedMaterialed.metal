@@ -33,10 +33,6 @@ struct ProjectedVertex
 };
 
 
-constant bool kAlphaChannelInTexture            [[ function_constant(0) ]];
-constant bool kAlphaChannelInSeparatedTexture   [[ function_constant(1) ]];
-
-
 
 /**
  *  shaders that generate shadow-map texture from the light view point

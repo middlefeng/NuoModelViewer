@@ -63,6 +63,11 @@ struct PositionSimple
 };
 
 
+constant bool kAlphaChannelInTexture            [[ function_constant(0) ]];
+constant bool kAlphaChannelInSeparatedTexture   [[ function_constant(1) ]];
+
+
+
 metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                                    metal::float3 normal,
                                                    constant LightUniform &lighting,
