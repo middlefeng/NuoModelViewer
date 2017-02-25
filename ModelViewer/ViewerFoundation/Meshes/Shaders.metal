@@ -232,6 +232,37 @@ ProjectedVertex vertex_project_common(device Vertex *vertices,
 
 
 
+constant bool kAlphaChannelInTexture            [[ function_constant(0) ]];
+constant bool kAlphaChannelInSeparatedTexture   [[ function_constant(1) ]];
+
+
+
+float4 diffuse_common(float4 diffuseTexel, float extraOpacity)
+{
+    if (kAlphaChannelInSeparatedTexture)
+    {
+        diffuseTexel = diffuseTexel / diffuseTexel.a;
+        diffuseTexel.a = extraOpacity;
+    }
+    else if (kAlphaChannelInTexture)
+    {
+        diffuseTexel = float4(diffuseTexel.rgb / diffuseTexel.a, diffuseTexel.a);
+    }
+    else
+    {
+        if (diffuseTexel.a < 1e-9)
+            diffuseTexel.rgb = float3(1.0);
+        else
+            diffuseTexel = diffuseTexel / diffuseTexel.a;
+        
+        diffuseTexel.a = 1.0;
+    }
+    
+    return diffuseTexel;
+}
+                      
+
+
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                              float shadowBiasFactor, float shadowedSurfaceAngle,

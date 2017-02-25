@@ -74,6 +74,9 @@ metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert
 fragment void fragment_shadow(PositionSimple vert [[stage_in]]);
 
 
+metal::float4 diffuse_common(metal::float4 diffuseTexel, float extraOpacity);
+
+
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                              float shadowBiasFactor, float shadowedSurfaceAngle,
                              float shadowSoftenFactor, float shadowMapSampleRadius,
