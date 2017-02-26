@@ -24,6 +24,7 @@
 - (void)makeTextureOpacity:(NSString*)texPath withCommandQueue:(id<MTLCommandQueue>)queue;
 - (void)makeTextureBump:(NSString*)texPath withCommandQueue:(id<MTLCommandQueue>)queue;
 - (void)setIgnoreTexutreAlpha:(BOOL)ignoreAlpha;
+- (void)setPhysicallyReflection:(BOOL)physically;
 
 
 @end
@@ -35,6 +36,8 @@
 - (instancetype)initWithDevice:(id<MTLDevice>)device
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength;
+
+- (void)setPhysicallyReflection:(BOOL)physically;
 
 
 @end

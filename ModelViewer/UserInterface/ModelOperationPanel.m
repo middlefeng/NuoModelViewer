@@ -229,7 +229,7 @@
     [brdfMode setTitle:@"Physically Based Reflection"];
     [brdfMode setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [brdfMode setTarget:self];
-    [brdfMode setAction:@selector(lightSettingsChanged:)];
+    [brdfMode setAction:@selector(brdfModeChanged:)];
     [scrollDocumentView addSubview:brdfMode];
     _checkBrdfMode = brdfMode;
     
@@ -389,9 +389,9 @@
 
 - (void)brdfModeChanged:(id)sender
 {
-    _brdfMode = [_checkBrdfMode state] == NSOnState;
+    _meshOptions.physicallyReflection = [_checkBrdfMode state] == NSOnState;
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelUpdate:self];
 }
 
 

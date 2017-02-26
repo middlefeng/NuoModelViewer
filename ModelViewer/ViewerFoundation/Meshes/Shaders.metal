@@ -26,6 +26,8 @@ ProjectedVertex vertex_project_common(device Vertex *vertices,
                                       constant MeshUniforms &meshUniform,
                                       uint vid [[vertex_id]]);
 
+float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway);
+
 
 
 /**
@@ -189,8 +191,12 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             float3 eyeDirection = normalize(vert.eye);
             float3 halfway = normalize(lightVector + eyeDirection);
             
-            specularTerm = specular_common(vert.specularColor, vert.specularPower, normal, halfway, diffuseIntensity);
-            transparency *= ((1 - opacity) * (1 - saturate(pow(length(specularTerm) * lightingUniform.spacular[i], 1.0))));
+            specularTerm = specular_common(vert.specularColor, vert.specularPower,
+                                           lightingUniform.direction[i].xyz,
+                                           lightingUniform.density[i],
+                                           lightingUniform.spacular[i],
+                                           normal, halfway, diffuseIntensity);
+            transparency *= ((1 - opacity) * (1 - saturate(pow(length(specularTerm), 1.0))));
         }
         
         float shadowPercent = 0.0;
@@ -202,7 +208,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                                    shadowMap[i], samplr);
         }
         
-        colorForLights += (diffuseTerm * lightingUniform.density[i] + specularTerm * lightingUniform.spacular[i]) *
+        colorForLights += (diffuseTerm * lightingUniform.density[i] + specularTerm) *
                           (1 - shadowPercent);
     }
     
@@ -258,13 +264,35 @@ float4 diffuse_common(float4 diffuseTexel, float extraOpacity)
 
 
 
-float3 specular_common(float3 materialSpecularColor, float materialSecularPower,
+// see p233 real-time rendering
+// see https://seblagarde.wordpress.com/2011/08/17/hello-world/
+//
+float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
+{
+    return specularColor + (1.0f - specularColor) * pow(1.0f - saturate(dot(lightVector, halfway)), 5);
+}
+
+
+float3 specular_common(float3 materialSpecularColor, float materialSpecularPower,
+                       float3 lightVector,
+                       float lightIntensity,
+                       float lightSpecularIntensity,
                        float3 normal, float3 halfway, float dotNL)
 {
-    float specularFactor = pow(saturate(dot(normal, halfway)), materialSecularPower) * dotNL;
-    return materialSpecularColor * specularFactor;
+    float dotNHPower = pow(saturate(dot(normal, halfway)), materialSpecularPower);
+    
+    if (kPhysicallyReflection)
+    {
+        return fresnel_schlick(materialSpecularColor * lightSpecularIntensity / 3.0, lightVector, halfway) *
+               ((materialSpecularPower + 2) / 8) * dotNHPower * dotNL * lightIntensity;
+    }
+    else
+    {
+        float specularFactor = dotNHPower * dotNL;
+        return materialSpecularColor * specularFactor * lightSpecularIntensity;
+    }
 }
-                      
+
 
 
 

@@ -65,6 +65,7 @@ struct PositionSimple
 
 constant bool kAlphaChannelInTexture            [[ function_constant(0) ]];
 constant bool kAlphaChannelInSeparatedTexture   [[ function_constant(1) ]];
+constant bool kPhysicallyReflection             [[ function_constant(2) ]];
 
 
 
@@ -83,6 +84,9 @@ metal::float4 diffuse_common(metal::float4 diffuseTexel, float extraOpacity);
 
 
 metal::float3 specular_common(metal::float3 materialSpecularColor, float materialSecularPower,
+                              metal::float3 lightVector,
+                              float lightIntensity,
+                              float lightSpecularIntensity,
                               metal::float3 normal, metal::float3 halfway, float dotNL);
 
 

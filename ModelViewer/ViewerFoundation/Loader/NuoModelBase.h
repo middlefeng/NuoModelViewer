@@ -44,6 +44,8 @@ public:
     bool _texturedBump;
     
     bool _basicMaterialized;
+    
+    bool _physicallyReflection;
 };
 
 

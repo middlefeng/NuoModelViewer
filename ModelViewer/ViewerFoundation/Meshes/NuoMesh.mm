@@ -381,6 +381,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
             [mesh setTransparency:NO];
         
         [mesh setIgnoreTexutreAlpha:!embeddedAlpha];
+        [mesh setPhysicallyReflection:options._physicallyReflection];
         
         resultMesh = mesh;
     }
@@ -393,6 +394,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                                                                  withLength:model->IndicesLength()];
         
         [mesh setTransparency:model->HasTransparent()];
+        [mesh setPhysicallyReflection:options._physicallyReflection];
         
         resultMesh = mesh;
     }
