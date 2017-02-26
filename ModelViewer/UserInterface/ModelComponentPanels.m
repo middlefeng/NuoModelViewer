@@ -47,7 +47,7 @@
 - (NSRect)modelPartsPanelLocation
 {
     NSRect viewRect = [_containerView frame];
-    NSSize listSize = NSMakeSize(225, 315);
+    NSSize listSize = NSMakeSize(225, 338);
     NSSize listMargin = NSMakeSize(15, 25);
     
     NSRect listRect;

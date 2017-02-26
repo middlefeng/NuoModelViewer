@@ -28,6 +28,7 @@
 
 @property (nonatomic, strong) NSSlider* ambientDensitySlider;
 @property (nonatomic, strong) NSButton* lightSettings;
+@property (nonatomic, strong) NSButton* checkBrdfMode;
 
 @property (nonatomic, strong) NSSlider* animationSlider;
 
@@ -82,7 +83,7 @@
     
     CGRect docViewFrame = CGRectMake(0, 0, 0, 0);
     docViewFrame.size = rootViewFrame.size;
-    docViewFrame.size.height += 180.0;
+    docViewFrame.size.height += 175.0;
     
     rootScroll.frame = rootViewFrame;
     scrollDocumentView.frame = docViewFrame;
@@ -220,6 +221,17 @@
     [lightSettings setAction:@selector(lightSettingsChanged:)];
     [scrollDocumentView addSubview:lightSettings];
     _lightSettings = lightSettings;
+    
+    rowCoord += 1.0;
+    
+    NSButton* brdfMode = [NSButton new];
+    [brdfMode setButtonType:NSSwitchButton];
+    [brdfMode setTitle:@"Physically Based Reflection"];
+    [brdfMode setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
+    [brdfMode setTarget:self];
+    [brdfMode setAction:@selector(lightSettingsChanged:)];
+    [scrollDocumentView addSubview:brdfMode];
+    _checkBrdfMode = brdfMode;
     
     rowCoord += 1.8;
     
@@ -371,6 +383,13 @@
 - (void)lightSettingsChanged:(id)sender
 {
     _showLightSettings = [_lightSettings state] == NSOnState;
+    
+    [_optionUpdateDelegate modelOptionUpdate:self];
+}
+
+- (void)brdfModeChanged:(id)sender
+{
+    _brdfMode = [_checkBrdfMode state] == NSOnState;
     
     [_optionUpdateDelegate modelOptionUpdate:self];
 }

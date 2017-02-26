@@ -34,6 +34,8 @@
 
 @property (nonatomic, assign) BOOL showLightSettings;
 
+@property (nonatomic, assign) BOOL brdfMode;
+
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 
 @property (nonatomic, assign) float animationProgress;
