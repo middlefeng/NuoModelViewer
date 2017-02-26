@@ -188,9 +188,9 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         {
             float3 eyeDirection = normalize(vert.eye);
             float3 halfway = normalize(lightVector + eyeDirection);
-            float specularFactor = pow(saturate(dot(normal, halfway)), vert.specularPower) * diffuseIntensity;
-            transparency *= ((1 - opacity) * (1 - saturate(pow(specularFactor * lightingUniform.spacular[i], 1.0))));
-            specularTerm = vert.specularColor * specularFactor;
+            
+            specularTerm = specular_common(vert.specularColor, vert.specularPower, normal, halfway, diffuseIntensity);
+            transparency *= ((1 - opacity) * (1 - saturate(pow(length(specularTerm) * lightingUniform.spacular[i], 1.0))));
         }
         
         float shadowPercent = 0.0;
@@ -254,6 +254,15 @@ float4 diffuse_common(float4 diffuseTexel, float extraOpacity)
     }
     
     return diffuseTexel;
+}
+
+
+
+float3 specular_common(float3 materialSpecularColor, float materialSecularPower,
+                       float3 normal, float3 halfway, float dotNL)
+{
+    float specularFactor = pow(saturate(dot(normal, halfway)), materialSecularPower) * dotNL;
+    return materialSpecularColor * specularFactor;
 }
                       
 

@@ -94,9 +94,10 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
         {
             float3 eyeDirection = normalize(vert.eye);
             float3 halfway = normalize(normalize(lightUniform.direction[i].xyz) + eyeDirection);
-            float specularFactor = pow(saturate(dot(normal, halfway)), vert.specularPowerDisolve.x) * diffuseIntensity;
-            specularTerm = vert.specularColor * specularFactor;
-            transparency *= ((1 - opacity) * (1 - saturate(pow(specularFactor * lightUniform.spacular[i], 1.0))));
+            
+            specularTerm = specular_common(vert.specularColor, vert.specularPowerDisolve.x,
+                                           normal, halfway, diffuseIntensity);
+            transparency *= ((1 - opacity) * (1 - saturate(pow(length(specularTerm) * lightUniform.spacular[i], 1.0))));
         }
         
         float shadowPercent = 0.0;

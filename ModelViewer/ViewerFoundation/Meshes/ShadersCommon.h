@@ -82,6 +82,10 @@ fragment void fragment_shadow(PositionSimple vert [[stage_in]]);
 metal::float4 diffuse_common(metal::float4 diffuseTexel, float extraOpacity);
 
 
+metal::float3 specular_common(metal::float3 materialSpecularColor, float materialSecularPower,
+                              metal::float3 normal, metal::float3 halfway, float dotNL);
+
+
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                              float shadowBiasFactor, float shadowedSurfaceAngle,
                              float shadowSoftenFactor, float shadowMapSampleRadius,
