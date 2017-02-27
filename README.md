@@ -4,6 +4,8 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* BRDF mode. Fix artifacts in specular lighting.
+* Save to high resolution PNG (up to 3900 px).
 * Rotate individual parts (mandatory for the varying-geometry wing plane model!).
 
 <p align="left">
@@ -53,10 +55,13 @@ A simple Wavefront OBJ viewer.
 * <del>Per light-source, per-surface shadow properties (bias, soft edge).</del>
 * <del>Cull mode.</del>
 * Surrounding (cube map).
+* Motion blur (especially for rotating parts like rotor).
 * Detailed properties panel for indiviudal model parts.
-  * Smooth options (everywhere, texture discontinuiation only, etc).
-  * Material adjustment (opacity, colors, etc).
+  * <del>Smooth options (everywhere, texture discontinuiation only, etc).</del>
+  * <del>Material opacity adjustment.
+  * Material adjustment (specular, colors, etc).
 * Reflection.
+* <del>BRDF mode.</del>
 * Model visualization
   * Triangle mesh
   * Normal/tangent visualization
