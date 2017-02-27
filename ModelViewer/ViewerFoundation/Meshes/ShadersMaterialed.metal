@@ -81,8 +81,9 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
     texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
-    float transparency = 1.0;
+    bool checkTrans = false;
     float opacity = vert.specularPowerDisolve.y;
+    float transparency = (1 - opacity);
     
     for (unsigned i = 0; i < 4; ++i)
     {
@@ -100,7 +101,8 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
                                            lightUniform.density[i],
                                            lightUniform.spacular[i],
                                            normal, halfway, diffuseIntensity);
-            transparency *= ((1 - opacity) * (1 - saturate(pow(length(specularTerm), 1.0))));
+            transparency *= ((1 - saturate(pow(length(specularTerm), 1.0))));
+            checkTrans = true;
         }
         
         float shadowPercent = 0.0;
@@ -116,7 +118,7 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
                           (1 - shadowPercent);
     }
     
-    if (opacity < 1.0 && transparency < 1.0)
+    if (checkTrans)
         opacity = 1.0 - transparency;
     
     return float4(ambientTerm + colorForLights, opacity);
