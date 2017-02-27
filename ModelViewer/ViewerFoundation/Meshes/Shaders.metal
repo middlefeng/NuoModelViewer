@@ -177,7 +177,6 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
     float3 ambientTerm = lightingUniform.ambientDensity * vert.ambientColor;
     float3 colorForLights = 0.0;
     
-    bool checkTrans = false;
     float transparency = (1 - opacity);
     
     for (unsigned i = 0; i < 4; ++i)
@@ -198,7 +197,6 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                            lightingUniform.spacular[i],
                                            normal, halfway, diffuseIntensity);
             transparency *= ((1 - saturate(pow(length(specularTerm), 1.0))));
-            checkTrans = true;
         }
         
         float shadowPercent = 0.0;
@@ -214,10 +212,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                           (1 - shadowPercent);
     }
     
-    if (checkTrans)
-        opacity = 1.0 - transparency;
-    
-    return float4(ambientTerm + colorForLights, opacity);
+    return float4(ambientTerm + colorForLights, 1.0 - transparency);
 }
 
 
