@@ -1,0 +1,181 @@
+return
+{
+    canvas = 
+    {
+        width = 1000.000000,
+        height = 700.000000,
+    },
+
+    rotationMatrix = 
+    {
+        [0] = 
+        {
+            [0] = -0.595595,
+            [1] = -0.186429,
+            [2] = 0.781349,
+            [3] = 0.000000,
+        },
+        [1] = 
+        {
+            [0] = 0.802780,
+            [1] = -0.172550,
+            [2] = 0.570760,
+            [3] = 0.000000,
+        },
+        [2] = 
+        {
+            [0] = 0.028415,
+            [1] = 0.967196,
+            [2] = 0.252433,
+            [3] = 0.000000,
+        },
+        [3] = 
+        {
+            [0] = 0.000000,
+            [1] = 0.000000,
+            [2] = 0.000000,
+            [3] = 1.000000,
+        },
+    },
+
+    view = 
+    {
+        zoom = 14.454498,
+        transX = 0.000000,
+        transY = 0.000000,
+        FOV = 0.785398,
+    },
+
+    models = 
+    {
+        [1] = 
+        {
+            name = "Nose",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [2] = 
+        {
+            name = "GlassMain",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.555787,
+        },
+
+        [3] = 
+        {
+            name = "FrontGlass",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.220000,
+        },
+
+        [4] = 
+        {
+            name = "Windshield",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.220000,
+        },
+
+        [5] = 
+        {
+            name = "HudGlass2",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.420000,
+        },
+
+        [6] = 
+        {
+            name = "HudGlass1",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.420000,
+        },
+
+        [7] = 
+        {
+            name = "TCS_Glass",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.220000,
+        },
+
+        [8] = 
+        {
+            name = "Lantirn_h0",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.420000,
+        },
+
+        [9] = 
+        {
+            name = "aim9_head",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.220000,
+        },
+
+    },
+
+    lights = 
+    {
+        [0] = 
+        {
+            rotateX = 0.000000,
+            rotateY = 0.000000,
+            density = 1.000000,
+            spacular = 0.400000,
+        },
+
+        [1] = 
+        {
+            rotateX = 0.000000,
+            rotateY = 0.000000,
+            density = 0.000000,
+            spacular = 0.000000,
+        },
+
+        [2] = 
+        {
+            rotateX = 0.000000,
+            rotateY = 0.000000,
+            density = 0.000000,
+            spacular = 0.000000,
+        },
+
+        [3] = 
+        {
+            rotateX = 0.000000,
+            rotateY = 0.000000,
+            density = 0.000000,
+            spacular = 0.000000,
+        },
+
+        ambient = 0.280000,
+
+    },
+
+}

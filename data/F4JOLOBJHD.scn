@@ -198,6 +198,9 @@ return
             rotateY = -0.534070,
             density = 1.437243,
             spacular = 1.138613,
+            enableShadow = true,
+            shadowSoften = 1.0,
+            shadowBias = 1.0,
         },
 
         [1] = 
@@ -206,6 +209,9 @@ return
             rotateY = -0.251328,
             density = 0.239571,
             spacular = 2.261719,
+            enableShadow = true,
+            shadowSoften = 1.0,
+            shadowBias = 1.0,
         },
 
         [2] = 
@@ -214,6 +220,7 @@ return
             rotateY = 0.376992,
             density = 0.775096,
             spacular = 0.000000,
+            enableShadow = false,
         },
 
         [3] = 
@@ -222,6 +229,7 @@ return
             rotateY = 0.691150,
             density = 0.000000,
             spacular = 0.000000,
+            enableShadow = false,
         },
 
         ambient = 0.280000,
