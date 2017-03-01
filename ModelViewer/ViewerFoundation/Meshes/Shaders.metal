@@ -277,16 +277,17 @@ float3 specular_common(float3 materialSpecularColor, float materialSpecularPower
                        float3 normal, float3 halfway, float dotNL)
 {
     float dotNHPower = pow(saturate(dot(normal, halfway)), materialSpecularPower);
+    float specularFactor = dotNHPower * dotNL;
+    float3 adjustedCsepcular = materialSpecularColor * lightSpecularIntensity;
     
     if (kPhysicallyReflection)
     {
-        return fresnel_schlick(materialSpecularColor * lightSpecularIntensity / 3.0, lightVector, halfway) *
-               ((materialSpecularPower + 2) / 8) * dotNHPower * dotNL * lightIntensity;
+        return fresnel_schlick(adjustedCsepcular / 3.0, lightVector, halfway) *
+               ((materialSpecularPower + 2) / 8) * specularFactor * lightIntensity;
     }
     else
     {
-        float specularFactor = dotNHPower * dotNL;
-        return materialSpecularColor * specularFactor * lightSpecularIntensity;
+        return adjustedCsepcular * specularFactor;
     }
 }
 
