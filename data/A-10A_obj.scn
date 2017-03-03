@@ -1,0 +1,269 @@
+return
+{
+    canvas = 
+    {
+        width = 1333.000000,
+        height = 700.000000,
+    },
+
+    rotationMatrix = 
+    {
+        [0] = 
+        {
+            [0] = -0.626435,
+            [1] = -0.397612,
+            [2] = -0.670415,
+            [3] = 0.000000,
+        },
+        [1] = 
+        {
+            [0] = -0.639532,
+            [1] = -0.229505,
+            [2] = 0.733690,
+            [3] = 0.000000,
+        },
+        [2] = 
+        {
+            [0] = -0.445591,
+            [1] = 0.888374,
+            [2] = -0.110519,
+            [3] = 0.000000,
+        },
+        [3] = 
+        {
+            [0] = 0.000000,
+            [1] = 0.000000,
+            [2] = 0.000000,
+            [3] = 1.000000,
+        },
+    },
+
+    view = 
+    {
+        zoom = -22.952728,
+        transX = 11.070863,
+        transY = -2.984940,
+        FOV = 0.218136,
+    },
+
+    models = 
+    {
+        [1] = 
+        {
+            name = "Fuselage",
+            enabled = true,
+            smooth = 0.600000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [2] = 
+        {
+            name = "Canopy",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [3] = 
+        {
+            name = "CanopyInsi",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [4] = 
+        {
+            name = "GlassMain",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.442278,
+        },
+
+        [5] = 
+        {
+            name = "GlassFront",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.375060,
+        },
+
+        [6] = 
+        {
+            name = "PavePennyG",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.220000,
+        },
+
+        [7] = 
+        {
+            name = "HUDGlass01",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.220000,
+        },
+
+        [8] = 
+        {
+            name = "HUDGlass",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.420000,
+        },
+
+        [9] = 
+        {
+            name = "WingL",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [10] = 
+        {
+            name = "GearPodL",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [11] = 
+        {
+            name = "WingFillet",
+            enabled = true,
+            smooth = 0.990000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [12] = 
+        {
+            name = "WingR",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [13] = 
+        {
+            name = "GearPodR",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [14] = 
+        {
+            name = "aim9_head",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.310000,
+        },
+
+        [15] = 
+        {
+            name = "aim9_head0",
+            enabled = true,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 0.310000,
+        },
+
+        [16] = 
+        {
+            name = "EnginePodL",
+            enabled = true,
+            smooth = 0.700000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [17] = 
+        {
+            name = "EnginePodR",
+            enabled = true,
+            smooth = 0.700000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+    },
+
+    lights = 
+    {
+        [0] = 
+        {
+            rotateX = 0.659734,
+            rotateY = -0.596902,
+            density = 0.895526,
+            spacular = 0.743271,
+            enableShadow = true,
+            shadowSoften = 0.000000,
+            shadowBias = 0.005145,
+        },
+
+        [1] = 
+        {
+            rotateX = -0.439823,
+            rotateY = 0.848230,
+            density = 0.186505,
+            spacular = 0.000000,
+            enableShadow = true,
+            shadowSoften = 0.000000,
+            shadowBias = 0.000000,
+        },
+
+        [2] = 
+        {
+            rotateX = 0.785398,
+            rotateY = 0.062833,
+            density = 0.111439,
+            spacular = 0.000000,
+            enableShadow = false,
+        },
+
+        [3] = 
+        {
+            rotateX = 0.000000,
+            rotateY = 0.000000,
+            density = 0.000000,
+            spacular = 0.000000,
+            enableShadow = false,
+        },
+
+        ambient = 0.000000,
+
+    },
+
+}

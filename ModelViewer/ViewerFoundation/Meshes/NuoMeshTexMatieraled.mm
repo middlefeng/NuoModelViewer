@@ -15,6 +15,7 @@
     id<MTLTexture> _textureOpacity;
     id<MTLTexture> _textureBump;
     BOOL _ignoreTextureAlpha;
+    BOOL _physicallyReflection;
 }
 
 
@@ -67,6 +68,13 @@
 
 
 
+- (void)setPhysicallyReflection:(BOOL)physically
+{
+    _physicallyReflection = physically;
+}
+
+
+
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
@@ -75,35 +83,27 @@
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     pipelineDescriptor.sampleCount = kSampleCount;
     
+    bool alphaInbedded = !_ignoreTextureAlpha;
+    bool hasTexOpacity = !(!_textureOpacity);
+    MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
+    
+    [funcConstant setConstantValue:&alphaInbedded type:MTLDataTypeBool atIndex:0];
+    [funcConstant setConstantValue:&hasTexOpacity type:MTLDataTypeBool atIndex:1];
+    [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];
+    
     if (!_textureBump)
     {
         pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_tex_materialed"];
-        if (_ignoreTextureAlpha)
-        {
-            if (_textureOpacity)
-                pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed_tex_opacity"];
-            else
-                pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed"];
-        }
-        else
-        {
-            pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_a_materialed"];
-        }
+        pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_tex_materialed"
+                                                            constantValues:funcConstant
+                                                                     error:nil];
     }
     else
     {
         pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_tex_materialed_tangent"];
-        if (_ignoreTextureAlpha)
-        {
-            if (_textureOpacity)
-                pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_tex_materialed_tex_opacity_bump"];
-            else
-                pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_tex_materialed_bump"];
-        }
-        else
-        {
-            pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_tex_a_materialed_bump"];
-        }
+        pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_tex_materialed_bump"
+                                                            constantValues:funcConstant
+                                                                     error:nil];
     }
     
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
@@ -174,7 +174,9 @@
     
     [renderPass setFragmentTexture:self.diffuseTex atIndex:texBufferIndex++];
     if (_textureOpacity)
-        [renderPass setFragmentTexture:_textureOpacity atIndex:texBufferIndex++];
+        [renderPass setFragmentTexture:_textureOpacity atIndex:texBufferIndex];
+    
+    ++texBufferIndex;
     if (_textureBump)
         [renderPass setFragmentTexture:_textureBump atIndex:texBufferIndex];
     
@@ -213,6 +215,7 @@
 @implementation NuoMeshMatieraled
 {
     BOOL _hasTransparent;
+    BOOL _physicallyReflection;
 }
 
 
@@ -243,9 +246,13 @@
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
+    MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
+    [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];
+    
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_materialed"];
-    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_materialed"];
+    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_materialed" constantValues:funcConstant
+                                                                 error:nil];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     pipelineDescriptor.sampleCount = kSampleCount;
     
@@ -298,6 +305,12 @@
 - (void)setTransparency:(BOOL)transparent
 {
     _hasTransparent = transparent;
+}
+
+
+- (void)setPhysicallyReflection:(BOOL)physically
+{
+    _physicallyReflection = physically;
 }
 
 

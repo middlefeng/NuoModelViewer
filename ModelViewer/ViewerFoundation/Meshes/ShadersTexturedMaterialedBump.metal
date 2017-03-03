@@ -36,6 +36,8 @@ struct ProjectedVertex
     float4 shadowPosition1;
 };
 
+
+
 vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[buffer(0)]],
                                                      constant ModelUniforms &uniforms [[buffer(1)]],
                                                      constant LightVertexUniforms &lightCast [[buffer(2)]],
@@ -91,78 +93,31 @@ vertex PositionSimple vertex_shadow_tex_materialed_bump(device Vertex *vertices 
 
 
 
-fragment float4 fragment_tex_a_materialed_bump(ProjectedVertex vert [[stage_in]],
-                                               constant LightUniform &lighting [[buffer(0)]],
-                                               texture2d<float> shadowMap0 [[texture(0)]],
-                                               texture2d<float> shadowMap1 [[texture(1)]],
-                                               texture2d<float> diffuseTexture [[texture(2)]],
-                                               texture2d<float> bumpTexture [[texture(3)]],
-                                               sampler depthSamplr [[sampler(0)]],
-                                               sampler samplr [[sampler(1)]])
-{
-    VertexFragmentCharacters outVert = vertex_characters(vert);
-    
-    float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
-    diffuseTexel = float4(diffuseTexel.rgb / diffuseTexel.a, diffuseTexel.a);
-    
-    float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
-    float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
-    
-    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
-    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel,
-                                                shadowMap, depthSamplr);
-}
-
-
 fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
                                              constant LightUniform &lighting [[buffer(0)]],
                                              texture2d<float> shadowMap0 [[texture(0)]],
                                              texture2d<float> shadowMap1 [[texture(1)]],
                                              texture2d<float> diffuseTexture [[texture(2)]],
-                                             texture2d<float> bumpTexture [[texture(3)]],
+                                             texture2d<float> opacityTexture [[texture(3),
+                                                                               function_constant(kAlphaChannelInSeparatedTexture)]],
+                                             texture2d<float> bumpTexture [[texture(4)]],
                                              sampler depthSamplr [[sampler(0)]],
                                              sampler samplr [[sampler(1)]])
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
     
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
-    if (diffuseTexel.a < 1e-9)
-        diffuseTexel.rgb = float3(1.0);
-    else
-        diffuseTexel = diffuseTexel / diffuseTexel.a;
+    float4 opacityTexel = 1.0;
+    if (kAlphaChannelInSeparatedTexture)
+        opacityTexel = opacityTexture.sample(samplr, vert.texCoord);
     
-    diffuseTexel.a = 1.0;
-    float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
-    float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
-    
-    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
-    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel,
-                                                shadowMap, depthSamplr);
-}
-
-
-fragment float4 fragment_tex_materialed_tex_opacity_bump(ProjectedVertex vert [[stage_in]],
-                                                         constant LightUniform &lighting [[buffer(0)]],
-                                                         texture2d<float> shadowMap0 [[texture(0)]],
-                                                         texture2d<float> shadowMap1 [[texture(1)]],
-                                                         texture2d<float> diffuseTexture [[texture(2)]],
-                                                         texture2d<float> opacityTexture [[texture(3)]],
-                                                         texture2d<float> bumpTexture [[texture(4)]],
-                                                         sampler depthSamplr [[sampler(0)]],
-                                                         sampler samplr [[sampler(1)]])
-{
-    VertexFragmentCharacters outVert = vertex_characters(vert);
-    
-    float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
-    float4 opacityTexel = opacityTexture.sample(samplr, vert.texCoord);
-    diffuseTexel = diffuseTexel / diffuseTexel.a;
-    diffuseTexel.a = opacityTexel.a;
+    float4 diffuseColor = diffuse_common(diffuseTexel, opacityTexel.a);
     
     float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
     float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
     
     texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
-    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseTexel,
+    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseColor,
                                                 shadowMap, depthSamplr);
 }
 

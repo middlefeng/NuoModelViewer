@@ -221,6 +221,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         options._textureEmbedMaterialTransparency = loadOption.textureEmbeddingMaterialTransparency;
         options._texturedBump = loadOption.texturedBump;
         options._basicMaterialized = loadOption.basicMaterialized;
+        options._physicallyReflection = loadOption.physicallyReflection;
         
         PNuoModelBase modelBase = CreateModel(options, material, shape.name);
         

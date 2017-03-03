@@ -81,8 +81,8 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
     texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
-    float transparency = 1.0;
     float opacity = vert.specularPowerDisolve.y;
+    float transparency = (1 - opacity);
     
     for (unsigned i = 0; i < 4; ++i)
     {
@@ -94,9 +94,13 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
         {
             float3 eyeDirection = normalize(vert.eye);
             float3 halfway = normalize(normalize(lightUniform.direction[i].xyz) + eyeDirection);
-            float specularFactor = pow(saturate(dot(normal, halfway)), vert.specularPowerDisolve.x) * diffuseIntensity;
-            specularTerm = vert.specularColor * specularFactor;
-            transparency *= ((1 - opacity) * (1 - saturate(pow(specularFactor * lightUniform.spacular[i], 1.0))));
+            
+            specularTerm = specular_common(vert.specularColor, vert.specularPowerDisolve.x,
+                                           lightUniform.direction[i].xyz,
+                                           lightUniform.density[i],
+                                           lightUniform.spacular[i],
+                                           normal, halfway, diffuseIntensity);
+            transparency *= ((1 - saturate(pow(length(specularTerm), 1.0))));
         }
         
         float shadowPercent = 0.0;
@@ -108,12 +112,9 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
                                                    shadowMap[i], depthSamplr);
         }
         
-        colorForLights += (diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i]) *
+        colorForLights += (diffuseTerm * lightUniform.density[i] + specularTerm) *
                           (1 - shadowPercent);
     }
     
-    if (opacity < 1.0 && transparency < 1.0)
-        opacity = 1.0 - transparency;
-    
-    return float4(ambientTerm + colorForLights, opacity);
+    return float4(ambientTerm + colorForLights, 1.0 - transparency);
 }

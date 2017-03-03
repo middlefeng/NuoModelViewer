@@ -64,24 +64,10 @@
 }
 
 
-- (NSRect)modelPartsPanelLocation
-{
-    NSRect viewRect = [self frame];
-    NSSize listSize = NSMakeSize(225, 315);
-    NSSize listMargin = NSMakeSize(15, 25);
-    
-    NSRect listRect;
-    listRect.origin = NSMakePoint(listMargin.width, viewRect.size.height - listSize.height - listMargin.height);
-    listRect.size = listSize;
-    
-    return listRect;
-}
-
-
 - (NSRect)operationPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize panelSize = NSMakeSize(225, 315);
+    NSSize panelSize = NSMakeSize(225, 338);
     NSSize panelMargin = NSMakeSize(15, 25);
     NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
                                       viewRect.size.height - panelMargin.height - panelSize.height);

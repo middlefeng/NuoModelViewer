@@ -718,6 +718,7 @@
 				HEADER_SEARCH_PATHS = glm;
 				INFOPLIST_FILE = ModelViewer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MTL_LANGUAGE_REVISION = Metal12;
 				MTL_PREPROCESSOR_DEFINITIONS = Metal;
 				PRODUCT_BUNDLE_IDENTIFIER = fengdong.model.viewer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -733,6 +734,7 @@
 				HEADER_SEARCH_PATHS = glm;
 				INFOPLIST_FILE = ModelViewer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MTL_LANGUAGE_REVISION = Metal12;
 				MTL_PREPROCESSOR_DEFINITIONS = Metal;
 				PRODUCT_BUNDLE_IDENTIFIER = fengdong.model.viewer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
