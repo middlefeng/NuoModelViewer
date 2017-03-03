@@ -1,13 +1,10 @@
 #include <metal_stdlib>
 #include <metal_matrix>
 
+#include "ShadersSpecialCommon.h"
+
 using namespace metal;
 
-struct Vertex
-{
-    float4 position;
-    float2 texCoord;
-};
 
 struct ProjectedVertex
 {
