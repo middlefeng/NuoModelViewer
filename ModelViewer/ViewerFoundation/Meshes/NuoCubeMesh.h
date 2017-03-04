@@ -7,7 +7,7 @@
 //
 
 #import "NuoMesh.h"
-
+#import <simd/simd.h>
 
 
 
@@ -16,8 +16,14 @@
 
 @property (nonatomic, weak) id<MTLTexture> cubeTexture;
 
+@property (nonatomic, assign) float rotationXDelta;
+@property (nonatomic, assign) float rotationYDelta;
+
+
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
+
+- (void)setProjectionMatrix:(matrix_float4x4)projection;
 
 
 @end

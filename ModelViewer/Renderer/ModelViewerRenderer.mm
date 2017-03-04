@@ -9,6 +9,7 @@
 
 #include "NuoTypes.h"
 #include "NuoMesh.h"
+#include "NuoCubeMesh.h"
 #include "NuoRenderPassTarget.h"
 #include "NuoMathUtilities.h"
 #include "NuoModelBase.h"
@@ -23,6 +24,8 @@
 
 
 @property (nonatomic, strong) NSArray<NuoMesh*>* mesh;
+@property (nonatomic, strong) NuoCubeMesh* cubeMesh;
+
 @property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
