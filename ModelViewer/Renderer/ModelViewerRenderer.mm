@@ -407,17 +407,9 @@
 
 - (void)updateUniformsForView:(matrix_float4x4*)modelMatrixOut withInFlight:(unsigned int)inFlight
 {
-    {
-        float scaleFactor = 1;
-        const vector_float3 xAxis = { 1, 0, 0 };
-        const vector_float3 yAxis = { 0, 1, 0 };
-        const matrix_float4x4 xRot = matrix_float4x4_rotation(xAxis, self.rotationXDelta);
-        const matrix_float4x4 yRot = matrix_float4x4_rotation(yAxis, self.rotationYDelta);
-        const matrix_float4x4 scale = matrix_float4x4_uniform_scale(scaleFactor);
-        const matrix_float4x4 rotationMatrix = matrix_multiply(matrix_multiply(xRot, yRot), scale);
-        self.rotationMatrix = matrix_multiply(rotationMatrix, self.rotationMatrix);
-    }
-    
+    // accumulate delta rotation into matrix
+    //
+    self.rotationMatrix = matrix_rotation_append(self.rotationMatrix, _rotationXDelta, _rotationYDelta);
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
@@ -427,7 +419,7 @@
         - _meshBounding.centerY,
         - _meshBounding.centerZ
     };
-    const matrix_float4x4 modelCenteringMatrix = matrix_float4x4_translation(translationToCenter);
+    const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
     const matrix_float4x4 modelMatrix = matrix_multiply(self.rotationMatrix, modelCenteringMatrix);
     
     *modelMatrixOut = modelMatrix;
@@ -446,18 +438,18 @@
         cameraDistance
     };
 
-    const matrix_float4x4 viewMatrix = matrix_float4x4_translation(cameraTranslation);
+    const matrix_float4x4 viewMatrix = matrix_translation(cameraTranslation);
     
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
     const float near = -cameraDistance - _meshMaxSpan / 2.0 + 0.01;
     const float far = near + _meshMaxSpan + 0.02;
-    const matrix_float4x4 projectionMatrix = matrix_float4x4_perspective(aspect, _fieldOfView, near, far);
+    const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, _fieldOfView, near, far);
 
     ModelUniforms uniforms;
     uniforms.modelViewMatrix = matrix_multiply(viewMatrix, modelMatrix);
     uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
-    uniforms.normalMatrix = matrix_float4x4_extract_linear(uniforms.modelViewMatrix);
+    uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);
 
     memcpy([self.modelUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
     

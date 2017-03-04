@@ -83,14 +83,14 @@
     float aspectRatio = drawableSize.width / drawableSize.height;
     float viewPortHeight = meshRadius;
     float viewPortWidth = aspectRatio * viewPortHeight;
-    const matrix_float4x4 projectionMatrix = matrix_float4x4_orthor(-viewPortWidth, viewPortWidth,
-                                                                    viewPortHeight, -viewPortHeight,
-                                                                    -meshRadius, meshRadius);
+    const matrix_float4x4 projectionMatrix = matrix_orthor(-viewPortWidth, viewPortWidth,
+                                                           viewPortHeight, -viewPortHeight,
+                                                           -meshRadius, meshRadius);
     
     ModelUniforms uniforms;
     uniforms.modelViewMatrix = matrix_multiply(viewMatrix, _modelMatrix);
     uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
-    uniforms.normalMatrix = matrix_float4x4_extract_linear(uniforms.modelViewMatrix);
+    uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);
     
     _lightCastMatrix = uniforms.modelViewProjectionMatrix;
     

@@ -66,12 +66,12 @@
     vector_float3 transformVector = { _x, _y, _z };
     vector_float3 rotationVector = { _xAxis, _yAxis, _zAxis };
     
-    matrix_float4x4 transMatrix = matrix_float4x4_translation(transformVector);
-    matrix_float4x4 transMatrixInv = matrix_float4x4_translation(-transformVector);
-    matrix_float4x4 rotationMatrix = matrix_float4x4_rotation(vector_normalize(rotationVector), _radius);
+    matrix_float4x4 transMatrix = matrix_translation(transformVector);
+    matrix_float4x4 transMatrixInv = matrix_translation(-transformVector);
+    matrix_float4x4 rotationMatrix = matrix_rotation(vector_normalize(rotationVector), _radius);
     
     _rotationMatrix = matrix_multiply(transMatrixInv, matrix_multiply(rotationMatrix, transMatrix));
-    _rotationNormalMatrix = matrix_float4x4_extract_linear(_rotationMatrix);
+    _rotationNormalMatrix = matrix_extract_linear(_rotationMatrix);
 }
 
 
