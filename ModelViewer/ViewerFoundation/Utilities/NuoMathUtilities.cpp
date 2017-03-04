@@ -12,7 +12,7 @@ static matrix_float4x4& to_matrix(glm::mat4x4& gmat)
     return *result;
 }
 
-matrix_float4x4 matrix_float4x4_translation(vector_float3 t)
+matrix_float4x4 matrix_translation(vector_float3 t)
 {
     glm::vec3 gt(t.x, t.y, t.z);
     glm::mat4x4 gmat = glm::translate(glm::mat4x4(1.0), gt);
@@ -20,13 +20,13 @@ matrix_float4x4 matrix_float4x4_translation(vector_float3 t)
     return to_matrix(gmat);
 }
 
-matrix_float4x4 matrix_float4x4_uniform_scale(float scale)
+matrix_float4x4 matrix_uniform_scale(float scale)
 {
     glm::mat4x4 gmat = glm::scale(glm::mat4x4(1.0), glm::vec3(scale));
     return to_matrix(gmat);
 }
 
-matrix_float4x4 matrix_float4x4_rotation(vector_float3 axis, float angle)
+matrix_float4x4 matrix_rotation(vector_float3 axis, float angle)
 {
     glm::vec3 gaxis(axis.x, axis.y, axis.z);
     glm::mat4x4 gmat = glm::rotate(glm::mat4x4(1.0), -angle, gaxis);
@@ -34,7 +34,7 @@ matrix_float4x4 matrix_float4x4_rotation(vector_float3 axis, float angle)
     return to_matrix(gmat);
 }
 
-matrix_float4x4 matrix_float4x4_perspective(float aspect, float fovy, float near, float far)
+matrix_float4x4 matrix_perspective(float aspect, float fovy, float near, float far)
 {
     // NOT use OpenGL persepctive!
     // Metal uses a 2x2x1 canonical cube (z in [0,1]), rather than the 2x2x2 one in OpenGL.
@@ -67,7 +67,7 @@ matrix_float4x4 matrix_float4x4_perspective(float aspect, float fovy, float near
     return mat;
 }
 
-matrix_float4x4 matrix_float4x4_orthor(float left, float right, float top, float bottom, float near, float far)
+matrix_float4x4 matrix_orthor(float left, float right, float top, float bottom, float near, float far)
 {
     /* Ortho in OpenGL
      
@@ -100,7 +100,7 @@ matrix_float4x4 matrix_float4x4_orthor(float left, float right, float top, float
     return mat;
 }
 
-matrix_float3x3 matrix_float4x4_extract_linear(matrix_float4x4 m)
+matrix_float3x3 matrix_extract_linear(matrix_float4x4 m)
 {
     vector_float3 X = m.columns[0].xyz;
     vector_float3 Y = m.columns[1].xyz;
@@ -114,10 +114,17 @@ matrix_float4x4 matrix_rotate(float rotationX, float rotationY)
 {
     const vector_float3 xAxis = { 1, 0, 0 };
     const vector_float3 yAxis = { 0, 1, 0 };
-    const matrix_float4x4 xRot = matrix_float4x4_rotation(xAxis, rotationX);
-    const matrix_float4x4 yRot = matrix_float4x4_rotation(yAxis, rotationY);
+    const matrix_float4x4 xRot = matrix_rotation(xAxis, rotationX);
+    const matrix_float4x4 yRot = matrix_rotation(yAxis, rotationY);
     
     return matrix_multiply(xRot, yRot);
+}
+
+
+matrix_float4x4 matrix_rotation_append(matrix_float4x4 start, float rotateX, float rotateY)
+{
+    matrix_float4x4 rotate = matrix_rotate(rotateX, rotateY);
+    return matrix_multiply(rotate, start);
 }
 
 

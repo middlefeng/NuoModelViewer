@@ -128,13 +128,13 @@
         - bounding.centerZ + bounding.spanZ / 2.0f
     };
     
-    const matrix_float4x4 modelCenteringMatrix = matrix_float4x4_translation(translationToCenter);
+    const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
     const matrix_float4x4 modelMatrix = matrix_multiply(rotationMatrix, modelCenteringMatrix);
     
     ModelUniforms uniforms;
     uniforms.modelViewMatrix = matrix_multiply(_viewMatrix, modelMatrix);
     uniforms.modelViewProjectionMatrix = matrix_multiply(_projMatrix, uniforms.modelViewMatrix);
-    uniforms.normalMatrix = matrix_float4x4_extract_linear(uniforms.modelViewMatrix);
+    uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);
     
     memcpy([self.uniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
     
