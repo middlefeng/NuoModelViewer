@@ -134,6 +134,49 @@ handleTransparency:
 
 
 
+- (id<MTLTexture>)textureCubeWithImageNamed:(NSString *)imagePath
+                                  mipmapped:(BOOL)mipmapped
+                               commandQueue:(id<MTLCommandQueue>)commandQueue
+{
+    CIImage *image = [[CIImage alloc] initWithContentsOfURL:[NSURL fileURLWithPath:imagePath]];
+    
+    if (image == nil)
+    {
+        return nil;
+    }
+    
+    NSSize imageSize = image.extent.size;
+    const NSUInteger bytesPerPixel = 4;
+    const NSUInteger bytesPerRow = bytesPerPixel * imageSize.width;
+    uint8_t *imageData = [self dataForImage:image hasTransparent:nil];
+    
+    size_t cubeSize = (size_t)(imageSize.width / 4);
+    assert(cubeSize == imageSize.height / 3);
+    
+    MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
+                                                                                                    size:cubeSize
+                                                                                               mipmapped:mipmapped];
+    id<MTLTexture> texture = [self.device newTextureWithDescriptor:textureDescriptor];
+    
+    MTLRegion region = MTLRegionMake2D(0, 0, imageSize.width, imageSize.height);
+    [texture replaceRegion:region mipmapLevel:0 withBytes:imageData bytesPerRow:bytesPerRow];
+    
+    free(imageData);
+    
+    if (mipmapped)
+    {
+        id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
+        id<MTLBlitCommandEncoder> commandEncoder = [commandBuffer blitCommandEncoder];
+        [commandEncoder generateMipmapsForTexture:texture];
+        [commandEncoder endEncoding];
+        [commandBuffer commit];
+    }
+    
+    return texture;
+}
+
+
+
 - (uint8_t *)dataForImage:(CIImage *)image hasTransparent:(BOOL*)hasTransparency
 {
     if (!_CIContext)
@@ -163,7 +206,8 @@ handleTransparency:
     CGContextRelease(context);
     CGImageRelease(imageRef);
     
-    *hasTransparency = [self checkTransparency:rawData withWidth:width withHeight:height];
+    if (hasTransparency)
+        *hasTransparency = [self checkTransparency:rawData withWidth:width withHeight:height];
     
     return rawData;
 }

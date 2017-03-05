@@ -33,6 +33,10 @@
                      checkTransparency:(BOOL)checkTransparency
                           commandQueue:(id<MTLCommandQueue>)commandQueue;
 
+- (id<MTLTexture>)textureCubeWithImageNamed:(NSString *)imagePath
+                                  mipmapped:(BOOL)mipmapped
+                               commandQueue:(id<MTLCommandQueue>)commandQueue;
+
 - (void)saveTexture:(id<MTLTexture>)texture toImage:(NSString*)path;
 
 @end

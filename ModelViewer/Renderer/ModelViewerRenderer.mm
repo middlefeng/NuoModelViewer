@@ -16,6 +16,8 @@
 #include "NuoModelLoader.h"
 #include "NuoTableExporter.h"
 
+#include "NuoTextureBase.h"
+
 #include "NuoLua.h"
 
 #import "LightSource.h"
@@ -69,6 +71,11 @@
         
         _shadowMapRenderer[0] = [[ShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 0"];
         _shadowMapRenderer[1] = [[ShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
+        
+        _cubeMesh = [[NuoCubeMesh alloc] initWithDevice:device];
+        NuoTextureBase* base = [NuoTextureBase getInstance:device];
+        _cubeMesh.cubeTexture = [base textureCubeWithImageNamed:@"/Users/adobe/Desktop/9233f460aa6b43e937a46dff3857c812.jpg.png"
+                                                      mipmapped:YES commandQueue:[device newCommandQueue]];
     }
 
     return self;
@@ -480,6 +487,9 @@
     
     for (NuoMesh* item in _mesh)
         [item updateUniform:inFlight];
+    
+    [_cubeMesh setProjectionMatrix:projectionMatrix];
+    [_cubeMesh updateUniform:inFlight];
 }
 
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
