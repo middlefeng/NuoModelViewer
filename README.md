@@ -44,6 +44,7 @@ A simple Wavefront OBJ viewer.
 
 ## TODO
 
+* Order-independent transparency.
 * <del>Bump texture.</del>
 * <del>Direction of lgiht source.</del>
 * <del>Intensity of light source.</del>
