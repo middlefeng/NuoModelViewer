@@ -187,7 +187,19 @@ handleTransparency:
     MTLRegion region = MTLRegionMake2D(0, 0, w, h);
     [texture getBytes:buffer bytesPerRow:bytesPerRow fromRegion:region mipmapLevel:0];
     
-    CGDataProviderRef dataProvider = CGDataProviderCreateWithData(buffer, buffer, sizeOfBuffer,
+    [self saveBytes:buffer ofSize:CGSizeMake(w, h) toImage:path];
+}
+
+
+
+- (void)saveBytes:(void*)bytes ofSize:(CGSize)sizeOfBuffer toImage:(NSString*)path
+{
+    size_t w = sizeOfBuffer.width;
+    size_t h = sizeOfBuffer.height;
+    size_t bytesPerRow = 4 * w;
+    size_t size = bytesPerRow * h * 8;
+    
+    CGDataProviderRef dataProvider = CGDataProviderCreateWithData(bytes, bytes, size,
                                                                   NuoDataProviderReleaseDataCallback);
     NSURL* url = [[NSURL alloc] initFileURLWithPath:path];
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
