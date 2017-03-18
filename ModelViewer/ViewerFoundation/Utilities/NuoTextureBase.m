@@ -58,6 +58,27 @@ static NuoTextureBase* sInstance;
         sInstance = [NuoTextureBase new];
         sInstance.device = device;
         sInstance.texturePool = [NSMutableDictionary new];
+        
+        BOOL trans;
+        CIImage *image = [[CIImage alloc] initWithContentsOfURL:[NSURL fileURLWithPath:@"/Users/adobe/Desktop/cubemaps_skybox.png"]];
+        uint8_t* data = [sInstance dataForImage:image hasTransparent:&trans];
+        CGSize imageSize = image.extent.size;
+        
+        [sInstance saveBytes:data ofSize:imageSize toImage:@"/Users/adobe/Desktop/face.png"];
+        
+        /*for (uint index = 0; index < 6; ++index)
+        {
+            uint8_t* data = [sInstance dataForImage:image forFace:index];
+            
+            CGSize imageSize = image.extent.size;
+            imageSize.width /= 4.0;
+            imageSize.height /= 3.0;
+            
+            NSString* imagePath = [NSString stringWithFormat:@"/Users/adobe/Desktop/face_%d.png", index];
+            
+            [sInstance saveBytes:data ofSize:imageSize toImage:imagePath];
+        }*/
+        
     }
     
     return sInstance;
@@ -134,6 +155,40 @@ handleTransparency:
 
 
 
+- (id<MTLTexture>)textureCubeWithImageNamed:(NSString *)imagePath
+{
+    if (!_CIContext)
+        _CIContext = [CIContext contextWithOptions:nil];
+    
+    CIImage *image = [[CIImage alloc] initWithContentsOfURL:[NSURL fileURLWithPath:imagePath]];
+    CGSize imageSize = image.extent.size;
+    
+    assert(imageSize.width / 4.0 == imageSize.height / 3.0);
+    NSUInteger cubeSize = imageSize.width / 4.0;
+    
+    MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
+                                                                                                    size:cubeSize mipmapped:NO];
+    
+    id<MTLTexture> texture = [self.device newTextureWithDescriptor:textureDescriptor];
+    MTLRegion region = MTLRegionMake2D(0, 0, cubeSize, cubeSize);
+    for (uint index = 0; index < 6; ++index)
+    {
+        void* bytes = [self dataForImage:image forFace:index];
+        
+        const NSUInteger bytesPerRow = 4 * cubeSize;
+        const NSUInteger bytesPerImage = bytesPerRow * cubeSize;
+        
+        [texture replaceRegion:region mipmapLevel:NO slice:index
+                     withBytes:bytes bytesPerRow:bytesPerRow bytesPerImage:bytesPerImage];
+        
+        free(bytes);
+    }
+    
+    return texture;
+}
+
+
+
 - (uint8_t *)dataForImage:(CIImage *)image hasTransparent:(BOOL*)hasTransparency
 {
     if (!_CIContext)
@@ -164,6 +219,86 @@ handleTransparency:
     CGImageRelease(imageRef);
     
     *hasTransparency = [self checkTransparency:rawData withWidth:width withHeight:height];
+    
+    return rawData;
+}
+
+
+
+- (uint8_t *)dataForImage:(CIImage *)image forFace:(enum NuoTextureCubeFace)face
+{
+    if (!_CIContext)
+        _CIContext = [CIContext contextWithOptions:nil];
+    
+    CGImageRef imageRef = [_CIContext createCGImage:image fromRect:image.extent];
+    
+    // Create a suitable bitmap context for extracting the bits of the image
+    const NSUInteger width = CGImageGetWidth(imageRef);
+    const NSUInteger height = CGImageGetHeight(imageRef);
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    
+    const float faceWidth = width / 4.0;
+    const float faceHeight = height / 3.0;
+    uint8_t* rawData = (uint8_t *)calloc(faceWidth * faceHeight * 4, sizeof(uint8_t));
+    
+    const NSUInteger bytesPerPixel = 4;
+    const NSUInteger bytesPerRow = bytesPerPixel * faceWidth;
+    const NSUInteger bitsPerComponent = 8;
+    CGContextRef context = CGBitmapContextCreate(rawData, faceWidth, faceHeight,
+                                                 bitsPerComponent, bytesPerRow, colorSpace,
+                                                 kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+    CGColorSpaceRelease(colorSpace);
+    
+    CGContextTranslateCTM(context, 0, height);
+    CGContextScaleCTM(context, 1, -1);
+    
+    CGFloat offsetX = 0;
+    CGFloat offsetY = 0;
+    switch (face)
+    {
+        case kCubeFace_nx:
+            offsetX = 0.0;
+            offsetY = faceHeight;
+            break;
+            
+        case kCubeFace_ny:
+            offsetX = -faceWidth;
+            offsetY = 0.0;
+            break;
+            
+        case kCubeFace_nz:
+            offsetX = -faceWidth * 3.0;
+            offsetY = faceHeight;
+            break;
+            
+        case kCubeFace_px:
+            offsetX = -faceWidth * 2.0;
+            offsetY = faceHeight;
+            break;
+            
+        case kCubeFace_py:
+            offsetX = -faceWidth;
+            offsetY = faceHeight * 2.0;
+            break;
+            
+        case kCubeFace_pz:
+            offsetX = -faceWidth;
+            offsetY = faceHeight;
+            break;
+            
+        default:
+            break;
+    }
+    
+    CGContextTranslateCTM(context, offsetX, offsetY);
+    //CGRect imageRect = CGRectMake(0, 0, faceWidth, faceHeight);
+    //CGContextClipToRect(context, imageRect);
+    CGRect sourceRect = CGRectMake(0, 0, width, height);
+    CGContextDrawImage(context, sourceRect, imageRef);
+    
+    CGContextRelease(context);
+    CGImageRelease(imageRef);
+
     
     return rawData;
 }
