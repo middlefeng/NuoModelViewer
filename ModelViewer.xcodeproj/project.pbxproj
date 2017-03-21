@@ -55,6 +55,8 @@
 		2CE2CA221D804EC5005509EE /* NuoMeshTextured.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2CA211D804EC5005509EE /* NuoMeshTextured.mm */; };
 		2CE2D7FF1E2167F2000CCD2D /* ModelPartsPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2D7FE1E2167F2000CCD2D /* ModelPartsPanel.m */; };
 		2CE2D80B1E254790000CCD2D /* ModelPartsTableView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2CE2D80A1E254790000CCD2D /* ModelPartsTableView.xib */; };
+		983CBC4C1E80A213001DE126 /* ShadersCubeTextured.metal in Sources */ = {isa = PBXBuildFile; fileRef = 983CBC4B1E80A213001DE126 /* ShadersCubeTextured.metal */; };
+		983CBC531E80A5B8001DE126 /* NuoCubeMesh.m in Sources */ = {isa = PBXBuildFile; fileRef = 983CBC521E80A5B8001DE126 /* NuoCubeMesh.m */; };
 		988442461D80853700EE2C4C /* NuoModelMaterialedBasic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 988442441D80853700EE2C4C /* NuoModelMaterialedBasic.cpp */; };
 		9884424B1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */; };
 		988B676D1E43F2BD00EA1453 /* NuoMeshAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 988B676C1E43F2BD00EA1453 /* NuoMeshAnimation.m */; };
@@ -201,6 +203,9 @@
 		2CE2D7FD1E2167F2000CCD2D /* ModelPartsPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelPartsPanel.h; sourceTree = "<group>"; };
 		2CE2D7FE1E2167F2000CCD2D /* ModelPartsPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ModelPartsPanel.m; sourceTree = "<group>"; };
 		2CE2D80A1E254790000CCD2D /* ModelPartsTableView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ModelPartsTableView.xib; sourceTree = "<group>"; };
+		983CBC4B1E80A213001DE126 /* ShadersCubeTextured.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ShadersCubeTextured.metal; sourceTree = "<group>"; };
+		983CBC511E80A5B8001DE126 /* NuoCubeMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoCubeMesh.h; sourceTree = "<group>"; };
+		983CBC521E80A5B8001DE126 /* NuoCubeMesh.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoCubeMesh.m; sourceTree = "<group>"; };
 		988442441D80853700EE2C4C /* NuoModelMaterialedBasic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoModelMaterialedBasic.cpp; sourceTree = "<group>"; };
 		988442451D80853700EE2C4C /* NuoModelMaterialedBasic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoModelMaterialedBasic.h; sourceTree = "<group>"; };
 		988442491D80B07500EE2C4C /* NuoMeshTexMatieraled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoMeshTexMatieraled.h; sourceTree = "<group>"; };
@@ -291,6 +296,8 @@
 				9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */,
 				2C52F12C1DCC03380034ACDC /* NuoTextureMesh.h */,
 				2C52F12D1DCC03380034ACDC /* NuoTextureMesh.mm */,
+				983CBC511E80A5B8001DE126 /* NuoCubeMesh.h */,
+				983CBC521E80A5B8001DE126 /* NuoCubeMesh.m */,
 				2C6C7CDF1E45AB1200CEC76D /* NuoMatrixTypes.h */,
 				2CE2D7F31E2042F3000CCD2D /* NuoUniforms.h */,
 				2C723AA21E43973200484992 /* NuoMeshUniform.h */,
@@ -300,6 +307,7 @@
 				2C235FCA1DD6CBD700E68295 /* ShadersTextured.metal */,
 				2C235FCB1DD6CBD700E68295 /* ShadersTexturedMaterialed.metal */,
 				98CD06B91DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal */,
+				983CBC4B1E80A213001DE126 /* ShadersCubeTextured.metal */,
 				2C235FCC1DD6CBD700E68295 /* ShadersTextureImage.metal */,
 			);
 			path = Meshes;
@@ -571,6 +579,7 @@
 				98CA11B81DD2B00900440C53 /* NotationRenderer.m in Sources */,
 				2C235FCF1DD6CBD700E68295 /* ShadersTextured.metal in Sources */,
 				2C52F1331DCFE8970034ACDC /* NuoIntermediateRenderPass.m in Sources */,
+				983CBC531E80A5B8001DE126 /* NuoCubeMesh.m in Sources */,
 				2CCF9C801E5B7A43006EF8C4 /* NuoRenderPipeline.m in Sources */,
 				2CDFB21E1DD99E2100C67FA3 /* NotationLight.mm in Sources */,
 				2C3D9AA11D7E344F002C1226 /* NuoTypes.cpp in Sources */,
@@ -583,6 +592,7 @@
 				2C723AA91E43A83600484992 /* NuoMeshRotation.m in Sources */,
 				2C5B92C31D73F51E00722936 /* NuoMaterial.cpp in Sources */,
 				2C840D0E1D7001C2000D2956 /* NuoMetalView.m in Sources */,
+				983CBC4C1E80A213001DE126 /* ShadersCubeTextured.metal in Sources */,
 				2CAF2E851D691AC90074E402 /* tiny_obj_loader.cc in Sources */,
 				98CD06BA1DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal in Sources */,
 				2C5B92C01D72D11E00722936 /* NuoModelBase.cpp in Sources */,
