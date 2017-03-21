@@ -12,6 +12,20 @@
 
 
 
+
+enum NuoTextureCubeFace
+{
+    kCubeFace_px,
+    kCubeFace_nx,
+    kCubeFace_py,
+    kCubeFace_ny,
+    kCubeFace_pz,
+    kCubeFace_nz,
+};
+
+
+
+
 @interface NuoTexture : NSObject
 
 @property (strong) id<MTLTexture> texture;
@@ -33,9 +47,7 @@
                      checkTransparency:(BOOL)checkTransparency
                           commandQueue:(id<MTLCommandQueue>)commandQueue;
 
-- (id<MTLTexture>)textureCubeWithImageNamed:(NSString *)imagePath
-                                  mipmapped:(BOOL)mipmapped
-                               commandQueue:(id<MTLCommandQueue>)commandQueue;
+- (id<MTLTexture>)textureCubeWithImageNamed:(NSString *)imagePath;
 
 - (void)saveTexture:(id<MTLTexture>)texture toImage:(NSString*)path;
 

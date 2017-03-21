@@ -74,8 +74,7 @@
         
         _cubeMesh = [[NuoCubeMesh alloc] initWithDevice:device];
         NuoTextureBase* base = [NuoTextureBase getInstance:device];
-        _cubeMesh.cubeTexture = [base textureCubeWithImageNamed:@"/Users/adobe/Desktop/9233f460aa6b43e937a46dff3857c812.jpg.png"
-                                                      mipmapped:YES commandQueue:[device newCommandQueue]];
+        _cubeMesh.cubeTexture = [base textureCubeWithImageNamed:@"/Users/adobe/Desktop/9233f460aa6b43e937a46dff3857c812.jpg.png"];
     }
 
     return self;

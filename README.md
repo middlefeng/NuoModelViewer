@@ -44,6 +44,7 @@ A simple Wavefront OBJ viewer.
 
 ## TODO
 
+* Order-independent transparency.
 * <del>Bump texture.</del>
 * <del>Direction of lgiht source.</del>
 * <del>Intensity of light source.</del>
@@ -54,7 +55,9 @@ A simple Wavefront OBJ viewer.
 * Shadow to ground.
 * <del>Per light-source, per-surface shadow properties (bias, soft edge).</del>
 * <del>Cull mode.</del>
-* Surrounding (cube map).
+* Surrounding.
+  * Cubmap skybox.
+  * Water (for ship model).
 * Motion blur (especially for rotating parts like rotor).
 * Detailed properties panel for indiviudal model parts.
   * <del>Smooth options (everywhere, texture discontinuiation only, etc).</del>
