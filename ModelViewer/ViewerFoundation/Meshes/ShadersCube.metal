@@ -49,6 +49,6 @@ fragment float4 fragment_cube(ProjectedVertex vert          [[stage_in]],
                              texturecube<float> cubeTexture [[texture(0)]],
                              sampler cubeSampler            [[sampler(0)]])
 {
-    float3 texCoords = float3(vert.texCoords.x, vert.texCoords.y, vert.texCoords.z);
+    float3 texCoords = float3(vert.texCoords.x, vert.texCoords.y, -vert.texCoords.z);
     return cubeTexture.sample(cubeSampler, texCoords);
 }

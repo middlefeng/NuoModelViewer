@@ -269,7 +269,7 @@ handleTransparency:
             
         case kCubeFace_nz:
             offsetX = -faceWidth * 3.0;
-            offsetY = faceHeight;
+            offsetY = -faceHeight;
             break;
             
         case kCubeFace_px:
@@ -279,12 +279,12 @@ handleTransparency:
             
         case kCubeFace_py:
             offsetX = -faceWidth;
-            offsetY = faceHeight * 2.0;
+            offsetY = -faceHeight * 2.0;
             break;
             
         case kCubeFace_pz:
             offsetX = -faceWidth;
-            offsetY = faceHeight;
+            offsetY = -faceHeight;
             break;
             
         default:
