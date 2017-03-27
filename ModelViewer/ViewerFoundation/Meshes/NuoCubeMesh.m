@@ -112,7 +112,7 @@ static uint16_t kIndices[] =
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
-    uniforms.modelViewProjectionMatrix = matrix_multiply(_cubeMatrix, _projectMatrix);
+    uniforms.modelViewProjectionMatrix = matrix_multiply(_projectMatrix, _cubeMatrix);
     uniforms.modelViewMatrix = _cubeMatrix;
     
     memcpy([_cubeMatrixBuffer[bufferIndex] contents], &uniforms, sizeof(uniforms));
@@ -134,7 +134,7 @@ static uint16_t kIndices[] =
     vertexDescriptor.attributes[0].format = MTLVertexFormatFloat4;
     vertexDescriptor.attributes[0].offset = 0;
     vertexDescriptor.attributes[0].bufferIndex = 0;
-    vertexDescriptor.attributes[1].format = MTLVertexFormatFloat2;
+    vertexDescriptor.attributes[1].format = MTLVertexFormatFloat4;
     vertexDescriptor.attributes[1].offset = 16;
     vertexDescriptor.attributes[1].bufferIndex = 0;
     vertexDescriptor.layouts[0].stride = 32;
@@ -153,10 +153,11 @@ static uint16_t kIndices[] =
     
     // create sampler state
     MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
-    samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
-    samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
-    samplerDesc.minFilter = MTLSamplerMinMagFilterNearest;
-    samplerDesc.magFilter = MTLSamplerMinMagFilterNearest;
+    //samplerDesc.sAddressMode = MTLSamplerAddressModeClampToEdge;
+    //samplerDesc.tAddressMode = MTLSamplerAddressModeClampToEdge;
+    //samplerDesc.rAddressMode = MTLSamplerAddressModeClampToEdge;
+    samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
+    samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
     samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
     _samplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
@@ -174,8 +175,8 @@ static uint16_t kIndices[] =
     [renderPass setFragmentSamplerState:_samplerState atIndex:0];
     
     [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[self.indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
+                           indexCount:[self.indexBuffer length] / sizeof(uint16_t)
+                            indexType:MTLIndexTypeUInt16
                           indexBuffer:self.indexBuffer
                     indexBufferOffset:0];
 }

@@ -14,7 +14,7 @@
 @interface NuoCubeMesh : NuoMesh
 
 
-@property (nonatomic, weak) id<MTLTexture> cubeTexture;
+@property (nonatomic, strong) id<MTLTexture> cubeTexture;
 
 @property (nonatomic, assign) float rotationXDelta;
 @property (nonatomic, assign) float rotationYDelta;
@@ -23,6 +23,7 @@
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
+- (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat;
 - (void)setProjectionMatrix:(matrix_float4x4)projection;
 
 

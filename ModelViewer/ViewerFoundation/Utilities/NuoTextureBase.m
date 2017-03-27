@@ -59,12 +59,12 @@ static NuoTextureBase* sInstance;
         sInstance.device = device;
         sInstance.texturePool = [NSMutableDictionary new];
         
-        BOOL trans;
+        /*BOOL trans;
         CIImage *image = [[CIImage alloc] initWithContentsOfURL:[NSURL fileURLWithPath:@"/Users/adobe/Desktop/cubemaps_skybox.png"]];
         uint8_t* data = [sInstance dataForImage:image hasTransparent:&trans];
-        CGSize imageSize = image.extent.size;
+        CGSize imageSize = image.extent.size;*/
         
-        [sInstance saveBytes:data ofSize:imageSize toImage:@"/Users/adobe/Desktop/face.png"];
+       // [sInstance saveBytes:data ofSize:imageSize toImage:@"/Users/adobe/Desktop/face.png"];
         
         /*for (uint index = 0; index < 6; ++index)
         {
@@ -163,7 +163,7 @@ handleTransparency:
     CIImage *image = [[CIImage alloc] initWithContentsOfURL:[NSURL fileURLWithPath:imagePath]];
     CGSize imageSize = image.extent.size;
     
-    assert(imageSize.width / 4.0 == imageSize.height / 3.0);
+    //assert(imageSize.width / 4.0 == imageSize.height / 3.0);
     NSUInteger cubeSize = imageSize.width / 4.0;
     
     MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm

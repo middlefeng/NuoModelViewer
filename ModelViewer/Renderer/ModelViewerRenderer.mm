@@ -74,7 +74,10 @@
         
         _cubeMesh = [[NuoCubeMesh alloc] initWithDevice:device];
         NuoTextureBase* base = [NuoTextureBase getInstance:device];
-        _cubeMesh.cubeTexture = [base textureCubeWithImageNamed:@"/Users/adobe/Desktop/9233f460aa6b43e937a46dff3857c812.jpg.png"];
+        _cubeMesh.cubeTexture = [base textureCubeWithImageNamed:@"/Users/middleware/Desktop/test.jpg"];
+        
+        [_cubeMesh makeDepthStencilState];
+        [_cubeMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
     }
 
     return self;
@@ -416,6 +419,9 @@
 
 - (void)updateUniformsForView:(matrix_float4x4*)modelMatrixOut withInFlight:(unsigned int)inFlight
 {
+    _cubeMesh.rotationXDelta = _rotationXDelta;
+    _cubeMesh.rotationYDelta = _rotationYDelta;
+    
     // accumulate delta rotation into matrix
     //
     self.rotationMatrix = matrix_rotation_append(self.rotationMatrix, _rotationXDelta, _rotationYDelta);
@@ -452,8 +458,8 @@
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
     const float near = -cameraDistance - _meshMaxSpan / 2.0 + 0.01;
-    const float far = near + _meshMaxSpan + 0.02;
-    const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, _fieldOfView, near, far);
+    const float far = 2.0;// near + _meshMaxSpan + 0.02;
+    const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, /*3.14 / 2*/_fieldOfView, near, far);
 
     ModelUniforms uniforms;
     uniforms.modelViewMatrix = matrix_multiply(viewMatrix, modelMatrix);
@@ -526,7 +532,10 @@
     //
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     
-    [renderPass setVertexBuffer:self.modelUniformBuffers[inFlight] offset:0 atIndex:1];
+    if (_cubeMesh)
+        [_cubeMesh drawMesh:renderPass indexBuffer:inFlight];
+    
+    /*[renderPass setVertexBuffer:self.modelUniformBuffers[inFlight] offset:0 atIndex:1];
     [renderPass setVertexBuffer:_lightCastBuffers[inFlight] offset:0 atIndex:2];
     
     [renderPass setFragmentBuffer:self.lightingUniformBuffers[inFlight] offset:0 atIndex:0];
@@ -553,14 +562,14 @@
         
         for (NuoMesh* mesh : _mesh)
         {
-            if (((renderPassStep == 0) && ![mesh hasTransparency] && ![mesh reverseCommonCullMode]) /* 1/2 pass for opaque */ ||
-                ((renderPassStep == 1) && ![mesh hasTransparency] && [mesh reverseCommonCullMode])                              ||
-                ((renderPassStep == 2) && [mesh hasTransparency] && [mesh reverseCommonCullMode])  /* 3/4 pass for transparent */ ||
-                ((renderPassStep == 3) && [mesh hasTransparency] && ![mesh reverseCommonCullMode]))
-                if ([mesh enabled])
-                    [mesh drawMesh:renderPass indexBuffer:inFlight];
-        }
-    }
+         //   if (((renderPassStep == 0) && ![mesh hasTransparency] && ![mesh reverseCommonCullMode]) /* 1/2 pass for opaque */// ||
+         //       ((renderPassStep == 1) && ![mesh hasTransparency] && [mesh reverseCommonCullMode])                              ||
+          //      ((renderPassStep == 2) && [mesh hasTransparency] && [mesh reverseCommonCullMode])  /* 3/4 pass for transparent */ ||
+          //      ((renderPassStep == 3) && [mesh hasTransparency] && ![mesh reverseCommonCullMode]))
+          //      if ([mesh enabled])
+          //          [mesh drawMesh:renderPass indexBuffer:inFlight];
+      //  }
+    //}
     
     [renderPass endEncoding];
 }
