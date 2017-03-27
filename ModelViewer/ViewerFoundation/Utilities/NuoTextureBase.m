@@ -250,8 +250,8 @@ handleTransparency:
                                                  kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
     CGColorSpaceRelease(colorSpace);
     
-    CGContextTranslateCTM(context, 0, height);
-    CGContextScaleCTM(context, 1, -1);
+//    CGContextTranslateCTM(context, 0, height);
+//    CGContextScaleCTM(context, 1, -1);
     
     CGFloat offsetX = 0;
     CGFloat offsetY = 0;
@@ -259,7 +259,7 @@ handleTransparency:
     {
         case kCubeFace_nx:
             offsetX = 0.0;
-            offsetY = faceHeight;
+            offsetY = -faceHeight;
             break;
             
         case kCubeFace_ny:
@@ -274,7 +274,7 @@ handleTransparency:
             
         case kCubeFace_px:
             offsetX = -faceWidth * 2.0;
-            offsetY = faceHeight;
+            offsetY = -faceHeight;
             break;
             
         case kCubeFace_py:
