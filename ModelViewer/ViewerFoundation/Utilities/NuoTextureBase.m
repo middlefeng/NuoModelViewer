@@ -58,27 +58,6 @@ static NuoTextureBase* sInstance;
         sInstance = [NuoTextureBase new];
         sInstance.device = device;
         sInstance.texturePool = [NSMutableDictionary new];
-        
-        /*BOOL trans;
-        CIImage *image = [[CIImage alloc] initWithContentsOfURL:[NSURL fileURLWithPath:@"/Users/adobe/Desktop/cubemaps_skybox.png"]];
-        uint8_t* data = [sInstance dataForImage:image hasTransparent:&trans];
-        CGSize imageSize = image.extent.size;*/
-        
-       // [sInstance saveBytes:data ofSize:imageSize toImage:@"/Users/adobe/Desktop/face.png"];
-        
-        /*for (uint index = 0; index < 6; ++index)
-        {
-            uint8_t* data = [sInstance dataForImage:image forFace:index];
-            
-            CGSize imageSize = image.extent.size;
-            imageSize.width /= 4.0;
-            imageSize.height /= 3.0;
-            
-            NSString* imagePath = [NSString stringWithFormat:@"/Users/adobe/Desktop/face_%d.png", index];
-            
-            [sInstance saveBytes:data ofSize:imageSize toImage:imagePath];
-        }*/
-        
     }
     
     return sInstance;
@@ -162,12 +141,11 @@ handleTransparency:
     
     CIImage *image = [[CIImage alloc] initWithContentsOfURL:[NSURL fileURLWithPath:imagePath]];
     CGSize imageSize = image.extent.size;
-    
-    //assert(imageSize.width / 4.0 == imageSize.height / 3.0);
     NSUInteger cubeSize = imageSize.width / 4.0;
     
-    MTLTextureDescriptor *textureDescriptor = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
-                                                                                                    size:cubeSize mipmapped:NO];
+    MTLTextureDescriptor *textureDescriptor =
+            [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
+                                                                  size:cubeSize mipmapped:NO];
     
     id<MTLTexture> texture = [self.device newTextureWithDescriptor:textureDescriptor];
     MTLRegion region = MTLRegionMake2D(0, 0, cubeSize, cubeSize);
@@ -296,7 +274,6 @@ handleTransparency:
     
     CGContextRelease(context);
     CGImageRelease(imageRef);
-
     
     return rawData;
 }
