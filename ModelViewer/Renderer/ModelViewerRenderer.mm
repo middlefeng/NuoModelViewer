@@ -419,8 +419,8 @@
 
 - (void)updateUniformsForView:(matrix_float4x4*)modelMatrixOut withInFlight:(unsigned int)inFlight
 {
-    _cubeMesh.rotationXDelta = _rotationXDelta;
-    _cubeMesh.rotationYDelta = _rotationYDelta;
+    //_cubeMesh.rotationXDelta = _rotationXDelta;
+    //_cubeMesh.rotationYDelta = _rotationYDelta;
     
     // accumulate delta rotation into matrix
     //
@@ -458,8 +458,8 @@
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
     const float near = -cameraDistance - _meshMaxSpan / 2.0 + 0.01;
-    const float far = 2.0;// near + _meshMaxSpan + 0.02;
-    const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, /*3.14 / 2*/_fieldOfView, near, far);
+    const float far = near + _meshMaxSpan + 0.02;
+    const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, _fieldOfView, near, far);
 
     ModelUniforms uniforms;
     uniforms.modelViewMatrix = matrix_multiply(viewMatrix, modelMatrix);
@@ -493,7 +493,8 @@
     for (NuoMesh* item in _mesh)
         [item updateUniform:inFlight];
     
-    [_cubeMesh setProjectionMatrix:projectionMatrix];
+    const matrix_float4x4 projectionMatrixForCube = matrix_perspective(aspect, _fieldOfView, 0.3, 2.0);
+    [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
     [_cubeMesh updateUniform:inFlight];
 }
 
@@ -535,7 +536,7 @@
     if (_cubeMesh)
         [_cubeMesh drawMesh:renderPass indexBuffer:inFlight];
     
-    /*[renderPass setVertexBuffer:self.modelUniformBuffers[inFlight] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:self.modelUniformBuffers[inFlight] offset:0 atIndex:1];
     [renderPass setVertexBuffer:_lightCastBuffers[inFlight] offset:0 atIndex:2];
     
     [renderPass setFragmentBuffer:self.lightingUniformBuffers[inFlight] offset:0 atIndex:0];
@@ -562,14 +563,14 @@
         
         for (NuoMesh* mesh : _mesh)
         {
-         //   if (((renderPassStep == 0) && ![mesh hasTransparency] && ![mesh reverseCommonCullMode]) /* 1/2 pass for opaque */// ||
-         //       ((renderPassStep == 1) && ![mesh hasTransparency] && [mesh reverseCommonCullMode])                              ||
-          //      ((renderPassStep == 2) && [mesh hasTransparency] && [mesh reverseCommonCullMode])  /* 3/4 pass for transparent */ ||
-          //      ((renderPassStep == 3) && [mesh hasTransparency] && ![mesh reverseCommonCullMode]))
-          //      if ([mesh enabled])
-          //          [mesh drawMesh:renderPass indexBuffer:inFlight];
-      //  }
-    //}
+            if (((renderPassStep == 0) && ![mesh hasTransparency] && ![mesh reverseCommonCullMode]) /* 1/2 pass for opaque */     ||
+                ((renderPassStep == 1) && ![mesh hasTransparency] && [mesh reverseCommonCullMode])                                ||
+                ((renderPassStep == 2) && [mesh hasTransparency] && [mesh reverseCommonCullMode])  /* 3/4 pass for transparent */ ||
+                ((renderPassStep == 3) && [mesh hasTransparency] && ![mesh reverseCommonCullMode]))
+                if ([mesh enabled])
+                    [mesh drawMesh:renderPass indexBuffer:inFlight];
+        }
+    }
     
     [renderPass endEncoding];
 }
