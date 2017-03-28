@@ -6,6 +6,7 @@
 @class NuoMeshOption;
 @class NuoLua;
 @class NuoMesh;
+@class NuoCubeMesh;
 @class LightSource;
 
 
@@ -14,6 +15,7 @@
 
 
 @property (nonatomic, strong) NSArray<LightSource*>* lights;
+@property (nonatomic, strong) NuoCubeMesh* cubeMesh;
 
 
 @property (nonatomic, assign) float zoom;
@@ -33,15 +35,11 @@
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
-- (void)loadCubeFromImage:(NSString*)path;
 - (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue;
 - (NSArray<NuoMesh*>*)mesh;
 
 - (NSString*)exportSceneAsString:(CGSize)canvasSize;
 - (void)importScene:(NuoLua*)lua;
-
-- (void)setCubeRotationX:(float)x;
-- (void)setCubeRotationY:(float)y;
 
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
        withCommandQueue:(id<MTLCommandQueue>)commandQueue;

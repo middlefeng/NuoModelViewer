@@ -16,8 +16,6 @@
 #include "NuoModelLoader.h"
 #include "NuoTableExporter.h"
 
-#include "NuoTextureBase.h"
-
 #include "NuoLua.h"
 
 #import "LightSource.h"
@@ -26,7 +24,6 @@
 
 
 @property (nonatomic, strong) NSArray<NuoMesh*>* mesh;
-@property (nonatomic, strong) NuoCubeMesh* cubeMesh;
 
 @property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
@@ -74,17 +71,6 @@
     }
 
     return self;
-}
-
-
-- (void)loadCubeFromImage:(NSString*)path
-{
-    _cubeMesh = [[NuoCubeMesh alloc] initWithDevice:self.device];
-    NuoTextureBase* base = [NuoTextureBase getInstance:self.device];
-    _cubeMesh.cubeTexture = [base textureCubeWithImageNamed:path];
-    
-    [_cubeMesh makeDepthStencilState];
-    [_cubeMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
 }
 
 
@@ -369,20 +355,6 @@
     [lua getField:@"lights" fromTable:-1];
     _ambientDensity = [lua getFieldAsNumber:@"ambient" fromTable:-1];
     [lua removeField];
-}
-
-
-
-- (void)setCubeRotationX:(float)x
-{
-    _cubeMesh.rotationXDelta = x;
-}
-
-
-
-- (void)setCubeRotationY:(float)y
-{
-    _cubeMesh.rotationYDelta = y;
 }
 
 

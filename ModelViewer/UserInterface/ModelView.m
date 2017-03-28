@@ -20,6 +20,7 @@
 #import "LightSource.h"
 
 #import "NuoMesh.h"
+#import "NuoCubeMesh.h"
 #import "NuoMeshRotation.h"
 #import "NuoMeshAnimation.h"
 #import "NuoTextureBase.h"
@@ -375,8 +376,9 @@
     {
         if ([theEvent modifierFlags] & NSEventModifierFlagCommand)
         {
-            [_modelRender setCubeRotationX:-deltaX];
-            [_modelRender setCubeRotationY:-deltaY];
+            NuoCubeMesh* cube = [_modelRender cubeMesh];
+            [cube setRotationXDelta:-deltaX];
+            [cube setRotationYDelta:-deltaY];
         }
         else
         {
@@ -544,12 +546,22 @@
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
     openPanel.allowedFileTypes = @[@"jpg", @"png"];
     
+    __weak __block id<MTLDevice> device = self.metalLayer.device;
+    
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
                  if (result == NSFileHandlingPanelOKButton)
                  {
                      NSString* path = openPanel.URL.path;
-                     [_modelRender loadCubeFromImage:path];
+                     
+                     NuoCubeMesh* cubeMesh = [[NuoCubeMesh alloc] initWithDevice:device];
+                     NuoTextureBase* base = [NuoTextureBase getInstance:device];
+                     cubeMesh.cubeTexture = [base textureCubeWithImageNamed:path];
+                         
+                     [cubeMesh makeDepthStencilState];
+                     [cubeMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
+                 
+                     [_modelRender setCubeMesh:cubeMesh];
                      [self render];
                  }
              }];
