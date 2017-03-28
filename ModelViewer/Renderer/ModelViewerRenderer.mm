@@ -24,7 +24,6 @@
 
 
 @property (nonatomic, strong) NSArray<NuoMesh*>* mesh;
-
 @property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
@@ -358,7 +357,6 @@
 }
 
 
-
 - (void)setModelOptions:(NuoMeshOption *)modelOptions
        withCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
@@ -410,9 +408,6 @@
 
 - (void)updateUniformsForView:(matrix_float4x4*)modelMatrixOut withInFlight:(unsigned int)inFlight
 {
-    //_cubeMesh.rotationXDelta = _rotationXDelta;
-    //_cubeMesh.rotationYDelta = _rotationYDelta;
-    
     // accumulate delta rotation into matrix
     //
     self.rotationMatrix = matrix_rotation_append(self.rotationMatrix, _rotationXDelta, _rotationYDelta);
@@ -484,9 +479,12 @@
     for (NuoMesh* item in _mesh)
         [item updateUniform:inFlight];
     
-    const matrix_float4x4 projectionMatrixForCube = matrix_perspective(aspect, _fieldOfView, 0.3, 2.0);
-    [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
-    [_cubeMesh updateUniform:inFlight];
+    if (_cubeMesh)
+    {
+        const matrix_float4x4 projectionMatrixForCube = matrix_perspective(aspect, _fieldOfView, 0.3, 2.0);
+        [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
+        [_cubeMesh updateUniform:inFlight];
+    }
 }
 
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
@@ -554,8 +552,8 @@
         
         for (NuoMesh* mesh : _mesh)
         {
-            if (((renderPassStep == 0) && ![mesh hasTransparency] && ![mesh reverseCommonCullMode]) /* 1/2 pass for opaque */     ||
-                ((renderPassStep == 1) && ![mesh hasTransparency] && [mesh reverseCommonCullMode])                                ||
+            if (((renderPassStep == 0) && ![mesh hasTransparency] && ![mesh reverseCommonCullMode]) /* 1/2 pass for opaque */ ||
+                ((renderPassStep == 1) && ![mesh hasTransparency] && [mesh reverseCommonCullMode])                              ||
                 ((renderPassStep == 2) && [mesh hasTransparency] && [mesh reverseCommonCullMode])  /* 3/4 pass for transparent */ ||
                 ((renderPassStep == 3) && [mesh hasTransparency] && ![mesh reverseCommonCullMode]))
                 if ([mesh enabled])

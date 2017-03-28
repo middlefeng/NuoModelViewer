@@ -146,16 +146,13 @@ static uint16_t kIndices[] =
     [self makePipelineState:pipelineDescriptor];
     
     MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
-    depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLess;
+    depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionAlways;
     depthStencilDescriptor.depthWriteEnabled = NO;
     
     self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
     
     // create sampler state
     MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
-    //samplerDesc.sAddressMode = MTLSamplerAddressModeClampToEdge;
-    //samplerDesc.tAddressMode = MTLSamplerAddressModeClampToEdge;
-    //samplerDesc.rAddressMode = MTLSamplerAddressModeClampToEdge;
     samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
     samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
     samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
@@ -166,6 +163,7 @@ static uint16_t kIndices[] =
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
+    [renderPass setCullMode:MTLCullModeBack];
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
     
