@@ -71,16 +71,20 @@
         
         _shadowMapRenderer[0] = [[ShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 0"];
         _shadowMapRenderer[1] = [[ShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
-        
-        _cubeMesh = [[NuoCubeMesh alloc] initWithDevice:device];
-        NuoTextureBase* base = [NuoTextureBase getInstance:device];
-        _cubeMesh.cubeTexture = [base textureCubeWithImageNamed:@"/Users/middleware/Desktop/test.jpg"];
-        
-        [_cubeMesh makeDepthStencilState];
-        [_cubeMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
     }
 
     return self;
+}
+
+
+- (void)loadCubeFromImage:(NSString*)path
+{
+    _cubeMesh = [[NuoCubeMesh alloc] initWithDevice:self.device];
+    NuoTextureBase* base = [NuoTextureBase getInstance:self.device];
+    _cubeMesh.cubeTexture = [base textureCubeWithImageNamed:path];
+    
+    [_cubeMesh makeDepthStencilState];
+    [_cubeMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
 }
 
 

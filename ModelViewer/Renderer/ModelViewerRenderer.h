@@ -33,7 +33,7 @@
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
-
+- (void)loadCubeFromImage:(NSString*)path;
 - (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue;
 - (NSArray<NuoMesh*>*)mesh;
 

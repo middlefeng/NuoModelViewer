@@ -539,6 +539,24 @@
 
 
 
+- (IBAction)loadCube:(id)sender
+{
+    NSOpenPanel* openPanel = [NSOpenPanel openPanel];
+    openPanel.allowedFileTypes = @[@"jpg", @"png"];
+    
+    [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
+             {
+                 if (result == NSFileHandlingPanelOKButton)
+                 {
+                     NSString* path = openPanel.URL.path;
+                     [_modelRender loadCubeFromImage:path];
+                     [self render];
+                 }
+             }];
+}
+
+
+
 - (IBAction)saveScene:(id)sender
 {
     NSString* defaultName = _documentName;

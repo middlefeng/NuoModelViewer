@@ -92,6 +92,12 @@
                                     </items>
                                 </menu>
                             </menuItem>
+                            <menuItem title="Load Cube..." id="f2z-k9-GaM" userLabel="Load Cube...">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="loadCube:" target="EiT-Mj-1SZ" id="dd3-Ut-STE"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="m54-Is-iLE"/>
                             <menuItem title="Close" keyEquivalent="w" id="DVo-aG-piG">
                                 <connections>
