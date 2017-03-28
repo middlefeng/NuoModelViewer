@@ -173,7 +173,7 @@ handleTransparency:
     MTLRegion region = MTLRegionMake2D(0, 0, cubeSize, cubeSize);
     for (uint index = 0; index < 6; ++index)
     {
-        void* bytes = [self dataForImage:image forFace:index];
+        void* bytes = [self dataForImage:image forFace:index withCubeSize:cubeSize];
         
         const NSUInteger bytesPerRow = 4 * cubeSize;
         const NSUInteger bytesPerImage = bytesPerRow * cubeSize;
@@ -227,6 +227,7 @@ handleTransparency:
 
 
 - (uint8_t *)dataForImage:(CIImage *)image forFace:(enum NuoTextureCubeFace)face
+             withCubeSize:(NSUInteger)cubeSize
 {
     if (!_CIContext)
         _CIContext = [CIContext contextWithOptions:nil];
@@ -240,18 +241,15 @@ handleTransparency:
     
     const float faceWidth = width / 4.0;
     const float faceHeight = height / 3.0;
-    uint8_t* rawData = (uint8_t *)calloc(faceWidth * faceHeight * 4, sizeof(uint8_t));
+    uint8_t* rawData = (uint8_t *)calloc(cubeSize * cubeSize * 4, sizeof(uint8_t));
     
     const NSUInteger bytesPerPixel = 4;
-    const NSUInteger bytesPerRow = bytesPerPixel * faceWidth;
+    const NSUInteger bytesPerRow = bytesPerPixel * cubeSize;
     const NSUInteger bitsPerComponent = 8;
-    CGContextRef context = CGBitmapContextCreate(rawData, faceWidth, faceHeight,
+    CGContextRef context = CGBitmapContextCreate(rawData, cubeSize, cubeSize,
                                                  bitsPerComponent, bytesPerRow, colorSpace,
                                                  kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
     CGColorSpaceRelease(colorSpace);
-    
-//    CGContextTranslateCTM(context, 0, height);
-//    CGContextScaleCTM(context, 1, -1);
     
     CGFloat offsetX = 0;
     CGFloat offsetY = 0;
@@ -292,8 +290,7 @@ handleTransparency:
     }
     
     CGContextTranslateCTM(context, offsetX, offsetY);
-    //CGRect imageRect = CGRectMake(0, 0, faceWidth, faceHeight);
-    //CGContextClipToRect(context, imageRect);
+    CGContextScaleCTM(context, cubeSize * 4.0 / width, cubeSize * 3.0 / height);
     CGRect sourceRect = CGRectMake(0, 0, width, height);
     CGContextDrawImage(context, sourceRect, imageRef);
     
