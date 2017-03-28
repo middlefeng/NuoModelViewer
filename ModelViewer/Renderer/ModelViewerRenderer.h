@@ -40,6 +40,9 @@
 - (NSString*)exportSceneAsString:(CGSize)canvasSize;
 - (void)importScene:(NuoLua*)lua;
 
+- (void)setCubeRotationX:(float)x;
+- (void)setCubeRotationY:(float)y;
+
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
        withCommandQueue:(id<MTLCommandQueue>)commandQueue;
 

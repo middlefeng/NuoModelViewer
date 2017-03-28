@@ -373,8 +373,16 @@
     }
     else
     {
-        _modelRender.rotationXDelta = deltaX;
-        _modelRender.rotationYDelta = deltaY;
+        if ([theEvent modifierFlags] & NSEventModifierFlagCommand)
+        {
+            [_modelRender setCubeRotationX:-deltaX];
+            [_modelRender setCubeRotationY:-deltaY];
+        }
+        else
+        {
+            _modelRender.rotationXDelta = deltaX;
+            _modelRender.rotationYDelta = deltaY;
+        }
     }
     
     [self render];

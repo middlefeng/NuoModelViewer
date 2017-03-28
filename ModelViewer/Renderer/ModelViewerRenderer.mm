@@ -368,6 +368,21 @@
 }
 
 
+
+- (void)setCubeRotationX:(float)x
+{
+    _cubeMesh.rotationXDelta = x;
+}
+
+
+
+- (void)setCubeRotationY:(float)y
+{
+    _cubeMesh.rotationYDelta = y;
+}
+
+
+
 - (void)setModelOptions:(NuoMeshOption *)modelOptions
        withCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
