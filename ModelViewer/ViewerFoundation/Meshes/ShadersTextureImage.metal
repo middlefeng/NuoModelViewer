@@ -1,9 +1,15 @@
 #include <metal_stdlib>
 #include <metal_matrix>
 
-#include "ShadersSpecialCommon.h"
-
 using namespace metal;
+
+
+struct Vertex
+{
+    metal::float4 position;
+    metal::float2 texCoord;
+};
+
 
 
 struct ProjectedVertex

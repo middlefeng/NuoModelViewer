@@ -215,7 +215,6 @@
 		98E05A5E1E6A17A600D4068F /* NuoCubeMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoCubeMesh.h; sourceTree = "<group>"; };
 		98E05A5F1E6A17A600D4068F /* NuoCubeMesh.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoCubeMesh.m; sourceTree = "<group>"; };
 		98E05A611E6A188F00D4068F /* ShadersCube.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ShadersCube.metal; sourceTree = "<group>"; };
-		98E05A631E6A1B0400D4068F /* ShadersSpecialCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadersSpecialCommon.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -308,7 +307,6 @@
 				2C235FCA1DD6CBD700E68295 /* ShadersTextured.metal */,
 				2C235FCB1DD6CBD700E68295 /* ShadersTexturedMaterialed.metal */,
 				98CD06B91DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal */,
-				98E05A631E6A1B0400D4068F /* ShadersSpecialCommon.h */,
 				2C235FCC1DD6CBD700E68295 /* ShadersTextureImage.metal */,
 				98E05A611E6A188F00D4068F /* ShadersCube.metal */,
 			);

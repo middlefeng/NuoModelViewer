@@ -8,7 +8,6 @@
 
 #include <metal_stdlib>
 
-#include "ShadersSpecialCommon.h"
 #include "NuoUniforms.h"
 
 
@@ -26,7 +25,7 @@ struct CubeVertex
 struct ProjectedVertex
 {
     metal::float4 position [[position]];
-    metal::float4 texCoords;
+    metal::float3 texCoords;
 };
 
 
@@ -39,7 +38,7 @@ vertex ProjectedVertex vertex_cube(device CubeVertex *vertices        [[buffer(0
     
     ProjectedVertex outVert;
     outVert.position = uniforms.modelViewProjectionMatrix * position;
-    outVert.texCoords = position;
+    outVert.texCoords = float3(position.x, position.y, -position.z);
     return outVert;
 }
 
@@ -49,6 +48,5 @@ fragment float4 fragment_cube(ProjectedVertex vert          [[stage_in]],
                              texturecube<float> cubeTexture [[texture(0)]],
                              sampler cubeSampler            [[sampler(0)]])
 {
-    float3 texCoords = float3(vert.texCoords.x, vert.texCoords.y, -vert.texCoords.z);
-    return cubeTexture.sample(cubeSampler, texCoords);
+    return cubeTexture.sample(cubeSampler, vert.texCoords);
 }
