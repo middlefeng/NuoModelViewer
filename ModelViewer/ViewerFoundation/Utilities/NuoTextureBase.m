@@ -134,6 +134,39 @@ handleTransparency:
 
 
 
+- (id<MTLTexture>)textureCubeWithImageNamed:(NSString *)imagePath
+{
+    if (!_CIContext)
+        _CIContext = [CIContext contextWithOptions:nil];
+    
+    CIImage *image = [[CIImage alloc] initWithContentsOfURL:[NSURL fileURLWithPath:imagePath]];
+    CGSize imageSize = image.extent.size;
+    NSUInteger cubeSize = imageSize.width / 4.0;
+    
+    MTLTextureDescriptor *textureDescriptor =
+            [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
+                                                                  size:cubeSize mipmapped:NO];
+    
+    id<MTLTexture> texture = [self.device newTextureWithDescriptor:textureDescriptor];
+    MTLRegion region = MTLRegionMake2D(0, 0, cubeSize, cubeSize);
+    for (uint index = 0; index < 6; ++index)
+    {
+        void* bytes = [self dataForImage:image forFace:index withCubeSize:cubeSize];
+        
+        const NSUInteger bytesPerRow = 4 * cubeSize;
+        const NSUInteger bytesPerImage = bytesPerRow * cubeSize;
+        
+        [texture replaceRegion:region mipmapLevel:NO slice:index
+                     withBytes:bytes bytesPerRow:bytesPerRow bytesPerImage:bytesPerImage];
+        
+        free(bytes);
+    }
+    
+    return texture;
+}
+
+
+
 - (uint8_t *)dataForImage:(CIImage *)image hasTransparent:(BOOL*)hasTransparency
 {
     if (!_CIContext)
@@ -163,7 +196,84 @@ handleTransparency:
     CGContextRelease(context);
     CGImageRelease(imageRef);
     
-    *hasTransparency = [self checkTransparency:rawData withWidth:width withHeight:height];
+    if (hasTransparency)
+        *hasTransparency = [self checkTransparency:rawData withWidth:width withHeight:height];
+    
+    return rawData;
+}
+
+
+
+- (uint8_t *)dataForImage:(CIImage *)image forFace:(enum NuoTextureCubeFace)face
+             withCubeSize:(NSUInteger)cubeSize
+{
+    if (!_CIContext)
+        _CIContext = [CIContext contextWithOptions:nil];
+    
+    CGImageRef imageRef = [_CIContext createCGImage:image fromRect:image.extent];
+    
+    // Create a suitable bitmap context for extracting the bits of the image
+    const NSUInteger width = CGImageGetWidth(imageRef);
+    const NSUInteger height = CGImageGetHeight(imageRef);
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    
+    const float faceWidth = width / 4.0;
+    const float faceHeight = height / 3.0;
+    uint8_t* rawData = (uint8_t *)calloc(cubeSize * cubeSize * 4, sizeof(uint8_t));
+    
+    const NSUInteger bytesPerPixel = 4;
+    const NSUInteger bytesPerRow = bytesPerPixel * cubeSize;
+    const NSUInteger bitsPerComponent = 8;
+    CGContextRef context = CGBitmapContextCreate(rawData, cubeSize, cubeSize,
+                                                 bitsPerComponent, bytesPerRow, colorSpace,
+                                                 kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+    CGColorSpaceRelease(colorSpace);
+    
+    CGFloat offsetX = 0;
+    CGFloat offsetY = 0;
+    switch (face)
+    {
+        case kCubeFace_nx:
+            offsetX = 0.0;
+            offsetY = -faceHeight;
+            break;
+            
+        case kCubeFace_ny:
+            offsetX = -faceWidth;
+            offsetY = 0.0;
+            break;
+            
+        case kCubeFace_nz:
+            offsetX = -faceWidth * 3.0;
+            offsetY = -faceHeight;
+            break;
+            
+        case kCubeFace_px:
+            offsetX = -faceWidth * 2.0;
+            offsetY = -faceHeight;
+            break;
+            
+        case kCubeFace_py:
+            offsetX = -faceWidth;
+            offsetY = -faceHeight * 2.0;
+            break;
+            
+        case kCubeFace_pz:
+            offsetX = -faceWidth;
+            offsetY = -faceHeight;
+            break;
+            
+        default:
+            break;
+    }
+    
+    CGContextTranslateCTM(context, offsetX, offsetY);
+    CGContextScaleCTM(context, cubeSize * 4.0 / width, cubeSize * 3.0 / height);
+    CGRect sourceRect = CGRectMake(0, 0, width, height);
+    CGContextDrawImage(context, sourceRect, imageRef);
+    
+    CGContextRelease(context);
+    CGImageRelease(imageRef);
     
     return rawData;
 }

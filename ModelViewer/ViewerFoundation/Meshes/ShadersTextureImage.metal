@@ -3,11 +3,14 @@
 
 using namespace metal;
 
+
 struct Vertex
 {
-    float4 position;
-    float2 texCoord;
+    metal::float4 position;
+    metal::float2 texCoord;
 };
+
+
 
 struct ProjectedVertex
 {

@@ -6,6 +6,7 @@
 @class NuoMeshOption;
 @class NuoLua;
 @class NuoMesh;
+@class NuoCubeMesh;
 @class LightSource;
 
 
@@ -14,6 +15,7 @@
 
 
 @property (nonatomic, strong) NSArray<LightSource*>* lights;
+@property (nonatomic, strong) NuoCubeMesh* cubeMesh;
 
 
 @property (nonatomic, assign) float zoom;
@@ -32,7 +34,6 @@
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
-
 
 - (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue;
 - (NSArray<NuoMesh*>*)mesh;

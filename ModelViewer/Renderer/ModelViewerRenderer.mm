@@ -9,6 +9,7 @@
 
 #include "NuoTypes.h"
 #include "NuoMesh.h"
+#include "NuoCubeMesh.h"
 #include "NuoRenderPassTarget.h"
 #include "NuoMathUtilities.h"
 #include "NuoModelBase.h"
@@ -477,6 +478,13 @@
     
     for (NuoMesh* item in _mesh)
         [item updateUniform:inFlight];
+    
+    if (_cubeMesh)
+    {
+        const matrix_float4x4 projectionMatrixForCube = matrix_perspective(aspect, _fieldOfView, 0.3, 2.0);
+        [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
+        [_cubeMesh updateUniform:inFlight];
+    }
 }
 
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
@@ -513,6 +521,9 @@
     // get the target render pass and draw the scene
     //
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    
+    if (_cubeMesh)
+        [_cubeMesh drawMesh:renderPass indexBuffer:inFlight];
     
     [renderPass setVertexBuffer:self.modelUniformBuffers[inFlight] offset:0 atIndex:1];
     [renderPass setVertexBuffer:_lightCastBuffers[inFlight] offset:0 atIndex:2];
