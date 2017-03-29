@@ -56,7 +56,7 @@ A simple Wavefront OBJ viewer.
 * <del>Per light-source, per-surface shadow properties (bias, soft edge).</del>
 * <del>Cull mode.</del>
 * Surrounding.
-  * Cubmap skybox.
+  * <del>Cubmap skybox.</del>
   * Water (for ship model).
 * Motion blur (especially for rotating parts like rotor).
 * Detailed properties panel for indiviudal model parts.
