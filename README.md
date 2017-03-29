@@ -4,6 +4,12 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Skybox.
+
+<p align="left">
+  <img width="800" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F4JOLOBJHD.png"/>
+</p>
+
 * BRDF mode. Fix artifacts in specular lighting.
 * Save to high resolution PNG (up to 3900 px).
 * Rotate individual parts (mandatory for the varying-geometry wing plane model!).
