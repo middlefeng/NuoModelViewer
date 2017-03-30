@@ -7,7 +7,7 @@ A simple Wavefront OBJ viewer.
 * Skybox.
 
 <p align="left">
-  <img width="800" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F4JOLOBJHD.png"/>
+  <img width="400" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F4JOLOBJHD.png"/>
 </p>
 
 * BRDF mode. Fix artifacts in specular lighting.
