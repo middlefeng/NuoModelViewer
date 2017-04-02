@@ -229,7 +229,7 @@
     self.lastRenderPass = nil;
     
     const float lightSettingAreaFactor = 0.28;
-    const float lightSlidersHeight = 280;
+    const float lightSlidersHeight = 140;
     const CGFloat factor = [[NSScreen mainScreen] backingScaleFactor];
     
     CGSize drawableSize = self.renderTarget.drawableSize;
@@ -237,7 +237,7 @@
     viewPort.width = fmin(drawableSize.width * lightSettingAreaFactor, _notationWidthCap * factor);
     viewPort.height = fmin(drawableSize.height * lightSettingAreaFactor, _notationWidthCap * factor);
     viewPort.originX = drawableSize.width - viewPort.width;
-    viewPort.originY = drawableSize.height - viewPort.height - lightSlidersHeight;
+    viewPort.originY = drawableSize.height - viewPort.height - lightSlidersHeight * factor;
     viewPort.znear = 0.0;
     viewPort.zfar = 1.0;
     [renderPass setViewport:viewPort];
