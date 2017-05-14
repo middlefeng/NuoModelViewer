@@ -46,6 +46,7 @@
 		2C9D9AAF1D658F0800283E46 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAE1D658F0800283E46 /* Assets.xcassets */; };
 		2C9E397B1DF7D8BC00286EA0 /* NuoTableExporter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C9E39791DF7D8BC00286EA0 /* NuoTableExporter.cpp */; };
 		2CA55FA91DD21D2A0000AD21 /* NuoRenderPass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */; };
+		2CA669F81EC8EEC5006A4065 /* NuoRenderContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CA669F71EC8EEC5006A4065 /* NuoRenderContext.m */; };
 		2CAF2E851D691AC90074E402 /* tiny_obj_loader.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */; };
 		2CC5EDEE1D8A62B100419168 /* NuoRoundedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CC5EDED1D8A62B100419168 /* NuoRoundedView.m */; };
 		2CCF9C771E5B4F77006EF8C4 /* NuoOffscreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CCF9C761E5B4F77006EF8C4 /* NuoOffscreenView.m */; };
@@ -185,6 +186,8 @@
 		2C9E397A1DF7D8BC00286EA0 /* NuoTableExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoTableExporter.h; sourceTree = "<group>"; };
 		2CA55FA71DD21D2A0000AD21 /* NuoRenderPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRenderPass.h; sourceTree = "<group>"; };
 		2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoRenderPass.m; sourceTree = "<group>"; };
+		2CA669F61EC8EEC5006A4065 /* NuoRenderContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRenderContext.h; sourceTree = "<group>"; };
+		2CA669F71EC8EEC5006A4065 /* NuoRenderContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoRenderContext.m; sourceTree = "<group>"; };
 		2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_obj_loader.cc; sourceTree = "<group>"; };
 		2CAF2E841D691AC90074E402 /* tiny_obj_loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tiny_obj_loader.h; sourceTree = "<group>"; };
 		2CC5EDEC1D8A62B100419168 /* NuoRoundedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRoundedView.h; sourceTree = "<group>"; };
@@ -377,6 +380,8 @@
 				2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.m */,
 				2CCF9C7E1E5B7A43006EF8C4 /* NuoRenderPipeline.h */,
 				2CCF9C7F1E5B7A43006EF8C4 /* NuoRenderPipeline.m */,
+				2CA669F61EC8EEC5006A4065 /* NuoRenderContext.h */,
+				2CA669F71EC8EEC5006A4065 /* NuoRenderContext.m */,
 				2C52F1311DCFE8970034ACDC /* NuoIntermediateRenderPass.h */,
 				2C52F1321DCFE8970034ACDC /* NuoIntermediateRenderPass.m */,
 				2C840D0C1D7001C2000D2956 /* NuoMetalView.h */,
@@ -575,6 +580,7 @@
 				2C4042BE1E065B2700AAC06E /* NuoLua.m in Sources */,
 				2CDCDAF31DC185A800ECFE39 /* NuoModelArrow.cpp in Sources */,
 				2C235FD01DD6CBD700E68295 /* ShadersTexturedMaterialed.metal in Sources */,
+				2CA669F81EC8EEC5006A4065 /* NuoRenderContext.m in Sources */,
 				2C5B92BD1D7160EC00722936 /* NuoModelLoader.mm in Sources */,
 				2C5DDACC1D6590DB00A9DC9A /* NuoMesh.mm in Sources */,
 				2C8B80ED1E2D6654001746FE /* NuoShadowMapTarget.m in Sources */,
