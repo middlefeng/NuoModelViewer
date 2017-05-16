@@ -264,8 +264,11 @@
 
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderContext*)context
 {
+    id<MTLRenderCommandEncoder> renderPass = context.renderPass;
+    NSInteger index = context.bufferIndex;
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_renderPipelineState];
     [renderPass setDepthStencilState:_depthStencilState];
@@ -282,10 +285,13 @@
 }
 
 
-- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawShadow:(NuoRenderContext*)context
 {
     if (_shadowPipelineState)
     {
+        id<MTLRenderCommandEncoder> renderPass = context.renderPass;
+        NSInteger index = context.bufferIndex;
+        
         [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
         [renderPass setRenderPipelineState:_shadowPipelineState];
         [renderPass setDepthStencilState:_depthStencilState];

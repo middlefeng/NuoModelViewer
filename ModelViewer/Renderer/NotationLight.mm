@@ -179,7 +179,9 @@
     // the light vector notation does not have varying uniform,
     // use only the 0th buffer
     //
-    [_lightVector drawMesh:renderPass indexBuffer:0];
+    NuoRenderContext* context = [[NuoRenderContext alloc] initWithRenderPass:renderPass];
+    context.bufferIndex = 0;
+    [_lightVector drawMesh:context];
 }
 
 

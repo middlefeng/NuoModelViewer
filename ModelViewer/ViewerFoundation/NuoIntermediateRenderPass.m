@@ -42,7 +42,11 @@
     
     MTLRenderPassDescriptor *renderPassDesc = [self.renderTarget currentRenderPassDescriptor];
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDesc];
-    [_textureMesh drawMesh:renderPass indexBuffer:inFlight];
+    
+    NuoRenderContext* context = [[NuoRenderContext alloc] initWithRenderPass:renderPass];
+    context.bufferIndex = inFlight;
+    
+    [_textureMesh drawMesh:context];
     self.lastRenderPass = renderPass;
 }
 

@@ -111,10 +111,13 @@
     [renderPass setVertexBuffer:self.modelUniformBuffers[inFlight] offset:0 atIndex:1];
     [renderPass setCullMode:MTLCullModeNone];
     
+    NuoRenderContext* context = [[NuoRenderContext alloc] initWithRenderPass:renderPass];
+    context.bufferIndex = inFlight;
+    
     for (NuoMesh* mesh in _mesh)
     {
         if (![mesh hasTransparency] && [mesh enabled])
-            [mesh drawShadow:renderPass indexBuffer:inFlight];
+            [mesh drawShadow:context];
     }
     
     [renderPass endEncoding];

@@ -3,6 +3,7 @@
 
 #include "NuoMeshOptions.h"
 #include "NuoMeshRotation.h"
+#include "NuoRenderContext.h"
 
 
 
@@ -69,8 +70,8 @@
 
 
 - (void)updateUniform:(NSInteger)bufferIndex;
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
-- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
+- (void)drawMesh:(NuoRenderContext*)context;
+- (void)drawShadow:(NuoRenderContext*)context;
 - (BOOL)hasTransparency;
 - (void)setTransparency:(BOOL)transparent;
 

@@ -522,8 +522,11 @@
     //
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     
+    NuoRenderContext* context = [[NuoRenderContext alloc] initWithRenderPass:renderPass];
+    context.bufferIndex = inFlight;
+    
     if (_cubeMesh)
-        [_cubeMesh drawMesh:renderPass indexBuffer:inFlight];
+        [_cubeMesh drawMesh:context];
     
     [renderPass setVertexBuffer:self.modelUniformBuffers[inFlight] offset:0 atIndex:1];
     [renderPass setVertexBuffer:_lightCastBuffers[inFlight] offset:0 atIndex:2];
@@ -557,7 +560,7 @@
                 ((renderPassStep == 2) && [mesh hasTransparency] && [mesh reverseCommonCullMode])  /* 3/4 pass for transparent */ ||
                 ((renderPassStep == 3) && [mesh hasTransparency] && ![mesh reverseCommonCullMode]))
                 if ([mesh enabled])
-                    [mesh drawMesh:renderPass indexBuffer:inFlight];
+                    [mesh drawMesh:context];
         }
     }
     

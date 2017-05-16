@@ -8,6 +8,19 @@
 
 #import "NuoRenderContext.h"
 
+
+
 @implementation NuoRenderContext
+
+- (instancetype)initWithRenderPass:(id<MTLRenderCommandEncoder>)renderPass
+{
+    self = [super init];
+    if (self)
+    {
+        self.renderPass = renderPass;
+    }
+    
+    return self;
+}
 
 @end

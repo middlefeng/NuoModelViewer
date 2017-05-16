@@ -160,8 +160,11 @@ static uint16_t kIndices[] =
 }
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderContext*)context
 {
+    id<MTLRenderCommandEncoder> renderPass = context.renderPass;
+    NSInteger index = context.bufferIndex;
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setCullMode:MTLCullModeBack];
     [renderPass setRenderPipelineState:self.renderPipelineState];
