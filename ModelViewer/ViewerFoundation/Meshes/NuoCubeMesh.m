@@ -87,7 +87,7 @@ static uint16_t kIndices[] =
             id<MTLBuffer> matrix[kInFlightBufferCount];
             for (uint i = 0; i < kInFlightBufferCount; ++i)
             {
-                matrix[i] = [device newBufferWithLength:sizeof(ModelUniforms)
+                matrix[i] = [device newBufferWithLength:sizeof(NuoUniforms)
                                                 options:MTLResourceOptionCPUCacheModeDefault];
             }
             _cubeMatrixBuffer = [[NSArray alloc] initWithObjects:matrix count:kInFlightBufferCount];
@@ -106,7 +106,7 @@ static uint16_t kIndices[] =
 
 - (void)updateUniform:(NSInteger)bufferIndex
 {
-    ModelUniforms uniforms;
+    NuoUniforms uniforms;
     
     _cubeMatrix = matrix_rotation_append(_cubeMatrix, _rotationXDelta, _rotationYDelta);
     _rotationXDelta = 0;

@@ -31,8 +31,8 @@ struct ProjectedVertex
 
 
 vertex PositionSimple vertex_shadow_materialed(device Vertex *vertices [[buffer(0)]],
-                                               constant ModelUniforms &uniforms [[buffer(1)]],
-                                               constant MeshUniforms &meshUniforms [[buffer(2)]],
+                                               constant NuoUniforms &uniforms [[buffer(1)]],
+                                               constant NuoMeshUniforms &meshUniforms [[buffer(2)]],
                                                uint vid [[vertex_id]])
 {
     PositionSimple outShadow;
@@ -42,9 +42,9 @@ vertex PositionSimple vertex_shadow_materialed(device Vertex *vertices [[buffer(
 
 
 vertex ProjectedVertex vertex_project_materialed(device Vertex *vertices [[buffer(0)]],
-                                                 constant ModelUniforms &uniforms [[buffer(1)]],
+                                                 constant NuoUniforms &uniforms [[buffer(1)]],
                                                  constant LightVertexUniforms &lightCast [[buffer(2)]],
-                                                 constant MeshUniforms &meshUniforms [[buffer(3)]],
+                                                 constant NuoMeshUniforms &meshUniforms [[buffer(3)]],
                                                  uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;

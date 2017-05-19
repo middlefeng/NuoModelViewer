@@ -39,9 +39,9 @@ struct ProjectedVertex
 
 
 vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[buffer(0)]],
-                                                     constant ModelUniforms &uniforms [[buffer(1)]],
+                                                     constant NuoUniforms &uniforms [[buffer(1)]],
                                                      constant LightVertexUniforms &lightCast [[buffer(2)]],
-                                                     constant MeshUniforms &meshUniforms [[buffer(3)]],
+                                                     constant NuoMeshUniforms &meshUniforms [[buffer(3)]],
                                                      uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
@@ -80,8 +80,8 @@ static float3 bumpped_normal(float3 normal, float3 tangent, float3 bitangent, fl
  */
 
 vertex PositionSimple vertex_shadow_tex_materialed_bump(device Vertex *vertices [[buffer(0)]],
-                                                        constant ModelUniforms &uniforms [[buffer(1)]],
-                                                        constant MeshUniforms &meshUniforms [[buffer(2)]],
+                                                        constant NuoUniforms &uniforms [[buffer(1)]],
+                                                        constant NuoMeshUniforms &meshUniforms [[buffer(2)]],
                                                         uint vid [[vertex_id]])
 {
     PositionSimple outShadow;

@@ -377,7 +377,7 @@
     
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
-        modelBuffers[i] = [self.device newBufferWithLength:sizeof(ModelUniforms)
+        modelBuffers[i] = [self.device newBufferWithLength:sizeof(NuoUniforms)
                                                    options:MTLResourceOptionCPUCacheModeDefault];
         lightingBuffers[i] = [self.device newBufferWithLength:sizeof(LightUniform)
                                                       options:MTLResourceOptionCPUCacheModeDefault];
@@ -447,7 +447,7 @@
     const float far = near + _meshMaxSpan + 0.02;
     const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, _fieldOfView, near, far);
 
-    ModelUniforms uniforms;
+    NuoUniforms uniforms;
     uniforms.modelViewMatrix = matrix_multiply(viewMatrix, modelMatrix);
     uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
     uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);

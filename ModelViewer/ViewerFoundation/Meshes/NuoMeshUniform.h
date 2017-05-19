@@ -20,7 +20,7 @@ typedef struct
     matrix44 transform;
     matrix33 normalTransform;
 }
-MeshUniforms;
+NuoMeshUniforms;
 
 
 #endif /* NuoMeshUniform_h */

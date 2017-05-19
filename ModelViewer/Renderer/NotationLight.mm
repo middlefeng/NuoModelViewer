@@ -98,7 +98,7 @@
     id<MTLBuffer> characters[kInFlightBufferCount];
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
-        id<MTLBuffer> uniformBuffer = [self.device newBufferWithLength:sizeof(ModelUniforms)
+        id<MTLBuffer> uniformBuffer = [self.device newBufferWithLength:sizeof(NuoUniforms)
                                                                options:MTLResourceOptionCPUCacheModeDefault];
         buffers[i] = uniformBuffer;
         
@@ -131,7 +131,7 @@
     const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
     const matrix_float4x4 modelMatrix = matrix_multiply(rotationMatrix, modelCenteringMatrix);
     
-    ModelUniforms uniforms;
+    NuoUniforms uniforms;
     uniforms.modelViewMatrix = matrix_multiply(_viewMatrix, modelMatrix);
     uniforms.modelViewProjectionMatrix = matrix_multiply(_projMatrix, uniforms.modelViewMatrix);
     uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);

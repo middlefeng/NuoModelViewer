@@ -87,7 +87,7 @@
             id<MTLBuffer> buffers1[kInFlightBufferCount];
             for (unsigned int i = 0; i < kInFlightBufferCount; ++i)
             {
-                buffers1[i] = [device newBufferWithLength:sizeof(MeshUniforms) options:MTLResourceOptionCPUCacheModeDefault];
+                buffers1[i] = [device newBufferWithLength:sizeof(NuoMeshUniforms) options:MTLResourceOptionCPUCacheModeDefault];
             }
             _rotationBuffers = [[NSArray alloc] initWithObjects:buffers1 count:kInFlightBufferCount];
         }
@@ -256,7 +256,7 @@
 
 - (void)updateUniform:(NSInteger)bufferIndex
 {
-    MeshUniforms uniforms;
+    NuoMeshUniforms uniforms;
     uniforms.transform = _rotation.rotationMatrix;
     uniforms.normalTransform = _rotation.rotationNormalMatrix;
     memcpy([_rotationBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));

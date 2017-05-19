@@ -57,7 +57,7 @@
     
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
-        modelBuffers[i] = [self.device newBufferWithLength:sizeof(ModelUniforms)
+        modelBuffers[i] = [self.device newBufferWithLength:sizeof(NuoUniforms)
                                                    options:MTLResourceOptionCPUCacheModeDefault];
     }
     
@@ -87,7 +87,7 @@
                                                            viewPortHeight, -viewPortHeight,
                                                            -meshRadius, meshRadius);
     
-    ModelUniforms uniforms;
+    NuoUniforms uniforms;
     uniforms.modelViewMatrix = matrix_multiply(viewMatrix, _modelMatrix);
     uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
     uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);

@@ -22,8 +22,8 @@ struct ProjectedVertex
 
 
 ProjectedVertex vertex_project_common(device Vertex *vertices,
-                                      constant ModelUniforms &uniforms,
-                                      constant MeshUniforms &meshUniform,
+                                      constant NuoUniforms &uniforms,
+                                      constant NuoMeshUniforms &meshUniform,
                                       uint vid [[vertex_id]]);
 
 float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway);
@@ -35,8 +35,8 @@ float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
  */
 
 vertex PositionSimple vertex_shadow(device Vertex *vertices [[buffer(0)]],
-                                    constant ModelUniforms &uniforms [[buffer(1)]],
-                                    constant MeshUniforms &meshUniform [[buffer(2)]],
+                                    constant NuoUniforms &uniforms [[buffer(1)]],
+                                    constant NuoMeshUniforms &meshUniform [[buffer(2)]],
                                     uint vid [[vertex_id]])
 {
     PositionSimple outShadow;
@@ -60,8 +60,8 @@ fragment void fragment_shadow(PositionSimple vert [[stage_in]])
  */
 
 vertex ProjectedVertex vertex_project(device Vertex *vertices [[buffer(0)]],
-                                      constant ModelUniforms &uniforms [[buffer(1)]],
-                                      constant MeshUniforms &meshUniform [[buffer(2)]],
+                                      constant NuoUniforms &uniforms [[buffer(1)]],
+                                      constant NuoMeshUniforms &meshUniform [[buffer(2)]],
                                       uint vid [[vertex_id]])
 {
     return vertex_project_common(vertices, uniforms, meshUniform, vid);
@@ -105,9 +105,9 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
  */
 
 vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)]],
-                                             constant ModelUniforms &uniforms [[buffer(1)]],
+                                             constant NuoUniforms &uniforms [[buffer(1)]],
                                              constant LightVertexUniforms &lightCast [[buffer(2)]],
-                                             constant MeshUniforms &meshUniform [[buffer(3)]],
+                                             constant NuoMeshUniforms &meshUniform [[buffer(3)]],
                                              uint vid [[vertex_id]])
 {
     ProjectedVertex outVert = vertex_project_common(vertices, uniforms, meshUniform, vid);
@@ -218,8 +218,8 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
 
 
 ProjectedVertex vertex_project_common(device Vertex *vertices,
-                                      constant ModelUniforms &uniforms,
-                                      constant MeshUniforms &meshUniform,
+                                      constant NuoUniforms &uniforms,
+                                      constant NuoMeshUniforms &meshUniform,
                                       uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;

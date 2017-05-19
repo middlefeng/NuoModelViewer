@@ -16,7 +16,7 @@ typedef struct
     matrix44 modelViewMatrix;
     matrix33 normalMatrix;
 }
-ModelUniforms;
+NuoUniforms;
 
 
 /**
