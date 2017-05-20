@@ -30,10 +30,10 @@
 
 
 
-- (void)updateUniform:(NSInteger)bufferIndex
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
 {
     for (NuoMesh* item in _meshes)
-        [item updateUniform:bufferIndex];
+        [item updateUniform:bufferIndex withTransform:transform];
 }
 
 

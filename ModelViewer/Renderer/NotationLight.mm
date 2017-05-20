@@ -75,11 +75,6 @@
         [_lightVector setBoundingBox:meshBounding];
         [_lightVector makePipelineState:pipelineDesc];
         [_lightVector makeDepthStencilState];
-        
-        // the light vector notation does not have varying uniform,
-        // use only the 0th buffer
-        //
-        [_lightVector updateUniform:0];
     }
     
     return self;
@@ -142,6 +137,10 @@
     characters.opacity = _selected ? 1.0f : 0.1f;
     
     memcpy([self.characterUniformBuffers[inFlight] contents], &characters, sizeof(characters));
+    
+    // TODO: move model matrix into
+    //
+    [_lightVector updateUniform:inFlight withTransform:matrix_identity_float4x4];
 }
 
 
@@ -179,7 +178,7 @@
     // the light vector notation does not have varying uniform,
     // use only the 0th buffer
     //
-    [_lightVector drawMesh:renderPass indexBuffer:0];
+    [_lightVector drawMesh:renderPass indexBuffer:inFlight];
 }
 
 

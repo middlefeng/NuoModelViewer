@@ -466,13 +466,15 @@
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(LightUniform));
     
     for (NuoMesh* item in _mesh.meshes)
-        [item updateUniform:inFlight];
+        // TODO: move transform inside
+        [item updateUniform:inFlight withTransform:matrix_identity_float4x4];
     
     if (_cubeMesh)
     {
         const matrix_float4x4 projectionMatrixForCube = matrix_perspective(aspect, _fieldOfView, 0.3, 2.0);
         [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
-        [_cubeMesh updateUniform:inFlight];
+        // TODO: move transform inside
+        [_cubeMesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
     }
 }
 

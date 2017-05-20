@@ -104,7 +104,7 @@ static uint16_t kIndices[] =
 }
 
 
-- (void)updateUniform:(NSInteger)bufferIndex
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
 {
     NuoUniforms uniforms;
     

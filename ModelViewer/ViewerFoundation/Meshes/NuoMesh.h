@@ -68,7 +68,7 @@
 - (void)smoothWithTolerance:(float)tolerance;
 
 
-- (void)updateUniform:(NSInteger)bufferIndex;
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform;
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
 - (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
 - (BOOL)hasTransparency;

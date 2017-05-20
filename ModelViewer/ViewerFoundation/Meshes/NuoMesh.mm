@@ -255,11 +255,11 @@
 
 
 
-- (void)updateUniform:(NSInteger)bufferIndex
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
 {
     NuoMeshUniforms uniforms;
-    uniforms.transform = _rotation.rotationMatrix;
-    uniforms.normalTransform = matrix_extract_linear(_rotation.rotationMatrix);
+    uniforms.transform = matrix_multiply(_rotation.rotationMatrix, transform);
+    uniforms.normalTransform = matrix_extract_linear(uniforms.transform);
     memcpy([_rotationBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
 
