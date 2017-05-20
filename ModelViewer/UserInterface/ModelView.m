@@ -19,7 +19,7 @@
 #import "NuoMeshOptions.h"
 #import "LightSource.h"
 
-#import "NuoMesh.h"
+#import "NuoMeshCompound.h"
 #import "NuoCubeMesh.h"
 #import "NuoMeshRotation.h"
 #import "NuoMeshAnimation.h"
@@ -122,7 +122,7 @@
 {
     // clear all table and data structures that depends on the mesh
     //
-    [_modelComponentPanels setMesh:_modelRender.mesh];
+    [_modelComponentPanels setMesh:_modelRender.mesh.meshes];
     [_animations removeAllObjects];
     [_modelPanel setModelPartAnimations:_animations];
 }
@@ -181,7 +181,7 @@
                      current.animationName = key;
                      
                      [lua getField:key fromTable:-1];
-                     [current importAnimation:lua forMesh:_modelRender.mesh];
+                     [current importAnimation:lua forMesh:_modelRender.mesh.meshes];
                      [lua removeField];
                      
                      if (current.mesh.count)
@@ -508,7 +508,7 @@
     [_modelRender importScene:lua];
     [_notationRender importScene:lua];
     
-    [_modelComponentPanels setMesh:_modelRender.mesh];
+    [_modelComponentPanels setMesh:_modelRender.mesh.meshes];
     [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];
     [_modelPanel setAmbientDensity:_modelRender.ambientDensity];
     [_modelPanel updateControls];

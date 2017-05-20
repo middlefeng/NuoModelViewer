@@ -15,7 +15,7 @@
 
 
 @class LightSource;
-@class NuoMesh;
+@class NuoMeshCompound;
 @class NuoShadowMapTarget;
 
 
@@ -31,8 +31,7 @@
  *  weak renference. meshMaxSpan is derivable but cached for performance,
  *  which is cached in the model renderer and passed over to here.
  */
-@property (nonatomic, assign) float meshMaxSpan;
-@property (nonatomic, weak) NSArray<NuoMesh*>* mesh;
+@property (nonatomic, weak) NuoMeshCompound* mesh;
 @property (nonatomic, assign) matrix_float4x4 modelMatrix;
 
 /**

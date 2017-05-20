@@ -11,7 +11,7 @@
 
 #import "NuoShadowMapTarget.h"
 
-#include "NuoMesh.h"
+#include "NuoMeshCompound.h"
 #include "NuoUniforms.h"
 #include "NuoMathUtilities.h"
 
@@ -79,7 +79,7 @@
     const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye3, center, up);
     
     CGSize drawableSize = self.renderTarget.drawableSize;
-    float meshRadius = _meshMaxSpan / 2.0;
+    float meshRadius = _mesh.maxSpan / 2.0;
     float aspectRatio = drawableSize.width / drawableSize.height;
     float viewPortHeight = meshRadius;
     float viewPortWidth = aspectRatio * viewPortHeight;
@@ -109,13 +109,7 @@
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
 
     [renderPass setVertexBuffer:self.modelUniformBuffers[inFlight] offset:0 atIndex:1];
-    [renderPass setCullMode:MTLCullModeNone];
-    
-    for (NuoMesh* mesh in _mesh)
-    {
-        if (![mesh hasTransparency] && [mesh enabled])
-            [mesh drawShadow:renderPass indexBuffer:inFlight];
-    }
+    [_mesh drawShadow:renderPass indexBuffer:inFlight];
     
     [renderPass endEncoding];
 }

@@ -10,7 +10,7 @@
 
 #include "NuoModelBase.h"
 #include "NuoMaterial.h"
-#include "NuoMesh.h"
+#include "NuoMeshCompound.h"
 
 #include "tiny_obj_loader.h"
 
@@ -199,7 +199,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
 
 
 
-- (NSArray<NuoMesh*>*)createMeshsWithOptions:(NuoMeshOption*)loadOption
+- (NuoMeshCompound*)createMeshsWithOptions:(NuoMeshOption*)loadOption
                                   withDevice:(id<MTLDevice>)device
                             withCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
@@ -297,7 +297,10 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         [result addObject:mesh];
     }
     
-    return result;
+    NuoMeshCompound* resultObj = [NuoMeshCompound new];
+    [resultObj setMeshes:result];
+    
+    return resultObj;
 }
 
 @end

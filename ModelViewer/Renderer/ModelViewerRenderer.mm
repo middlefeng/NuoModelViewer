@@ -8,7 +8,7 @@
 #import <simd/simd.h>
 
 #include "NuoTypes.h"
-#include "NuoMesh.h"
+#include "NuoMeshCompound.h"
 #include "NuoCubeMesh.h"
 #include "NuoRenderPassTarget.h"
 #include "NuoMathUtilities.h"
@@ -23,7 +23,7 @@
 @interface ModelRenderer ()
 
 
-@property (nonatomic, strong) NSArray<NuoMesh*>* mesh;
+@property (nonatomic, strong) NuoMeshCompound* mesh;
 @property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
@@ -44,8 +44,6 @@
 @implementation ModelRenderer
 {
     NuoMeshBox* _meshBounding;
-    float _meshMaxSpan;
-    
     ShadowMapRenderer* _shadowMapRenderer[2];
 }
 
@@ -103,20 +101,10 @@
     _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
                                       withDevice:self.device
                                 withCommandQueue:commandQueue];
-    
-    NuoMeshBox* bounding = _mesh[0].boundingBox;
-    for (size_t i = 1; i < _mesh.count; ++i)
-        bounding = [bounding unionWith:_mesh[i].boundingBox];
-    
-    _meshBounding = bounding;
-    
-    float modelSpan = std::max(bounding.spanZ, bounding.spanX);
-    modelSpan = std::max(bounding.spanY, modelSpan);
-    _meshMaxSpan = 1.41 * modelSpan;
 }
 
 
-- (NSArray<NuoMesh*>*)mesh
+- (NuoMeshCompound*)mesh
 {
     return _mesh;
 }
@@ -204,7 +192,7 @@
         
         size_t index = 0;
         
-        for (NuoMesh* meshItem : _mesh)
+        for (NuoMesh* meshItem in _mesh.meshes)
         {
             if (meshItem.smoothTolerance > 0.001 || !meshItem.enabled ||
                 meshItem.reverseCommonCullMode || (meshItem.hasUnifiedMaterial && meshItem.unifiedOpacity != 1.0))
@@ -331,9 +319,9 @@
     {
         [lua getItem:(int)(i + 1) fromTable:-1];
         NSString* name = [lua getFieldAsString:@"name" fromTable:-1];
-        for (size_t i = passedModel; i < _mesh.count; ++i)
+        for (size_t i = passedModel; i < _mesh.meshes.count; ++i)
         {
-            NuoMesh* mesh = _mesh[i];
+            NuoMesh* mesh = _mesh.meshes[i];
             
             if ([mesh.modelName isEqualToString:name])
             {
@@ -425,10 +413,11 @@
     
     *modelMatrixOut = modelMatrix;
     
-    const float modelNearest = - _meshMaxSpan / 2.0;
+    float maxSpan = _mesh.maxSpan;
+    const float modelNearest = - maxSpan / 2.0;
     const float bilateralFactor = 1 / 750.0f;
-    const float cameraDefaultDistance = (modelNearest - _meshMaxSpan);
-    const float cameraDistance = cameraDefaultDistance + _zoom * _meshMaxSpan / 20.0f;
+    const float cameraDefaultDistance = (modelNearest - maxSpan);
+    const float cameraDistance = cameraDefaultDistance + _zoom * maxSpan / 20.0f;
     
     const float doTransX = _transX * cameraDistance * bilateralFactor;
     const float doTransY = _transY * cameraDistance * bilateralFactor;
@@ -443,8 +432,8 @@
     
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
-    const float near = -cameraDistance - _meshMaxSpan / 2.0 + 0.01;
-    const float far = near + _meshMaxSpan + 0.02;
+    const float near = -cameraDistance - maxSpan / 2.0 + 0.01;
+    const float far = near + maxSpan + 0.02;
     const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, _fieldOfView, near, far);
 
     NuoUniforms uniforms;
@@ -476,7 +465,7 @@
     
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(LightUniform));
     
-    for (NuoMesh* item in _mesh)
+    for (NuoMesh* item in _mesh.meshes)
         [item updateUniform:inFlight];
     
     if (_cubeMesh)
@@ -500,7 +489,6 @@
         _shadowMapRenderer[i].modelMatrix = modelMatrix;
         _shadowMapRenderer[i].mesh = _mesh;
         _shadowMapRenderer[i].lightSource = _lights[i];
-        _shadowMapRenderer[i].meshMaxSpan = _meshMaxSpan;
         [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     }
     
@@ -550,7 +538,7 @@
             [renderPass setCullMode:(MTLCullMode)cullMode];
         }
         
-        for (NuoMesh* mesh : _mesh)
+        for (NuoMesh* mesh in _mesh.meshes)
         {
             if (((renderPassStep == 0) && ![mesh hasTransparency] && ![mesh reverseCommonCullMode]) /* 1/2 pass for opaque */ ||
                 ((renderPassStep == 1) && ![mesh hasTransparency] && [mesh reverseCommonCullMode])                              ||
