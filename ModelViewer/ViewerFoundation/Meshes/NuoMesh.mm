@@ -11,6 +11,7 @@
 #import "NuoMeshTextured.h"
 #import "NuoMeshTexMatieraled.h"
 #import "NuoMeshUniform.h"
+#import "NuoMathUtilities.h"
 
 
 
@@ -258,7 +259,7 @@
 {
     NuoMeshUniforms uniforms;
     uniforms.transform = _rotation.rotationMatrix;
-    uniforms.normalTransform = _rotation.rotationNormalMatrix;
+    uniforms.normalTransform = matrix_extract_linear(_rotation.rotationMatrix);
     memcpy([_rotationBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
 
