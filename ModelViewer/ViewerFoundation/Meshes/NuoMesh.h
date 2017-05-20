@@ -38,6 +38,9 @@
 @property (nonatomic, strong) NuoMeshRotation* rotation;
 @property (nonatomic, strong) NSArray<id<MTLBuffer>>* rotationBuffers;
 
+// mesh generic transform
+@property (nonatomic, assign) matrix_float4x4 transform;
+
 // unified material (common to all vertices)
 //
 @property (nonatomic, assign, readonly) BOOL hasUnifiedMaterial;

@@ -92,6 +92,8 @@
             }
             _rotationBuffers = [[NSArray alloc] initWithObjects:buffers1 count:kInFlightBufferCount];
         }
+        
+        _transform = matrix_identity_float4x4;
     }
     
     return self;
@@ -257,8 +259,11 @@
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
 {
+    if (_rotation)
+        transform = matrix_multiply(_rotation.rotationMatrix, transform);
+    
     NuoMeshUniforms uniforms;
-    uniforms.transform = matrix_multiply(_rotation.rotationMatrix, transform);
+    uniforms.transform = matrix_multiply(_transform, transform);
     uniforms.normalTransform = matrix_extract_linear(uniforms.transform);
     memcpy([_rotationBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
