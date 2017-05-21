@@ -26,6 +26,8 @@
 //
 @property (nonatomic, strong) id<MTLBuffer> lightBuffer;
 
+@property (nonatomic, strong) NSArray<id<MTLBuffer>>* transforms;
+
 @property (nonatomic, strong) NSArray<NotationLight*>* lightVectors;
 @property (nonatomic, weak) NotationLight* currentLightVector;
 
@@ -77,6 +79,12 @@
                                                 options:MTLResourceOptionCPUCacheModeDefault];
         
         memcpy([_lightBuffer contents], &lightUniform, sizeof(LightUniform));
+        
+        id<MTLBuffer> transformBuffer[kInFlightBufferCount];
+        for (unsigned int i = 0; i < kInFlightBufferCount; ++i)
+            transformBuffer[i] = [device newBufferWithLength:sizeof(NuoUniforms) options:MTLResourceOptionCPUCacheModeDefault];
+        
+        _transforms = [[NSArray alloc] initWithObjects:transformBuffer count:kInFlightBufferCount];
     }
     
     return self;
@@ -85,7 +93,7 @@
 
 
 
-- (void)updateUniformsForView
+- (void)updateUniformsForView:(unsigned int)inFlight
 {
     NuoMeshBox* bounding = _lightVectors[0].boundingBox;
     
@@ -110,11 +118,12 @@
     const float far = near + modelSpan * 2.0;
     const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, (2 * M_PI) / 30, near, far);
     
-    for (size_t i = 0; i < _lightVectors.count; ++i)
-    {
-        _lightVectors[i].viewMatrix = viewMatrix;
-        _lightVectors[i].projMatrix = projectionMatrix;
-    }
+    NuoUniforms uniforms;
+    uniforms.modelViewMatrix = viewMatrix;
+    uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
+    uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);
+    
+    memcpy([_transforms[inFlight] contents], &uniforms, sizeof(NuoUniforms));
 }
 
 
@@ -249,9 +258,10 @@
     _notationArea.size.width /= factor;
     _notationArea.size.height /= factor;
     
-    [self updateUniformsForView];
+    [self updateUniformsForView:inFlight];
     
     [renderPass setCullMode:MTLCullModeNone];
+    [renderPass setVertexBuffer:self.transforms[inFlight] offset:0 atIndex:1];
     [renderPass setFragmentBuffer:self.lightBuffer offset:0 atIndex:0];
     
     for (size_t i = 0; i < _lightVectors.count; ++i)
