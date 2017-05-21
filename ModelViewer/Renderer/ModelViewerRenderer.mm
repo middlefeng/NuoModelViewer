@@ -43,7 +43,6 @@
 
 @implementation ModelRenderer
 {
-    NuoMeshBox* _meshBounding;
     ShadowMapRenderer* _shadowMapRenderer[2];
 }
 
@@ -93,6 +92,16 @@
     [_modelLoader loadModel:path];
     
     [self createMeshs:commandQueue];
+    
+    NuoMeshBox* bounding = _mesh.boundingBox;
+    const vector_float3 translationToCenter =
+    {
+        - bounding.centerX,
+        - bounding.centerY,
+        - bounding.centerZ
+    };
+    const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
+    self.rotationMatrix = modelCenteringMatrix;
 }
 
 
@@ -394,24 +403,13 @@
     _shadowMapSamplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 
-- (void)updateUniformsForView:(matrix_float4x4*)modelMatrixOut withInFlight:(unsigned int)inFlight
+- (void)updateUniformsForView:(unsigned int)inFlight
 {
     // accumulate delta rotation into matrix
     //
     self.rotationMatrix = matrix_rotation_append(self.rotationMatrix, _rotationXDelta, _rotationYDelta);
     _rotationXDelta = 0;
     _rotationYDelta = 0;
-    
-    const vector_float3 translationToCenter =
-    {
-        - _meshBounding.centerX,
-        - _meshBounding.centerY,
-        - _meshBounding.centerZ
-    };
-    const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
-    const matrix_float4x4 modelMatrix = matrix_multiply(self.rotationMatrix, modelCenteringMatrix);
-    
-    *modelMatrixOut = modelMatrix;
     
     float maxSpan = _mesh.maxSpan;
     const float modelNearest = - maxSpan / 2.0;
@@ -437,7 +435,7 @@
     const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, _fieldOfView, near, far);
 
     NuoUniforms uniforms;
-    uniforms.modelViewMatrix = matrix_multiply(viewMatrix, modelMatrix);
+    uniforms.modelViewMatrix = matrix_multiply(viewMatrix, self.rotationMatrix);
     uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
     uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);
 
@@ -481,14 +479,13 @@
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                withInFlightIndex:(unsigned int)inFlight
 {
-    matrix_float4x4 modelMatrix;
-    [self updateUniformsForView:&modelMatrix withInFlight:inFlight];
+    [self updateUniformsForView:inFlight];
     
     // generate shadow map
     //
     for (unsigned int i = 0; i < 2 /* for two light sources only */; ++i)
     {
-        _shadowMapRenderer[i].modelMatrix = modelMatrix;
+        _shadowMapRenderer[i].modelMatrix = self.rotationMatrix;
         _shadowMapRenderer[i].mesh = _mesh;
         _shadowMapRenderer[i].lightSource = _lights[i];
         [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
