@@ -40,7 +40,7 @@ vertex PositionSimple vertex_shadow(device Vertex *vertices [[buffer(0)]],
                                     uint vid [[vertex_id]])
 {
     PositionSimple outShadow;
-    outShadow.position = uniforms.modelViewProjectionMatrix *
+    outShadow.position = uniforms.viewProjectionMatrix *
                          meshUniform.transform * vertices[vid].position;
     return outShadow;
 }
@@ -226,9 +226,9 @@ ProjectedVertex vertex_project_common(device Vertex *vertices,
     float4 meshPosition = meshUniform.transform * vertices[vid].position;
     float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
     
-    outVert.position = uniforms.modelViewProjectionMatrix * meshPosition;
-    outVert.eye =  -(uniforms.modelViewMatrix * meshPosition).xyz;
-    outVert.normal = uniforms.normalMatrix * meshNormal;
+    outVert.position = uniforms.viewProjectionMatrix * meshPosition;
+    outVert.eye =  -(uniforms.viewMatrix * meshPosition).xyz;
+    outVert.normal = meshNormal;
     
     return outVert;
 }

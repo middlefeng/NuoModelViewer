@@ -47,10 +47,10 @@ vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[b
     ProjectedVertex outVert;
     
     float4 meshPosition = meshUniforms.transform * vertices[vid].position;
-    float3x3 normalMatrix = uniforms.normalMatrix * meshUniforms.normalTransform;
+    float3x3 normalMatrix = meshUniforms.normalTransform;
     
-    outVert.position = uniforms.modelViewProjectionMatrix * meshPosition;
-    outVert.eye =  -(uniforms.modelViewMatrix * meshPosition).xyz;
+    outVert.position = uniforms.viewProjectionMatrix * meshPosition;
+    outVert.eye =  -(uniforms.viewMatrix * meshPosition).xyz;
     outVert.normal = normalMatrix * vertices[vid].normal.xyz;
     outVert.tangent = normalMatrix * (vertices[vid].tangent.xyz);
     outVert.bitangent = normalMatrix * (vertices[vid].bitangent.xyz);
@@ -85,7 +85,7 @@ vertex PositionSimple vertex_shadow_tex_materialed_bump(device Vertex *vertices 
                                                         uint vid [[vertex_id]])
 {
     PositionSimple outShadow;
-    outShadow.position = uniforms.modelViewProjectionMatrix *
+    outShadow.position = uniforms.viewProjectionMatrix *
                          meshUniforms.transform * vertices[vid].position;
     return outShadow;
 }

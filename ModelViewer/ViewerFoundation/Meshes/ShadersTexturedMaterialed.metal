@@ -44,7 +44,7 @@ vertex PositionSimple vertex_shadow_tex_materialed(device Vertex *vertices [[buf
                                                    uint vid [[vertex_id]])
 {
     PositionSimple outShadow;
-    outShadow.position = uniforms.modelViewProjectionMatrix * meshUniforms.transform * vertices[vid].position;
+    outShadow.position = uniforms.viewProjectionMatrix * meshUniforms.transform * vertices[vid].position;
     return outShadow;
 }
 
@@ -61,9 +61,9 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
     
     float4 meshPosition = meshUniforms.transform * vertices[vid].position;
     
-    outVert.position = uniforms.modelViewProjectionMatrix * meshPosition;
-    outVert.eye =  -(uniforms.modelViewMatrix * meshPosition).xyz;
-    outVert.normal = uniforms.normalMatrix * meshUniforms.normalTransform * vertices[vid].normal.xyz;
+    outVert.position = uniforms.viewProjectionMatrix * meshPosition;
+    outVert.eye =  -(uniforms.viewMatrix * meshPosition).xyz;
+    outVert.normal = meshUniforms.normalTransform * vertices[vid].normal.xyz;
     outVert.texCoord = vertices[vid].texCoord;
     
     outVert.ambientColor = vertices[vid].ambientColor;

@@ -119,9 +119,8 @@
     const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, (2 * M_PI) / 30, near, far);
     
     NuoUniforms uniforms;
-    uniforms.modelViewMatrix = viewMatrix;
-    uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
-    uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);
+    uniforms.viewMatrix = viewMatrix;
+    uniforms.viewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.viewMatrix);
     
     memcpy([_transforms[inFlight] contents], &uniforms, sizeof(NuoUniforms));
 }

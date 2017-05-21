@@ -12,9 +12,8 @@
  */
 typedef struct
 {
-    matrix44 modelViewProjectionMatrix;
-    matrix44 modelViewMatrix;
-    matrix33 normalMatrix;
+    matrix44 viewProjectionMatrix;
+    matrix44 viewMatrix;
 }
 NuoUniforms;
 

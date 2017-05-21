@@ -88,11 +88,10 @@
                                                            -meshRadius, meshRadius);
     
     NuoUniforms uniforms;
-    uniforms.modelViewMatrix = viewMatrix;
-    uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
-    uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);
+    uniforms.viewMatrix = viewMatrix;
+    uniforms.viewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.viewMatrix);
     
-    _lightCastMatrix = uniforms.modelViewProjectionMatrix;
+    _lightCastMatrix = uniforms.viewProjectionMatrix;
     
     memcpy([self.modelUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
 }

@@ -112,8 +112,8 @@ static uint16_t kIndices[] =
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
-    uniforms.modelViewProjectionMatrix = matrix_multiply(_projectMatrix, _cubeMatrix);
-    uniforms.modelViewMatrix = _cubeMatrix;
+    uniforms.viewProjectionMatrix = matrix_multiply(_projectMatrix, _cubeMatrix);
+    uniforms.viewMatrix = _cubeMatrix;
     
     memcpy([_cubeMatrixBuffer[bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
