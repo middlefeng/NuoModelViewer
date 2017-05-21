@@ -34,8 +34,6 @@
 
 @property (strong) NuoModelLoader* modelLoader;
 
-@property (nonatomic, assign) matrix_float4x4 rotationMatrix;
-
 
 @end
 
@@ -57,8 +55,6 @@
         [self makeResources];
         
         _modelOptions = [NuoMeshOption new];
-        _rotationMatrix = matrix_identity_float4x4;
-        
         _cullEnabled = YES;
         _fieldOfView = (2 * M_PI) / 8;
         
@@ -92,6 +88,14 @@
     [_modelLoader loadModel:path];
     
     [self createMeshs:commandQueue];
+}
+
+
+- (void)createMeshs:(id<MTLCommandQueue>)commandQueue
+{
+    _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
+                                      withDevice:self.device
+                                withCommandQueue:commandQueue];
     
     NuoMeshBox* bounding = _mesh.boundingBox;
     const vector_float3 translationToCenter =
@@ -101,15 +105,7 @@
         - bounding.centerZ
     };
     const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
-    self.rotationMatrix = modelCenteringMatrix;
-}
-
-
-- (void)createMeshs:(id<MTLCommandQueue>)commandQueue
-{
-    _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
-                                      withDevice:self.device
-                                withCommandQueue:commandQueue];
+    _mesh.transform = modelCenteringMatrix;
 }
 
 
@@ -153,7 +149,7 @@
                 exporter.StartArrayIndex(col);
                 exporter.StartTable();
                 
-                vector_float4 colomn = _rotationMatrix.columns[col];
+                vector_float4 colomn = _mesh.transform.columns[col];
                 
                 for (unsigned char row = 0; row < 4; ++ row)
                 {
@@ -309,7 +305,7 @@
 - (void)importScene:(NuoLua*)lua
 {
     [lua getField:@"rotationMatrix" fromTable:-1];
-    _rotationMatrix = [lua getMatrixFromTable:-1];
+    _mesh.transform = [lua getMatrixFromTable:-1];
     [lua removeField];
     
     [lua getField:@"view" fromTable:-1];
@@ -407,7 +403,7 @@
 {
     // accumulate delta rotation into matrix
     //
-    self.rotationMatrix = matrix_rotation_append(self.rotationMatrix, _rotationXDelta, _rotationYDelta);
+    _mesh.transform = matrix_rotation_append(_mesh.transform, _rotationXDelta, _rotationYDelta);
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
@@ -435,7 +431,7 @@
     const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, _fieldOfView, near, far);
 
     NuoUniforms uniforms;
-    uniforms.modelViewMatrix = matrix_multiply(viewMatrix, self.rotationMatrix);
+    uniforms.modelViewMatrix = viewMatrix;
     uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
     uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);
 
@@ -463,9 +459,7 @@
     
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(LightUniform));
     
-    for (NuoMesh* item in _mesh.meshes)
-        // TODO: move transform inside
-        [item updateUniform:inFlight withTransform:matrix_identity_float4x4];
+    [_mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
     
     if (_cubeMesh)
     {
@@ -485,7 +479,6 @@
     //
     for (unsigned int i = 0; i < 2 /* for two light sources only */; ++i)
     {
-        _shadowMapRenderer[i].modelMatrix = self.rotationMatrix;
         _shadowMapRenderer[i].mesh = _mesh;
         _shadowMapRenderer[i].lightSource = _lights[i];
         [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];

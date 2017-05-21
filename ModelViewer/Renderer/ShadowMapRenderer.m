@@ -88,7 +88,7 @@
                                                            -meshRadius, meshRadius);
     
     NuoUniforms uniforms;
-    uniforms.modelViewMatrix = matrix_multiply(viewMatrix, _modelMatrix);
+    uniforms.modelViewMatrix = viewMatrix;
     uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
     uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);
     
