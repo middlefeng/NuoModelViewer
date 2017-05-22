@@ -88,14 +88,6 @@
     [_modelLoader loadModel:path];
     
     [self createMeshs:commandQueue];
-}
-
-
-- (void)createMeshs:(id<MTLCommandQueue>)commandQueue
-{
-    _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
-                                      withDevice:self.device
-                                withCommandQueue:commandQueue];
     
     NuoMeshBox* bounding = _mesh.boundingBox;
     const vector_float3 translationToCenter =
@@ -106,6 +98,14 @@
     };
     const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
     _mesh.transform = modelCenteringMatrix;
+}
+
+
+- (void)createMeshs:(id<MTLCommandQueue>)commandQueue
+{
+    _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
+                                      withDevice:self.device
+                                withCommandQueue:commandQueue];
 }
 
 
@@ -357,7 +357,11 @@
     
     if (_modelLoader)
     {
+        matrix_float4x4 originalTrans = _mesh.transform;
+        
         [self createMeshs:commandQueue];
+        
+        _mesh.transform = originalTrans;
     }
 }
 
