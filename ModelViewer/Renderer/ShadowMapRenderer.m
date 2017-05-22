@@ -19,7 +19,7 @@
 
 @interface ShadowMapRenderer()
 
-@property (nonatomic, strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
+@property (nonatomic, strong) NSArray<id<MTLBuffer>>* transUniformBuffers;
 
 @end
 
@@ -61,7 +61,7 @@
                                                    options:MTLResourceOptionCPUCacheModeDefault];
     }
     
-    _modelUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers[0], modelBuffers[1], modelBuffers[2], nil];
+    _transUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers count:kInFlightBufferCount];
 }
 
 
@@ -93,7 +93,7 @@
     
     _lightCastMatrix = uniforms.viewProjectionMatrix;
     
-    memcpy([self.modelUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
+    memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
 }
 
 
@@ -107,7 +107,7 @@
     
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
 
-    [renderPass setVertexBuffer:self.modelUniformBuffers[inFlight] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
     [_mesh drawShadow:renderPass indexBuffer:inFlight];
     
     [renderPass endEncoding];

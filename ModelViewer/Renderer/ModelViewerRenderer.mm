@@ -24,7 +24,7 @@
 
 
 @property (nonatomic, strong) NuoMeshCompound* mesh;
-@property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
+@property (strong) NSArray<id<MTLBuffer>>* transUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
 @property (strong) id<MTLBuffer> modelCharacterUnfiromBuffer;
@@ -383,7 +383,7 @@
         
     }
     
-    _modelUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers count:kInFlightBufferCount];
+    _transUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers count:kInFlightBufferCount];
     _lightingUniformBuffers = [[NSArray alloc] initWithObjects:lightingBuffers count:kInFlightBufferCount];
     _lightCastBuffers = [[NSArray alloc] initWithObjects:lightCastModelBuffers count:kInFlightBufferCount];
     
@@ -438,7 +438,7 @@
     uniforms.viewMatrix = viewMatrix;
     uniforms.viewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.viewMatrix);
 
-    memcpy([self.modelUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
+    memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
     
     LightUniform lighting;
     lighting.ambientDensity = _ambientDensity;
@@ -508,7 +508,7 @@
     if (_cubeMesh)
         [_cubeMesh drawMesh:renderPass indexBuffer:inFlight];
     
-    [renderPass setVertexBuffer:self.modelUniformBuffers[inFlight] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
     [renderPass setVertexBuffer:_lightCastBuffers[inFlight] offset:0 atIndex:2];
     
     [renderPass setFragmentBuffer:self.lightingUniformBuffers[inFlight] offset:0 atIndex:0];
@@ -517,32 +517,8 @@
     [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.targetTexture atIndex:1];
     [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
     
-    NSArray* cullModes = _cullEnabled ?
-                            @[@(MTLCullModeBack), @(MTLCullModeNone)] :
-                            @[@(MTLCullModeNone), @(MTLCullModeBack)];
-    NSUInteger cullMode = [cullModes[0] unsignedLongValue];
-    [renderPass setCullMode:(MTLCullMode)cullMode];
-
-    for (uint8 renderPassStep = 0; renderPassStep < 4; ++renderPassStep)
-    {
-        // reverse the cull mode in pass 1 and 3
-        //
-        if (renderPassStep == 1 || renderPassStep == 3)
-        {
-            NSUInteger cullMode = [cullModes[renderPassStep % 3] unsignedLongValue];
-            [renderPass setCullMode:(MTLCullMode)cullMode];
-        }
-        
-        for (NuoMesh* mesh in _mesh.meshes)
-        {
-            if (((renderPassStep == 0) && ![mesh hasTransparency] && ![mesh reverseCommonCullMode]) /* 1/2 pass for opaque */ ||
-                ((renderPassStep == 1) && ![mesh hasTransparency] && [mesh reverseCommonCullMode])                              ||
-                ((renderPassStep == 2) && [mesh hasTransparency] && [mesh reverseCommonCullMode])  /* 3/4 pass for transparent */ ||
-                ((renderPassStep == 3) && [mesh hasTransparency] && ![mesh reverseCommonCullMode]))
-                if ([mesh enabled])
-                    [mesh drawMesh:renderPass indexBuffer:inFlight];
-        }
-    }
+    [_mesh setCullEnabled:_cullEnabled];
+    [_mesh drawMesh:renderPass indexBuffer:inFlight];
     
     [renderPass endEncoding];
 }
