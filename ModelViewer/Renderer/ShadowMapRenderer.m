@@ -53,15 +53,15 @@
 
 - (void)makeResources
 {
-    id<MTLBuffer> modelBuffers[kInFlightBufferCount];
+    id<MTLBuffer> transBuffers[kInFlightBufferCount];
     
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
-        modelBuffers[i] = [self.device newBufferWithLength:sizeof(NuoUniforms)
+        transBuffers[i] = [self.device newBufferWithLength:sizeof(NuoUniforms)
                                                    options:MTLResourceOptionCPUCacheModeDefault];
     }
     
-    _transUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers count:kInFlightBufferCount];
+    _transUniformBuffers = [[NSArray alloc] initWithObjects:transBuffers count:kInFlightBufferCount];
 }
 
 

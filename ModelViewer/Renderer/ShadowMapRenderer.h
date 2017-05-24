@@ -27,8 +27,7 @@
 @property (nonatomic, weak) LightSource* lightSource;
 
 /**
- *  Scene information, mostly passed from the model renderer, hence the
- *  weak renference.
+ *  Scene model. Be weak reference because the owner should be the model render.
  */
 @property (nonatomic, weak) NuoMeshCompound* mesh;
 
