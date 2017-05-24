@@ -13,7 +13,7 @@
 
 
 
-- (void)setMeshes:(NSArray<NuoMesh *> *)meshes
+- (void)setMeshes:(NSArray<NuoMesh*>*)meshes
 {
     _meshes = meshes;
     
