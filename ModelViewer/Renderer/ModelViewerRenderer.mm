@@ -468,7 +468,6 @@
     {
         const matrix_float4x4 projectionMatrixForCube = matrix_perspective(aspect, _fieldOfView, 0.3, 2.0);
         [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
-        // TODO: move transform inside
         [_cubeMesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
     }
 }
