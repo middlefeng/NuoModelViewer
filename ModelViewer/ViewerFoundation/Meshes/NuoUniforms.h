@@ -8,15 +8,18 @@
 
 
 /**
- *  vertex shader uniform to calculate interpolatable per-vertex data
+ *  vertex shader uniform for transform. if a mesh does not cast shadow, all its transforms
+ *  can be multiplied into one on the CPU side and put to a single uniform.
+ *  example: cube (skybox) mesh
+ *
+ *  otherwise, the view-projection matrix has to be separated vith the model transform.
  */
 typedef struct
 {
-    matrix44 modelViewProjectionMatrix;
-    matrix44 modelViewMatrix;
-    matrix33 normalMatrix;
+    matrix44 viewProjectionMatrix;
+    matrix44 viewMatrix;
 }
-ModelUniforms;
+NuoUniforms;
 
 
 /**

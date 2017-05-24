@@ -14,7 +14,6 @@
 @implementation NuoMeshRotation
 {
     matrix_float4x4 _rotationMatrix;
-    matrix_float3x3 _rotationNormalMatrix;
 }
 
 
@@ -71,7 +70,6 @@
     matrix_float4x4 rotationMatrix = matrix_rotation(vector_normalize(rotationVector), _radius);
     
     _rotationMatrix = matrix_multiply(transMatrixInv, matrix_multiply(rotationMatrix, transMatrix));
-    _rotationNormalMatrix = matrix_extract_linear(_rotationMatrix);
 }
 
 
@@ -87,12 +85,6 @@
 - (matrix_float4x4)rotationMatrix
 {
     return _rotationMatrix;
-}
-
-
-- (matrix_float3x3)rotationNormalMatrix
-{
-    return _rotationNormalMatrix;
 }
 
 

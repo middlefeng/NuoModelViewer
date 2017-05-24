@@ -11,6 +11,7 @@
 #import "NuoMeshTextured.h"
 #import "NuoMeshTexMatieraled.h"
 #import "NuoMeshUniform.h"
+#import "NuoMathUtilities.h"
 
 
 
@@ -87,10 +88,12 @@
             id<MTLBuffer> buffers1[kInFlightBufferCount];
             for (unsigned int i = 0; i < kInFlightBufferCount; ++i)
             {
-                buffers1[i] = [device newBufferWithLength:sizeof(MeshUniforms) options:MTLResourceOptionCPUCacheModeDefault];
+                buffers1[i] = [device newBufferWithLength:sizeof(NuoMeshUniforms) options:MTLResourceOptionCPUCacheModeDefault];
             }
             _rotationBuffers = [[NSArray alloc] initWithObjects:buffers1 count:kInFlightBufferCount];
         }
+        
+        _transform = matrix_identity_float4x4;
     }
     
     return self;
@@ -254,11 +257,14 @@
 
 
 
-- (void)updateUniform:(NSInteger)bufferIndex
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
 {
-    MeshUniforms uniforms;
-    uniforms.transform = _rotation.rotationMatrix;
-    uniforms.normalTransform = _rotation.rotationNormalMatrix;
+    if (_rotation)
+        transform = matrix_multiply(_rotation.rotationMatrix, transform);
+    
+    NuoMeshUniforms uniforms;
+    uniforms.transform = matrix_multiply(_transform, transform);
+    uniforms.normalTransform = matrix_extract_linear(uniforms.transform);
     memcpy([_rotationBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
 

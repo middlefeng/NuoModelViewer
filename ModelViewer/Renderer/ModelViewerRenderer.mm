@@ -8,7 +8,7 @@
 #import <simd/simd.h>
 
 #include "NuoTypes.h"
-#include "NuoMesh.h"
+#include "NuoMeshCompound.h"
 #include "NuoCubeMesh.h"
 #include "NuoRenderPassTarget.h"
 #include "NuoMathUtilities.h"
@@ -23,8 +23,8 @@
 @interface ModelRenderer ()
 
 
-@property (nonatomic, strong) NSArray<NuoMesh*>* mesh;
-@property (strong) NSArray<id<MTLBuffer>>* modelUniformBuffers;
+@property (nonatomic, strong) NuoMeshCompound* mesh;
+@property (strong) NSArray<id<MTLBuffer>>* transUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
 @property (strong) id<MTLBuffer> modelCharacterUnfiromBuffer;
@@ -34,8 +34,6 @@
 
 @property (strong) NuoModelLoader* modelLoader;
 
-@property (nonatomic, assign) matrix_float4x4 rotationMatrix;
-
 
 @end
 
@@ -43,9 +41,6 @@
 
 @implementation ModelRenderer
 {
-    NuoMeshBox* _meshBounding;
-    float _meshMaxSpan;
-    
     ShadowMapRenderer* _shadowMapRenderer[2];
 }
 
@@ -60,8 +55,6 @@
         [self makeResources];
         
         _modelOptions = [NuoMeshOption new];
-        _rotationMatrix = matrix_identity_float4x4;
-        
         _cullEnabled = YES;
         _fieldOfView = (2 * M_PI) / 8;
         
@@ -95,6 +88,16 @@
     [_modelLoader loadModel:path];
     
     [self createMeshs:commandQueue];
+    
+    NuoMeshBox* bounding = _mesh.boundingBox;
+    const vector_float3 translationToCenter =
+    {
+        - bounding.centerX,
+        - bounding.centerY,
+        - bounding.centerZ
+    };
+    const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
+    _mesh.transform = modelCenteringMatrix;
 }
 
 
@@ -103,20 +106,10 @@
     _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
                                       withDevice:self.device
                                 withCommandQueue:commandQueue];
-    
-    NuoMeshBox* bounding = _mesh[0].boundingBox;
-    for (size_t i = 1; i < _mesh.count; ++i)
-        bounding = [bounding unionWith:_mesh[i].boundingBox];
-    
-    _meshBounding = bounding;
-    
-    float modelSpan = std::max(bounding.spanZ, bounding.spanX);
-    modelSpan = std::max(bounding.spanY, modelSpan);
-    _meshMaxSpan = 1.41 * modelSpan;
 }
 
 
-- (NSArray<NuoMesh*>*)mesh
+- (NuoMeshCompound*)mesh
 {
     return _mesh;
 }
@@ -156,7 +149,7 @@
                 exporter.StartArrayIndex(col);
                 exporter.StartTable();
                 
-                vector_float4 colomn = _rotationMatrix.columns[col];
+                vector_float4 colomn = _mesh.transform.columns[col];
                 
                 for (unsigned char row = 0; row < 4; ++ row)
                 {
@@ -204,7 +197,7 @@
         
         size_t index = 0;
         
-        for (NuoMesh* meshItem : _mesh)
+        for (NuoMesh* meshItem in _mesh.meshes)
         {
             if (meshItem.smoothTolerance > 0.001 || !meshItem.enabled ||
                 meshItem.reverseCommonCullMode || (meshItem.hasUnifiedMaterial && meshItem.unifiedOpacity != 1.0))
@@ -312,7 +305,7 @@
 - (void)importScene:(NuoLua*)lua
 {
     [lua getField:@"rotationMatrix" fromTable:-1];
-    _rotationMatrix = [lua getMatrixFromTable:-1];
+    _mesh.transform = [lua getMatrixFromTable:-1];
     [lua removeField];
     
     [lua getField:@"view" fromTable:-1];
@@ -331,9 +324,9 @@
     {
         [lua getItem:(int)(i + 1) fromTable:-1];
         NSString* name = [lua getFieldAsString:@"name" fromTable:-1];
-        for (size_t i = passedModel; i < _mesh.count; ++i)
+        for (size_t i = passedModel; i < _mesh.meshes.count; ++i)
         {
-            NuoMesh* mesh = _mesh[i];
+            NuoMesh* mesh = _mesh.meshes[i];
             
             if ([mesh.modelName isEqualToString:name])
             {
@@ -364,7 +357,11 @@
     
     if (_modelLoader)
     {
+        matrix_float4x4 originalTrans = _mesh.transform;
+        
         [self createMeshs:commandQueue];
+        
+        _mesh.transform = originalTrans;
     }
 }
 
@@ -377,7 +374,7 @@
     
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
-        modelBuffers[i] = [self.device newBufferWithLength:sizeof(ModelUniforms)
+        modelBuffers[i] = [self.device newBufferWithLength:sizeof(NuoUniforms)
                                                    options:MTLResourceOptionCPUCacheModeDefault];
         lightingBuffers[i] = [self.device newBufferWithLength:sizeof(LightUniform)
                                                       options:MTLResourceOptionCPUCacheModeDefault];
@@ -386,7 +383,7 @@
         
     }
     
-    _modelUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers count:kInFlightBufferCount];
+    _transUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers count:kInFlightBufferCount];
     _lightingUniformBuffers = [[NSArray alloc] initWithObjects:lightingBuffers count:kInFlightBufferCount];
     _lightCastBuffers = [[NSArray alloc] initWithObjects:lightCastModelBuffers count:kInFlightBufferCount];
     
@@ -406,29 +403,19 @@
     _shadowMapSamplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 
-- (void)updateUniformsForView:(matrix_float4x4*)modelMatrixOut withInFlight:(unsigned int)inFlight
+- (void)updateUniformsForView:(unsigned int)inFlight
 {
     // accumulate delta rotation into matrix
     //
-    self.rotationMatrix = matrix_rotation_append(self.rotationMatrix, _rotationXDelta, _rotationYDelta);
+    _mesh.transform = matrix_rotation_append(_mesh.transform, _rotationXDelta, _rotationYDelta);
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
-    const vector_float3 translationToCenter =
-    {
-        - _meshBounding.centerX,
-        - _meshBounding.centerY,
-        - _meshBounding.centerZ
-    };
-    const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
-    const matrix_float4x4 modelMatrix = matrix_multiply(self.rotationMatrix, modelCenteringMatrix);
-    
-    *modelMatrixOut = modelMatrix;
-    
-    const float modelNearest = - _meshMaxSpan / 2.0;
+    float maxSpan = _mesh.maxSpan;
+    const float modelNearest = - maxSpan / 2.0;
     const float bilateralFactor = 1 / 750.0f;
-    const float cameraDefaultDistance = (modelNearest - _meshMaxSpan);
-    const float cameraDistance = cameraDefaultDistance + _zoom * _meshMaxSpan / 20.0f;
+    const float cameraDefaultDistance = (modelNearest - maxSpan);
+    const float cameraDistance = cameraDefaultDistance + _zoom * maxSpan / 20.0f;
     
     const float doTransX = _transX * cameraDistance * bilateralFactor;
     const float doTransY = _transY * cameraDistance * bilateralFactor;
@@ -443,16 +430,15 @@
     
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
-    const float near = -cameraDistance - _meshMaxSpan / 2.0 + 0.01;
-    const float far = near + _meshMaxSpan + 0.02;
+    const float near = -cameraDistance - maxSpan / 2.0 + 0.01;
+    const float far = near + maxSpan + 0.02;
     const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, _fieldOfView, near, far);
 
-    ModelUniforms uniforms;
-    uniforms.modelViewMatrix = matrix_multiply(viewMatrix, modelMatrix);
-    uniforms.modelViewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.modelViewMatrix);
-    uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);
+    NuoUniforms uniforms;
+    uniforms.viewMatrix = viewMatrix;
+    uniforms.viewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.viewMatrix);
 
-    memcpy([self.modelUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
+    memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
     
     LightUniform lighting;
     lighting.ambientDensity = _ambientDensity;
@@ -476,31 +462,27 @@
     
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(LightUniform));
     
-    for (NuoMesh* item in _mesh)
-        [item updateUniform:inFlight];
+    [_mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
     
     if (_cubeMesh)
     {
         const matrix_float4x4 projectionMatrixForCube = matrix_perspective(aspect, _fieldOfView, 0.3, 2.0);
         [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
-        [_cubeMesh updateUniform:inFlight];
+        [_cubeMesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
     }
 }
 
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                withInFlightIndex:(unsigned int)inFlight
 {
-    matrix_float4x4 modelMatrix;
-    [self updateUniformsForView:&modelMatrix withInFlight:inFlight];
+    [self updateUniformsForView:inFlight];
     
     // generate shadow map
     //
     for (unsigned int i = 0; i < 2 /* for two light sources only */; ++i)
     {
-        _shadowMapRenderer[i].modelMatrix = modelMatrix;
         _shadowMapRenderer[i].mesh = _mesh;
         _shadowMapRenderer[i].lightSource = _lights[i];
-        _shadowMapRenderer[i].meshMaxSpan = _meshMaxSpan;
         [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     }
     
@@ -525,7 +507,7 @@
     if (_cubeMesh)
         [_cubeMesh drawMesh:renderPass indexBuffer:inFlight];
     
-    [renderPass setVertexBuffer:self.modelUniformBuffers[inFlight] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
     [renderPass setVertexBuffer:_lightCastBuffers[inFlight] offset:0 atIndex:2];
     
     [renderPass setFragmentBuffer:self.lightingUniformBuffers[inFlight] offset:0 atIndex:0];
@@ -534,32 +516,8 @@
     [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.targetTexture atIndex:1];
     [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
     
-    NSArray* cullModes = _cullEnabled ?
-                            @[@(MTLCullModeBack), @(MTLCullModeNone)] :
-                            @[@(MTLCullModeNone), @(MTLCullModeBack)];
-    NSUInteger cullMode = [cullModes[0] unsignedLongValue];
-    [renderPass setCullMode:(MTLCullMode)cullMode];
-
-    for (uint8 renderPassStep = 0; renderPassStep < 4; ++renderPassStep)
-    {
-        // reverse the cull mode in pass 1 and 3
-        //
-        if (renderPassStep == 1 || renderPassStep == 3)
-        {
-            NSUInteger cullMode = [cullModes[renderPassStep % 3] unsignedLongValue];
-            [renderPass setCullMode:(MTLCullMode)cullMode];
-        }
-        
-        for (NuoMesh* mesh : _mesh)
-        {
-            if (((renderPassStep == 0) && ![mesh hasTransparency] && ![mesh reverseCommonCullMode]) /* 1/2 pass for opaque */ ||
-                ((renderPassStep == 1) && ![mesh hasTransparency] && [mesh reverseCommonCullMode])                              ||
-                ((renderPassStep == 2) && [mesh hasTransparency] && [mesh reverseCommonCullMode])  /* 3/4 pass for transparent */ ||
-                ((renderPassStep == 3) && [mesh hasTransparency] && ![mesh reverseCommonCullMode]))
-                if ([mesh enabled])
-                    [mesh drawMesh:renderPass indexBuffer:inFlight];
-        }
-    }
+    [_mesh setCullEnabled:_cullEnabled];
+    [_mesh drawMesh:renderPass indexBuffer:inFlight];
     
     [renderPass endEncoding];
 }

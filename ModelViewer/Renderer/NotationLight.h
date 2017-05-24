@@ -20,9 +20,6 @@
 
 @property (nonatomic, weak) LightSource* lightSourceDesc;
 
-@property (nonatomic, assign) matrix_float4x4 viewMatrix;
-@property (nonatomic, assign) matrix_float4x4 projMatrix;
-
 @property (nonatomic, assign) BOOL selected;
 
 

@@ -38,6 +38,9 @@
 @property (nonatomic, strong) NuoMeshRotation* rotation;
 @property (nonatomic, strong) NSArray<id<MTLBuffer>>* rotationBuffers;
 
+// mesh generic transform
+@property (nonatomic, assign) matrix_float4x4 transform;
+
 // unified material (common to all vertices)
 //
 @property (nonatomic, assign, readonly) BOOL hasUnifiedMaterial;
@@ -68,7 +71,7 @@
 - (void)smoothWithTolerance:(float)tolerance;
 
 
-- (void)updateUniform:(NSInteger)bufferIndex;
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform;
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
 - (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
 - (BOOL)hasTransparency;

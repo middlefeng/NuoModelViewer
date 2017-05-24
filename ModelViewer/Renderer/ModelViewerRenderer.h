@@ -5,7 +5,7 @@
 
 @class NuoMeshOption;
 @class NuoLua;
-@class NuoMesh;
+@class NuoMeshCompound;
 @class NuoCubeMesh;
 @class LightSource;
 
@@ -36,7 +36,7 @@
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
 - (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue;
-- (NSArray<NuoMesh*>*)mesh;
+- (NuoMeshCompound*)mesh;
 
 - (NSString*)exportSceneAsString:(CGSize)canvasSize;
 - (void)importScene:(NuoLua*)lua;

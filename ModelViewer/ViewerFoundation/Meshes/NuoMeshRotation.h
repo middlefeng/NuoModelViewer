@@ -25,6 +25,5 @@
 - (instancetype)initWith:(NuoMeshRotation*)rotation;
 
 - (matrix_float4x4)rotationMatrix;
-- (matrix_float3x3)rotationNormalMatrix;
 
 @end

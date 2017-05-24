@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by middleware on 11/13/16.
-//  Copyright © 2016 middleware. All rights reserved.
+//  Copyright © 2017 middleware. All rights reserved.
 //
 
 #import "NotationLight.h"
@@ -15,6 +15,7 @@
 #include <memory>
 
 #include "NuoUniforms.h"
+#include "NuoMeshUniform.h"
 
 #import "LightSource.h"
 
@@ -23,7 +24,6 @@
 @interface NotationLight()
 
 
-@property (nonatomic, strong) NSArray<id<MTLBuffer>>* uniformBuffers;
 @property (nonatomic, strong) NSArray<id<MTLBuffer>>* characterUniformBuffers;
 @property (nonatomic, weak) id<MTLDevice> device;
 
@@ -75,11 +75,6 @@
         [_lightVector setBoundingBox:meshBounding];
         [_lightVector makePipelineState:pipelineDesc];
         [_lightVector makeDepthStencilState];
-        
-        // the light vector notation does not have varying uniform,
-        // use only the 0th buffer
-        //
-        [_lightVector updateUniform:0];
     }
     
     return self;
@@ -94,20 +89,14 @@
 
 - (void)makeResources
 {
-    id<MTLBuffer> buffers[kInFlightBufferCount];
     id<MTLBuffer> characters[kInFlightBufferCount];
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
-        id<MTLBuffer> uniformBuffer = [self.device newBufferWithLength:sizeof(ModelUniforms)
-                                                               options:MTLResourceOptionCPUCacheModeDefault];
-        buffers[i] = uniformBuffer;
-        
         id<MTLBuffer> characterUniformBuffers = [self.device newBufferWithLength:sizeof(ModelCharacterUniforms)
                                                                          options:MTLResourceOptionCPUCacheModeDefault];
         characters[i] = characterUniformBuffers;
     }
     
-    _uniformBuffers = [[NSArray alloc] initWithObjects:buffers[0], buffers[1], buffers[2], nil];
     _characterUniformBuffers = [[NSArray alloc] initWithObjects:characters[0], characters[1], characters[2], nil];
 }
 
@@ -115,10 +104,6 @@
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
     LightSource* desc = _lightSourceDesc;
-    
-    matrix_float4x4 rotationMatrix = matrix_rotate(desc.lightingRotationX,
-                                                   desc.lightingRotationY);
-    
     NuoMeshBox* bounding = _lightVector.boundingBox;
     
     const vector_float3 translationToCenter =
@@ -129,14 +114,8 @@
     };
     
     const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
-    const matrix_float4x4 modelMatrix = matrix_multiply(rotationMatrix, modelCenteringMatrix);
-    
-    ModelUniforms uniforms;
-    uniforms.modelViewMatrix = matrix_multiply(_viewMatrix, modelMatrix);
-    uniforms.modelViewProjectionMatrix = matrix_multiply(_projMatrix, uniforms.modelViewMatrix);
-    uniforms.normalMatrix = matrix_extract_linear(uniforms.modelViewMatrix);
-    
-    memcpy([self.uniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
+    const matrix_float4x4 modelMatrix = matrix_rotation_append(modelCenteringMatrix, desc.lightingRotationX, desc.lightingRotationY);
+    [_lightVector updateUniform:inFlight withTransform:modelMatrix];
     
     ModelCharacterUniforms characters;
     characters.opacity = _selected ? 1.0f : 0.1f;
@@ -173,13 +152,12 @@
               withInFlight:(unsigned int)inFlight
 {
     [self updateUniformsForView:inFlight];
-    [renderPass setVertexBuffer:self.uniformBuffers[inFlight] offset:0 atIndex:1];
     [renderPass setFragmentBuffer:self.characterUniformBuffers[inFlight] offset:0 atIndex:1];
     
     // the light vector notation does not have varying uniform,
     // use only the 0th buffer
     //
-    [_lightVector drawMesh:renderPass indexBuffer:0];
+    [_lightVector drawMesh:renderPass indexBuffer:inFlight];
 }
 
 

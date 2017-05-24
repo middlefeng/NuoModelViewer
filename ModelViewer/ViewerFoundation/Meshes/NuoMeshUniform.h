@@ -13,14 +13,17 @@
 
 
 /**
- *  vertex shader uniform to calculate interpolatable per-vertex data
+ *  vertex shader uniform for model transform. if a mesh does cast shadow, the
+ *  view-projection matrix has to be separated vith the model transform since
+ *  the same model transform need to be applied to the view project and light/shadow-map
+ *  project respectively.
  */
 typedef struct
 {
     matrix44 transform;
     matrix33 normalTransform;
 }
-MeshUniforms;
+NuoMeshUniforms;
 
 
 #endif /* NuoMeshUniform_h */

@@ -11,7 +11,7 @@
 #import "NuoTypes.h"
 
 
-@class NuoMesh;
+@class NuoMeshCompound;
 @class NuoMeshOption;
 
 
@@ -24,9 +24,9 @@
  *  Create a renderable GPU mesh. A GPU mesh consists of the continuous buffer where the vertex data
  *  is stored, the associated textures, and the associated pipeline state used for rendering.
  */
-- (NSArray<NuoMesh*>*)createMeshsWithOptions:(NuoMeshOption*)loadOption
-                                  withDevice:(id<MTLDevice>)device
-                            withCommandQueue:(id<MTLCommandQueue>)commandQueue;
+- (NuoMeshCompound*)createMeshsWithOptions:(NuoMeshOption*)loadOption
+                                withDevice:(id<MTLDevice>)device
+                          withCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 
 @end

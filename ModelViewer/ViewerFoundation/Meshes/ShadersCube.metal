@@ -31,13 +31,13 @@ struct ProjectedVertex
 
 
 vertex ProjectedVertex vertex_cube(device CubeVertex *vertices        [[buffer(0)]],
-                                   constant ModelUniforms &uniforms   [[buffer(1)]],
+                                   constant NuoUniforms &uniforms     [[buffer(1)]],
                                    uint vid                           [[vertex_id]])
 {
     float4 position = vertices[vid].position;
     
     ProjectedVertex outVert;
-    outVert.position = uniforms.modelViewProjectionMatrix * position;
+    outVert.position = uniforms.viewProjectionMatrix * position;
     outVert.texCoords = float3(position.x, position.y, -position.z);
     return outVert;
 }

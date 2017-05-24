@@ -15,7 +15,7 @@
 
 
 @class LightSource;
-@class NuoMesh;
+@class NuoMeshCompound;
 @class NuoShadowMapTarget;
 
 
@@ -27,13 +27,9 @@
 @property (nonatomic, weak) LightSource* lightSource;
 
 /**
- *  Scene information, mostly passed from the model renderer, hence the
- *  weak renference. meshMaxSpan is derivable but cached for performance,
- *  which is cached in the model renderer and passed over to here.
+ *  Scene model. Be weak reference because the owner should be the model render.
  */
-@property (nonatomic, assign) float meshMaxSpan;
-@property (nonatomic, weak) NSArray<NuoMesh*>* mesh;
-@property (nonatomic, assign) matrix_float4x4 modelMatrix;
+@property (nonatomic, weak) NuoMeshCompound* mesh;
 
 /**
  *  Shadow map, the depth texture from the view point of the light source.
