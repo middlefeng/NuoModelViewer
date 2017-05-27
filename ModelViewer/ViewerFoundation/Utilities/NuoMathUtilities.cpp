@@ -110,20 +110,25 @@ matrix_float3x3 matrix_extract_linear(matrix_float4x4 m)
 }
 
 
-matrix_float4x4 matrix_rotate(float rotationX, float rotationY)
+matrix_float4x4 matrix_rotate(float rotationX, float rotationY, RotationOrder order)
 {
     const vector_float3 xAxis = { 1, 0, 0 };
     const vector_float3 yAxis = { 0, 1, 0 };
     const matrix_float4x4 xRot = matrix_rotation(xAxis, rotationX);
     const matrix_float4x4 yRot = matrix_rotation(yAxis, rotationY);
     
-    return matrix_multiply(xRot, yRot);
+    if (order == kRotationOrder_YX)
+        return matrix_multiply(xRot, yRot);
+    else
+        return matrix_multiply(yRot, xRot);
 }
 
 
-matrix_float4x4 matrix_rotation_append(matrix_float4x4 start, float rotateX, float rotateY)
+matrix_float4x4 matrix_rotation_append(matrix_float4x4 start,
+                                       float rotateX, float rotateY,
+                                       RotationOrder order)
 {
-    matrix_float4x4 rotate = matrix_rotate(rotateX, rotateY);
+    matrix_float4x4 rotate = matrix_rotate(rotateX, rotateY, order);
     return matrix_multiply(rotate, start);
 }
 

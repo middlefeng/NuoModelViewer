@@ -108,7 +108,9 @@ static uint16_t kIndices[] =
 {
     NuoUniforms uniforms;
     
-    _cubeMatrix = matrix_rotation_append(_cubeMatrix, _rotationXDelta, _rotationYDelta);
+    _cubeMatrix = matrix_rotation_append(_cubeMatrix,
+                                         _rotationXDelta, _rotationYDelta,
+                                         kRotationOrder_YX);
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     

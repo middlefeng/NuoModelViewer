@@ -69,7 +69,8 @@
 {
     LightSource* lightSource = _lightSource;
     const matrix_float4x4 viewMatrix = matrix_rotate(-lightSource.lightingRotationX,
-                                                     -lightSource.lightingRotationY);
+                                                     -lightSource.lightingRotationY,
+                                                     kRotationOrder_XY);
     
     CGSize drawableSize = self.renderTarget.drawableSize;
     float meshRadius = _mesh.maxSpan / 2.0;

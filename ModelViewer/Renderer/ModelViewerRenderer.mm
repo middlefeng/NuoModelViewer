@@ -407,7 +407,9 @@
 {
     // accumulate delta rotation into matrix
     //
-    _mesh.transform = matrix_rotation_append(_mesh.transform, _rotationXDelta, _rotationYDelta);
+    _mesh.transform = matrix_rotation_append(_mesh.transform,
+                                             _rotationXDelta, _rotationYDelta,
+                                             kRotationOrder_YX);
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
@@ -445,7 +447,8 @@
     for (unsigned int i = 0; i < 4; ++i)
     {
         const matrix_float4x4 rotationMatrix = matrix_rotate(_lights[i].lightingRotationX,
-                                                             _lights[i].lightingRotationY);
+                                                             _lights[i].lightingRotationY,
+                                                             kRotationOrder_YX);
         
         vector_float4 lightVector { 0, 0, 1, 0 };
         lightVector = matrix_multiply(rotationMatrix, lightVector);

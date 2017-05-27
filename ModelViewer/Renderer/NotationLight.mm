@@ -114,7 +114,10 @@
     };
     
     const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
-    const matrix_float4x4 modelMatrix = matrix_rotation_append(modelCenteringMatrix, desc.lightingRotationX, desc.lightingRotationY);
+    const matrix_float4x4 modelMatrix = matrix_rotation_append(modelCenteringMatrix,
+                                                               desc.lightingRotationX,
+                                                               desc.lightingRotationY,
+                                                               kRotationOrder_YX);
     [_lightVector updateUniform:inFlight withTransform:modelMatrix];
     
     ModelCharacterUniforms characters;
@@ -138,7 +141,8 @@
     LightSource* desc = _lightSourceDesc;
     
     matrix_float4x4 rotationMatrix = matrix_rotate(desc.lightingRotationX,
-                                                   desc.lightingRotationY);
+                                                   desc.lightingRotationY,
+                                                   kRotationOrder_YX);
     
     const vector_float4 startVec = { 0, 0, 1, 1 };
     vector_float4 projected = matrix_multiply(rotationMatrix, startVec);

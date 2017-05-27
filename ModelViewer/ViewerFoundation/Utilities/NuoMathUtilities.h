@@ -7,6 +7,13 @@
 extern "C" {
 #endif
 
+typedef enum
+{
+    kRotationOrder_XY,
+    kRotationOrder_YX,
+}
+RotationOrder;
+
 /// Builds a translation matrix that translates by the supplied vector
 matrix_float4x4 matrix_translation(vector_float3 t);
 
@@ -25,9 +32,9 @@ matrix_float4x4 matrix_orthor(float left, float right, float top, float bottom, 
 
 matrix_float3x3 matrix_extract_linear(matrix_float4x4);    
     
-matrix_float4x4 matrix_rotate(float rotationX, float rotationY);
+matrix_float4x4 matrix_rotate(float rotationX, float rotationY, RotationOrder order);
 
-matrix_float4x4 matrix_rotation_append(matrix_float4x4 start, float rotateX, float rotateY);
+matrix_float4x4 matrix_rotation_append(matrix_float4x4 start, float rotateX, float rotateY, RotationOrder order);
     
 matrix_float4x4 matrix_lookAt(vector_float3 eye, vector_float3 center, vector_float3 up);
     
