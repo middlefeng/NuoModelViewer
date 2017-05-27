@@ -67,8 +67,10 @@
 
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
+    static const float kCameraDistance = 1.0;
+    
     vector_float3 center = {0, 0, 0};
-    vector_float4 lightAsEye = {0, 0, 1, 0};
+    vector_float4 lightAsEye = {0, 0, kCameraDistance, 0};
     vector_float3 up = {0, 1, 0};
     
     LightSource* lightSource = _lightSource;
@@ -85,7 +87,7 @@
     float viewPortWidth = aspectRatio * viewPortHeight;
     const matrix_float4x4 projectionMatrix = matrix_orthor(-viewPortWidth, viewPortWidth,
                                                            viewPortHeight, -viewPortHeight,
-                                                           -meshRadius, meshRadius);
+                                                           -meshRadius + kCameraDistance, meshRadius + kCameraDistance);
     
     NuoUniforms uniforms;
     uniforms.viewMatrix = viewMatrix;
