@@ -67,16 +67,9 @@
 
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
-    vector_float3 center = {0, 0, 0};
-    vector_float4 lightAsEye = {0, 0, 1, 0};
-    vector_float3 up = {0, 1, 0};
-    
     LightSource* lightSource = _lightSource;
-    const matrix_float4x4 lightAsEyeMatrix = matrix_rotate(lightSource.lightingRotationX,
-                                                           lightSource.lightingRotationY);
-    lightAsEye = matrix_multiply(lightAsEyeMatrix, lightAsEye);
-    vector_float3 lightAsEye3 = {lightAsEye.x, lightAsEye.y, lightAsEye.z};
-    const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye3, center, up);
+    const matrix_float4x4 viewMatrix = matrix_rotate(-lightSource.lightingRotationX,
+                                                     -lightSource.lightingRotationY);
     
     CGSize drawableSize = self.renderTarget.drawableSize;
     float meshRadius = _mesh.maxSpan / 2.0;
