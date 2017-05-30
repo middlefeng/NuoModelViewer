@@ -90,10 +90,11 @@
             {
                 buffers1[i] = [device newBufferWithLength:sizeof(NuoMeshUniforms) options:MTLResourceOptionCPUCacheModeDefault];
             }
-            _rotationBuffers = [[NSArray alloc] initWithObjects:buffers1 count:kInFlightBufferCount];
+            _transformBuffers = [[NSArray alloc] initWithObjects:buffers1 count:kInFlightBufferCount];
         }
         
-        _transform = matrix_identity_float4x4;
+        _transformPoise = matrix_identity_float4x4;
+        _transformTranslate = matrix_identity_float4x4;
     }
     
     return self;
@@ -262,10 +263,13 @@
     if (_rotation)
         transform = matrix_multiply(_rotation.rotationMatrix, transform);
     
+    transform = matrix_multiply(_transformPoise, transform);
+    transform = matrix_multiply(_transformTranslate, transform);
+    
     NuoMeshUniforms uniforms;
-    uniforms.transform = matrix_multiply(_transform, transform);
+    uniforms.transform = transform;
     uniforms.normalTransform = matrix_extract_linear(uniforms.transform);
-    memcpy([_rotationBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
+    memcpy([_transformBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
 
 
@@ -279,7 +283,7 @@
     NSUInteger rotationIndex = _shadowPipelineState ? 3 : 2;
     
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_rotationBuffers[index] offset:0 atIndex:rotationIndex];
+    [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:rotationIndex];
     [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
                            indexCount:[_indexBuffer length] / sizeof(uint32_t)
                             indexType:MTLIndexTypeUInt32
@@ -297,7 +301,7 @@
         [renderPass setDepthStencilState:_depthStencilState];
         
         [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-        [renderPass setVertexBuffer:_rotationBuffers[index] offset:0 atIndex:2];
+        [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:2];
         [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
                                indexCount:[_indexBuffer length] / sizeof(uint32_t)
                                 indexType:MTLIndexTypeUInt32

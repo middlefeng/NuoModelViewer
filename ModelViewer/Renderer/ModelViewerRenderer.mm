@@ -97,7 +97,7 @@
         - bounding.centerZ
     };
     const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
-    _mesh.transform = modelCenteringMatrix;
+    _mesh.transformPoise = modelCenteringMatrix;
 }
 
 
@@ -149,7 +149,7 @@
                 exporter.StartArrayIndex(col);
                 exporter.StartTable();
                 
-                vector_float4 colomn = _mesh.transform.columns[col];
+                vector_float4 colomn = _mesh.transformPoise.columns[col];
                 
                 for (unsigned char row = 0; row < 4; ++ row)
                 {
@@ -305,7 +305,7 @@
 - (void)importScene:(NuoLua*)lua
 {
     [lua getField:@"rotationMatrix" fromTable:-1];
-    _mesh.transform = [lua getMatrixFromTable:-1];
+    _mesh.transformPoise = [lua getMatrixFromTable:-1];
     [lua removeField];
     
     [lua getField:@"view" fromTable:-1];
@@ -357,11 +357,11 @@
     
     if (_modelLoader)
     {
-        matrix_float4x4 originalTrans = _mesh.transform;
+        matrix_float4x4 originalTrans = _mesh.transformPoise;
         
         [self createMeshs:commandQueue];
         
-        _mesh.transform = originalTrans;
+        _mesh.transformPoise = originalTrans;
     }
 }
 
@@ -407,7 +407,7 @@
 {
     // accumulate delta rotation into matrix
     //
-    _mesh.transform = matrix_rotation_append(_mesh.transform, _rotationXDelta, _rotationYDelta);
+    _mesh.transformPoise = matrix_rotation_append(_mesh.transformPoise, _rotationXDelta, _rotationYDelta);
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     

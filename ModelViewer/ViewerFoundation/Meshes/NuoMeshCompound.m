@@ -13,6 +13,20 @@
 
 
 
+- (instancetype)init
+{
+    self = [super init];
+    
+    if (self)
+    {
+        self.transformPoise = matrix_identity_float4x4;
+        self.transformTranslate = matrix_identity_float4x4;
+    }
+    
+    return self;
+}
+
+
 - (void)setMeshes:(NSArray<NuoMesh*>*)meshes
 {
     _meshes = meshes;
@@ -32,7 +46,8 @@
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
 {
-    transform = matrix_multiply(self.transform, transform);
+    transform = matrix_multiply(self.transformPoise, transform);
+    transform = matrix_multiply(self.transformTranslate, transform);
     
     for (NuoMesh* item in _meshes)
         [item updateUniform:bufferIndex withTransform:transform];

@@ -33,13 +33,26 @@
 @property (nonatomic, readonly, assign) float smoothTolerance;
 @property (nonatomic, assign) BOOL smoothConservative;
 
-// mesh rotation in model coordinate
+
+
+// mesh rotation in model coordinate, around given axis.
+// better for script-based rotation
 //
 @property (nonatomic, strong) NuoMeshRotation* rotation;
-@property (nonatomic, strong) NSArray<id<MTLBuffer>>* rotationBuffers;
 
-// mesh generic transform
-@property (nonatomic, assign) matrix_float4x4 transform;
+// mesh transform about the poise (rotation around model center)
+//
+@property (nonatomic, assign) matrix_float4x4 transformPoise;
+
+// mesh transform about the translate
+//
+@property (nonatomic, assign) matrix_float4x4 transformTranslate;
+
+// all (prior view-matrix) mesh-transforms concatenate and passed to GPU
+//
+@property (nonatomic, strong) NSArray<id<MTLBuffer>>* transformBuffers;
+
+
 
 // unified material (common to all vertices)
 //
