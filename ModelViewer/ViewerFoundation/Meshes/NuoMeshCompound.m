@@ -37,8 +37,7 @@
     
     self.boundingBox = bounding;
     
-    float modelSpan = fmax(bounding.spanZ, bounding.spanX);
-    modelSpan = fmax(bounding.spanY, modelSpan);
+    float modelSpan = [bounding.span maxDimension];
     _maxSpan = 1.41 * modelSpan;
 }
 

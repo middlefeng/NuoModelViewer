@@ -58,12 +58,12 @@
         NuoBox boundingBox = arrow->GetBoundingBox();
         
         NuoMeshBox* meshBounding = [[NuoMeshBox alloc] init];
-        meshBounding.spanX = boundingBox._spanX;
-        meshBounding.spanY = boundingBox._spanY;
-        meshBounding.spanZ = boundingBox._spanZ;
-        meshBounding.centerX = boundingBox._centerX;
-        meshBounding.centerY = boundingBox._centerY;
-        meshBounding.centerZ = boundingBox._centerZ;
+        meshBounding.span.x = boundingBox._spanX;
+        meshBounding.span.y = boundingBox._spanY;
+        meshBounding.span.z = boundingBox._spanZ;
+        meshBounding.center.x = boundingBox._centerX;
+        meshBounding.center.y = boundingBox._centerY;
+        meshBounding.center.z = boundingBox._centerZ;
         
         _lightVector = [[NuoMesh alloc] initWithDevice:self.device
                                     withVerticesBuffer:arrow->Ptr() withLength:arrow->Length()
@@ -108,9 +108,9 @@
     
     const vector_float3 translationToCenter =
     {
-        - bounding.centerX,
-        - bounding.centerY,
-        - bounding.centerZ + bounding.spanZ / 2.0f
+        - bounding.center.x,
+        - bounding.center.y,
+        - bounding.center.z + bounding.span.z / 2.0f
     };
     
     const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);

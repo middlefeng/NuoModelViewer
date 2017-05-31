@@ -15,27 +15,54 @@
 
 
 
+@implementation NuoCoord
+
+
+- (float)maxDimension
+{
+    float max = std::max(_x, _y);
+    return std::max(max, _z);
+}
+
+@end
+
+
+
 @implementation NuoMeshBox
+
+
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self)
+    {
+        _center = [NuoCoord new];
+        _span = [NuoCoord new];
+    }
+    return self;
+}
+
 
 
 - (NuoMeshBox*)unionWith:(NuoMeshBox*)other
 {
     NuoMeshBox* newBox = [NuoMeshBox new];
     
-    float xMin = std::min(_centerX - _spanX / 2.0, other.centerX - other.spanX / 2.0);
-    float xMax = std::max(_centerX + _spanX / 2.0, other.centerX + other.spanX / 2.0);
-    float yMin = std::min(_centerY - _spanY / 2.0, other.centerY - other.spanY / 2.0);
-    float yMax = std::max(_centerY + _spanY / 2.0, other.centerY + other.spanY / 2.0);
-    float zMin = std::min(_centerZ - _spanZ / 2.0, other.centerZ - other.spanZ / 2.0);
-    float zMax = std::max(_centerZ + _spanZ / 2.0, other.centerZ + other.spanZ / 2.0);
+    float xMin = std::min(_center.x - _span.x / 2.0, other.center.x - other.span.x / 2.0);
+    float xMax = std::max(_center.x + _span.x / 2.0, other.center.x + other.span.x / 2.0);
+    float yMin = std::min(_center.y - _span.y / 2.0, other.center.y - other.span.y / 2.0);
+    float yMax = std::max(_center.y + _span.y / 2.0, other.center.y + other.span.y / 2.0);
+    float zMin = std::min(_center.z - _span.z / 2.0, other.center.z - other.span.z / 2.0);
+    float zMax = std::max(_center.z + _span.z / 2.0, other.center.z + other.span.z / 2.0);
     
-    newBox.centerX = (xMax + xMin) / 2.0f;
-    newBox.centerY = (yMax + yMin) / 2.0f;
-    newBox.centerZ = (zMax + zMin) / 2.0f;
+    newBox.center.x = (xMax + xMin) / 2.0f;
+    newBox.center.y = (yMax + yMin) / 2.0f;
+    newBox.center.z = (zMax + zMin) / 2.0f;
     
-    newBox.spanX = xMax - xMin;
-    newBox.spanY = yMax - yMin;
-    newBox.spanZ = zMax - zMin;
+    newBox.span.x = xMax - xMin;
+    newBox.span.y = yMax - yMin;
+    newBox.span.z = zMax - zMin;
     
     return newBox;
 }
@@ -329,9 +356,9 @@
     NuoMeshBox* bounding = _boundingBox;
     const vector_float3 translationToCenter =
     {
-        - bounding.centerX,
-        - bounding.centerY,
-        - bounding.centerZ
+        - bounding.center.x,
+        - bounding.center.y,
+        - bounding.center.z
     };
     const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
     _transformPoise = modelCenteringMatrix;

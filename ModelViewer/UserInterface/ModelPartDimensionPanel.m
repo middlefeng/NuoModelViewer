@@ -99,13 +99,13 @@
         bounding = [bounding unionWith:mesh[i].boundingBox];
     
     NSString* dimensionString = [[NSString alloc] initWithFormat:@"%0.1f, %0.1f, %0.1f",
-                                            bounding.spanX,
-                                            bounding.spanY,
-                                            bounding.spanZ];
+                                            bounding.span.x,
+                                            bounding.span.y,
+                                            bounding.span.z];
     NSString* centerString = [[NSString alloc] initWithFormat:@"%0.1f, %0.1f, %0.1f",
-                                              bounding.centerX,
-                                              bounding.centerY,
-                                              bounding.centerZ];
+                                            bounding.center.x,
+                                            bounding.center.y,
+                                            bounding.center.z];
     
     [_dimensionValue setStringValue:dimensionString];
     [_centerValue setStringValue:centerString];

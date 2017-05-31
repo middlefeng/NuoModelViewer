@@ -6,15 +6,22 @@
 
 
 
+@interface NuoCoord : NSObject
+
+@property (nonatomic, assign) float x;
+@property (nonatomic, assign) float y;
+@property (nonatomic, assign) float z;
+
+- (float)maxDimension;
+
+@end
+
+
+
 @interface NuoMeshBox : NSObject
 
-@property (nonatomic, assign) float centerX;
-@property (nonatomic, assign) float centerY;
-@property (nonatomic, assign) float centerZ;
-
-@property (nonatomic, assign) float spanX;
-@property (nonatomic, assign) float spanY;
-@property (nonatomic, assign) float spanZ;
+@property (nonatomic, strong) NuoCoord* center;
+@property (nonatomic, strong) NuoCoord* span;
 
 - (NuoMeshBox*)unionWith:(NuoMeshBox*)other;
 
