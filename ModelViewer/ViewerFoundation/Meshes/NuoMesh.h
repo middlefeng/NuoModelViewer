@@ -40,7 +40,9 @@
 //
 @property (nonatomic, strong) NuoMeshRotation* rotation;
 
-// mesh transform about the poise (rotation around model center)
+// mesh transform about the poise (rotation around model center).
+// note this transform may include a slight translation before rotation
+// because the model need to be centered (usually around its bounding box)
 //
 @property (nonatomic, assign) matrix_float4x4 transformPoise;
 
@@ -89,6 +91,9 @@
 - (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
 - (BOOL)hasTransparency;
 - (void)setTransparency:(BOOL)transparent;
+
+
+- (void)centerMesh;
 
 
 @end

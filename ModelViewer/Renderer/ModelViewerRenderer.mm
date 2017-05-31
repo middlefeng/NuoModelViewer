@@ -88,16 +88,8 @@
     [_modelLoader loadModel:path];
     
     [self createMeshs:commandQueue];
-    
-    NuoMeshBox* bounding = _mesh.boundingBox;
-    const vector_float3 translationToCenter =
-    {
-        - bounding.centerX,
-        - bounding.centerY,
-        - bounding.centerZ
-    };
-    const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
-    _mesh.transformPoise = modelCenteringMatrix;
+
+    [_mesh centerMesh];
 }
 
 

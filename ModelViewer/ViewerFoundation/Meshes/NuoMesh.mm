@@ -323,6 +323,21 @@
 }
 
 
+
+- (void)centerMesh
+{
+    NuoMeshBox* bounding = _boundingBox;
+    const vector_float3 translationToCenter =
+    {
+        - bounding.centerX,
+        - bounding.centerY,
+        - bounding.centerZ
+    };
+    const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
+    _transformPoise = modelCenteringMatrix;
+}
+
+
 @end
 
 
