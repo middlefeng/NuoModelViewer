@@ -83,7 +83,7 @@
     const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye.xyz, center.xyz, up);
     
     CGSize drawableSize = self.renderTarget.drawableSize;
-    float meshRadius = _mesh.maxSpan / 2.0;
+    float meshRadius = _mesh.boundingSphere.radius;
     float aspectRatio = drawableSize.width / drawableSize.height;
     float viewPortHeight = meshRadius;
     float viewPortWidth = aspectRatio * viewPortHeight;

@@ -24,11 +24,63 @@
     return std::max(max, _z);
 }
 
+
+- (float)distanceTo:(NuoCoord*)other
+{
+    vector_float3 v1 = { _x, _y, _z };
+    vector_float3 v2 = { other.x, other.y, other.z };
+    
+    return vector_distance(v1, v2);
+}
+
+
+- (NuoCoord*)interpolateTo:(NuoCoord*)other byFactor:(float)factor
+{
+    NuoCoord* result = [NuoCoord new];
+    result.x = _x + (other.x - _x) * factor;
+    result.y = _x + (other.y - _y) * factor;
+    result.z = _z + (other.z - _z) * factor;
+    
+    return result;
+}
+
+
+@end
+
+
+
+@implementation NuoBoundingSphere
+
+- (NuoBoundingSphere*)unionWith:(NuoBoundingSphere*)other
+{
+    float distance = [_center distanceTo:other.center];
+    float futhestOtherReach = distance + other.radius;
+    
+    if (futhestOtherReach < _radius)
+    {
+        return self;
+    }
+    else
+    {
+        NuoBoundingSphere* result = [NuoBoundingSphere new];
+        result.radius = (distance + other.radius + _radius) / 2.0;
+        
+        float newCenterDistance = result.radius - _radius;
+        float factor = newCenterDistance / distance;
+        result.center = [_center interpolateTo:other.center byFactor:factor];
+        
+        return result;
+    }
+}
+
 @end
 
 
 
 @implementation NuoMeshBox
+{
+    NuoBoundingSphere* _sphere;
+}
 
 
 
@@ -65,6 +117,19 @@
     newBox.span.z = zMax - zMin;
     
     return newBox;
+}
+
+
+- (NuoBoundingSphere*)boundingSphere
+{
+    if (!_sphere)
+    {
+        _sphere = [NuoBoundingSphere new];
+        _sphere.center = _center;
+        _sphere.radius = [_span maxDimension] * 1.41 / 2.0;
+    }
+    
+    return _sphere;
 }
 
 

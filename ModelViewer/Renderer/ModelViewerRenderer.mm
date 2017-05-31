@@ -403,11 +403,12 @@
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
-    float maxSpan = _mesh.maxSpan;
-    const float modelNearest = - maxSpan / 2.0;
+    float radius = _mesh.boundingSphere.radius;
+    float maxSpan = radius * 2.0;
+    const float modelNearest = - radius;
     const float bilateralFactor = 1 / 750.0f;
     const float cameraDefaultDistance = (modelNearest - maxSpan);
-    const float cameraDistance = cameraDefaultDistance + _zoom * maxSpan / 20.0f;
+    const float cameraDistance = cameraDefaultDistance + _zoom * radius / 10.0f;
     
     const float doTransX = _transX * cameraDistance * bilateralFactor;
     const float doTransY = _transY * cameraDistance * bilateralFactor;
@@ -422,7 +423,7 @@
     
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
-    const float near = -cameraDistance - maxSpan / 2.0 + 0.01;
+    const float near = -cameraDistance - radius + 0.01;
     const float far = near + maxSpan + 0.02;
     const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, _fieldOfView, near, far);
 

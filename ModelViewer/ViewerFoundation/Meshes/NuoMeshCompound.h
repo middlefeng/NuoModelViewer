@@ -14,7 +14,7 @@
 
 @property (nonatomic, strong) NSArray<NuoMesh*>* meshes;
 @property (nonatomic, assign) BOOL cullEnabled;
-@property (nonatomic, assign, readonly) float maxSpan;
+@property (nonatomic, strong, readonly) NuoBoundingSphere* boundingSphere;
 
 
 @end

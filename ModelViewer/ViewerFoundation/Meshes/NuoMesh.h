@@ -13,6 +13,19 @@
 @property (nonatomic, assign) float z;
 
 - (float)maxDimension;
+- (float)distanceTo:(NuoCoord*)other;
+- (NuoCoord*)interpolateTo:(NuoCoord*)other byFactor:(float)factor;
+
+@end
+
+
+
+@interface NuoBoundingSphere : NSObject
+
+@property (nonatomic, strong) NuoCoord* center;
+@property (nonatomic, assign) float radius;
+
+- (NuoBoundingSphere*)unionWith:(NuoBoundingSphere*)other;
 
 @end
 
@@ -24,6 +37,7 @@
 @property (nonatomic, strong) NuoCoord* span;
 
 - (NuoMeshBox*)unionWith:(NuoMeshBox*)other;
+- (NuoBoundingSphere*)boundingSphere;
 
 @end
 

@@ -37,8 +37,7 @@
     
     self.boundingBox = bounding;
     
-    float modelSpan = [bounding.span maxDimension];
-    _maxSpan = 1.41 * modelSpan;
+    _boundingSphere = [bounding boundingSphere];
 }
 
 
