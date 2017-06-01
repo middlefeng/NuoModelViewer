@@ -194,10 +194,45 @@
 
 
 
+- (void)updateBoundingSphere
+{
+    vector_float4 localCenter =
+    {
+        _boundingSphereLocal.center.x,
+        _boundingSphereLocal.center.y,
+        _boundingSphereLocal.center.z,
+        1,
+    };
+    localCenter = matrix_multiply(_transformPoise, localCenter);
+    localCenter = matrix_multiply(_transformTranslate, localCenter);
+    
+    NuoCoord* center = [NuoCoord new];
+    center.x = localCenter.x;
+    center.y = localCenter.y;
+    center.z = localCenter.z;
+    
+    if (!_boundingSphere)
+        _boundingSphere = [NuoBoundingSphere new];
+    _boundingSphere.center = center;
+    _boundingSphere.radius = _boundingSphereLocal.radius;
+}
+
+
+
 - (void)setBoundingBox:(NuoMeshBox *)boundingBox
 {
     _boundingBox = boundingBox;
-    _boundingSphere = [boundingBox boundingSphere];
+    _boundingSphereLocal = [boundingBox boundingSphere];
+    
+    [self updateBoundingSphere];
+}
+
+
+
+- (void)setTransformTranslate:(matrix_float4x4)transformTranslate
+{
+    _transformTranslate = transformTranslate;
+    [self updateBoundingSphere];
 }
 
 
@@ -435,6 +470,8 @@
     };
     const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
     _transformPoise = modelCenteringMatrix;
+    
+    [self updateBoundingSphere];
 }
 
 

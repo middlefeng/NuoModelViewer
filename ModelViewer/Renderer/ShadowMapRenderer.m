@@ -69,7 +69,9 @@
 {
     static const float kCameraDistance = 1.0;
     
-    vector_float4 center = {0, 0, 0, 1};
+    NuoBoundingSphere* sphere = [_mesh boundingSphere];
+    
+    vector_float4 center = {sphere.center.x, sphere.center.y, sphere.center.z, 1};
     vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
     vector_float3 up = {0, 1, 0};
     
@@ -77,8 +79,7 @@
     const matrix_float4x4 lightAsEyeMatrix = matrix_rotate(lightSource.lightingRotationX,
                                                            lightSource.lightingRotationY);
     lightAsEye = matrix_multiply(lightAsEyeMatrix, lightAsEye);
-    lightAsEye = matrix_multiply(_mesh.transformTranslate, lightAsEye);
-    center = matrix_multiply(_mesh.transformTranslate, center);
+    lightAsEye = lightAsEye + center;
     
     const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye.xyz, center.xyz, up);
     
