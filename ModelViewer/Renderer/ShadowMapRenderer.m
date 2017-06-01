@@ -11,7 +11,7 @@
 
 #import "NuoShadowMapTarget.h"
 
-#include "NuoMeshCompound.h"
+#include "NuoMesh.h"
 #include "NuoUniforms.h"
 #include "NuoMathUtilities.h"
 
