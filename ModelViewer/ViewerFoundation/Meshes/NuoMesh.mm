@@ -194,6 +194,14 @@
 
 
 
+- (void)setBoundingBox:(NuoMeshBox *)boundingBox
+{
+    _boundingBox = boundingBox;
+    _boundingSphere = [boundingBox boundingSphere];
+}
+
+
+
 - (void)smoothWithTolerance:(float)tolerance
 {
     _smoothTolerance = tolerance;

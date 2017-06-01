@@ -36,8 +36,6 @@
         bounding = [bounding unionWith:meshes[i].boundingBox];
     
     self.boundingBox = bounding;
-    
-    _boundingSphere = [bounding boundingSphere];
 }
 
 

@@ -89,6 +89,7 @@
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
 
 @property (nonatomic, strong) NuoMeshBox* boundingBox;
+@property (nonatomic, strong, readonly) NuoBoundingSphere* boundingSphere;
 @property (nonatomic, assign) BOOL enabled;
 
 
