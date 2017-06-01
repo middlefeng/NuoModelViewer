@@ -395,11 +395,10 @@
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
 {
+    matrix_float4x4 localTransform = matrix_multiply(_transformTranslate, _transformPoise);
     if (_rotation)
-        transform = matrix_multiply(_rotation.rotationMatrix, transform);
-    
-    transform = matrix_multiply(_transformPoise, transform);
-    transform = matrix_multiply(_transformTranslate, transform);
+        localTransform = matrix_multiply(localTransform, _rotation.rotationMatrix);
+    transform = matrix_multiply(transform, localTransform);
     
     NuoMeshUniforms uniforms;
     uniforms.transform = transform;
