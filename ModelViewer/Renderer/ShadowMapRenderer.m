@@ -69,7 +69,9 @@
 {
     static const float kCameraDistance = 1.0;
     
-    NuoBoundingSphere* sphere = [_mesh boundingSphere];
+    NuoBoundingSphere* sphere = [_meshes[0] boundingSphere];
+    for (NSUInteger i = 1; i < _meshes.count; ++i)
+        sphere = [sphere unionWith:[_meshes[i] boundingSphere]];
     
     vector_float4 center = {sphere.center.x, sphere.center.y, sphere.center.z, 1};
     vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
@@ -84,7 +86,7 @@
     const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye.xyz, center.xyz, up);
     
     CGSize drawableSize = self.renderTarget.drawableSize;
-    float meshRadius = _mesh.boundingSphere.radius;
+    float meshRadius = sphere.radius;
     float aspectRatio = drawableSize.width / drawableSize.height;
     float viewPortHeight = meshRadius;
     float viewPortWidth = aspectRatio * viewPortHeight;
@@ -113,7 +115,8 @@
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
 
     [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
-    [_mesh drawShadow:renderPass indexBuffer:inFlight];
+    for (NuoMesh* mesh in _meshes)
+        [mesh drawShadow:renderPass indexBuffer:inFlight];
     
     [renderPass endEncoding];
 }
