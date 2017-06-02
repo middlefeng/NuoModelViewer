@@ -22,6 +22,7 @@
 
 @interface ModelRenderer ()
 
+@property (nonatomic, strong) NuoMeshCompound* meshSecond;
 
 @property (nonatomic, strong) NuoMeshCompound* mesh;
 @property (strong) NSArray<id<MTLBuffer>>* transUniformBuffers;
@@ -96,6 +97,10 @@
 - (void)createMeshs:(id<MTLCommandQueue>)commandQueue
 {
     _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
+                                      withDevice:self.device
+                                withCommandQueue:commandQueue];
+    
+    _meshSecond = [_modelLoader createMeshsWithOptions:_modelOptions
                                       withDevice:self.device
                                 withCommandQueue:commandQueue];
 }
@@ -403,6 +408,8 @@
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
+    NuoBoundingSphere* sphere = [_mesh.boundingSphere unionWith:_meshSecond.boundingSphere];
+    
     float radius = _mesh.boundingSphere.radius;
     float maxSpan = radius * 2.0;
     const float modelNearest = - radius;
@@ -423,8 +430,8 @@
     
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
-    const float near = -cameraDistance - radius + 0.01;
-    const float far = near + maxSpan + 0.02;
+    const float near = -sphere.center.z - sphere.radius + 0.01;
+    const float far = near + sphere.radius * 2.0 + 0.02;
     const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, _fieldOfView, near, far);
 
     NuoUniforms uniforms;
@@ -458,6 +465,16 @@
     [_mesh setTransformTranslate:viewMatrix];
     [_mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
     
+    const vector_float3 cameraTranslation2 =
+    {
+        0, 0,
+        cameraDefaultDistance + radius / 10.0f
+    };
+    
+    const matrix_float4x4 viewMatrix2 = matrix_translation(cameraTranslation2);
+    [_meshSecond setTransformTranslate:viewMatrix2];
+    [_meshSecond updateUniform:inFlight withTransform:matrix_identity_float4x4];
+    
     if (_cubeMesh)
     {
         const matrix_float4x4 projectionMatrixForCube = matrix_perspective(aspect, _fieldOfView, 0.3, 2.0);
@@ -475,7 +492,7 @@
     //
     for (unsigned int i = 0; i < 2 /* for two light sources only */; ++i)
     {
-        _shadowMapRenderer[i].meshes = _mesh ? @[_mesh] : nil;
+        _shadowMapRenderer[i].meshes = _mesh ? @[_mesh, _meshSecond] : nil;
         _shadowMapRenderer[i].lightSource = _lights[i];
         [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     }
@@ -512,6 +529,9 @@
     
     [_mesh setCullEnabled:_cullEnabled];
     [_mesh drawMesh:renderPass indexBuffer:inFlight];
+    
+    [_meshSecond setCullEnabled:_cullEnabled];
+    [_meshSecond drawMesh:renderPass indexBuffer:inFlight];
     
     [renderPass endEncoding];
 }
