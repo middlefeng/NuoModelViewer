@@ -54,11 +54,23 @@
 - (NuoBoundingSphere*)unionWith:(NuoBoundingSphere*)other
 {
     float distance = [_center distanceTo:other.center];
-    float futhestOtherReach = distance + other.radius;
+    NuoBoundingSphere *smaller, *larger;
+    if (_radius > other.radius)
+    {
+        smaller = other;
+        larger = self;
+    }
+    else
+    {
+        smaller = self;
+        larger = other;
+    }
+    
+    float futhestOtherReach = distance + smaller.radius;
     
     if (futhestOtherReach < _radius)
     {
-        return self;
+        return larger;
     }
     else
     {
