@@ -462,14 +462,27 @@
         doTransX, doTransY,
         distanceDelta
     };
+    
+    float sceneRadius = 0;
+    float sceneCenter = 0;
+    NuoBoundingSphere* sceneSphere = nil;
+    for (NuoMesh* mesh in _meshes)
+    {
+        if (!sceneSphere)
+            sceneSphere = mesh.boundingSphere;
+        else
+            sceneSphere = [sceneSphere unionWith:mesh.boundingSphere];
+    }
+    sceneRadius = sceneSphere.radius;
+    sceneCenter = sceneSphere.center.z;
 
     const matrix_float4x4 transMatrix = matrix_multiply(matrix_translation(translation),
                                                        _selectedMesh.transformTranslate);
     
-    float maxSpan = radius * 2.0;
+    float maxSpan = sceneRadius * 2.0;
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
-    const float near = -cameraDistance - radius + 0.01;
+    const float near = -sceneCenter - sceneRadius + 0.01;
     const float far = near + maxSpan + 0.02;
     const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, _fieldOfView, near, far);
 
@@ -502,7 +515,9 @@
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(LightUniform));
     
     [_selectedMesh setTransformTranslate:transMatrix];
-    [_selectedMesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
+    
+    for (NuoMesh* mesh in _meshes)
+        [mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
     
     if (_cubeMesh)
     {
