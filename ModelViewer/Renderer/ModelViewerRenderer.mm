@@ -22,9 +22,11 @@
 
 @interface ModelRenderer ()
 
-@property (nonatomic, strong) NuoMeshCompound* meshSecond;
+@property (nonatomic, weak) NuoMeshCompound* mainModelMesh;
+@property (nonatomic, weak) NuoMesh* selectedMesh;
 
-@property (nonatomic, strong) NuoMeshCompound* mesh;
+@property (nonatomic, strong) NSMutableArray<NuoMesh*>* meshes;
+
 @property (strong) NSArray<id<MTLBuffer>>* transUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
@@ -61,6 +63,8 @@
         
         _shadowMapRenderer[0] = [[ShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 0"];
         _shadowMapRenderer[1] = [[ShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
+        
+        _meshes = [NSMutableArray new];
     }
 
     return self;
@@ -90,25 +94,41 @@
     
     [self createMeshs:commandQueue];
 
-    [_mesh centerMesh];
+    [_mainModelMesh centerMesh];
+    
+    // move model from camera for a default distance (3 times of r)
+    //
+    float radius = _mainModelMesh.boundingSphere.radius;
+    const float defaultDistance = - 3.0 * radius;
+    const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
+    [_mainModelMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
+    
+    [_meshes[1] setTransformTranslate:matrix_translation(defaultDistanceVec)];
 }
 
 
 - (void)createMeshs:(id<MTLCommandQueue>)commandQueue
 {
-    _mesh = [_modelLoader createMeshsWithOptions:_modelOptions
-                                      withDevice:self.device
-                                withCommandQueue:commandQueue];
+    NuoMeshCompound* mesh = [_modelLoader createMeshsWithOptions:_modelOptions
+                                                      withDevice:self.device
+                                                withCommandQueue:commandQueue];
     
-    _meshSecond = [_modelLoader createMeshsWithOptions:_modelOptions
-                                      withDevice:self.device
-                                withCommandQueue:commandQueue];
+    NuoMeshCompound* meshSecond = [_modelLoader createMeshsWithOptions:_modelOptions
+                                                            withDevice:self.device
+                                                      withCommandQueue:commandQueue];
+    [_meshes removeAllObjects];
+    
+    [_meshes addObject:mesh];
+    _mainModelMesh = mesh;
+    _selectedMesh = mesh;
+
+    [_meshes addObject:meshSecond];
 }
 
 
-- (NuoMeshCompound*)mesh
+- (NuoMeshCompound*)mainModelMesh
 {
-    return _mesh;
+    return _mainModelMesh;
 }
 
 
@@ -146,7 +166,35 @@
                 exporter.StartArrayIndex(col);
                 exporter.StartTable();
                 
-                vector_float4 colomn = _mesh.transformPoise.columns[col];
+                vector_float4 colomn = _mainModelMesh.transformPoise.columns[col];
+                
+                for (unsigned char row = 0; row < 4; ++ row)
+                {
+                    exporter.StartArrayIndex(row);
+                    exporter.SetEntryValueFloat(colomn[row]);
+                    exporter.EndEntry(false);
+                }
+                
+                exporter.EndTable();
+                exporter.EndEntry(false);
+            }
+        }
+        
+        exporter.EndTable();
+        exporter.EndEntry(true);
+    }
+    
+    {
+        exporter.StartEntry("translationMatrix");
+        exporter.StartTable();
+        
+        {
+            for (unsigned char col = 0; col < 4; ++ col)
+            {
+                exporter.StartArrayIndex(col);
+                exporter.StartTable();
+                
+                vector_float4 colomn = _mainModelMesh.transformTranslate.columns[col];
                 
                 for (unsigned char row = 0; row < 4; ++ row)
                 {
@@ -169,18 +217,6 @@
         exporter.StartTable();
         
         {
-            exporter.StartEntry("zoom");
-            exporter.SetEntryValueFloat(_zoom);
-            exporter.EndEntry(false);
-            
-            exporter.StartEntry("transX");
-            exporter.SetEntryValueFloat(_transX);
-            exporter.EndEntry(false);
-            
-            exporter.StartEntry("transY");
-            exporter.SetEntryValueFloat(_transY);
-            exporter.EndEntry(false);
-            
             exporter.StartEntry("FOV");
             exporter.SetEntryValueFloat(_fieldOfView);
             exporter.EndEntry(false);
@@ -194,7 +230,7 @@
         
         size_t index = 0;
         
-        for (NuoMesh* meshItem in _mesh.meshes)
+        for (NuoMesh* meshItem in _mainModelMesh.meshes)
         {
             if (meshItem.smoothTolerance > 0.001 || !meshItem.enabled ||
                 meshItem.reverseCommonCullMode || (meshItem.hasUnifiedMaterial && meshItem.unifiedOpacity != 1.0))
@@ -302,13 +338,15 @@
 - (void)importScene:(NuoLua*)lua
 {
     [lua getField:@"rotationMatrix" fromTable:-1];
-    _mesh.transformPoise = [lua getMatrixFromTable:-1];
+    [_mainModelMesh setTransformPoise:[lua getMatrixFromTable:-1]];
+    [lua removeField];
+    
+    [lua getField:@"translationMatrix" fromTable:-1];
+    if (![lua isNil:-1])
+        [_mainModelMesh setTransformTranslate:[lua getMatrixFromTable:-1]];
     [lua removeField];
     
     [lua getField:@"view" fromTable:-1];
-    _zoom = [lua getFieldAsNumber:@"zoom" fromTable:-1];
-    _transX = [lua getFieldAsNumber:@"transX" fromTable:-1];
-    _transY = [lua getFieldAsNumber:@"transY" fromTable:-1];
     _fieldOfView = [lua getFieldAsNumber:@"FOV" fromTable:-1];
     [lua removeField];
     
@@ -321,9 +359,9 @@
     {
         [lua getItem:(int)(i + 1) fromTable:-1];
         NSString* name = [lua getFieldAsString:@"name" fromTable:-1];
-        for (size_t i = passedModel; i < _mesh.meshes.count; ++i)
+        for (size_t i = passedModel; i < _mainModelMesh.meshes.count; ++i)
         {
-            NuoMesh* mesh = _mesh.meshes[i];
+            NuoMesh* mesh = _mainModelMesh.meshes[i];
             
             if ([mesh.modelName isEqualToString:name])
             {
@@ -354,11 +392,13 @@
     
     if (_modelLoader)
     {
-        matrix_float4x4 originalTrans = _mesh.transformPoise;
+        matrix_float4x4 originalPoise = _mainModelMesh.transformPoise;
+        matrix_float4x4 originalTrans = _mainModelMesh.transformTranslate;
         
         [self createMeshs:commandQueue];
         
-        _mesh.transformPoise = originalTrans;
+        _mainModelMesh.transformPoise = originalPoise;
+        _mainModelMesh.transformTranslate = originalTrans;
     }
 }
 
@@ -404,34 +444,53 @@
 {
     // accumulate delta rotation into matrix
     //
-    _mesh.transformPoise = matrix_rotation_append(_mesh.transformPoise, _rotationXDelta, _rotationYDelta);
+    _selectedMesh.transformPoise = matrix_rotation_append(_selectedMesh.transformPoise, _rotationXDelta, _rotationYDelta);
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
-    NuoBoundingSphere* sphere = [_mesh.boundingSphere unionWith:_meshSecond.boundingSphere];
+    float radius = _selectedMesh.boundingSphere.radius;
     
-    float radius = _mesh.boundingSphere.radius;
-    float maxSpan = radius * 2.0;
-    const float modelNearest = - radius;
-    const float bilateralFactor = 1 / 750.0f;
-    const float cameraDefaultDistance = (modelNearest - maxSpan);
-    const float cameraDistance = cameraDefaultDistance + _zoom * radius / 10.0f;
+    // simply using "z" works until the view matrix is no longer an identitiy
+    //
+    float distance = _selectedMesh.boundingSphere.center.z;
     
-    const float doTransX = _transX * cameraDistance * bilateralFactor;
-    const float doTransY = _transY * cameraDistance * bilateralFactor;
+    const float distanceDelta = _zoomDelta * radius / 10.0f;
+    const float cameraDistance = distanceDelta + distance;
+    const float bilateralFactor = cameraDistance / 750.0f;
+    _zoomDelta = 0;
     
-    const vector_float3 cameraTranslation =
+    const float doTransX = _transXDelta * bilateralFactor;
+    const float doTransY = _transYDelta * bilateralFactor;
+    _transXDelta = 0;
+    _transYDelta = 0;
+    
+    const vector_float3 translation =
     {
         doTransX, doTransY,
-        cameraDistance
+        distanceDelta
     };
-
-    const matrix_float4x4 viewMatrix = matrix_translation(cameraTranslation);
     
+    float sceneRadius = 0;
+    float sceneCenter = 0;
+    NuoBoundingSphere* sceneSphere = nil;
+    for (NuoMesh* mesh in _meshes)
+    {
+        if (!sceneSphere)
+            sceneSphere = mesh.boundingSphere;
+        else
+            sceneSphere = [sceneSphere unionWith:mesh.boundingSphere];
+    }
+    sceneRadius = sceneSphere.radius;
+    sceneCenter = sceneSphere.center.z;
+
+    const matrix_float4x4 transMatrix = matrix_multiply(matrix_translation(translation),
+                                                       _selectedMesh.transformTranslate);
+    
+    float maxSpan = sceneRadius * 2.0;
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
-    const float near = -sphere.center.z - sphere.radius + 0.01;
-    const float far = near + sphere.radius * 2.0 + 0.02;
+    const float near = -sceneCenter - sceneRadius + 0.01;
+    const float far = near + maxSpan + 0.02;
     const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, _fieldOfView, near, far);
 
     NuoUniforms uniforms;
@@ -462,18 +521,10 @@
     
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(LightUniform));
     
-    [_mesh setTransformTranslate:viewMatrix];
-    [_mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
+    [_selectedMesh setTransformTranslate:transMatrix];
     
-    const vector_float3 cameraTranslation2 =
-    {
-        0, 0,
-        cameraDefaultDistance + radius / 10.0f
-    };
-    
-    const matrix_float4x4 viewMatrix2 = matrix_translation(cameraTranslation2);
-    [_meshSecond setTransformTranslate:viewMatrix2];
-    [_meshSecond updateUniform:inFlight withTransform:matrix_identity_float4x4];
+    for (NuoMesh* mesh in _meshes)
+        [mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
     
     if (_cubeMesh)
     {
@@ -492,7 +543,7 @@
     //
     for (unsigned int i = 0; i < 2 /* for two light sources only */; ++i)
     {
-        _shadowMapRenderer[i].meshes = _mesh ? @[_mesh, _meshSecond] : nil;
+        _shadowMapRenderer[i].meshes = _meshes;
         _shadowMapRenderer[i].lightSource = _lights[i];
         [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     }
@@ -527,11 +578,11 @@
     [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.targetTexture atIndex:1];
     [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
     
-    [_mesh setCullEnabled:_cullEnabled];
-    [_mesh drawMesh:renderPass indexBuffer:inFlight];
-    
-    [_meshSecond setCullEnabled:_cullEnabled];
-    [_meshSecond drawMesh:renderPass indexBuffer:inFlight];
+    for (NuoMesh* mesh in _meshes)
+    {
+        [mesh setCullEnabled:_cullEnabled];
+        [mesh drawMesh:renderPass indexBuffer:inFlight];
+    }
     
     [renderPass endEncoding];
 }

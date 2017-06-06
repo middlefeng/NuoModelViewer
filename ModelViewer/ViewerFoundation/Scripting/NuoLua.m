@@ -169,6 +169,11 @@
 }
 
 
+- (bool)isNil:(int)index
+{
+    return lua_isnil(_luaState, index);
+}
+
 
 
 @end
