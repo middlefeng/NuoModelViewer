@@ -122,7 +122,7 @@
 {
     // clear all table and data structures that depends on the mesh
     //
-    [_modelComponentPanels setMesh:_modelRender.mesh.meshes];
+    [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
     [_animations removeAllObjects];
     [_modelPanel setModelPartAnimations:_animations];
 }
@@ -181,7 +181,7 @@
                      current.animationName = key;
                      
                      [lua getField:key fromTable:-1];
-                     [current importAnimation:lua forMesh:_modelRender.mesh.meshes];
+                     [current importAnimation:lua forMesh:_modelRender.mainModelMesh.meshes];
                      [lua removeField];
                      
                      if (current.mesh.count)
@@ -508,7 +508,7 @@
     [_modelRender importScene:lua];
     [_notationRender importScene:lua];
     
-    [_modelComponentPanels setMesh:_modelRender.mesh.meshes];
+    [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
     [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];
     [_modelPanel setAmbientDensity:_modelRender.ambientDensity];
     [_modelPanel updateControls];

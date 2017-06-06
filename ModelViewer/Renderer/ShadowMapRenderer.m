@@ -69,11 +69,22 @@
 {
     static const float kCameraDistance = 1.0;
     
-    NuoBoundingSphere* sphere = [_meshes[0] boundingSphere];
-    for (NSUInteger i = 1; i < _meshes.count; ++i)
-        sphere = [sphere unionWith:[_meshes[i] boundingSphere]];
+    vector_float4 center = {0, 0, 0, 1};
+    float meshRadius = 0.0;
     
-    vector_float4 center = {sphere.center.x, sphere.center.y, sphere.center.z, 1};
+    NuoBoundingSphere* sphere = nil;
+    if (_meshes && _meshes.count > 0)
+    {
+        sphere = [_meshes[0] boundingSphere];
+        for (NSUInteger i = 1; i < _meshes.count; ++i)
+            sphere = [sphere unionWith:[_meshes[i] boundingSphere]];
+        
+        center.x = sphere.center.x;
+        center.y = sphere.center.y;
+        center.z = sphere.center.z;
+        meshRadius = sphere.radius;
+    }
+    
     vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
     vector_float3 up = {0, 1, 0};
     
@@ -86,7 +97,6 @@
     const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye.xyz, center.xyz, up);
     
     CGSize drawableSize = self.renderTarget.drawableSize;
-    float meshRadius = sphere.radius;
     float aspectRatio = drawableSize.width / drawableSize.height;
     float viewPortHeight = meshRadius;
     float viewPortWidth = aspectRatio * viewPortHeight;
