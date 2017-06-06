@@ -50,6 +50,7 @@
     LightOperationPanel* _lightPanel;
     
     BOOL _trackingLighting;
+    BOOL _mouseMoved;
     
     NSString* _documentName;
 }
@@ -351,6 +352,8 @@
     {
         _trackingLighting = NO;
     }
+    
+    _mouseMoved = NO;
 }
 
 
@@ -358,6 +361,13 @@
 {
     _trackingLighting = NO;
     [self render];
+    
+    if (!_mouseMoved)
+    {
+        NSPoint location = event.locationInWindow;
+        location = [self convertPoint:location fromView:nil];
+        [_modelRender selectMeshWithScreen:location];
+    }
 }
 
 
@@ -388,6 +398,8 @@
     }
     
     [self render];
+    
+    _mouseMoved = YES;
 }
 
 

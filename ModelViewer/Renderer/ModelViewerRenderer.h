@@ -44,5 +44,7 @@
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
        withCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
+- (void)selectMeshWithScreen:(CGPoint)point;
+
 
 @end
