@@ -36,7 +36,7 @@
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
 - (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue;
-- (NuoMeshCompound*)mesh;
+- (NuoMeshCompound*)mainModelMesh;
 
 - (NSString*)exportSceneAsString:(CGSize)canvasSize;
 - (void)importScene:(NuoLua*)lua;

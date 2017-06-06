@@ -52,7 +52,7 @@
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)bufferIndex
 {
-    NSArray* cullModes = _cullEnabled ?
+    NSArray* cullModes = self.cullEnabled ?
                             @[@(MTLCullModeBack), @(MTLCullModeNone)] :
                             @[@(MTLCullModeNone), @(MTLCullModeBack)];
     NSUInteger cullMode = [cullModes[0] unsignedLongValue];
