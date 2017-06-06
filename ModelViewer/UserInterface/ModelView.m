@@ -393,7 +393,7 @@
 
 - (void)magnifyWithEvent:(NSEvent *)event
 {
-    _modelRender.zoom += 10 * event.magnification;
+    _modelRender.zoomDelta = 10 * event.magnification;
     [self render];
 }
 
@@ -401,8 +401,8 @@
 
 - (void)scrollWheel:(NSEvent *)event
 {
-    _modelRender.transX -= event.deltaX;
-    _modelRender.transY += event.deltaY;
+    _modelRender.transXDelta = -event.deltaX;
+    _modelRender.transYDelta = event.deltaY;
     [self render];
 }
 

@@ -90,6 +90,13 @@
     [self createMeshs:commandQueue];
 
     [_mesh centerMesh];
+    
+    // move model from camera for a default distance (3 times of r)
+    //
+    float radius = _mesh.boundingSphere.radius;
+    const float defaultDistance = - 3.0 * radius;
+    const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
+    [_mesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
 }
 
 
@@ -160,22 +167,38 @@
     }
     
     {
+        exporter.StartEntry("translationMatrix");
+        exporter.StartTable();
+        
+        {
+            for (unsigned char col = 0; col < 4; ++ col)
+            {
+                exporter.StartArrayIndex(col);
+                exporter.StartTable();
+                
+                vector_float4 colomn = _mesh.transformTranslate.columns[col];
+                
+                for (unsigned char row = 0; row < 4; ++ row)
+                {
+                    exporter.StartArrayIndex(row);
+                    exporter.SetEntryValueFloat(colomn[row]);
+                    exporter.EndEntry(false);
+                }
+                
+                exporter.EndTable();
+                exporter.EndEntry(false);
+            }
+        }
+        
+        exporter.EndTable();
+        exporter.EndEntry(true);
+    }
+    
+    {
         exporter.StartEntry("view");
         exporter.StartTable();
         
         {
-            exporter.StartEntry("zoom");
-            exporter.SetEntryValueFloat(_zoom);
-            exporter.EndEntry(false);
-            
-            exporter.StartEntry("transX");
-            exporter.SetEntryValueFloat(_transX);
-            exporter.EndEntry(false);
-            
-            exporter.StartEntry("transY");
-            exporter.SetEntryValueFloat(_transY);
-            exporter.EndEntry(false);
-            
             exporter.StartEntry("FOV");
             exporter.SetEntryValueFloat(_fieldOfView);
             exporter.EndEntry(false);
@@ -300,10 +323,12 @@
     _mesh.transformPoise = [lua getMatrixFromTable:-1];
     [lua removeField];
     
+    [lua getField:@"translationMatrix" fromTable:-1];
+    if (![lua isNil:-1])
+        _mesh.transformTranslate = [lua getMatrixFromTable:-1];
+    [lua removeField];
+    
     [lua getField:@"view" fromTable:-1];
-    _zoom = [lua getFieldAsNumber:@"zoom" fromTable:-1];
-    _transX = [lua getFieldAsNumber:@"transX" fromTable:-1];
-    _transY = [lua getFieldAsNumber:@"transY" fromTable:-1];
     _fieldOfView = [lua getFieldAsNumber:@"FOV" fromTable:-1];
     [lua removeField];
     
@@ -349,11 +374,13 @@
     
     if (_modelLoader)
     {
-        matrix_float4x4 originalTrans = _mesh.transformPoise;
+        matrix_float4x4 originalPoise = _mesh.transformPoise;
+        matrix_float4x4 originalTrans = _mesh.transformTranslate;
         
         [self createMeshs:commandQueue];
         
-        _mesh.transformPoise = originalTrans;
+        _mesh.transformPoise = originalPoise;
+        _mesh.transformTranslate = originalTrans;
     }
 }
 
@@ -404,23 +431,31 @@
     _rotationYDelta = 0;
     
     float radius = _mesh.boundingSphere.radius;
-    float maxSpan = radius * 2.0;
-    const float modelNearest = - radius;
-    const float bilateralFactor = 1 / 750.0f;
-    const float cameraDefaultDistance = (modelNearest - maxSpan);
-    const float cameraDistance = cameraDefaultDistance + _zoom * radius / 10.0f;
     
-    const float doTransX = _transX * cameraDistance * bilateralFactor;
-    const float doTransY = _transY * cameraDistance * bilateralFactor;
+    // simply using "z" works until the view matrix is no longer an identitiy
+    //
+    float distance = _mesh.boundingSphere.center.z;
     
-    const vector_float3 cameraTranslation =
+    const float distanceDelta = _zoomDelta * radius / 10.0f;
+    const float cameraDistance = distanceDelta + distance;
+    const float bilateralFactor = cameraDistance / 750.0f;
+    _zoomDelta = 0;
+    
+    const float doTransX = _transXDelta * bilateralFactor;
+    const float doTransY = _transYDelta * bilateralFactor;
+    _transXDelta = 0;
+    _transYDelta = 0;
+    
+    const vector_float3 translation =
     {
         doTransX, doTransY,
-        cameraDistance
+        distanceDelta
     };
 
-    const matrix_float4x4 viewMatrix = matrix_translation(cameraTranslation);
+    const matrix_float4x4 transMatrix = matrix_multiply(matrix_translation(translation),
+                                                       _mesh.transformTranslate);
     
+    float maxSpan = radius * 2.0;
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
     const float near = -cameraDistance - radius + 0.01;
@@ -455,7 +490,7 @@
     
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(LightUniform));
     
-    [_mesh setTransformTranslate:viewMatrix];
+    [_mesh setTransformTranslate:transMatrix];
     [_mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
     
     if (_cubeMesh)

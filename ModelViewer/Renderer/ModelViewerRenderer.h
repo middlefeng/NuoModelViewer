@@ -18,13 +18,13 @@
 @property (nonatomic, strong) NuoCubeMesh* cubeMesh;
 
 
-@property (nonatomic, assign) float zoom;
+@property (nonatomic, assign) float zoomDelta;
 
 @property (nonatomic, assign) float rotationXDelta;
 @property (nonatomic, assign) float rotationYDelta;
 
-@property (nonatomic, assign) float transX;
-@property (nonatomic, assign) float transY;
+@property (nonatomic, assign) float transXDelta;
+@property (nonatomic, assign) float transYDelta;
 
 @property (nonatomic, assign) BOOL cullEnabled;
 @property (nonatomic, assign) float fieldOfView;
