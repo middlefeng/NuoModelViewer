@@ -28,6 +28,7 @@
 
 @property (nonatomic, strong) NSMutableArray<NuoMesh*>* meshes;
 
+@property (assign) matrix_float4x4 projection;
 @property (strong) NSArray<id<MTLBuffer>>* transUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
@@ -484,11 +485,11 @@
     const float aspect = drawableSize.width / drawableSize.height;
     const float near = -sceneCenter - sceneRadius + 0.01;
     const float far = near + maxSpan + 0.02;
-    const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, _fieldOfView, near, far);
+    _projection = matrix_perspective(aspect, _fieldOfView, near, far);
 
     NuoUniforms uniforms;
     uniforms.viewMatrix = matrix_identity_float4x4;
-    uniforms.viewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.viewMatrix);
+    uniforms.viewProjectionMatrix = matrix_multiply(_projection, uniforms.viewMatrix);
 
     memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
     
@@ -578,6 +579,33 @@
     }
     
     [renderPass endEncoding];
+}
+
+
+- (void)selectMeshWithScreen:(CGPoint)point
+{
+    float distance = CGFLOAT_MAX;
+    
+    for (NuoMesh* mesh in _meshes)
+    {
+        NuoCoord* center = mesh.boundingSphere.center;
+        vector_float4 centerVec = { center.x, center.y, center.z, 1.0 };
+        vector_float4 centerProjected = matrix_multiply(_projection, centerVec);
+        vector_float2 centerOnScreen = centerProjected.xy / centerProjected.w;
+        
+        vector_float2 normalized;
+        CGSize drawableSize = self.renderTarget.drawableSize;
+        float scale = [[NSScreen mainScreen] backingScaleFactor];
+        normalized.x = (point.x * scale) / drawableSize.width * 2.0 - 1.0;
+        normalized.y = (point.y * scale) / drawableSize.height * 2.0 - 1.0;
+        
+        float currentDistance = vector_distance(normalized, centerOnScreen);
+        if (currentDistance < distance)
+        {
+            distance = currentDistance;
+            _selectedMesh = mesh;
+        }
+    }
 }
 
 @end
