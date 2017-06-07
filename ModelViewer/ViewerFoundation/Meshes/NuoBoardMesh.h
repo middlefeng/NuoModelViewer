@@ -28,6 +28,6 @@
 
 class NuoModelBoard;
 
-NuoBoardMesh* CreateMesh(const std::shared_ptr<NuoModelBoard> model);
+NuoBoardMesh* CreateMesh(id<MTLDevice> device, const std::shared_ptr<NuoModelBoard> model);
 
 #endif

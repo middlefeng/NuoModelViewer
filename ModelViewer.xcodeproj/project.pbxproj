@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2C156CAE1EE7961C000C52D4 /* NuoBoardMesh.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C156CAD1EE7961C000C52D4 /* NuoBoardMesh.m */; };
+		2C156CBA1EE845A8000C52D4 /* NuoBoardMesh.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C156CB91EE845A8000C52D4 /* NuoBoardMesh.mm */; };
 		2C1B28081D95FF17009F5912 /* NuoTextureBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C1B28061D95FF17009F5912 /* NuoTextureBase.m */; };
 		2C235FCD1DD6CBD700E68295 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C235FC71DD6CBD700E68295 /* Shaders.metal */; };
 		2C235FCE1DD6CBD700E68295 /* ShadersMaterialed.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C235FC91DD6CBD700E68295 /* ShadersMaterialed.metal */; };
@@ -115,6 +116,7 @@
 /* Begin PBXFileReference section */
 		2C156CAC1EE7961C000C52D4 /* NuoBoardMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoBoardMesh.h; sourceTree = "<group>"; };
 		2C156CAD1EE7961C000C52D4 /* NuoBoardMesh.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoBoardMesh.m; sourceTree = "<group>"; };
+		2C156CB91EE845A8000C52D4 /* NuoBoardMesh.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoBoardMesh.mm; sourceTree = "<group>"; };
 		2C1B28061D95FF17009F5912 /* NuoTextureBase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoTextureBase.m; sourceTree = "<group>"; };
 		2C1B28071D95FF17009F5912 /* NuoTextureBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoTextureBase.h; sourceTree = "<group>"; };
 		2C235FC71DD6CBD700E68295 /* Shaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
@@ -311,6 +313,7 @@
 				98E05A5F1E6A17A600D4068F /* NuoCubeMesh.m */,
 				2C156CAC1EE7961C000C52D4 /* NuoBoardMesh.h */,
 				2C156CAD1EE7961C000C52D4 /* NuoBoardMesh.m */,
+				2C156CB91EE845A8000C52D4 /* NuoBoardMesh.mm */,
 				2C6C7CDF1E45AB1200CEC76D /* NuoMatrixTypes.h */,
 				2CE2D7F31E2042F3000CCD2D /* NuoUniforms.h */,
 				2C723AA21E43973200484992 /* NuoMeshUniform.h */,
@@ -590,6 +593,7 @@
 				2C4042BE1E065B2700AAC06E /* NuoLua.m in Sources */,
 				2CDCDAF31DC185A800ECFE39 /* NuoModelArrow.cpp in Sources */,
 				2C235FD01DD6CBD700E68295 /* ShadersTexturedMaterialed.metal in Sources */,
+				2C156CBA1EE845A8000C52D4 /* NuoBoardMesh.mm in Sources */,
 				2C5B92BD1D7160EC00722936 /* NuoModelLoader.mm in Sources */,
 				2C5DDACC1D6590DB00A9DC9A /* NuoMesh.mm in Sources */,
 				2C8B80ED1E2D6654001746FE /* NuoShadowMapTarget.m in Sources */,
