@@ -8,6 +8,32 @@
 
 #import "NuoBoardMesh.h"
 
+
 @implementation NuoBoardMesh
+
+- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
+{
+    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    
+    NSString* vertexFunc = @"vertex_project_shadow";
+    NSString* fragmnFunc = @"fragment_light_shadow";
+    
+    MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
+    pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];
+    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmnFunc];
+    pipelineDescriptor.sampleCount = kSampleCount;
+    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
+    pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    
+    MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
+    colorAttachment.blendingEnabled = YES;
+    colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
+    colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
+    colorAttachment.sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
+    colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+    colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+    
+    return pipelineDescriptor;
+}
 
 @end
