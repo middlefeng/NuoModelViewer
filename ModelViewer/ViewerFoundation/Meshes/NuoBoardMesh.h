@@ -12,6 +12,7 @@
 @interface NuoBoardMesh : NuoMesh
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
+- (void)makePipelineShadowState;
 
 @end
 
@@ -20,10 +21,9 @@
 #if __cplusplus
 
 #include <memory>
+#include "NuoModelBoard.h"
 
 
-class NuoModelBoard;
-
-NuoBoardMesh* CreateMesh(id<MTLDevice> device, const std::shared_ptr<NuoModelBoard> model);
+NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoModelBoard> model);
 
 #endif

@@ -9,6 +9,7 @@
 
 #include "NuoTypes.h"
 #include "NuoMeshCompound.h"
+#include "NuoBoardMesh.h"
 #include "NuoCubeMesh.h"
 #include "NuoRenderPassTarget.h"
 #include "NuoMathUtilities.h"
@@ -114,9 +115,23 @@
     NuoMeshCompound* mesh = [_modelLoader createMeshsWithOptions:_modelOptions
                                                       withDevice:self.device
                                                 withCommandQueue:commandQueue];
+    
     [_meshes addObject:mesh];
     _mainModelMesh = mesh;
     _selectedMesh = mesh;
+    
+    {
+        std::shared_ptr<NuoModelBoard> modelBoard(new NuoModelBoard(2.0, 2.0, 0.5));
+        modelBoard->CreateBuffer();
+        NuoBoardMesh* boardMesh = CreateBoardMesh(self.device, modelBoard);
+        
+        float radius = boardMesh.boundingSphere.radius;
+        const float defaultDistance = - 3.0 * radius;
+        const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
+        [boardMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
+        
+        [_meshes addObject:boardMesh];
+    }
 }
 
 

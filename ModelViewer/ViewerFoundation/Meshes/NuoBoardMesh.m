@@ -36,4 +36,9 @@
     return pipelineDescriptor;
 }
 
+- (void)makePipelineShadowState
+{
+    [super makePipelineShadowState:@"vertex_shadow_textured"];
+}
+
 @end

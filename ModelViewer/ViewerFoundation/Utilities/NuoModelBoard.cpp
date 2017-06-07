@@ -61,5 +61,7 @@ void NuoModelBoard::CreateBuffer()
     AddNormal(1, bufferNormal);
     AddPosition(2, bufferPosition);
     AddNormal(2, bufferNormal);
+    
+    GenerateIndices();
 }
 
