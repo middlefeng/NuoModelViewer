@@ -8,8 +8,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface BoardSettingPanel : NSPanel
+@interface NuoSheetPanel : NSPanel
 
 @property (weak, nonatomic) NSWindow* rootWindow;
+@property (strong, nonatomic) NSView* rootView;
 
 @end

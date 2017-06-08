@@ -6,7 +6,7 @@
 //  Copyright © 2017 middleware. All rights reserved.
 //
 
-#import "BoardSettingPanel.h"
+#import "NuoSheetPanel.h"
 
 
 
@@ -17,13 +17,13 @@ static const float kButtonOKHeight = 60;
 
 
 
-@interface BoardSettingPanel() <NSWindowDelegate>
+@interface NuoSheetPanel() <NSWindowDelegate>
 
 @end
 
 
 
-@implementation BoardSettingPanel
+@implementation NuoSheetPanel
 {
     NSButton* _buttonOK;
     NSButton* _buttonCancel;
@@ -45,8 +45,8 @@ static const float kButtonOKHeight = 60;
 
 - (void)initControls
 {
-    NSView* rootView = [NSView new];
-    [self.contentView addSubview:rootView];
+    _rootView = [NSView new];
+    [self.contentView addSubview:_rootView];
     
     _buttonOK = [[NSButton alloc] init];
     [_buttonOK setTitle:@"OK"];
@@ -60,8 +60,6 @@ static const float kButtonOKHeight = 60;
     [_buttonCancel setControlSize:NSControlSizeRegular];
     [self.contentView addSubview:_buttonCancel];
     
-    [self.contentView addSubview:rootView];
-    [self setFrame:CGRectMake(0, 0, 500, 500) display:YES];
     [self setStyleMask:[self styleMask] | NSResizableWindowMask];
 }
 
