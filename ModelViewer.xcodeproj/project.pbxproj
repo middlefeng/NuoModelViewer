@@ -60,6 +60,7 @@
 		2CE2CA221D804EC5005509EE /* NuoMeshTextured.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2CA211D804EC5005509EE /* NuoMeshTextured.mm */; };
 		2CE2D7FF1E2167F2000CCD2D /* ModelPartsPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2D7FE1E2167F2000CCD2D /* ModelPartsPanel.m */; };
 		2CE2D80B1E254790000CCD2D /* ModelPartsTableView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2CE2D80A1E254790000CCD2D /* ModelPartsTableView.xib */; };
+		2CF62A471EE9B4E7003E23EF /* BoardSettingsPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CF62A461EE9B4E7003E23EF /* BoardSettingsPanel.m */; };
 		988442461D80853700EE2C4C /* NuoModelMaterialedBasic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 988442441D80853700EE2C4C /* NuoModelMaterialedBasic.cpp */; };
 		9884424B1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */; };
 		988B676D1E43F2BD00EA1453 /* NuoMeshAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 988B676C1E43F2BD00EA1453 /* NuoMeshAnimation.m */; };
@@ -217,6 +218,8 @@
 		2CE2D7FD1E2167F2000CCD2D /* ModelPartsPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelPartsPanel.h; sourceTree = "<group>"; };
 		2CE2D7FE1E2167F2000CCD2D /* ModelPartsPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ModelPartsPanel.m; sourceTree = "<group>"; };
 		2CE2D80A1E254790000CCD2D /* ModelPartsTableView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ModelPartsTableView.xib; sourceTree = "<group>"; };
+		2CF62A451EE9B4E7003E23EF /* BoardSettingsPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BoardSettingsPanel.h; sourceTree = "<group>"; };
+		2CF62A461EE9B4E7003E23EF /* BoardSettingsPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BoardSettingsPanel.m; sourceTree = "<group>"; };
 		988442441D80853700EE2C4C /* NuoModelMaterialedBasic.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoModelMaterialedBasic.cpp; sourceTree = "<group>"; };
 		988442451D80853700EE2C4C /* NuoModelMaterialedBasic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoModelMaterialedBasic.h; sourceTree = "<group>"; };
 		988442491D80B07500EE2C4C /* NuoMeshTexMatieraled.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoMeshTexMatieraled.h; sourceTree = "<group>"; };
@@ -288,6 +291,8 @@
 				2C723A971E42D05700484992 /* ModelPartDimensionPanel.h */,
 				2C723A981E42D05700484992 /* ModelPartDimensionPanel.m */,
 				2C2873151E3F07120098092C /* ModelPanelUpdate.h */,
+				2CF62A451EE9B4E7003E23EF /* BoardSettingsPanel.h */,
+				2CF62A461EE9B4E7003E23EF /* BoardSettingsPanel.m */,
 			);
 			name = Interface;
 			path = UserInterface;
@@ -620,6 +625,7 @@
 				2C840D0E1D7001C2000D2956 /* NuoMetalView.m in Sources */,
 				2C156CAE1EE7961C000C52D4 /* NuoBoardMesh.m in Sources */,
 				2CAF2E851D691AC90074E402 /* tiny_obj_loader.cc in Sources */,
+				2CF62A471EE9B4E7003E23EF /* BoardSettingsPanel.m in Sources */,
 				98CD06BA1DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal in Sources */,
 				2C156CD01EE9B357000C52D4 /* NuoSheetPanel.m in Sources */,
 				2C5B92C01D72D11E00722936 /* NuoModelBase.cpp in Sources */,
