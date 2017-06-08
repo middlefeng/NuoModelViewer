@@ -38,7 +38,15 @@
 
 - (void)makePipelineShadowState
 {
-    [super makePipelineShadowState:@"vertex_shadow_textured"];
+    [super makePipelineShadowState:@"vertex_shadow"];
 }
+
+
+- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+{
+    [renderPass setCullMode:MTLCullModeBack];
+    [super drawMesh:renderPass indexBuffer:index];
+}
+
 
 @end
