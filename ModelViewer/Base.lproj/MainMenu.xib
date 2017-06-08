@@ -189,6 +189,9 @@
                             </menuItem>
                             <menuItem title="Board Object..." id="VgF-cn-czt">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="addBoardObject:" target="EiT-Mj-1SZ" id="0Hq-5G-bm3"/>
+                                </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="uyl-h8-XO2"/>
                             <menuItem title="Find" id="4EN-yA-p0u">
