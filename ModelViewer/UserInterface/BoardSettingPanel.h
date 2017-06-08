@@ -10,4 +10,6 @@
 
 @interface BoardSettingPanel : NSPanel
 
+@property (weak, nonatomic) NSWindow* rootWindow;
+
 @end

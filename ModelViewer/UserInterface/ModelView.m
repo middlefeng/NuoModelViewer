@@ -11,6 +11,7 @@
 #import "ModelComponentPanels.h"
 #import "ModelOperationPanel.h"
 #import "LightOperationPanel.h"
+#import "BoardSettingPanel.h"
 
 #import "ModelViewerRenderer.h"
 #import "NotationRenderer.h"
@@ -642,7 +643,11 @@
 
 - (IBAction)addBoardObject:(id)sender
 {
-    
+    BoardSettingPanel* panel = [BoardSettingPanel new];
+    [panel setRootWindow:self.window];
+    [self.window beginSheet:panel completionHandler:^(NSModalResponse returnCode) {
+        
+    }];
 }
 
 
