@@ -67,8 +67,9 @@
     }
     
     float futhestOtherReach = distance + smaller.radius;
+    float largerRadius = larger.radius;
     
-    if (futhestOtherReach < _radius)
+    if (futhestOtherReach < largerRadius)
     {
         return larger;
     }

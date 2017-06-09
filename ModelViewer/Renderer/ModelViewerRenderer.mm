@@ -110,13 +110,23 @@
 
 - (void)createMeshs:(id<MTLCommandQueue>)commandQueue
 {
-    [_meshes removeAllObjects];
-    
     NuoMeshCompound* mesh = [_modelLoader createMeshsWithOptions:_modelOptions
                                                       withDevice:self.device
                                                 withCommandQueue:commandQueue];
+
+    BOOL haveReplaced = NO;
+    for (NSUInteger i = 0; i < _meshes.count; ++i)
+    {
+        if (_meshes[i] == _mainModelMesh)
+        {
+            _meshes[i] = mesh;
+            haveReplaced = YES;
+        }
+    }
     
-    [_meshes addObject:mesh];
+    if (!haveReplaced)
+        [_meshes addObject:mesh];
+    
     _mainModelMesh = mesh;
     _selectedMesh = mesh;
 }
