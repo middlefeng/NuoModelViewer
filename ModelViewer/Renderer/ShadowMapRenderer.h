@@ -27,9 +27,9 @@
 @property (nonatomic, weak) LightSource* lightSource;
 
 /**
- *  Scene model.
+ *  Scene model. Be weak reference because the owner should be the model render.
  */
-@property (nonatomic, strong) NSArray<NuoMesh*>* meshes;
+@property (nonatomic, weak) NSArray<NuoMesh*>* meshes;
 
 /**
  *  Shadow map, the depth texture from the view point of the light source.
