@@ -42,8 +42,8 @@
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
 {
-    transform = matrix_multiply(self.transformPoise, transform);
-    transform = matrix_multiply(self.transformTranslate, transform);
+    matrix_float4x4 transformLocal = matrix_multiply(self.transformTranslate, self.transformPoise);
+    transform = matrix_multiply(transform, transformLocal);
     
     for (NuoMesh* item in _meshes)
         [item updateUniform:bufferIndex withTransform:transform];
