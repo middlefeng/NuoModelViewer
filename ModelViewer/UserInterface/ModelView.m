@@ -645,7 +645,6 @@
 {
     BoardSettingsPanel* panel = [BoardSettingsPanel new];
     [panel setRootWindow:self.window];
-    [panel setFrame:CGRectMake(0, 0, 450, 300) display:YES];
     [self.window beginSheet:panel completionHandler:^(NSModalResponse returnCode) {
         
     }];

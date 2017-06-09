@@ -12,6 +12,7 @@
 
 static const float kMargin = 10;
 static const float kHorizontalSpacing = 2;
+static const float kVerticalSpacing = 6;
 static const float kButtonOKWidth = 80;
 static const float kButtonOKHeight = 60;
 
@@ -81,6 +82,10 @@ static const float kButtonOKHeight = 60;
     rectButtonCancel.origin.y = 0;
     rectButtonCancel.size = CGSizeMake(kButtonOKWidth, kButtonOKHeight);
     _buttonCancel.frame = rectButtonCancel;
+    
+    NSRect rectRoot;
+    rectRoot = CGRectMake(0, 0, rect.size.width, rect.size.height - kVerticalSpacing);
+    _rootView.frame = rectRoot;
 }
 
 

@@ -13,4 +13,9 @@
 @property (weak, nonatomic) NSWindow* rootWindow;
 @property (strong, nonatomic) NSView* rootView;
 
+
+- (void)initControls;
+- (void)layoutControls;
+
+
 @end
