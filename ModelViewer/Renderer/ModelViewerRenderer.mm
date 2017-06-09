@@ -510,8 +510,10 @@
     float maxSpan = sceneRadius * 2.0;
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
-    const float near = -sceneCenter - sceneRadius + 0.01;
-    const float far = near + maxSpan + 0.02;
+    float near = -sceneCenter - sceneRadius + 0.01;
+    float far = near + maxSpan + 0.02;
+    near = std::max<float>(0.001, near);
+    far = std::max<float>(near + 0.001, far);
     _projection = matrix_perspective(aspect, _fieldOfView, near, far);
 
     NuoUniforms uniforms;
