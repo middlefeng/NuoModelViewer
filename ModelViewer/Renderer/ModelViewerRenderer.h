@@ -18,13 +18,14 @@
 @property (nonatomic, strong) NuoCubeMesh* cubeMesh;
 
 
+// delta control to the selected model
+//
 @property (nonatomic, assign) float zoomDelta;
-
 @property (nonatomic, assign) float rotationXDelta;
 @property (nonatomic, assign) float rotationYDelta;
-
 @property (nonatomic, assign) float transXDelta;
 @property (nonatomic, assign) float transYDelta;
+
 
 @property (nonatomic, assign) BOOL cullEnabled;
 @property (nonatomic, assign) float fieldOfView;
