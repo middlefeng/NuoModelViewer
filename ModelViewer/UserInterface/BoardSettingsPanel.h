@@ -10,4 +10,6 @@
 
 @interface BoardSettingsPanel : NuoSheetPanel
 
+- (CGSize)boardSize;
+
 @end

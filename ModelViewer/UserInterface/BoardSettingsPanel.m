@@ -108,4 +108,18 @@ static const float kFieldHeight = 20;
 }
 
 
+- (CGSize)boardSize
+{
+    NSString* width = [_width stringValue];
+    NSString* height = [_height stringValue];
+    NSNumberFormatter* formatter = [[NSNumberFormatter alloc] init];
+    
+    CGSize result;
+    result.width = [formatter numberFromString:width].floatValue;
+    result.height = [formatter numberFromString:height].floatValue;
+    
+    return result;
+}
+
+
 @end

@@ -119,19 +119,21 @@
     [_meshes addObject:mesh];
     _mainModelMesh = mesh;
     _selectedMesh = mesh;
+}
+
+
+- (void)createBoard:(CGSize)size
+{
+    std::shared_ptr<NuoModelBoard> modelBoard(new NuoModelBoard(size.width, size.height, 0.001));
+    modelBoard->CreateBuffer();
+    NuoBoardMesh* boardMesh = CreateBoardMesh(self.device, modelBoard);
     
-    {
-        std::shared_ptr<NuoModelBoard> modelBoard(new NuoModelBoard(2.0, 2.0, 0.5));
-        modelBoard->CreateBuffer();
-        NuoBoardMesh* boardMesh = CreateBoardMesh(self.device, modelBoard);
-        
-        float radius = boardMesh.boundingSphere.radius;
-        const float defaultDistance = - 3.0 * radius;
-        const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
-        [boardMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
-        
-        [_meshes addObject:boardMesh];
-    }
+    float radius = boardMesh.boundingSphere.radius;
+    const float defaultDistance = - 3.0 * radius;
+    const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
+    [boardMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
+    
+    [_meshes insertObject:boardMesh atIndex:0];
 }
 
 

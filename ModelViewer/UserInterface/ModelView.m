@@ -645,9 +645,22 @@
 {
     BoardSettingsPanel* panel = [BoardSettingsPanel new];
     [panel setRootWindow:self.window];
-    [self.window beginSheet:panel completionHandler:^(NSModalResponse returnCode) {
-        
-    }];
+    
+    __weak BoardSettingsPanel* panelWeak = panel;
+    __weak ModelRenderer* renderer = _modelRender;
+    
+    [self.window beginSheet:panel completionHandler:^(NSModalResponse returnCode)
+     {
+         if (returnCode == NSModalResponseOK)
+         {
+             CGSize size = [panelWeak boardSize];
+             if (size.width > 0 && size.height > 0)
+             {
+                 [renderer createBoard:size];
+                 [self render];
+             }
+         }
+     }];
 }
 
 

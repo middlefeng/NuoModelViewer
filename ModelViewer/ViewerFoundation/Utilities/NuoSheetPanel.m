@@ -75,13 +75,17 @@ static const float kButtonOKHeight = 60;
     rectButtonOK.origin.y = 0;
     rectButtonOK.size = CGSizeMake(kButtonOKWidth, kButtonOKHeight);
     _buttonOK.frame = rectButtonOK;
-    [_buttonOK setKeyEquivalent:@"\r"];
+    _buttonOK.keyEquivalent = @"\r";
+    _buttonOK.target = self;
+    _buttonOK.action = @selector(continueOpration:);
     
     NSRect rectButtonCancel;
     rectButtonCancel.origin.x = rect.size.width - kMargin - kButtonOKWidth * 2.0 - kHorizontalSpacing;
     rectButtonCancel.origin.y = 0;
     rectButtonCancel.size = CGSizeMake(kButtonOKWidth, kButtonOKHeight);
     _buttonCancel.frame = rectButtonCancel;
+    _buttonCancel.target = self;
+    _buttonCancel.action = @selector(cancelOperation:);
     
     NSRect rectRoot;
     rectRoot = CGRectMake(0, 0, rect.size.width, rect.size.height - kVerticalSpacing);
@@ -92,6 +96,12 @@ static const float kButtonOKHeight = 60;
 - (void)cancelOperation:(id)sender
 {
     [_rootWindow endSheet:self];
+}
+
+
+- (void)continueOpration:(id)sender
+{
+    [_rootWindow endSheet:self returnCode:NSModalResponseOK];
 }
 
 
