@@ -139,7 +139,7 @@
     {
         _sphere = [NuoBoundingSphere new];
         _sphere.center = _center;
-        _sphere.radius = [_span maxDimension] * 1.41 / 2.0;
+        _sphere.radius = [_span maxDimension] * 1.414 / 2.0;
     }
     
     return _sphere;
@@ -162,7 +162,7 @@
 
 @synthesize indexBuffer = _indexBuffer;
 @synthesize vertexBuffer = _vertexBuffer;
-@synthesize boundingBox = _boundingBox;
+@synthesize boundingBoxLocal = _boundingBoxLocal;
 
 
 
@@ -190,12 +190,13 @@
         _rotation = [[NuoMeshRotation alloc] init];
         
         {
-            id<MTLBuffer> buffers1[kInFlightBufferCount];
+            id<MTLBuffer> buffers[kInFlightBufferCount];
             for (unsigned int i = 0; i < kInFlightBufferCount; ++i)
             {
-                buffers1[i] = [device newBufferWithLength:sizeof(NuoMeshUniforms) options:MTLResourceOptionCPUCacheModeDefault];
+                buffers[i] = [device newBufferWithLength:sizeof(NuoMeshUniforms)
+                                                 options:MTLResourceOptionCPUCacheModeDefault];
             }
-            _transformBuffers = [[NSArray alloc] initWithObjects:buffers1 count:kInFlightBufferCount];
+            _transformBuffers = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
         }
         
         _transformPoise = matrix_identity_float4x4;
@@ -232,10 +233,10 @@
 
 
 
-- (void)setBoundingBox:(NuoMeshBox *)boundingBox
+- (void)setBoundingBoxLocal:(NuoMeshBox *)boundingBox
 {
-    _boundingBox = boundingBox;
-    _boundingSphereLocal = [boundingBox boundingSphere];
+    _boundingBoxLocal = boundingBox;
+    _boundingSphereLocal = [_boundingBoxLocal boundingSphere];
     
     [self updateBoundingSphere];
 }
@@ -473,7 +474,7 @@
 
 - (void)centerMesh
 {
-    NuoMeshBox* bounding = _boundingBox;
+    NuoMeshBox* bounding = _boundingBoxLocal;
     const vector_float3 translationToCenter =
     {
         - bounding.center.x,

@@ -293,7 +293,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         meshBounding.center.y = boundingBox._centerY;
         meshBounding.center.z = boundingBox._centerZ;
         
-        mesh.boundingBox = meshBounding;
+        mesh.boundingBoxLocal = meshBounding;
         [result addObject:mesh];
     }
     

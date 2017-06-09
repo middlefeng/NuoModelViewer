@@ -72,7 +72,7 @@
         MTLRenderPipelineDescriptor* pipelineDesc = [_lightVector makePipelineStateDescriptor];
         pipelineDesc.sampleCount = 1;
         
-        [_lightVector setBoundingBox:meshBounding];
+        [_lightVector setBoundingBoxLocal:meshBounding];
         [_lightVector makePipelineState:pipelineDesc];
         [_lightVector makeDepthStencilState];
     }
@@ -83,7 +83,7 @@
 
 - (NuoMeshBox*)boundingBox
 {
-    return _lightVector.boundingBox;
+    return _lightVector.boundingBoxLocal;
 }
 
 
@@ -104,7 +104,7 @@
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
     LightSource* desc = _lightSourceDesc;
-    NuoMeshBox* bounding = _lightVector.boundingBox;
+    NuoMeshBox* bounding = _lightVector.boundingBoxLocal;
     
     const vector_float3 translationToCenter =
     {

@@ -31,11 +31,11 @@
 {
     _meshes = meshes;
     
-    NuoMeshBox* bounding = meshes[0].boundingBox;
+    NuoMeshBox* bounding = meshes[0].boundingBoxLocal;
     for (size_t i = 1; i < meshes.count; ++i)
-        bounding = [bounding unionWith:meshes[i].boundingBox];
+        bounding = [bounding unionWith:meshes[i].boundingBoxLocal];
     
-    self.boundingBox = bounding;
+    self.boundingBoxLocal = bounding;
 }
 
 

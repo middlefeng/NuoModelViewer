@@ -94,9 +94,9 @@
     if (!mesh)
         return;
     
-    NuoMeshBox* bounding = mesh[0].boundingBox;
+    NuoMeshBox* bounding = mesh[0].boundingBoxLocal;
     for (size_t i = 1; i < mesh.count; ++i)
-        bounding = [bounding unionWith:mesh[i].boundingBox];
+        bounding = [bounding unionWith:mesh[i].boundingBoxLocal];
     
     NSString* dimensionString = [[NSString alloc] initWithFormat:@"%0.1f, %0.1f, %0.1f",
                                             bounding.span.x,

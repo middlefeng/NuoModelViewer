@@ -30,7 +30,7 @@ NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoMod
     meshBounding.center.y = boundingBox._centerY;
     meshBounding.center.z = boundingBox._centerZ;
     
-    resultMesh.boundingBox = meshBounding;
+    resultMesh.boundingBoxLocal = meshBounding;
     
     [resultMesh makePipelineShadowState];
     [resultMesh makePipelineState:[resultMesh makePipelineStateDescriptor]];

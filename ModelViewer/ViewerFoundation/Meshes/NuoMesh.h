@@ -67,7 +67,7 @@
 //
 @property (nonatomic, assign) matrix_float4x4 transformPoise;
 
-// mesh transform about the translate
+// mesh transform about the translate in the world coordinate
 //
 @property (nonatomic, assign) matrix_float4x4 transformTranslate;
 
@@ -88,7 +88,7 @@
 @property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
 
-@property (nonatomic, strong) NuoMeshBox* boundingBox;
+@property (nonatomic, strong) NuoMeshBox* boundingBoxLocal;
 @property (nonatomic, strong, readonly) NuoBoundingSphere* boundingSphereLocal;
 @property (nonatomic, strong, readonly) NuoBoundingSphere* boundingSphere;
 @property (nonatomic, assign) BOOL enabled;
