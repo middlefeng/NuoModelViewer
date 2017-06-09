@@ -114,6 +114,10 @@
                                                       withDevice:self.device
                                                 withCommandQueue:commandQueue];
 
+    // put the main model at the end of the draw queue,
+    // for now it is the only one has transparency
+    //
+    
     BOOL haveReplaced = NO;
     for (NSUInteger i = 0; i < _meshes.count; ++i)
     {
@@ -143,6 +147,8 @@
     const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
     [boardMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
     
+    // boards are all opaque so they are drawn first
+    //
     [_meshes insertObject:boardMesh atIndex:0];
 }
 
