@@ -167,7 +167,7 @@
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:self.rotationBuffers[index] offset:0 atIndex:3];
+    [renderPass setVertexBuffer:self.transformBuffers[index] offset:0 atIndex:3];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
     NSUInteger texBufferIndex = 2; /* mesh texture starts after the shadow-map texture */

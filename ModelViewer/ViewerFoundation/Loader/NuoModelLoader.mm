@@ -286,14 +286,14 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         NuoMesh* mesh = CreateMesh(options, device, commandQueue, model);
         
         NuoMeshBox* meshBounding = [[NuoMeshBox alloc] init];
-        meshBounding.spanX = boundingBox._spanX;
-        meshBounding.spanY = boundingBox._spanY;
-        meshBounding.spanZ = boundingBox._spanZ;
-        meshBounding.centerX = boundingBox._centerX;
-        meshBounding.centerY = boundingBox._centerY;
-        meshBounding.centerZ = boundingBox._centerZ;
+        meshBounding.span.x = boundingBox._spanX;
+        meshBounding.span.y = boundingBox._spanY;
+        meshBounding.span.z = boundingBox._spanZ;
+        meshBounding.center.x = boundingBox._centerX;
+        meshBounding.center.y = boundingBox._centerY;
+        meshBounding.center.z = boundingBox._centerZ;
         
-        mesh.boundingBox = meshBounding;
+        mesh.boundingBoxLocal = meshBounding;
         [result addObject:mesh];
     }
     

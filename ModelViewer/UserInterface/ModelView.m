@@ -11,6 +11,7 @@
 #import "ModelComponentPanels.h"
 #import "ModelOperationPanel.h"
 #import "LightOperationPanel.h"
+#import "BoardSettingsPanel.h"
 
 #import "ModelViewerRenderer.h"
 #import "NotationRenderer.h"
@@ -50,6 +51,7 @@
     LightOperationPanel* _lightPanel;
     
     BOOL _trackingLighting;
+    BOOL _mouseMoved;
     
     NSString* _documentName;
 }
@@ -122,7 +124,7 @@
 {
     // clear all table and data structures that depends on the mesh
     //
-    [_modelComponentPanels setMesh:_modelRender.mesh.meshes];
+    [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
     [_animations removeAllObjects];
     [_modelPanel setModelPartAnimations:_animations];
 }
@@ -181,7 +183,7 @@
                      current.animationName = key;
                      
                      [lua getField:key fromTable:-1];
-                     [current importAnimation:lua forMesh:_modelRender.mesh.meshes];
+                     [current importAnimation:lua forMesh:_modelRender.mainModelMesh.meshes];
                      [lua removeField];
                      
                      if (current.mesh.count)
@@ -351,6 +353,8 @@
     {
         _trackingLighting = NO;
     }
+    
+    _mouseMoved = NO;
 }
 
 
@@ -358,6 +362,13 @@
 {
     _trackingLighting = NO;
     [self render];
+    
+    if (!_mouseMoved)
+    {
+        NSPoint location = event.locationInWindow;
+        location = [self convertPoint:location fromView:nil];
+        [_modelRender selectMeshWithScreen:location];
+    }
 }
 
 
@@ -388,12 +399,14 @@
     }
     
     [self render];
+    
+    _mouseMoved = YES;
 }
 
 
 - (void)magnifyWithEvent:(NSEvent *)event
 {
-    _modelRender.zoom += 10 * event.magnification;
+    _modelRender.zoomDelta = 10 * event.magnification;
     [self render];
 }
 
@@ -401,8 +414,8 @@
 
 - (void)scrollWheel:(NSEvent *)event
 {
-    _modelRender.transX -= event.deltaX;
-    _modelRender.transY += event.deltaY;
+    _modelRender.transXDelta = -event.deltaX;
+    _modelRender.transYDelta = event.deltaY;
     [self render];
 }
 
@@ -508,7 +521,7 @@
     [_modelRender importScene:lua];
     [_notationRender importScene:lua];
     
-    [_modelComponentPanels setMesh:_modelRender.mesh.meshes];
+    [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
     [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];
     [_modelPanel setAmbientDensity:_modelRender.ambientDensity];
     [_modelPanel updateControls];
@@ -623,6 +636,29 @@
                                         NuoTextureBase* textureBase = [NuoTextureBase getInstance:device];
                                         [textureBase saveTexture:result toImage:path];
                                     }];
+         }
+     }];
+}
+
+
+- (IBAction)addBoardObject:(id)sender
+{
+    BoardSettingsPanel* panel = [BoardSettingsPanel new];
+    [panel setRootWindow:self.window];
+    
+    __weak BoardSettingsPanel* panelWeak = panel;
+    __weak ModelRenderer* renderer = _modelRender;
+    
+    [self.window beginSheet:panel completionHandler:^(NSModalResponse returnCode)
+     {
+         if (returnCode == NSModalResponseOK)
+         {
+             CGSize size = [panelWeak boardSize];
+             if (size.width > 0 && size.height > 0)
+             {
+                 [renderer createBoard:size];
+                 [self render];
+             }
          }
      }];
 }

@@ -11,7 +11,7 @@
 
 #import "NuoShadowMapTarget.h"
 
-#include "NuoMeshCompound.h"
+#include "NuoMesh.h"
 #include "NuoUniforms.h"
 #include "NuoMathUtilities.h"
 
@@ -69,19 +69,34 @@
 {
     static const float kCameraDistance = 1.0;
     
-    vector_float3 center = {0, 0, 0};
-    vector_float4 lightAsEye = {0, 0, kCameraDistance, 0};
+    vector_float4 center = {0, 0, 0, 1};
+    float meshRadius = 0.0;
+    
+    NuoBoundingSphere* sphere = nil;
+    if (_meshes && _meshes.count > 0)
+    {
+        sphere = [_meshes[0] boundingSphere];
+        for (NSUInteger i = 1; i < _meshes.count; ++i)
+            sphere = [sphere unionWith:[_meshes[i] boundingSphere]];
+        
+        center.x = sphere.center.x;
+        center.y = sphere.center.y;
+        center.z = sphere.center.z;
+        meshRadius = sphere.radius;
+    }
+    
+    vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
     vector_float3 up = {0, 1, 0};
     
     LightSource* lightSource = _lightSource;
     const matrix_float4x4 lightAsEyeMatrix = matrix_rotate(lightSource.lightingRotationX,
                                                            lightSource.lightingRotationY);
     lightAsEye = matrix_multiply(lightAsEyeMatrix, lightAsEye);
-    vector_float3 lightAsEye3 = {lightAsEye.x, lightAsEye.y, lightAsEye.z};
-    const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye3, center, up);
+    lightAsEye = lightAsEye + center;
+    
+    const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye.xyz, center.xyz, up);
     
     CGSize drawableSize = self.renderTarget.drawableSize;
-    float meshRadius = _mesh.maxSpan / 2.0;
     float aspectRatio = drawableSize.width / drawableSize.height;
     float viewPortHeight = meshRadius;
     float viewPortWidth = aspectRatio * viewPortHeight;
@@ -110,7 +125,8 @@
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
 
     [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
-    [_mesh drawShadow:renderPass indexBuffer:inFlight];
+    for (NuoMesh* mesh in _meshes)
+        [mesh drawShadow:renderPass indexBuffer:inFlight];
     
     [renderPass endEncoding];
 }

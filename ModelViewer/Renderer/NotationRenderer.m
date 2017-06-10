@@ -99,8 +99,7 @@
     
     float zoom = -200.0;
     
-    float modelSpan = fmax(bounding.spanZ, bounding.spanX);
-    modelSpan = fmax(bounding.spanY, modelSpan);
+    float modelSpan = [bounding.span maxDimension];
     
     const float modelNearest = - modelSpan;
     const float cameraDefaultDistance = (modelNearest - modelSpan);

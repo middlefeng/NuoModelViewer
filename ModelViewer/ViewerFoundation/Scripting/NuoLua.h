@@ -37,4 +37,6 @@ struct lua_State;
 
 - (matrix_float4x4)getMatrixFromTable:(int)index;
 
+- (bool)isNil:(int)index;
+
 @end

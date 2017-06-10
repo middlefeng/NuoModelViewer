@@ -13,26 +13,37 @@
 
 
 
+- (instancetype)init
+{
+    self = [super init];
+    
+    if (self)
+    {
+        self.transformPoise = matrix_identity_float4x4;
+        self.transformTranslate = matrix_identity_float4x4;
+    }
+    
+    return self;
+}
+
+
 - (void)setMeshes:(NSArray<NuoMesh*>*)meshes
 {
     _meshes = meshes;
     
-    NuoMeshBox* bounding = meshes[0].boundingBox;
+    NuoMeshBox* bounding = meshes[0].boundingBoxLocal;
     for (size_t i = 1; i < meshes.count; ++i)
-        bounding = [bounding unionWith:meshes[i].boundingBox];
+        bounding = [bounding unionWith:meshes[i].boundingBoxLocal];
     
-    self.boundingBox = bounding;
-    
-    float modelSpan = fmax(bounding.spanZ, bounding.spanX);
-    modelSpan = fmax(bounding.spanY, modelSpan);
-    _maxSpan = 1.41 * modelSpan;
+    self.boundingBoxLocal = bounding;
 }
 
 
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
 {
-    transform = matrix_multiply(self.transform, transform);
+    matrix_float4x4 transformLocal = matrix_multiply(self.transformTranslate, self.transformPoise);
+    transform = matrix_multiply(transform, transformLocal);
     
     for (NuoMesh* item in _meshes)
         [item updateUniform:bufferIndex withTransform:transform];
@@ -41,7 +52,7 @@
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)bufferIndex
 {
-    NSArray* cullModes = _cullEnabled ?
+    NSArray* cullModes = self.cullEnabled ?
                             @[@(MTLCullModeBack), @(MTLCullModeNone)] :
                             @[@(MTLCullModeNone), @(MTLCullModeBack)];
     NSUInteger cullMode = [cullModes[0] unsignedLongValue];

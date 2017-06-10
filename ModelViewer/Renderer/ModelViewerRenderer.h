@@ -18,13 +18,14 @@
 @property (nonatomic, strong) NuoCubeMesh* cubeMesh;
 
 
-@property (nonatomic, assign) float zoom;
-
+// delta control to the selected model
+//
+@property (nonatomic, assign) float zoomDelta;
 @property (nonatomic, assign) float rotationXDelta;
 @property (nonatomic, assign) float rotationYDelta;
+@property (nonatomic, assign) float transXDelta;
+@property (nonatomic, assign) float transYDelta;
 
-@property (nonatomic, assign) float transX;
-@property (nonatomic, assign) float transY;
 
 @property (nonatomic, assign) BOOL cullEnabled;
 @property (nonatomic, assign) float fieldOfView;
@@ -36,13 +37,16 @@
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
 - (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue;
-- (NuoMeshCompound*)mesh;
+- (NuoMeshCompound*)mainModelMesh;
 
 - (NSString*)exportSceneAsString:(CGSize)canvasSize;
 - (void)importScene:(NuoLua*)lua;
 
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
        withCommandQueue:(id<MTLCommandQueue>)commandQueue;
+
+- (void)createBoard:(CGSize)size;
+- (void)selectMeshWithScreen:(CGPoint)point;
 
 
 @end

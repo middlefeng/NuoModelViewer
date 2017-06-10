@@ -15,29 +15,134 @@
 
 
 
+@implementation NuoCoord
+
+
+- (float)maxDimension
+{
+    float max = std::max(_x, _y);
+    return std::max(max, _z);
+}
+
+
+- (float)distanceTo:(NuoCoord*)other
+{
+    vector_float3 v1 = { _x, _y, _z };
+    vector_float3 v2 = { other.x, other.y, other.z };
+    
+    return vector_distance(v1, v2);
+}
+
+
+- (NuoCoord*)interpolateTo:(NuoCoord*)other byFactor:(float)factor
+{
+    NuoCoord* result = [NuoCoord new];
+    result.x = _x + (other.x - _x) * factor;
+    result.y = _x + (other.y - _y) * factor;
+    result.z = _z + (other.z - _z) * factor;
+    
+    return result;
+}
+
+
+@end
+
+
+
+@implementation NuoBoundingSphere
+
+- (NuoBoundingSphere*)unionWith:(NuoBoundingSphere*)other
+{
+    float distance = [_center distanceTo:other.center];
+    NuoBoundingSphere *smaller, *larger;
+    if (_radius > other.radius)
+    {
+        smaller = other;
+        larger = self;
+    }
+    else
+    {
+        smaller = self;
+        larger = other;
+    }
+    
+    float futhestOtherReach = distance + smaller.radius;
+    float largerRadius = larger.radius;
+    
+    if (futhestOtherReach < largerRadius)
+    {
+        return larger;
+    }
+    else
+    {
+        NuoBoundingSphere* result = [NuoBoundingSphere new];
+        result.radius = (distance + other.radius + _radius) / 2.0;
+        
+        float newCenterDistance = result.radius - _radius;
+        float factor = newCenterDistance / distance;
+        result.center = [_center interpolateTo:other.center byFactor:factor];
+        
+        return result;
+    }
+}
+
+@end
+
+
+
 @implementation NuoMeshBox
+{
+    NuoBoundingSphere* _sphere;
+}
+
+
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self)
+    {
+        _center = [NuoCoord new];
+        _span = [NuoCoord new];
+    }
+    return self;
+}
+
 
 
 - (NuoMeshBox*)unionWith:(NuoMeshBox*)other
 {
     NuoMeshBox* newBox = [NuoMeshBox new];
     
-    float xMin = std::min(_centerX - _spanX / 2.0, other.centerX - other.spanX / 2.0);
-    float xMax = std::max(_centerX + _spanX / 2.0, other.centerX + other.spanX / 2.0);
-    float yMin = std::min(_centerY - _spanY / 2.0, other.centerY - other.spanY / 2.0);
-    float yMax = std::max(_centerY + _spanY / 2.0, other.centerY + other.spanY / 2.0);
-    float zMin = std::min(_centerZ - _spanZ / 2.0, other.centerZ - other.spanZ / 2.0);
-    float zMax = std::max(_centerZ + _spanZ / 2.0, other.centerZ + other.spanZ / 2.0);
+    float xMin = std::min(_center.x - _span.x / 2.0, other.center.x - other.span.x / 2.0);
+    float xMax = std::max(_center.x + _span.x / 2.0, other.center.x + other.span.x / 2.0);
+    float yMin = std::min(_center.y - _span.y / 2.0, other.center.y - other.span.y / 2.0);
+    float yMax = std::max(_center.y + _span.y / 2.0, other.center.y + other.span.y / 2.0);
+    float zMin = std::min(_center.z - _span.z / 2.0, other.center.z - other.span.z / 2.0);
+    float zMax = std::max(_center.z + _span.z / 2.0, other.center.z + other.span.z / 2.0);
     
-    newBox.centerX = (xMax + xMin) / 2.0f;
-    newBox.centerY = (yMax + yMin) / 2.0f;
-    newBox.centerZ = (zMax + zMin) / 2.0f;
+    newBox.center.x = (xMax + xMin) / 2.0f;
+    newBox.center.y = (yMax + yMin) / 2.0f;
+    newBox.center.z = (zMax + zMin) / 2.0f;
     
-    newBox.spanX = xMax - xMin;
-    newBox.spanY = yMax - yMin;
-    newBox.spanZ = zMax - zMin;
+    newBox.span.x = xMax - xMin;
+    newBox.span.y = yMax - yMin;
+    newBox.span.z = zMax - zMin;
     
     return newBox;
+}
+
+
+- (NuoBoundingSphere*)boundingSphere
+{
+    if (!_sphere)
+    {
+        _sphere = [NuoBoundingSphere new];
+        _sphere.center = _center;
+        _sphere.radius = [_span maxDimension] * 1.414 / 2.0;
+    }
+    
+    return _sphere;
 }
 
 
@@ -57,7 +162,7 @@
 
 @synthesize indexBuffer = _indexBuffer;
 @synthesize vertexBuffer = _vertexBuffer;
-@synthesize boundingBox = _boundingBox;
+@synthesize boundingBoxLocal = _boundingBoxLocal;
 
 
 
@@ -85,18 +190,63 @@
         _rotation = [[NuoMeshRotation alloc] init];
         
         {
-            id<MTLBuffer> buffers1[kInFlightBufferCount];
+            id<MTLBuffer> buffers[kInFlightBufferCount];
             for (unsigned int i = 0; i < kInFlightBufferCount; ++i)
             {
-                buffers1[i] = [device newBufferWithLength:sizeof(NuoMeshUniforms) options:MTLResourceOptionCPUCacheModeDefault];
+                buffers[i] = [device newBufferWithLength:sizeof(NuoMeshUniforms)
+                                                 options:MTLResourceOptionCPUCacheModeDefault];
             }
-            _rotationBuffers = [[NSArray alloc] initWithObjects:buffers1 count:kInFlightBufferCount];
+            _transformBuffers = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
         }
         
-        _transform = matrix_identity_float4x4;
+        _transformPoise = matrix_identity_float4x4;
+        _transformTranslate = matrix_identity_float4x4;
     }
     
     return self;
+}
+
+
+
+- (void)updateBoundingSphere
+{
+    vector_float4 localCenter =
+    {
+        _boundingSphereLocal.center.x,
+        _boundingSphereLocal.center.y,
+        _boundingSphereLocal.center.z,
+        1,
+    };
+    localCenter = matrix_multiply(_transformPoise, localCenter);
+    localCenter = matrix_multiply(_transformTranslate, localCenter);
+    
+    NuoCoord* center = [NuoCoord new];
+    center.x = localCenter.x;
+    center.y = localCenter.y;
+    center.z = localCenter.z;
+    
+    if (!_boundingSphere)
+        _boundingSphere = [NuoBoundingSphere new];
+    _boundingSphere.center = center;
+    _boundingSphere.radius = _boundingSphereLocal.radius;
+}
+
+
+
+- (void)setBoundingBoxLocal:(NuoMeshBox *)boundingBox
+{
+    _boundingBoxLocal = boundingBox;
+    _boundingSphereLocal = [_boundingBoxLocal boundingSphere];
+    
+    [self updateBoundingSphere];
+}
+
+
+
+- (void)setTransformTranslate:(matrix_float4x4)transformTranslate
+{
+    _transformTranslate = transformTranslate;
+    [self updateBoundingSphere];
 }
 
 
@@ -259,13 +409,15 @@
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
 {
+    matrix_float4x4 localTransform = matrix_multiply(_transformTranslate, _transformPoise);
     if (_rotation)
-        transform = matrix_multiply(_rotation.rotationMatrix, transform);
+        localTransform = matrix_multiply(localTransform, _rotation.rotationMatrix);
+    transform = matrix_multiply(transform, localTransform);
     
     NuoMeshUniforms uniforms;
-    uniforms.transform = matrix_multiply(_transform, transform);
+    uniforms.transform = transform;
     uniforms.normalTransform = matrix_extract_linear(uniforms.transform);
-    memcpy([_rotationBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
+    memcpy([_transformBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
 
 
@@ -279,7 +431,7 @@
     NSUInteger rotationIndex = _shadowPipelineState ? 3 : 2;
     
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_rotationBuffers[index] offset:0 atIndex:rotationIndex];
+    [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:rotationIndex];
     [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
                            indexCount:[_indexBuffer length] / sizeof(uint32_t)
                             indexType:MTLIndexTypeUInt32
@@ -297,7 +449,7 @@
         [renderPass setDepthStencilState:_depthStencilState];
         
         [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-        [renderPass setVertexBuffer:_rotationBuffers[index] offset:0 atIndex:2];
+        [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:2];
         [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
                                indexCount:[_indexBuffer length] / sizeof(uint32_t)
                                 indexType:MTLIndexTypeUInt32
@@ -316,6 +468,23 @@
 - (void)setTransparency:(BOOL)transparent
 {
     _hasTransparency = transparent;
+}
+
+
+
+- (void)centerMesh
+{
+    NuoMeshBox* bounding = _boundingBoxLocal;
+    const vector_float3 translationToCenter =
+    {
+        - bounding.center.x,
+        - bounding.center.y,
+        - bounding.center.z
+    };
+    const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
+    _transformPoise = modelCenteringMatrix;
+    
+    [self updateBoundingSphere];
 }
 
 
