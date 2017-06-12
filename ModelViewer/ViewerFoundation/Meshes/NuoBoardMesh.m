@@ -18,9 +18,8 @@
     NSString* vertexFunc = @"vertex_project_shadow";
     NSString* fragmnFunc = @"fragment_light_shadow";
     
-    BOOL shadowOverlay = YES;
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
-    [funcConstant setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
+    [funcConstant setConstantValue:&_shadowOverlayOnly type:MTLDataTypeBool atIndex:3];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];

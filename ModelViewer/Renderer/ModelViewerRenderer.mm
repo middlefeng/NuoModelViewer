@@ -427,6 +427,16 @@
         _mainModelMesh.transformPoise = originalPoise;
         _mainModelMesh.transformTranslate = originalTrans;
     }
+    
+    for (NuoMesh* mesh in _meshes)
+    {
+        if ([mesh isKindOfClass:[NuoBoardMesh class]])
+        {
+            NuoBoardMesh* board = (NuoBoardMesh*)mesh;
+            board.shadowOverlayOnly = [modelOptions basicMaterialized];
+            [board makePipelineState:[board makePipelineStateDescriptor]];
+        }
+    }
 }
 
 
