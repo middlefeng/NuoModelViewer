@@ -193,6 +193,9 @@
                                     <action selector="addBoardObject:" target="EiT-Mj-1SZ" id="0Hq-5G-bm3"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Board Object with Image..." id="y9x-Mk-9cT">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="uyl-h8-XO2"/>
                             <menuItem title="Find" id="4EN-yA-p0u">
                                 <modifierMask key="keyEquivalentModifierMask"/>
