@@ -38,3 +38,12 @@ NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoMod
     
     return resultMesh;
 }
+
+
+
+NuoBoardMesh* CreateBoardMeshWithTexture(NSString* texPath)
+{
+    return nil;
+}
+
+

@@ -19,6 +19,8 @@
 @end
 
 
+NuoBoardMesh* CreateBoardMeshWithTexture(NSString* texPath);
+
 
 #if __cplusplus
 
