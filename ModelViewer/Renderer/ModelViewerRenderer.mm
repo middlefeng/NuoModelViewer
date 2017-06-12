@@ -148,7 +148,7 @@
 
 - (void)createBoardWithImage:(NSString*)path
 {
-    NuoBoardMesh* boardMesh = CreateBoardMeshWithTexture(path);
+    NuoBoardMesh* boardMesh = CreateBoardMeshWithTexture(self.device, path);
     [self addBoardObject:boardMesh];
 }
 

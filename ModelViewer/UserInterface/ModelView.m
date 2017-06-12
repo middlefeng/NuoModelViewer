@@ -669,17 +669,15 @@
 {
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
     openPanel.allowedFileTypes = @[@"jpg", @"png"];
-    
-    __weak __block id<MTLDevice> device = self.metalLayer.device;
+
+    __weak ModelRenderer* renderer = _modelRender;
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
      {
          if (result == NSFileHandlingPanelOKButton)
          {
              NSString* path = openPanel.URL.path;
-             
-             
-             
+             [renderer createBoardWithImage:path];
              [self render];
          }
      }];

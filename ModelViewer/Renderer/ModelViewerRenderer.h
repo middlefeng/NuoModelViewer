@@ -46,6 +46,7 @@
        withCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (void)createBoard:(CGSize)size;
+- (void)createBoardWithImage:(NSString*)path;
 - (void)selectMeshWithScreen:(CGPoint)point;
 
 

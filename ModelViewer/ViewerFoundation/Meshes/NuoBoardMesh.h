@@ -19,7 +19,7 @@
 @end
 
 
-NuoBoardMesh* CreateBoardMeshWithTexture(NSString* texPath);
+NuoBoardMesh* CreateBoardMeshWithTexture(id<MTLDevice> device, NSString* texPath);
 
 
 #if __cplusplus
