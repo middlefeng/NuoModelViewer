@@ -126,8 +126,11 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                       sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
-    float3 ambientTerm = lightUniform.ambientDensity * material.ambientColor;
+    float3 ambientTerm = kShadowOverlay ? 0.0 : lightUniform.ambientDensity * material.ambientColor;
     float3 colorForLights = 0.0;
+    
+    float shadowOverlay = 0.0;
+    float surfaceBrightness = 0.0;
     
     texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
@@ -135,30 +138,51 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     for (unsigned i = 0; i < 4; ++i)
     {
         float diffuseIntensity = saturate(dot(normal, normalize(lightUniform.direction[i].xyz)));
-        float3 diffuseTerm = material.diffuseColor * diffuseIntensity;
         
-        float3 specularTerm(0);
-        if (diffuseIntensity > 0)
+        if (kShadowOverlay)
         {
-            float3 eyeDirection = normalize(vert.eye);
-            float3 halfway = normalize(normalize(lightUniform.direction[i].xyz) + eyeDirection);
-            float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower);
-            specularTerm = material.specularColor * specularFactor;
+            float shadowPercent = 0.0;
+            if (i < 2)
+            {
+                shadowPercent = shadow_coverage_common(shadowPosition[i],
+                                                       lightUniform.shadowBias[i], diffuseIntensity,
+                                                       lightUniform.shadowSoften[i], 3,
+                                                       shadowMap[i], samplr);
+            }
+            
+            shadowOverlay += lightUniform.density[i] * diffuseIntensity * shadowPercent;
+            surfaceBrightness += lightUniform.density[i] * diffuseIntensity;
         }
-        
-        float shadowPercent = 0.0;
-        if (i < 2)
+        else
         {
-            shadowPercent = shadow_coverage_common(shadowPosition[i],
-                                                   lightUniform.shadowBias[i], diffuseIntensity,
-                                                   lightUniform.shadowSoften[i], 3,
-                                                   shadowMap[i], samplr);
+            float3 diffuseTerm = material.diffuseColor * diffuseIntensity;
+            
+            float3 specularTerm(0);
+            if (diffuseIntensity > 0)
+            {
+                float3 eyeDirection = normalize(vert.eye);
+                float3 halfway = normalize(normalize(lightUniform.direction[i].xyz) + eyeDirection);
+                float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower);
+                specularTerm = material.specularColor * specularFactor;
+            }
+            
+            float shadowPercent = 0.0;
+            if (i < 2)
+            {
+                shadowPercent = shadow_coverage_common(shadowPosition[i],
+                                                       lightUniform.shadowBias[i], diffuseIntensity,
+                                                       lightUniform.shadowSoften[i], 3,
+                                                       shadowMap[i], samplr);
+            }
+            
+            colorForLights += (diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i]) * (1.0 - shadowPercent);
         }
-        
-        colorForLights += (diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i]) * (1.0 - shadowPercent);
     }
     
-    return float4(ambientTerm + colorForLights, modelCharacterUniforms.opacity);
+    if (kShadowOverlay)
+        return float4(0.0, 0.0, 0.0, shadowOverlay / surfaceBrightness);
+    else
+        return float4(ambientTerm + colorForLights, modelCharacterUniforms.opacity);
 }
 
 
