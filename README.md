@@ -7,7 +7,8 @@ A simple Wavefront OBJ viewer.
 * Ground shadow
 
 <p align="left">
-  <img width="400" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F-4J-Ground.jpg"/>
+  <img height="300" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F-4J-Ground.jpg"/>
+  <img height="300" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F4J-ground-front.jpg"/>
 </p>
 
 * Skybox.
