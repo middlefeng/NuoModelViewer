@@ -142,6 +142,19 @@
     modelBoard->CreateBuffer();
     NuoBoardMesh* boardMesh = CreateBoardMesh(self.device, modelBoard);
     
+    [self addBoardObject:boardMesh];
+}
+
+
+- (void)createBoardWithImage:(NSString*)path
+{
+    NuoBoardMesh* boardMesh = CreateBoardMeshWithTexture(path);
+    [self addBoardObject:boardMesh];
+}
+
+
+- (void)addBoardObject:(NuoBoardMesh*)boardMesh
+{
     float radius = boardMesh.boundingSphere.radius;
     const float defaultDistance = - 3.0 * radius;
     const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };

@@ -665,4 +665,26 @@
 
 
 
+- (IBAction)addBoardImageObject:(id)sender
+{
+    NSOpenPanel* openPanel = [NSOpenPanel openPanel];
+    openPanel.allowedFileTypes = @[@"jpg", @"png"];
+    
+    __weak __block id<MTLDevice> device = self.metalLayer.device;
+    
+    [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
+     {
+         if (result == NSFileHandlingPanelOKButton)
+         {
+             NSString* path = openPanel.URL.path;
+             
+             
+             
+             [self render];
+         }
+     }];
+}
+
+
+
 @end
