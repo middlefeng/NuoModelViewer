@@ -346,9 +346,17 @@
     NSString* vertexFunc = _shadowPipelineState ? @"vertex_project_shadow" : @"vertex_project";
     NSString* fragmnFunc = _shadowPipelineState ? @"fragment_light_shadow" : @"fragment_light";
     
+    // there is material and color, not only shadow overlay
+    //
+    BOOL shadowOverlay = NO;
+    MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
+    [funcConstant setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
+    
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];
-    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmnFunc];
+    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmnFunc
+                                                        constantValues:funcConstant
+                                                                 error:nil];
     pipelineDescriptor.sampleCount = kSampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
