@@ -201,6 +201,7 @@
         
         _transformPoise = matrix_identity_float4x4;
         _transformTranslate = matrix_identity_float4x4;
+        _shadowCasted = YES;
     }
     
     return self;

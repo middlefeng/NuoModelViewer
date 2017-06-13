@@ -12,6 +12,7 @@
 @interface NuoBoardMesh : NuoMesh
 
 @property (assign, nonatomic) BOOL shadowOverlayOnly;
+@property (strong, nonatomic) id<MTLTexture> image;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 - (void)makePipelineShadowState;

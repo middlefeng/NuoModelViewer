@@ -53,4 +53,10 @@
 }
 
 
+- (void)setImage:(id<MTLTexture>)image
+{
+    self.shadowPipelineState = nil;
+}
+
+
 @end

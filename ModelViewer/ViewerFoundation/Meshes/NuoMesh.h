@@ -93,6 +93,7 @@
 @property (nonatomic, strong, readonly) NuoBoundingSphere* boundingSphere;
 @property (nonatomic, assign) BOOL enabled;
 @property (nonatomic, assign) BOOL cullEnabled;
+@property (nonatomic, assign) BOOL shadowCasted;
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device

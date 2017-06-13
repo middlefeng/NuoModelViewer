@@ -21,6 +21,7 @@
     {
         self.transformPoise = matrix_identity_float4x4;
         self.transformTranslate = matrix_identity_float4x4;
+        self.shadowCasted = YES;
     }
     
     return self;

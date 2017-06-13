@@ -75,9 +75,16 @@
     NuoBoundingSphere* sphere = nil;
     if (_meshes && _meshes.count > 0)
     {
-        sphere = [_meshes[0] boundingSphere];
-        for (NSUInteger i = 1; i < _meshes.count; ++i)
-            sphere = [sphere unionWith:[_meshes[i] boundingSphere]];
+        for (NSUInteger i = 0; i < _meshes.count; ++i)
+        {
+            if (_meshes[i].shadowCasted)
+            {
+                if (sphere)
+                    sphere = [sphere unionWith:[_meshes[i] boundingSphere]];
+                else
+                    sphere = [_meshes[i] boundingSphere];
+            }
+        }
         
         center.x = sphere.center.x;
         center.y = sphere.center.y;
@@ -126,7 +133,10 @@
 
     [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
     for (NuoMesh* mesh in _meshes)
-        [mesh drawShadow:renderPass indexBuffer:inFlight];
+    {
+        if (mesh.shadowCasted)
+            [mesh drawShadow:renderPass indexBuffer:inFlight];
+    }
     
     [renderPass endEncoding];
 }

@@ -34,6 +34,7 @@ NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoMod
     meshBounding.center.z = boundingBox._centerZ;
     
     resultMesh.boundingBoxLocal = meshBounding;
+    resultMesh.shadowCasted = YES;
     
     [resultMesh makePipelineShadowState];
     [resultMesh makePipelineState:[resultMesh makePipelineStateDescriptor]];
@@ -76,6 +77,8 @@ NuoBoardMesh* CreateBoardMeshWithTexture(id<MTLDevice> device, NSString* texPath
     meshBounding.center.z = boundingBox._centerZ;
     
     resultMesh.boundingBoxLocal = meshBounding;
+    resultMesh.shadowCasted = NO;
+    resultMesh.image = texture.texture;
     
     [resultMesh makePipelineShadowState];
     [resultMesh makePipelineState:[resultMesh makePipelineStateDescriptor]];
