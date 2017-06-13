@@ -11,14 +11,14 @@
 #import "NuoIntermediateRenderPass.h"
 
 
-@class LightSource;
+@class NuoLightSource;
 @class NuoLua;
 
 
 @interface NotationRenderer : NuoIntermediateRenderPass
 
 
-@property (nonatomic, readonly) NSArray<LightSource*>* lightSources;
+@property (nonatomic, readonly) NSArray<NuoLightSource*>* lightSources;
 
 @property (nonatomic, assign) float notationWidthCap;
 @property (nonatomic, assign) CGRect notationArea;
@@ -26,7 +26,7 @@
 
 // retrieve the currently-selected description
 
-@property (nonatomic, readonly) LightSource* selectedLightSource;
+@property (nonatomic, readonly) NuoLightSource* selectedLightSource;
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;

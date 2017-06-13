@@ -7,14 +7,14 @@
 @class NuoLua;
 @class NuoMeshCompound;
 @class NuoCubeMesh;
-@class LightSource;
+@class NuoLightSource;
 
 
 
 @interface ModelRenderer : NuoRenderPipelinePass
 
 
-@property (nonatomic, strong) NSArray<LightSource*>* lights;
+@property (nonatomic, strong) NSArray<NuoLightSource*>* lights;
 @property (nonatomic, strong) NuoCubeMesh* cubeMesh;
 
 

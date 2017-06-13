@@ -1,5 +1,4 @@
 #import "ModelViewerRenderer.h"
-#import "ShadowMapRenderer.h"
 
 #import "NuoUniforms.h"
 
@@ -19,7 +18,8 @@
 
 #include "NuoLua.h"
 
-#import "LightSource.h"
+#import "NuoLightSource.h"
+#import "NuoShadowMapRenderer.h"
 
 @interface ModelRenderer ()
 
@@ -47,7 +47,7 @@
 
 @implementation ModelRenderer
 {
-    ShadowMapRenderer* _shadowMapRenderer[2];
+    NuoShadowMapRenderer* _shadowMapRenderer[2];
 }
 
 
@@ -64,8 +64,8 @@
         _cullEnabled = YES;
         _fieldOfView = (2 * M_PI) / 8;
         
-        _shadowMapRenderer[0] = [[ShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 0"];
-        _shadowMapRenderer[1] = [[ShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
+        _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 0"];
+        _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
         
         _meshes = [NSMutableArray new];
     }
@@ -305,7 +305,7 @@
             exporter.StartArrayIndex(lightIndex);
             exporter.StartTable();
             
-            LightSource* light = _lights[lightIndex];
+            NuoLightSource* light = _lights[lightIndex];
             
             {
                 exporter.StartEntry("rotateX");

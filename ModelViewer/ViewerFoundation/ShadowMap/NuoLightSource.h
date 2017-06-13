@@ -1,5 +1,5 @@
 //
-//  LightSource.h
+//  NuoLightSource.h
 //  ModelViewer
 //
 //  Created by middleware on 11/19/16.
@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 
-@interface LightSource : NSObject
+@interface NuoLightSource : NSObject
 
 @property (nonatomic, assign) float lightingRotationX;
 @property (nonatomic, assign) float lightingRotationY;
