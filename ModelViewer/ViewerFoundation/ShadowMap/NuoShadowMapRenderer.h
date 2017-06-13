@@ -1,5 +1,5 @@
 //
-//  ShadowMapRenderer.h
+//  NuoShadowMapRenderer.h
 //  ModelViewer
 //
 //  Created by middleware on 1/16/17.
@@ -19,7 +19,7 @@
 @class NuoShadowMapTarget;
 
 
-@interface ShadowMapRenderer : NuoRenderPass
+@interface NuoShadowMapRenderer : NuoRenderPass
 
 /**
  *  The light source for which the shadow map is generated for.
