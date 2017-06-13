@@ -8,7 +8,7 @@
 
 #import "LightOperationPanel.h"
 #import "ModelOptionUpdate.h"
-#import "LightSource.h"
+#import "NuoLightSource.h"
 
 
 
@@ -201,7 +201,7 @@
 
 
 
-- (void)updateControls:(LightSource*)lightSource
+- (void)updateControls:(NuoLightSource*)lightSource
 {
     [self setLightDensity:lightSource.lightingDensity];
     [self setLightSpacular:lightSource.lightingSpacular];
