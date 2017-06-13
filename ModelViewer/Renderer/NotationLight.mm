@@ -17,7 +17,7 @@
 #include "NuoUniforms.h"
 #include "NuoMeshUniform.h"
 
-#import "LightSource.h"
+#import "NuoLightSource.h"
 
 
 
@@ -103,7 +103,7 @@
 
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
-    LightSource* desc = _lightSourceDesc;
+    NuoLightSource* desc = _lightSourceDesc;
     NuoMeshBox* bounding = _lightVector.boundingBoxLocal;
     
     const vector_float3 translationToCenter =
@@ -135,7 +135,7 @@
 
 - (CGPoint)headPointProjected
 {
-    LightSource* desc = _lightSourceDesc;
+    NuoLightSource* desc = _lightSourceDesc;
     
     matrix_float4x4 rotationMatrix = matrix_rotate(desc.lightingRotationX,
                                                    desc.lightingRotationY);

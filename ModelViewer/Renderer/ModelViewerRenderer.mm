@@ -19,7 +19,7 @@
 
 #include "NuoLua.h"
 
-#import "LightSource.h"
+#import "NuoLightSource.h"
 
 @interface ModelRenderer ()
 
@@ -305,7 +305,7 @@
             exporter.StartArrayIndex(lightIndex);
             exporter.StartTable();
             
-            LightSource* light = _lights[lightIndex];
+            NuoLightSource* light = _lights[lightIndex];
             
             {
                 exporter.StartEntry("rotateX");

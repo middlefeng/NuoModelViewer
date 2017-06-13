@@ -7,8 +7,8 @@
 //
 
 #import "ShadowMapRenderer.h"
-#import "LightSource.h"
 
+#import "NuoLightSource.h"
 #import "NuoShadowMapTarget.h"
 
 #include "NuoMesh.h"
@@ -88,7 +88,7 @@
     vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
     vector_float3 up = {0, 1, 0};
     
-    LightSource* lightSource = _lightSource;
+    NuoLightSource* lightSource = _lightSource;
     const matrix_float4x4 lightAsEyeMatrix = matrix_rotate(lightSource.lightingRotationX,
                                                            lightSource.lightingRotationY);
     lightAsEye = matrix_multiply(lightAsEyeMatrix, lightAsEye);

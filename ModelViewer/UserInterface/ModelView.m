@@ -18,7 +18,7 @@
 
 #import "NuoLua.h"
 #import "NuoMeshOptions.h"
-#import "LightSource.h"
+#import "NuoLightSource.h"
 
 #import "NuoMeshCompound.h"
 #import "NuoCubeMesh.h"
@@ -344,7 +344,7 @@
         if (_trackingLighting)
         {
             [_notationRender selectCurrentLightVector:location];
-            LightSource* source = _notationRender.selectedLightSource;
+            NuoLightSource* source = _notationRender.selectedLightSource;
             
             [_lightPanel updateControls:source];
         }
@@ -379,7 +379,7 @@
     
     if (_trackingLighting)
     {
-        LightSource* lightSource = _notationRender.selectedLightSource;
+        NuoLightSource* lightSource = _notationRender.selectedLightSource;
         [_notationRender setRotateX:lightSource.lightingRotationX + deltaX];
         [_notationRender setRotateY:lightSource.lightingRotationY + deltaY];
     }

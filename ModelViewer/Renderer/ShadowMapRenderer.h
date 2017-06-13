@@ -14,7 +14,7 @@
 #import "NuoRenderPass.h"
 
 
-@class LightSource;
+@class NuoLightSource;
 @class NuoMesh;
 @class NuoShadowMapTarget;
 
@@ -24,7 +24,7 @@
 /**
  *  The light source for which the shadow map is generated for.
  */
-@property (nonatomic, weak) LightSource* lightSource;
+@property (nonatomic, weak) NuoLightSource* lightSource;
 
 /**
  *  Scene model. Be weak reference because the owner should be the model render.

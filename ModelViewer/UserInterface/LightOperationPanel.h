@@ -11,7 +11,7 @@
 
 
 @protocol ModelOptionUpdate;
-@class LightSource;
+@class NuoLightSource;
 
 
 
@@ -29,7 +29,7 @@
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 
 
-- (void)updateControls:(LightSource*)lightSource;
+- (void)updateControls:(NuoLightSource*)lightSource;
 
 
 @end
