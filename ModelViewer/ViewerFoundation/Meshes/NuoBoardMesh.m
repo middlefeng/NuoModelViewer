@@ -10,13 +10,17 @@
 
 
 @implementation NuoBoardMesh
+{
+    id<MTLSamplerState> _samplerState;
+}
+
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
-    NSString* vertexFunc = @"vertex_project_shadow";
-    NSString* fragmnFunc = @"fragment_light_shadow";
+    NSString* vertexFunc = _image ? @"vertex_project_board_image" : @"vertex_project_shadow";
+    NSString* fragmnFunc = _image ? @"fragment_board_image" : @"fragment_light_shadow";
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&_shadowOverlayOnly type:MTLDataTypeBool atIndex:3];
@@ -49,13 +53,54 @@
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
     [renderPass setCullMode:MTLCullModeBack];
-    [super drawMesh:renderPass indexBuffer:index];
+    
+    if (_image)
+    {
+        [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
+        [renderPass setRenderPipelineState:self.renderPipelineState];
+        [renderPass setDepthStencilState:self.depthStencilState];
+        
+        [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
+        [renderPass setVertexBuffer:self.transformBuffers[index] offset:0 atIndex:3];
+        [renderPass setFragmentTexture:_image atIndex:2];
+        [renderPass setFragmentSamplerState:_samplerState atIndex:0];
+        [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                               indexCount:[self.indexBuffer length] / sizeof(uint32_t)
+                                indexType:MTLIndexTypeUInt32
+                              indexBuffer:self.indexBuffer
+                        indexBufferOffset:0];
+    }
+    else
+    {
+        [super drawMesh:renderPass indexBuffer:index];
+    }
 }
 
 
 - (void)setImage:(id<MTLTexture>)image
 {
-    self.shadowPipelineState = nil;
+    _image = image;
+    
+    if (_image)
+    {
+        self.shadowPipelineState = nil;
+        
+        // create sampler state
+        MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
+        samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
+        samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
+        samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
+        samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
+        samplerDesc.mipFilter = MTLSamplerMipFilterLinear;
+        _samplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
+    }
+    else
+    {
+        [self makePipelineShadowState];
+        _samplerState = nil;
+    }
+    
+    [self makePipelineState:[self makePipelineStateDescriptor]];
 }
 
 
