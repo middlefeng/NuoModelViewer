@@ -1,14 +1,14 @@
 //
-//  ShadowMapRenderer.m
+//  NuoShadowMapRenderer.m
 //  ModelViewer
 //
 //  Created by middleware on 1/16/17.
 //  Copyright © 2017 middleware. All rights reserved.
 //
 
-#import "ShadowMapRenderer.h"
-#import "LightSource.h"
+#import "NuoShadowMapRenderer.h"
 
+#import "NuoLightSource.h"
 #import "NuoShadowMapTarget.h"
 
 #include "NuoMesh.h"
@@ -17,7 +17,7 @@
 
 
 
-@interface ShadowMapRenderer()
+@interface NuoShadowMapRenderer()
 
 @property (nonatomic, strong) NSArray<id<MTLBuffer>>* transUniformBuffers;
 
@@ -25,7 +25,7 @@
 
 
 
-@implementation ShadowMapRenderer
+@implementation NuoShadowMapRenderer
 {
     matrix_float4x4 _lightCastMatrix;
 }
@@ -88,7 +88,7 @@
     vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
     vector_float3 up = {0, 1, 0};
     
-    LightSource* lightSource = _lightSource;
+    NuoLightSource* lightSource = _lightSource;
     const matrix_float4x4 lightAsEyeMatrix = matrix_rotate(lightSource.lightingRotationX,
                                                            lightSource.lightingRotationY);
     lightAsEye = matrix_multiply(lightAsEyeMatrix, lightAsEye);

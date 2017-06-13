@@ -15,7 +15,7 @@
 
 #import "NotationLight.h"
 #import "NuoUniforms.h"
-#import "LightSource.h"
+#import "NuoLightSource.h"
 
 #import <math.h>
 
@@ -45,7 +45,7 @@
     if (self)
     {
         NSMutableArray* lightVectors = [[NSMutableArray alloc] init];
-        NSMutableArray<LightSource*>* lightSourcesDesc = [[NSMutableArray alloc] init];
+        NSMutableArray<NuoLightSource*>* lightSourcesDesc = [[NSMutableArray alloc] init];
         
         for (unsigned int index = 0; index < 4; ++index)
         {
@@ -53,7 +53,7 @@
                                                                           isBold:index < 2 /* the first two with shadow casting */];
             [lightVectors addObject:lightNotation];
             
-            LightSource* lightSource = [[LightSource alloc] init];
+            NuoLightSource* lightSource = [[NuoLightSource alloc] init];
             lightSource.enableShadow = (index < 2);
             
             lightNotation.lightSourceDesc = lightSource;
@@ -182,7 +182,7 @@
 }
 
 
-- (LightSource*)selectedLightSource
+- (NuoLightSource*)selectedLightSource
 {
     return _currentLightVector.lightSourceDesc;
 }

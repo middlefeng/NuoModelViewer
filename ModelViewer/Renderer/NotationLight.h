@@ -11,14 +11,14 @@
 #import <simd/simd.h>
 
 
-@class LightSource;
+@class NuoLightSource;
 @class NuoMeshBox;
 
 
 @interface NotationLight : NSObject
 
 
-@property (nonatomic, weak) LightSource* lightSourceDesc;
+@property (nonatomic, weak) NuoLightSource* lightSourceDesc;
 
 @property (nonatomic, assign) BOOL selected;
 
