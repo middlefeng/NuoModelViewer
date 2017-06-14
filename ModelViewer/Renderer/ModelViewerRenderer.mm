@@ -185,57 +185,13 @@
     
     {
         exporter.StartEntry("rotationMatrix");
-        exporter.StartTable();
-        
-        {
-            for (unsigned char col = 0; col < 4; ++ col)
-            {
-                exporter.StartArrayIndex(col);
-                exporter.StartTable();
-                
-                vector_float4 colomn = _mainModelMesh.transformPoise.columns[col];
-                
-                for (unsigned char row = 0; row < 4; ++ row)
-                {
-                    exporter.StartArrayIndex(row);
-                    exporter.SetEntryValueFloat(colomn[row]);
-                    exporter.EndEntry(false);
-                }
-                
-                exporter.EndTable();
-                exporter.EndEntry(false);
-            }
-        }
-        
-        exporter.EndTable();
+        exporter.SetMatrix(_mainModelMesh.transformPoise);
         exporter.EndEntry(true);
     }
     
     {
         exporter.StartEntry("translationMatrix");
-        exporter.StartTable();
-        
-        {
-            for (unsigned char col = 0; col < 4; ++ col)
-            {
-                exporter.StartArrayIndex(col);
-                exporter.StartTable();
-                
-                vector_float4 colomn = _mainModelMesh.transformTranslate.columns[col];
-                
-                for (unsigned char row = 0; row < 4; ++ row)
-                {
-                    exporter.StartArrayIndex(row);
-                    exporter.SetEntryValueFloat(colomn[row]);
-                    exporter.EndEntry(false);
-                }
-                
-                exporter.EndTable();
-                exporter.EndEntry(false);
-            }
-        }
-        
-        exporter.EndTable();
+        exporter.SetMatrix(_mainModelMesh.transformTranslate);
         exporter.EndEntry(true);
     }
     
