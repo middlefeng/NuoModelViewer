@@ -25,8 +25,9 @@
 
 
 @property (nonatomic, weak) NuoMeshCompound* mainModelMesh;
-@property (nonatomic, weak) NuoMesh* selectedMesh;
+@property (nonatomic, strong) NSMutableArray<NuoBoardMesh*>* boardMeshes;
 
+@property (nonatomic, weak) NuoMesh* selectedMesh;
 @property (nonatomic, strong) NSMutableArray<NuoMesh*>* meshes;
 
 @property (assign) matrix_float4x4 projection;
@@ -68,6 +69,7 @@
         _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
         
         _meshes = [NSMutableArray new];
+        _boardMeshes = [NSMutableArray new];
     }
 
     return self;
@@ -146,6 +148,7 @@
     const float defaultDistance = - 3.0 * radius;
     const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
     [boardMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
+    [_boardMeshes addObject:boardMesh];
     
     // boards are all opaque so they are drawn first
     //
@@ -203,46 +206,40 @@
         
         size_t meshIndex = 0;
         
-        for (NuoMesh* mesh in _meshes)
+        for (NuoBoardMesh* boardMesh in _boardMeshes)
         {
-            if ([mesh isKindOfClass:[NuoBoardMesh class]])
+            exporter.StartArrayIndex(++meshIndex);
+            exporter.StartTable();
+            
             {
-                exporter.StartArrayIndex(++meshIndex);
-                
-                NuoBoardMesh* boardMesh = (NuoBoardMesh*)mesh;
-                
+                exporter.StartEntry("dimensions");
                 exporter.StartTable();
-                
                 {
-                    exporter.StartEntry("dimensions");
-                    exporter.StartTable();
-                    {
-                        NuoCoord* dimension = boardMesh.dimensions;
-                        exporter.StartEntry("width");
-                        exporter.SetEntryValueFloat(dimension.x);
-                        exporter.EndEntry(false);
-                        exporter.StartEntry("height");
-                        exporter.SetEntryValueFloat(dimension.y);
-                        exporter.EndEntry(false);
-                        exporter.StartEntry("thickness");
-                        exporter.SetEntryValueFloat(dimension.z);
-                        exporter.EndEntry(false);
-                    }
-                    exporter.EndTable();
-                    exporter.EndEntry(true);
-                    
-                    exporter.StartEntry("translationMatrix");
-                    exporter.SetMatrix(boardMesh.transformTranslate);
-                    exporter.EndEntry(true);
-                    
-                    exporter.StartEntry("rotationMatrix");
-                    exporter.SetMatrix(boardMesh.transformPoise);
-                    exporter.EndEntry(true);
+                    NuoCoord* dimension = boardMesh.dimensions;
+                    exporter.StartEntry("width");
+                    exporter.SetEntryValueFloat(dimension.x);
+                    exporter.EndEntry(false);
+                    exporter.StartEntry("height");
+                    exporter.SetEntryValueFloat(dimension.y);
+                    exporter.EndEntry(false);
+                    exporter.StartEntry("thickness");
+                    exporter.SetEntryValueFloat(dimension.z);
+                    exporter.EndEntry(false);
                 }
-                
                 exporter.EndTable();
                 exporter.EndEntry(true);
+                
+                exporter.StartEntry("translationMatrix");
+                exporter.SetMatrix(boardMesh.transformTranslate);
+                exporter.EndEntry(true);
+                
+                exporter.StartEntry("rotationMatrix");
+                exporter.SetMatrix(boardMesh.transformPoise);
+                exporter.EndEntry(true);
             }
+            
+            exporter.EndTable();
+            exporter.EndEntry(true);
         }
         
         exporter.EndTable();
@@ -470,14 +467,10 @@
         _mainModelMesh.transformTranslate = originalTrans;
     }
     
-    for (NuoMesh* mesh in _meshes)
+    for (NuoBoardMesh* board in _boardMeshes)
     {
-        if ([mesh isKindOfClass:[NuoBoardMesh class]])
-        {
-            NuoBoardMesh* board = (NuoBoardMesh*)mesh;
-            board.shadowOverlayOnly = [modelOptions basicMaterialized];
-            [board makePipelineState:[board makePipelineStateDescriptor]];
-        }
+        board.shadowOverlayOnly = [modelOptions basicMaterialized];
+        [board makePipelineState:[board makePipelineStateDescriptor]];
     }
 }
 
