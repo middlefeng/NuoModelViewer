@@ -11,9 +11,8 @@
 
 @interface NuoBoardMesh : NuoMesh
 
+@property (strong, readonly) NuoCoord* dimensions;
 @property (assign, nonatomic) BOOL shadowOverlayOnly;
-
-@property (readonly, nonatomic, strong) NuoCoord* dimension;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 - (void)makePipelineShadowState;

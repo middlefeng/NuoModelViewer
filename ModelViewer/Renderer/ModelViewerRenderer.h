@@ -6,6 +6,7 @@
 @class NuoMeshOption;
 @class NuoLua;
 @class NuoMeshCompound;
+@class NuoBoardMesh;
 @class NuoCubeMesh;
 @class NuoLightSource;
 
@@ -45,7 +46,7 @@
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
        withCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
-- (void)createBoard:(CGSize)size;
+- (NuoBoardMesh*)createBoard:(CGSize)size;
 - (void)selectMeshWithScreen:(CGPoint)point;
 
 
