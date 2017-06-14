@@ -10,15 +10,32 @@
 #include "NuoModelBoard.h"
 
 
+
+@interface NuoBoardMesh()
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+            withVerticesBuffer:(void *)buffer withLength:(size_t)length
+                   withIndices:(void *)indices withLength:(size_t)indicesLength
+                 withDimension:(NuoCoord*)coord;
+
+@end
+
+
+
 NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoModelBoard> model)
 {
     NuoBoardMesh* resultMesh = nil;
+    NuoCoord* dimensions = [NuoCoord new];
+    dimensions.x = model->_width;
+    dimensions.y = model->_height;
+    dimensions.z = model->_thickness;
     
     resultMesh = [[NuoBoardMesh alloc] initWithDevice:device
                                    withVerticesBuffer:model->Ptr()
                                            withLength:model->Length()
                                           withIndices:model->IndicesPtr()
-                                           withLength:model->IndicesLength()];
+                                           withLength:model->IndicesLength()
+                                        withDimension:dimensions];
     
     NuoBox boundingBox = model->GetBoundingBox();
     
@@ -35,6 +52,8 @@ NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoMod
     [resultMesh makePipelineShadowState];
     [resultMesh makePipelineState:[resultMesh makePipelineStateDescriptor]];
     [resultMesh makeDepthStencilState];
+    
+    [resultMesh setRawModel:model.get()];
     
     return resultMesh;
 }

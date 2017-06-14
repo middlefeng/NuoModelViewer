@@ -196,6 +196,58 @@
     }
     
     {
+        exporter.StartEntry("boards");
+        exporter.StartTable();
+        
+        size_t meshIndex = 0;
+        
+        for (NuoMesh* mesh in _meshes)
+        {
+            if ([mesh isKindOfClass:[NuoBoardMesh class]])
+            {
+                exporter.StartArrayIndex(++meshIndex);
+                
+                NuoBoardMesh* boardMesh = (NuoBoardMesh*)mesh;
+                
+                exporter.StartTable();
+                
+                {
+                    exporter.StartEntry("dimensions");
+                    exporter.StartTable();
+                    {
+                        NuoCoord* dimension = boardMesh.dimension;
+                        exporter.StartEntry("width");
+                        exporter.SetEntryValueFloat(dimension.x);
+                        exporter.EndEntry(false);
+                        exporter.StartEntry("height");
+                        exporter.SetEntryValueFloat(dimension.y);
+                        exporter.EndEntry(false);
+                        exporter.StartEntry("thickness");
+                        exporter.SetEntryValueFloat(dimension.z);
+                        exporter.EndEntry(false);
+                    }
+                    exporter.EndTable();
+                    exporter.EndEntry(true);
+                    
+                    exporter.StartEntry("translationMatrix");
+                    exporter.SetMatrix(boardMesh.transformTranslate);
+                    exporter.EndEntry(true);
+                    
+                    exporter.StartEntry("rotationMatrix");
+                    exporter.SetMatrix(boardMesh.transformPoise);
+                    exporter.EndEntry(true);
+                }
+                
+                exporter.EndTable();
+                exporter.EndEntry(true);
+            }
+        }
+        
+        exporter.EndTable();
+        exporter.EndEntry(true);
+    }
+    
+    {
         exporter.StartEntry("view");
         exporter.StartTable();
         

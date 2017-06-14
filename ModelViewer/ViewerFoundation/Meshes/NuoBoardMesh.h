@@ -13,6 +13,8 @@
 
 @property (assign, nonatomic) BOOL shadowOverlayOnly;
 
+@property (readonly, nonatomic, strong) NuoCoord* dimension;
+
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 - (void)makePipelineShadowState;
 
