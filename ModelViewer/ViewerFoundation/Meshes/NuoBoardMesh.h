@@ -27,6 +27,6 @@
 #include "NuoModelBoard.h"
 
 
-NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoModelBoard> model);
+NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoModelBoard> model, bool shadowCastOnly);
 
 #endif

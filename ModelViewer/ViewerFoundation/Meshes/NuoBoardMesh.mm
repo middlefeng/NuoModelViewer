@@ -22,7 +22,7 @@
 
 
 
-NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoModelBoard> model)
+NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoModelBoard> model, bool shadowCastOnly)
 {
     NuoBoardMesh* resultMesh = nil;
     NuoCoord* dimensions = [NuoCoord new];
@@ -48,6 +48,8 @@ NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoMod
     meshBounding.center.z = boundingBox._centerZ;
     
     resultMesh.boundingBoxLocal = meshBounding;
+    
+    [resultMesh setShadowOverlayOnly:shadowCastOnly];
     
     [resultMesh makePipelineShadowState];
     [resultMesh makePipelineState:[resultMesh makePipelineStateDescriptor]];

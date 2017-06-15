@@ -142,7 +142,7 @@
 {
     std::shared_ptr<NuoModelBoard> modelBoard(new NuoModelBoard(size.width, size.height, 0.001));
     modelBoard->CreateBuffer();
-    NuoBoardMesh* boardMesh = CreateBoardMesh(self.device, modelBoard);
+    NuoBoardMesh* boardMesh = CreateBoardMesh(self.device, modelBoard, [_modelOptions basicMaterialized]);
     
     float radius = boardMesh.boundingSphere.radius;
     const float defaultDistance = - 3.0 * radius;
