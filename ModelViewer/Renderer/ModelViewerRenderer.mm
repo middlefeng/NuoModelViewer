@@ -158,6 +158,16 @@
 }
 
 
+
+- (void)removeAllBoards
+{
+    for (NuoMesh* mesh in _boardMeshes)
+        [_meshes removeObject:mesh];
+
+    [_boardMeshes removeAllObjects];
+}
+
+
 - (NuoMeshCompound*)mainModelMesh
 {
     return _mainModelMesh;
@@ -416,6 +426,9 @@
     [lua getField:@"boards" fromTable:-1];
     
     length = [lua getArraySize:-1];
+    if (length > 0)
+        [self removeAllBoards];
+    
     for (size_t i = 0; i < length; ++i)
     {
         [lua getItem:(int)(i + 1) fromTable:-1];

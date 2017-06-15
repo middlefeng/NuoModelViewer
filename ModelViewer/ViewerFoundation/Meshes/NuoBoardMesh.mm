@@ -50,12 +50,9 @@ NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoMod
     resultMesh.boundingBoxLocal = meshBounding;
     
     [resultMesh setShadowOverlayOnly:shadowCastOnly];
-    
     [resultMesh makePipelineShadowState];
     [resultMesh makePipelineState:[resultMesh makePipelineStateDescriptor]];
     [resultMesh makeDepthStencilState];
-    
-    [resultMesh setRawModel:model.get()];
     
     return resultMesh;
 }
