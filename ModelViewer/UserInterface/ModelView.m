@@ -520,6 +520,7 @@
     
     [_modelRender importScene:lua];
     [_notationRender importScene:lua];
+    [_lightPanel updateControls:_notationRender.selectedLightSource];
     
     [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
     [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];

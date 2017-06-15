@@ -11,6 +11,7 @@
 
 @interface NuoBoardMesh : NuoMesh
 
+@property (strong, readonly) NuoCoord* dimensions;
 @property (assign, nonatomic) BOOL shadowOverlayOnly;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
@@ -26,6 +27,6 @@
 #include "NuoModelBoard.h"
 
 
-NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoModelBoard> model);
+NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoModelBoard> model, bool shadowCastOnly);
 
 #endif
