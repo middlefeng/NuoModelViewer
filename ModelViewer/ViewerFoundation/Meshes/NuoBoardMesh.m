@@ -9,7 +9,30 @@
 #import "NuoBoardMesh.h"
 
 
+
 @implementation NuoBoardMesh
+{
+    NuoCoord* _dimensions;
+}
+
+
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+            withVerticesBuffer:(void *)buffer withLength:(size_t)length
+                   withIndices:(void *)indices withLength:(size_t)indicesLength
+                 withDimension:(NuoCoord*)dimensions
+{
+    self = [super initWithDevice:device withVerticesBuffer:buffer
+                      withLength:length withIndices:indices
+                      withLength:indicesLength];
+    
+    if (self)
+        _dimensions = dimensions;
+    
+    return self;
+}
+
+
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
@@ -50,6 +73,12 @@
 {
     [renderPass setCullMode:MTLCullModeBack];
     [super drawMesh:renderPass indexBuffer:index];
+}
+
+
+- (NuoCoord*)dimensions
+{
+    return _dimensions;
 }
 
 

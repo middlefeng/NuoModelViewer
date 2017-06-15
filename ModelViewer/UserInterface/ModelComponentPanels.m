@@ -18,7 +18,7 @@
 
 
 
-@interface ModelComponentPanels() < ModelPanelUpdate>
+@interface ModelComponentPanels() < ModelPanelUpdate >
 
 @end
 

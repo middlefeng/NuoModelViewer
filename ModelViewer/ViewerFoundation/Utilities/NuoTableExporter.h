@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <simd/simd.h>
 
 class NuoTableExporter
 {
@@ -29,6 +30,8 @@ public:
     void SetEntryValueString(const std::string& value);
     void EndTable();
     void EndEntry(bool extraLine);
+    
+    void SetMatrix(matrix_float4x4 matrix);
     
     const std::string& GetResult() const;
 

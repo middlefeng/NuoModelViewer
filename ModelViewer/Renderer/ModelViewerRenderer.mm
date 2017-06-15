@@ -25,8 +25,9 @@
 
 
 @property (nonatomic, weak) NuoMeshCompound* mainModelMesh;
-@property (nonatomic, weak) NuoMesh* selectedMesh;
+@property (nonatomic, strong) NSMutableArray<NuoBoardMesh*>* boardMeshes;
 
+@property (nonatomic, weak) NuoMesh* selectedMesh;
 @property (nonatomic, strong) NSMutableArray<NuoMesh*>* meshes;
 
 @property (assign) matrix_float4x4 projection;
@@ -68,6 +69,7 @@
         _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
         
         _meshes = [NSMutableArray new];
+        _boardMeshes = [NSMutableArray new];
     }
 
     return self;
@@ -136,20 +138,33 @@
 }
 
 
-- (void)createBoard:(CGSize)size
+- (NuoBoardMesh*)createBoard:(CGSize)size
 {
     std::shared_ptr<NuoModelBoard> modelBoard(new NuoModelBoard(size.width, size.height, 0.001));
     modelBoard->CreateBuffer();
-    NuoBoardMesh* boardMesh = CreateBoardMesh(self.device, modelBoard);
+    NuoBoardMesh* boardMesh = CreateBoardMesh(self.device, modelBoard, [_modelOptions basicMaterialized]);
     
     float radius = boardMesh.boundingSphere.radius;
     const float defaultDistance = - 3.0 * radius;
     const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
     [boardMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
+    [_boardMeshes addObject:boardMesh];
     
     // boards are all opaque so they are drawn first
     //
     [_meshes insertObject:boardMesh atIndex:0];
+    
+    return boardMesh;
+}
+
+
+
+- (void)removeAllBoards
+{
+    for (NuoMesh* mesh in _boardMeshes)
+        [_meshes removeObject:mesh];
+
+    [_boardMeshes removeAllObjects];
 }
 
 
@@ -185,54 +200,56 @@
     
     {
         exporter.StartEntry("rotationMatrix");
-        exporter.StartTable();
-        
-        {
-            for (unsigned char col = 0; col < 4; ++ col)
-            {
-                exporter.StartArrayIndex(col);
-                exporter.StartTable();
-                
-                vector_float4 colomn = _mainModelMesh.transformPoise.columns[col];
-                
-                for (unsigned char row = 0; row < 4; ++ row)
-                {
-                    exporter.StartArrayIndex(row);
-                    exporter.SetEntryValueFloat(colomn[row]);
-                    exporter.EndEntry(false);
-                }
-                
-                exporter.EndTable();
-                exporter.EndEntry(false);
-            }
-        }
-        
-        exporter.EndTable();
+        exporter.SetMatrix(_mainModelMesh.transformPoise);
         exporter.EndEntry(true);
     }
     
     {
         exporter.StartEntry("translationMatrix");
+        exporter.SetMatrix(_mainModelMesh.transformTranslate);
+        exporter.EndEntry(true);
+    }
+    
+    {
+        exporter.StartEntry("boards");
         exporter.StartTable();
         
+        size_t meshIndex = 0;
+        
+        for (NuoBoardMesh* boardMesh in _boardMeshes)
         {
-            for (unsigned char col = 0; col < 4; ++ col)
+            exporter.StartArrayIndex(++meshIndex);
+            exporter.StartTable();
+            
             {
-                exporter.StartArrayIndex(col);
+                exporter.StartEntry("dimensions");
                 exporter.StartTable();
-                
-                vector_float4 colomn = _mainModelMesh.transformTranslate.columns[col];
-                
-                for (unsigned char row = 0; row < 4; ++ row)
                 {
-                    exporter.StartArrayIndex(row);
-                    exporter.SetEntryValueFloat(colomn[row]);
+                    NuoCoord* dimension = boardMesh.dimensions;
+                    exporter.StartEntry("width");
+                    exporter.SetEntryValueFloat(dimension.x);
+                    exporter.EndEntry(false);
+                    exporter.StartEntry("height");
+                    exporter.SetEntryValueFloat(dimension.y);
+                    exporter.EndEntry(false);
+                    exporter.StartEntry("thickness");
+                    exporter.SetEntryValueFloat(dimension.z);
                     exporter.EndEntry(false);
                 }
-                
                 exporter.EndTable();
-                exporter.EndEntry(false);
+                exporter.EndEntry(true);
+                
+                exporter.StartEntry("translationMatrix");
+                exporter.SetMatrix(boardMesh.transformTranslate);
+                exporter.EndEntry(true);
+                
+                exporter.StartEntry("rotationMatrix");
+                exporter.SetMatrix(boardMesh.transformPoise);
+                exporter.EndEntry(true);
             }
+            
+            exporter.EndTable();
+            exporter.EndEntry(true);
         }
         
         exporter.EndTable();
@@ -406,6 +423,41 @@
     }
     [lua removeField];
     
+    [lua getField:@"boards" fromTable:-1];
+    
+    length = [lua getArraySize:-1];
+    if (length > 0)
+        [self removeAllBoards];
+    
+    for (size_t i = 0; i < length; ++i)
+    {
+        [lua getItem:(int)(i + 1) fromTable:-1];
+        
+        float width, height, thickness;
+        {
+            [lua getField:@"dimensions" fromTable:-1];
+            
+            width = [lua getFieldAsNumber:@"width" fromTable:-1];
+            height = [lua getFieldAsNumber:@"height" fromTable:-1];
+            thickness = [lua getFieldAsNumber:@"thickness" fromTable:-1];
+            
+            [lua removeField];
+        }
+        
+        NuoBoardMesh* boardMesh = [self createBoard:CGSizeMake(width, height)];
+        [lua getField:@"rotationMatrix" fromTable:-1];
+        [boardMesh setTransformPoise:[lua getMatrixFromTable:-1]];
+        [lua removeField];
+        
+        [lua getField:@"translationMatrix" fromTable:-1];
+        [boardMesh setTransformTranslate:[lua getMatrixFromTable:-1]];
+        [lua removeField];
+        
+        [lua removeField];
+    }
+    
+    [lua removeField];
+    
     [lua getField:@"lights" fromTable:-1];
     _ambientDensity = [lua getFieldAsNumber:@"ambient" fromTable:-1];
     [lua removeField];
@@ -428,14 +480,10 @@
         _mainModelMesh.transformTranslate = originalTrans;
     }
     
-    for (NuoMesh* mesh in _meshes)
+    for (NuoBoardMesh* board in _boardMeshes)
     {
-        if ([mesh isKindOfClass:[NuoBoardMesh class]])
-        {
-            NuoBoardMesh* board = (NuoBoardMesh*)mesh;
-            board.shadowOverlayOnly = [modelOptions basicMaterialized];
-            [board makePipelineState:[board makePipelineStateDescriptor]];
-        }
+        board.shadowOverlayOnly = [modelOptions basicMaterialized];
+        [board makePipelineState:[board makePipelineStateDescriptor]];
     }
 }
 

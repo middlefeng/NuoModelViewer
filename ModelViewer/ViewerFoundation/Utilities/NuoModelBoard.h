@@ -14,11 +14,6 @@
 
 class NuoModelBoard : public NuoModelSimple
 {
-    
-    float _width;
-    float _height;
-    float _thickness;
-    
     enum
     {
         kCorner_TL,
@@ -29,6 +24,10 @@ class NuoModelBoard : public NuoModelSimple
     kCorner;
     
 public:
+    
+    float _width;
+    float _height;
+    float _thickness;
     
     NuoModelBoard(float width, float height, float thickness);
     

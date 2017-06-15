@@ -61,7 +61,10 @@
         }
         _lightVectors = lightVectors;
         _lightSources = lightSourcesDesc;
+        
         _currentLightVector = lightVectors[0];
+        _currentLightVector.selected = YES;
+        
         lightSourcesDesc[0].lightingDensity = 1.0f;
         lightSourcesDesc[0].lightingSpacular = 0.4f;
         

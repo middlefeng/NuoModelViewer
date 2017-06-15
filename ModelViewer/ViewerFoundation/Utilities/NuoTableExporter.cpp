@@ -90,6 +90,33 @@ void NuoTableExporter::EndTable()
 
 
 
+void NuoTableExporter::SetMatrix(matrix_float4x4 matrix)
+{
+    StartTable();
+    
+    for (unsigned char col = 0; col < 4; ++ col)
+    {
+        StartArrayIndex(col);
+        StartTable();
+        
+        vector_float4 colomn = matrix.columns[col];
+        
+        for (unsigned char row = 0; row < 4; ++ row)
+        {
+            StartArrayIndex(row);
+            SetEntryValueFloat(colomn[row]);
+            EndEntry(false);
+        }
+        
+        EndTable();
+        EndEntry(false);
+    }
+    
+    EndTable();
+}
+
+
+
 void NuoTableExporter::AppendByIndent()
 {
     for (size_t i = 0; i < _indent; ++i)
