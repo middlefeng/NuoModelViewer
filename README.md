@@ -64,8 +64,11 @@ A simple Wavefront OBJ viewer.
 * <del>Mutilple light sources.</del>
 * <del>Selectable list of object.</del>
 * <del>Surface smooth.</del>
-* <del>Shadow to model</del>
-* Shadow to ground.
+* Shadow
+  * <del>Shadow to model</del>
+  * <del>Shadow to ground.</del>
+  * Better soft shadow.
+  * Transparency (strength) of shadow overlay.
 * <del>Per light-source, per-surface shadow properties (bias, soft edge).</del>
 * <del>Cull mode.</del>
 * Surrounding.
@@ -76,6 +79,7 @@ A simple Wavefront OBJ viewer.
   * <del>Smooth options (everywhere, texture discontinuiation only, etc).</del>
   * <del>Material opacity adjustment.
   * Material adjustment (specular, colors, etc).
+  * List of board objects.
 * Reflection.
 * <del>BRDF mode.</del>
 * Model visualization
