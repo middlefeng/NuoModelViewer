@@ -15,32 +15,75 @@
 
 
 
+@interface NuoCoord ()
+
+
+@property (assign, nonatomic) vector_float3 coord;
+
+
+@end
+
+
+
 @implementation NuoCoord
+
+
+- (void)setX:(float)x
+{
+    _coord.x = x;
+}
+
+
+
+- (float)x
+{
+    return _coord.x;
+}
+
+
+- (void)setY:(float)y
+{
+    _coord.y = y;
+}
+
+
+
+- (float)y
+{
+    return _coord.y;
+}
+
+
+- (void)setZ:(float)z
+{
+    _coord.z = z;
+}
+
+
+
+- (float)z
+{
+    return _coord.z;
+}
 
 
 - (float)maxDimension
 {
-    float max = std::max(_x, _y);
-    return std::max(max, _z);
+    float max = std::max(_coord.x, _coord.y);
+    return std::max(max, _coord.z);
 }
 
 
 - (float)distanceTo:(NuoCoord*)other
 {
-    vector_float3 v1 = { _x, _y, _z };
-    vector_float3 v2 = { other.x, other.y, other.z };
-    
-    return vector_distance(v1, v2);
+    return vector_distance(_coord, other->_coord);
 }
 
 
 - (NuoCoord*)interpolateTo:(NuoCoord*)other byFactor:(float)factor
 {
     NuoCoord* result = [NuoCoord new];
-    result.x = _x + (other.x - _x) * factor;
-    result.y = _x + (other.y - _y) * factor;
-    result.z = _z + (other.z - _z) * factor;
-    
+    result->_coord = _coord + (other->_coord - _coord) * factor;
     return result;
 }
 
@@ -113,21 +156,17 @@
 - (NuoMeshBox*)unionWith:(NuoMeshBox*)other
 {
     NuoMeshBox* newBox = [NuoMeshBox new];
+    vector_float3 vMin, vMax;
     
-    float xMin = std::min(_center.x - _span.x / 2.0, other.center.x - other.span.x / 2.0);
-    float xMax = std::max(_center.x + _span.x / 2.0, other.center.x + other.span.x / 2.0);
-    float yMin = std::min(_center.y - _span.y / 2.0, other.center.y - other.span.y / 2.0);
-    float yMax = std::max(_center.y + _span.y / 2.0, other.center.y + other.span.y / 2.0);
-    float zMin = std::min(_center.z - _span.z / 2.0, other.center.z - other.span.z / 2.0);
-    float zMax = std::max(_center.z + _span.z / 2.0, other.center.z + other.span.z / 2.0);
+    vMin.x = std::min(_center.x - _span.x / 2.0, other.center.x - other.span.x / 2.0);
+    vMax.x = std::max(_center.x + _span.x / 2.0, other.center.x + other.span.x / 2.0);
+    vMin.y = std::min(_center.y - _span.y / 2.0, other.center.y - other.span.y / 2.0);
+    vMax.y = std::max(_center.y + _span.y / 2.0, other.center.y + other.span.y / 2.0);
+    vMin.z = std::min(_center.z - _span.z / 2.0, other.center.z - other.span.z / 2.0);
+    vMax.z = std::max(_center.z + _span.z / 2.0, other.center.z + other.span.z / 2.0);
     
-    newBox.center.x = (xMax + xMin) / 2.0f;
-    newBox.center.y = (yMax + yMin) / 2.0f;
-    newBox.center.z = (zMax + zMin) / 2.0f;
-    
-    newBox.span.x = xMax - xMin;
-    newBox.span.y = yMax - yMin;
-    newBox.span.z = zMax - zMin;
+    newBox.center.coord = (vMin + vMax) / 2.0f;
+    newBox.span.coord = vMax - vMin;
     
     return newBox;
 }
