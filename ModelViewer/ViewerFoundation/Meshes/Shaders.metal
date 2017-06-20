@@ -329,7 +329,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     float sampleSize = 1.0 / 1800.0;
     sampleSize += sampleSize * shadowSoftenFactor;
     
-    float2 shadowCoord = float2(shadowCastModelPostion.x, shadowCastModelPostion.y) / shadowCastModelPostion.w;
+    float2 shadowCoord = shadowCastModelPostion.xy / shadowCastModelPostion.w;
     shadowCoord.x = (shadowCoord.x + 1) * 0.5;
     shadowCoord.y = (-shadowCoord.y + 1) * 0.5;
     
@@ -350,8 +350,12 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
         {
             shadowSampleCount += 1;
             
-            float shadowDepth = shadowMap.sample(samplr, float2(xCurrent, yCurrent)).x;
-            if (shadowDepth < modelDepth)
+            float2 current = float2(xCurrent, yCurrent) +
+                                (rand(shadowCastModelPostion.x + shadowCastModelPostion.y + i + j) - 0.5) *
+                                sampleSize * 0.5;
+            
+            float shadowDepth = shadowMap.sample(samplr, current).x;
+            if (shadowDepth < modelDepth - shadowMapBias * length(current - shadowCoord) / sampleSize)
             {
                 shadowCoverage += 1;
             }
