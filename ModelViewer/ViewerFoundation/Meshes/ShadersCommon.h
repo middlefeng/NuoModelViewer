@@ -96,6 +96,8 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                              float shadowSoftenFactor, float shadowMapSampleRadius,
                              metal::texture2d<float> shadowMap, metal::sampler samplr);
 
+float rand(metal::float2 co);
+
 
 
 #endif /* ShadersCommon_h */

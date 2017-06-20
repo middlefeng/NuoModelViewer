@@ -377,3 +377,11 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     return 0.0;
 }
 
+
+float rand(float2 co)
+{
+    return fract(sin(dot(co.xy, float2(12.9898, 78.233))) * 43758.5453);
+}
+
+
+
