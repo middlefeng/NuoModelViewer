@@ -425,35 +425,38 @@
     
     [lua getField:@"boards" fromTable:-1];
     
-    length = [lua getArraySize:-1];
-    if (length > 0)
-        [self removeAllBoards];
-    
-    for (size_t i = 0; i < length; ++i)
+    if (![lua isNil:-1])
     {
-        [lua getItem:(int)(i + 1) fromTable:-1];
+        length = [lua getArraySize:-1];
+        if (length > 0)
+            [self removeAllBoards];
         
-        float width, height, thickness;
+        for (size_t i = 0; i < length; ++i)
         {
-            [lua getField:@"dimensions" fromTable:-1];
+            [lua getItem:(int)(i + 1) fromTable:-1];
             
-            width = [lua getFieldAsNumber:@"width" fromTable:-1];
-            height = [lua getFieldAsNumber:@"height" fromTable:-1];
-            thickness = [lua getFieldAsNumber:@"thickness" fromTable:-1];
+            float width, height, thickness;
+            {
+                [lua getField:@"dimensions" fromTable:-1];
+                
+                width = [lua getFieldAsNumber:@"width" fromTable:-1];
+                height = [lua getFieldAsNumber:@"height" fromTable:-1];
+                thickness = [lua getFieldAsNumber:@"thickness" fromTable:-1];
+                
+                [lua removeField];
+            }
+            
+            NuoBoardMesh* boardMesh = [self createBoard:CGSizeMake(width, height)];
+            [lua getField:@"rotationMatrix" fromTable:-1];
+            [boardMesh setTransformPoise:[lua getMatrixFromTable:-1]];
+            [lua removeField];
+            
+            [lua getField:@"translationMatrix" fromTable:-1];
+            [boardMesh setTransformTranslate:[lua getMatrixFromTable:-1]];
+            [lua removeField];
             
             [lua removeField];
         }
-        
-        NuoBoardMesh* boardMesh = [self createBoard:CGSizeMake(width, height)];
-        [lua getField:@"rotationMatrix" fromTable:-1];
-        [boardMesh setTransformPoise:[lua getMatrixFromTable:-1]];
-        [lua removeField];
-        
-        [lua getField:@"translationMatrix" fromTable:-1];
-        [boardMesh setTransformTranslate:[lua getMatrixFromTable:-1]];
-        [lua removeField];
-        
-        [lua removeField];
     }
     
     [lua removeField];
