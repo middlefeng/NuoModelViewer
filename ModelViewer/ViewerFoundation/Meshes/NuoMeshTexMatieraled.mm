@@ -90,6 +90,7 @@
     [funcConstant setConstantValue:&alphaInbedded type:MTLDataTypeBool atIndex:0];
     [funcConstant setConstantValue:&hasTexOpacity type:MTLDataTypeBool atIndex:1];
     [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];
+    [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
     
     if (!_textureBump)
     {
@@ -248,11 +249,12 @@
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];
+    [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_materialed"];
-    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_materialed" constantValues:funcConstant
-                                                                 error:nil];
+    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_materialed"
+                                                        constantValues:funcConstant error:nil];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     pipelineDescriptor.sampleCount = kSampleCount;
     

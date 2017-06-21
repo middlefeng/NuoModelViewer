@@ -84,9 +84,13 @@ static CIContext* sCIContext = nil;
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
+    MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
+    [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
+    
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_textured"];
-    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_textured"];
+    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_textured"
+                                                        constantValues:funcConstant error:nil];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     pipelineDescriptor.sampleCount = kSampleCount;
     
