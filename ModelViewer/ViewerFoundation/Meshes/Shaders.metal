@@ -335,7 +335,9 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     
     float modelDepth = (shadowCastModelPostion.z / shadowCastModelPostion.w) - shadowMapBias;
     
-    float penubraFactor = 1.0;
+    // find PCSS blocker and calculate the penumbra factor according to it
+    //
+    float penumbraFactor = 1.0;
     if (kShadowPCSS)
     {
         float blocker = 0;
@@ -366,14 +368,16 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
         }
         
         blocker /= blockerSampleCount;
-        penubraFactor = (modelDepth - blocker) / blocker;
+        penumbraFactor = (modelDepth - blocker) / blocker;
     }
     
     int shadowCoverage = 0;
     int shadowSampleCount = 0;
     
+    // PCSS-based penumbra
+    //
     if (kShadowPCSS)
-        sampleSize = sampleSize * (penubraFactor * 30.0);
+        sampleSize = sampleSize * (penumbraFactor * 30.0);
     
     const float shadowRegion = shadowMapSampleRadius * sampleSize;
     const float shadowDiameter = shadowMapSampleRadius * 2;
@@ -388,7 +392,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
             shadowSampleCount += 1;
             
             float2 current = float2(xCurrent, yCurrent) +
-                                // randomized offset
+                                // randomized offset to avoid quantization
                                 (rand(shadowCastModelPostion.x + shadowCastModelPostion.y + i + j) - 0.5) *
                                 sampleSize * 0.5;
             
@@ -400,7 +404,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
             {
                 if (shadowDepth < modelDepth -
                     shadowMapBias * length(current - shadowCoord) / sampleSize *
-                    (penubraFactor * 4.0) /* PCSS effect */)
+                    (penumbraFactor * 4.0) /* PCSS effect compensation */)
                 {
                     shadowCoverage += 1;
                 }
