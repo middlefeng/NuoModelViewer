@@ -26,8 +26,9 @@
       "scale" : "1x"
     },
     {
-      "idiom" : "mac",
       "size" : "128x128",
+      "idiom" : "mac",
+      "filename" : "NuoViewerIcon.png",
       "scale" : "2x"
     },
     {
