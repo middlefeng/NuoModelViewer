@@ -6,6 +6,10 @@
 
 
 
+extern const BOOL kShadowPCSS;
+
+
+
 @interface NuoCoord : NSObject
 
 @property (nonatomic, assign) float x;

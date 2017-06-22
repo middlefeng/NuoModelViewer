@@ -329,14 +329,51 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     float sampleSize = 1.0 / 1800.0;
     sampleSize += sampleSize * shadowSoftenFactor;
     
-    float2 shadowCoord = float2(shadowCastModelPostion.x, shadowCastModelPostion.y) / shadowCastModelPostion.w;
+    float2 shadowCoord = shadowCastModelPostion.xy / shadowCastModelPostion.w;
     shadowCoord.x = (shadowCoord.x + 1) * 0.5;
     shadowCoord.y = (-shadowCoord.y + 1) * 0.5;
     
     float modelDepth = (shadowCastModelPostion.z / shadowCastModelPostion.w) - shadowMapBias;
     
+    float penubraFactor = 1.0;
+    if (kShadowPCSS)
+    {
+        float blocker = 0;
+        int blockerSampleCount = 0;
+        
+        const float searchSampleSize = sampleSize * 40.0;
+        const float searchRegion = shadowMapSampleRadius * searchSampleSize;
+        const float searchDiameter = shadowMapSampleRadius * 2;
+        
+        float xCurrentSearch = shadowCoord.x - searchRegion;
+        
+        for (int i = 0; i < searchDiameter; ++i)
+        {
+            float yCurrentSearch = shadowCoord.y - searchRegion;
+            for (int j = 0; j < searchDiameter; ++j)
+            {
+                float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch)).x;
+                if (shadowDepth < modelDepth)
+                {
+                    blockerSampleCount += 1;
+                    blocker += shadowDepth;
+                }
+                
+                yCurrentSearch += searchSampleSize;
+            }
+            
+            xCurrentSearch += searchSampleSize;
+        }
+        
+        blocker /= blockerSampleCount;
+        penubraFactor = (modelDepth - blocker) / blocker;
+    }
+    
     int shadowCoverage = 0;
     int shadowSampleCount = 0;
+    
+    if (kShadowPCSS)
+        sampleSize = sampleSize * (penubraFactor * 30.0);
     
     const float shadowRegion = shadowMapSampleRadius * sampleSize;
     const float shadowDiameter = shadowMapSampleRadius * 2;
@@ -350,10 +387,31 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
         {
             shadowSampleCount += 1;
             
-            float shadowDepth = shadowMap.sample(samplr, float2(xCurrent, yCurrent)).x;
-            if (shadowDepth < modelDepth)
+            float2 current = float2(xCurrent, yCurrent) +
+                                // randomized offset
+                                (rand(shadowCastModelPostion.x + shadowCastModelPostion.y + i + j) - 0.5) *
+                                sampleSize * 0.5;
+            
+            float shadowDepth = shadowMap.sample(samplr, current).x;
+            
+            // increase the shadow bias in proportion to the distance to the sampling point
+            //
+            if (kShadowPCSS)
             {
-                shadowCoverage += 1;
+                if (shadowDepth < modelDepth -
+                    shadowMapBias * length(current - shadowCoord) / sampleSize *
+                    (penubraFactor * 4.0) /* PCSS effect */)
+                {
+                    shadowCoverage += 1;
+                }
+            }
+            else
+            {
+                if (shadowDepth < modelDepth -
+                    shadowMapBias * length(current - shadowCoord) / sampleSize)
+                {
+                    shadowCoverage += 1;
+                }
             }
             
             yCurrent += sampleSize;
@@ -364,7 +422,10 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     
     if (shadowCoverage > 0)
     {
-        float shadowPercent = shadowCoverage / (float)shadowSampleCount;
+        float l = saturate(smoothstep(0, 0.2, shadowedSurfaceAngle));
+        float t = smoothstep((rand(shadowCastModelPostion.x + shadowCastModelPostion.y)) * 0.5, 1.0f, l);
+        
+        float shadowPercent = shadowCoverage / (float)shadowSampleCount * t;
         return shadowPercent;
     }
     

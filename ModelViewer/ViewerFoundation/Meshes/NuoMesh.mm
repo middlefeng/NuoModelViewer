@@ -15,6 +15,10 @@
 
 
 
+const BOOL kShadowPCSS = YES;
+
+
+
 @interface NuoCoord ()
 
 
@@ -390,6 +394,7 @@
     BOOL shadowOverlay = NO;
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
+    [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];
