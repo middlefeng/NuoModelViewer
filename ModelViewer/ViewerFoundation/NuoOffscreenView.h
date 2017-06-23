@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 #import <Metal/Metal.h>
 
 
@@ -24,6 +25,7 @@
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
                     withTarget:(NSUInteger)drawSize
+                withClearColor:(NSColor*)clearColor
                      withScene:(NSArray<NuoRenderPass*>*) renderPasses;
 
 - (void)renderWithCommandQueue:(id<MTLCommandBuffer>)commandBuffer

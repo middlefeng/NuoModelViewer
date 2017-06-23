@@ -36,6 +36,7 @@
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
                     withTarget:(NSUInteger)drawSize
+                withClearColor:(NSColor*)clearColor
                      withScene:(NSArray<NuoRenderPass*>*) renderPasses
 {
     self = [super init];
@@ -55,14 +56,18 @@
         NuoRenderPassTarget* lastTarget = renderPasses[lastRender].renderTarget;
         MTLPixelFormat scenePixelFormat = lastTarget.targetPixelFormat;
         uint sceneSampleCount = lastTarget.sampleCount;
-        MTLClearColor clearColor = lastTarget.clearColor;
+        MTLClearColor mtlClearColor = lastTarget.clearColor;
+        if (clearColor)
+            mtlClearColor = MTLClearColorMake(clearColor.redComponent, clearColor.greenComponent,
+                                              clearColor.blueComponent, clearColor.alphaComponent);
+        
         
         // privately managed by GPU only, same pixel format and sample-count as scene render
         //
         _sceneTarget = [NuoRenderPassTarget new];
         _sceneTarget.device = device;
         _sceneTarget.sampleCount = sceneSampleCount;
-        _sceneTarget.clearColor = clearColor;
+        _sceneTarget.clearColor = mtlClearColor;
         _sceneTarget.manageTargetTexture = YES;
         _sceneTarget.sharedTargetTexture = NO;
         _sceneTarget.targetPixelFormat = scenePixelFormat;
@@ -73,7 +78,7 @@
         _exportTarget = [NuoRenderPassTarget new];
         _exportTarget.device = device;
         _exportTarget.sampleCount = 1;
-        _exportTarget.clearColor = clearColor;
+        _exportTarget.clearColor = mtlClearColor;
         _exportTarget.manageTargetTexture = YES;
         _exportTarget.sharedTargetTexture = YES;
         _exportTarget.targetPixelFormat = MTLPixelFormatRGBA8Unorm;
