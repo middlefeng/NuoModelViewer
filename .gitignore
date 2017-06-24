@@ -1,2 +1,4 @@
-ModelViewer.xcodeproj/xcuserdata
+ModelViewer.xcodeproj/xcuserdata/*
 ModelViewer.xcodeproj/project.xcworkspace/xcuserdata/adobe.xcuserdatad
+ModelViewer.xcodeproj/project.xcworkspace/xcuserdata/*
+ModelViewer/ViewerFoundation/Scripting/Lua/project/lua.xcodeproj/xcuserdata/*
