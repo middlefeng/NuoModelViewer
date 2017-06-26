@@ -37,6 +37,9 @@ static void NuoDataProviderReleaseDataCallback(void * info, const void *  data, 
 
 @property (strong) NSMutableDictionary<NSString*, NuoTexture*>* texturePool;
 
+@property (strong) id<MTLSamplerState> samplerStateMipMap;
+@property (strong) id<MTLSamplerState> samplerStateNoMipMap;
+
 
 @end
 
@@ -129,6 +132,42 @@ handleTransparency:
     else
     {
         return result;
+    }
+}
+
+
+
+- (id<MTLSamplerState>)textureSamplerState:(BOOL)mipmap
+{
+    if (mipmap)
+    {
+        if (_samplerStateMipMap)
+            return _samplerStateMipMap;
+        
+        MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
+        samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
+        samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
+        samplerDesc.minFilter = MTLSamplerMinMagFilterNearest;
+        samplerDesc.magFilter = MTLSamplerMinMagFilterNearest;
+        samplerDesc.mipFilter = MTLSamplerMipFilterLinear;
+        
+        _samplerStateMipMap = [self.device newSamplerStateWithDescriptor:samplerDesc];
+        return _samplerStateMipMap;
+    }
+    else
+    {
+        if (_samplerStateNoMipMap)
+            return _samplerStateNoMipMap;
+        
+        MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
+        samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
+        samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
+        samplerDesc.minFilter = MTLSamplerMinMagFilterNearest;
+        samplerDesc.magFilter = MTLSamplerMinMagFilterNearest;
+        samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
+        
+        _samplerStateNoMipMap = [self.device newSamplerStateWithDescriptor:samplerDesc];
+        return _samplerStateNoMipMap;
     }
 }
 

@@ -51,4 +51,6 @@ enum NuoTextureCubeFace
 
 - (void)saveTexture:(id<MTLTexture>)texture toImage:(NSString*)path;
 
+- (id<MTLSamplerState>)textureSamplerState:(BOOL)mipmap;
+
 @end

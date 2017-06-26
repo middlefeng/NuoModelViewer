@@ -15,7 +15,7 @@
 
 
 @property (nonatomic, strong) id<MTLTexture> diffuseTex;
-@property (nonatomic, readonly) id<MTLSamplerState> samplerState;
+@property (nonatomic, weak, readonly) id<MTLSamplerState> samplerState;
 
 @property (nonatomic, readonly) bool hasTextureTransparency;
 

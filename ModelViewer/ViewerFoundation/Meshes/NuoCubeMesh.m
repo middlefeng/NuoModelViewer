@@ -9,6 +9,7 @@
 #import "NuoCubeMesh.h"
 #import "NuoUniforms.h"
 #import "NuoMathUtilities.h"
+#import "NuoTextureBase.h"
 
 #include "NuoTypes.h"
 
@@ -64,7 +65,7 @@ static uint16_t kIndices[] =
 
 @implementation NuoCubeMesh
 {
-    id<MTLSamplerState> _samplerState;
+    __weak id<MTLSamplerState> _samplerState;
     NSArray<id<MTLBuffer>>* _cubeMatrixBuffer;
     
     matrix_float4x4 _cubeMatrix;
@@ -151,12 +152,7 @@ static uint16_t kIndices[] =
     
     self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
     
-    // create sampler state
-    MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
-    samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
-    samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
-    samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
-    _samplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
+    _samplerState = [[NuoTextureBase getInstance:self.device] textureSamplerState:NO];
 }
 
 
