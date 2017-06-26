@@ -326,8 +326,8 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     float shadowMapBias = 0.002;
     shadowMapBias += shadowBiasFactor * (1 - shadowedSurfaceAngle);
     
-    float sampleSize = 1.0 / 1800.0;
-    sampleSize += sampleSize * shadowSoftenFactor;
+    const float kSampleSizeBase = 1.0 / 1800.0;
+    float sampleSize = kSampleSizeBase * (1 + shadowSoftenFactor);
     
     float2 shadowCoord = shadowCastModelPostion.xy / shadowCastModelPostion.w;
     shadowCoord.x = (shadowCoord.x + 1) * 0.5;
@@ -377,7 +377,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     // PCSS-based penumbra
     //
     if (kShadowPCSS)
-        sampleSize = sampleSize * (penumbraFactor * 25.0);
+        sampleSize = kSampleSizeBase * 0.5 + sampleSize * (penumbraFactor * 25.0);
     
     const float shadowRegion = shadowMapSampleRadius * sampleSize;
     const float shadowDiameter = shadowMapSampleRadius * 2;
