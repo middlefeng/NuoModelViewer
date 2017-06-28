@@ -29,7 +29,7 @@
 /**
  *  Called when the selection in the parts list changes.
  */
-- (void)updateForMesh:(NuoMesh*)mesh;
+- (void)updateForMesh:(NSArray<NuoMesh*>*)meshes;
 
 /**
  *  The prop panel is shown usually only when there is a mesh selected. So

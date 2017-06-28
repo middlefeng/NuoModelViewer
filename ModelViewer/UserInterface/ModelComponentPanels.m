@@ -164,7 +164,7 @@
     {
         [_modelPartPropPanel setHidden:NO];
         [_modelPartDimensionPanel setHidden:NO];
-        [_modelPartPropPanel updateForMesh:selection[0]];
+        [_modelPartPropPanel updateForMesh:selection];
         [_modelPartDimensionPanel updateForMesh:selection];
     }
 }

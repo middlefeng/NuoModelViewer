@@ -26,7 +26,7 @@
     NSTextField* _opacityLabel;
     NSSlider* _opacitySlider;
     
-    __weak NuoMesh* _selectedMesh;
+    NSArray<NuoMesh*>* _selectedMeshes;
 }
 
 
@@ -140,39 +140,53 @@
 
 
 
-- (void)updateForMesh:(NuoMesh*)mesh
+- (void)updateForMesh:(NSArray<NuoMesh*>*)meshes
 {
-    _selectedMesh = mesh;
+    _selectedMeshes = meshes;
     
-    if (!mesh)
+    if (!meshes)
         return;
     
-    [_nameField setStringValue:mesh.modelName];
-    [_modelSmoothOption setState:mesh.smoothConservative ? NSOnState : NSOffState];
-    
-    [_opacityLabel setEnabled:mesh.hasUnifiedMaterial];
-    [_opacitySlider setEnabled:mesh.hasUnifiedMaterial];
-    
-    if (mesh.hasUnifiedMaterial)
+    NSString* names = nil;
+    for (NuoMesh* mesh in meshes)
     {
-        [_opacitySlider setFloatValue:mesh.unifiedOpacity];
+        if (names)
+        {
+            names = [names stringByAppendingString:@", "];
+            names = [names stringByAppendingString:mesh.modelName];
+        }
+        else
+        {
+            names = mesh.modelName;
+        }
     }
     
-    [_modelCullOption setState:mesh.reverseCommonCullMode ? NSOnState : NSOffState];
+    [_nameField setStringValue:names];
+    [_modelSmoothOption setState:meshes[0].smoothConservative ? NSOnState : NSOffState];
+    
+    [_opacityLabel setEnabled:meshes[0].hasUnifiedMaterial];
+    [_opacitySlider setEnabled:meshes[0].hasUnifiedMaterial];
+    
+    if (meshes[0].hasUnifiedMaterial)
+    {
+        [_opacitySlider setFloatValue:meshes[0].unifiedOpacity];
+    }
+    
+    [_modelCullOption setState:meshes[0].reverseCommonCullMode ? NSOnState : NSOffState];
 }
 
 
 
 - (void)modelPartsChanged:(id)sender
 {
-    if (_selectedMesh.hasUnifiedMaterial)
-        _selectedMesh.unifiedOpacity = [_opacitySlider floatValue];
+    if (_selectedMeshes[0].hasUnifiedMaterial)
+        _selectedMeshes[0].unifiedOpacity = [_opacitySlider floatValue];
     
-    _selectedMesh.reverseCommonCullMode = [_modelCullOption state] == NSOnState;
+    _selectedMeshes[0].reverseCommonCullMode = [_modelCullOption state] == NSOnState;
     
     // change the smooth at the last because it may clone the vertex buffer
     //
-    _selectedMesh.smoothConservative = [_modelSmoothOption state] == NSOnState;
+    _selectedMeshes[0].smoothConservative = [_modelSmoothOption state] == NSOnState;
 
     [_optionUpdateDelegate modelOptionUpdate:nil];
 }
@@ -180,7 +194,7 @@
 
 - (void)showIfSelected
 {
-    if (_selectedMesh)
+    if (_selectedMeshes)
         self.hidden = NO;
 }
 
