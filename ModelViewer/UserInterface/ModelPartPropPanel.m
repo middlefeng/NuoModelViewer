@@ -26,6 +26,9 @@
     NSTextField* _opacityLabel;
     NSSlider* _opacitySlider;
     
+    NSTextField* _smoothToleranceLabel;
+    NSTextField* _smoothToleranceField;
+    
     NSArray<NuoMesh*>* _selectedMeshes;
 }
 
@@ -39,24 +42,20 @@
     {
         [self setWantsLayer:YES];
         
-        _nameLabel = [self createLabel:@"Name:" align:NSTextAlignmentRight];
-        _nameField = [self createLabel:@"" align:NSTextAlignmentLeft];
+        _nameLabel = [self createLabel:@"Name:" align:NSTextAlignmentRight editable:NO];
+        _nameField = [self createLabel:@"" align:NSTextAlignmentLeft editable:NO];
         
         _modelSmoothOption = [self createCheckButton:@"Smooth conservative"];
         [_modelSmoothOption setAction:@selector(modelPartsChanged:)];
         _modelCullOption = [self createCheckButton:@"Reverse Cull Mode"];
         [_modelCullOption setAction:@selector(modelPartsChanged:)];
         
-        _opacityLabel = [self createLabel:@"Opacity:" align:NSTextAlignmentRight];
+        _opacityLabel = [self createLabel:@"Opacity:" align:NSTextAlignmentRight editable:NO];
         _opacitySlider = [self createSliderMax:1.0 min:0.0];
         [_opacitySlider setAction:@selector(modelPartsChanged:)];
         
-        [self addSubview:_nameLabel];
-        [self addSubview:_nameField];
-        [self addSubview:_opacityLabel];
-        [self addSubview:_opacitySlider];
-        [self addSubview:_modelSmoothOption];
-        [self addSubview:_modelCullOption];
+        _smoothToleranceLabel = [self createLabel:@"Smooth:" align:NSTextAlignmentRight editable:NO];
+        _smoothToleranceField = [self createLabel:@"Smooth:" align:NSTextAlignmentRight editable:YES];
     }
     
     return self;
@@ -64,15 +63,27 @@
 
 
 
-- (NSTextField*)createLabel:(NSString*)text align:(NSTextAlignment)align
+- (NSTextField*)createLabel:(NSString*)text align:(NSTextAlignment)align editable:(BOOL)editable
 {
     NSTextField* label = [[NSTextField alloc] init];
-    [label setEditable:NO];
-    [label setSelectable:NO];
-    [label setBordered:NO];
-    [label setBackgroundColor:[NSColor colorWithWhite:0.0 alpha:0.0]];
-    [label setStringValue:text];
-    [label setAlignment:align];
+    [label setEditable:editable];
+    [label setSelectable:editable];
+    
+    if (editable)
+    {
+        [label setFocusRingType:NSFocusRingTypeNone];
+        [label setBezelStyle:NSTextFieldSquareBezel];
+        
+        // to show a gray border, one must either set NO nor YES to the "border", just no touch!
+    }
+    else
+    {
+        [label setBordered:NO];
+        [label setStringValue:text];
+        [label setAlignment:align];
+        [label setBackgroundColor:[NSColor colorWithWhite:0.0 alpha:0.0]];
+    }
+    
     [self addSubview:label];
     return label;
 }
@@ -124,6 +135,15 @@
     
     [_opacityLabel setFrame:labelFrame];
     [_opacitySlider setFrame:fieldFrame];
+    
+    labelFrame.origin.y -= entryHeight + lineSpace;
+    fieldFrame.origin.y -= entryHeight + lineSpace;
+    
+    CGRect editableFieldFrame = fieldFrame;
+    editableFieldFrame.origin.x += 3;
+    editableFieldFrame.size.width -= 6;
+    [_smoothToleranceLabel setFrame:labelFrame];
+    [_smoothToleranceField setFrame:editableFieldFrame];
     
     labelFrame.origin.y -= entryHeight + lineSpace;
     
