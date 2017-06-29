@@ -147,22 +147,38 @@
     if (!meshes)
         return;
     
+    if (meshes.count > 1)
+    {
+        [_modelCullOption setAllowsMixedState:YES];
+        [_modelSmoothOption setAllowsMixedState:YES];
+    }
+    
     NSString* names = nil;
+    NSControlStateValue smoothOption = NSOffState;
+    NSControlStateValue reverseCullOption = NSOffState;
+    
     for (NuoMesh* mesh in meshes)
     {
         if (names)
         {
             names = [names stringByAppendingString:@", "];
             names = [names stringByAppendingString:mesh.modelName];
+            if (mesh.smoothConservative != smoothOption)
+                smoothOption = NSMixedState;
+            if (mesh.reverseCommonCullMode != reverseCullOption)
+                reverseCullOption = NSMixedState;
         }
         else
         {
             names = mesh.modelName;
+            smoothOption = mesh.smoothConservative;
+            reverseCullOption = mesh.reverseCommonCullMode;
         }
     }
     
     [_nameField setStringValue:names];
-    [_modelSmoothOption setState:meshes[0].smoothConservative ? NSOnState : NSOffState];
+    [_modelSmoothOption setState:smoothOption];
+    [_modelCullOption setState:reverseCullOption];
     
     [_opacityLabel setEnabled:meshes[0].hasUnifiedMaterial];
     [_opacitySlider setEnabled:meshes[0].hasUnifiedMaterial];
@@ -171,8 +187,6 @@
     {
         [_opacitySlider setFloatValue:meshes[0].unifiedOpacity];
     }
-    
-    [_modelCullOption setState:meshes[0].reverseCommonCullMode ? NSOnState : NSOffState];
 }
 
 
@@ -182,11 +196,23 @@
     if (_selectedMeshes[0].hasUnifiedMaterial)
         _selectedMeshes[0].unifiedOpacity = [_opacitySlider floatValue];
     
-    _selectedMeshes[0].reverseCommonCullMode = [_modelCullOption state] == NSOnState;
-    
-    // change the smooth at the last because it may clone the vertex buffer
+    // no logic to reverse to the original mixed state,
+    // enforce all-on
     //
-    _selectedMeshes[0].smoothConservative = [_modelSmoothOption state] == NSOnState;
+    if (_modelCullOption.state == NSMixedState)
+        _modelCullOption.state = NSOnState;
+    if (_modelSmoothOption.state == NSMixedState)
+        _modelSmoothOption.state = NSOnState;
+    [sender setAllowsMixedState:NO];
+    
+    for (NuoMesh* mesh in _selectedMeshes)
+    {
+        mesh.reverseCommonCullMode = [_modelCullOption state] == NSOnState;
+        
+        // change the smooth at the last because it may clone the vertex buffer
+        //
+        mesh.smoothConservative = [_modelSmoothOption state] == NSOnState;
+    }
 
     [_optionUpdateDelegate modelOptionUpdate:nil];
 }
