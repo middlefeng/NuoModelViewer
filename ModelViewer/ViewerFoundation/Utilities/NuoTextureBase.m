@@ -147,8 +147,8 @@ handleTransparency:
         MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
         samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
         samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
-        samplerDesc.minFilter = MTLSamplerMinMagFilterNearest;
-        samplerDesc.magFilter = MTLSamplerMinMagFilterNearest;
+        samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
+        samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
         samplerDesc.mipFilter = MTLSamplerMipFilterLinear;
         
         _samplerStateMipMap = [self.device newSamplerStateWithDescriptor:samplerDesc];
@@ -162,8 +162,8 @@ handleTransparency:
         MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
         samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
         samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
-        samplerDesc.minFilter = MTLSamplerMinMagFilterNearest;
-        samplerDesc.magFilter = MTLSamplerMinMagFilterNearest;
+        samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
+        samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
         samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
         
         _samplerStateNoMipMap = [self.device newSamplerStateWithDescriptor:samplerDesc];
