@@ -200,10 +200,15 @@
     // enforce all-on
     //
     if (_modelCullOption.state == NSMixedState)
+    {
         _modelCullOption.state = NSOnState;
+        _modelCullOption.allowsMixedState = NO;
+    }
     if (_modelSmoothOption.state == NSMixedState)
+    {
         _modelSmoothOption.state = NSOnState;
-    [sender setAllowsMixedState:NO];
+        _modelSmoothOption.allowsMixedState = NO;
+    }
     
     for (NuoMesh* mesh in _selectedMeshes)
     {
