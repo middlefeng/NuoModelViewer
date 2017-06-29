@@ -62,7 +62,7 @@
 - (NSRect)modelPartPropPanelLocation
 {
     NSRect viewRect = [self modelPartsPanelLocation];
-    viewRect.size.height = 115;
+    viewRect.size.height = 140;
     viewRect.origin.y -= viewRect.size.height;
     viewRect.origin.y -= 20;
     

@@ -56,6 +56,7 @@
         
         _smoothToleranceLabel = [self createLabel:@"Smooth:" align:NSTextAlignmentRight editable:NO];
         _smoothToleranceField = [self createLabel:@"Smooth:" align:NSTextAlignmentRight editable:YES];
+        [_smoothToleranceField setAction:@selector(modelPartsChanged:)];
     }
     
     return self;
@@ -73,6 +74,8 @@
     {
         [label setFocusRingType:NSFocusRingTypeNone];
         [label setBezelStyle:NSTextFieldSquareBezel];
+        [label setControlSize:NSControlSizeMini];
+        [label setFont:[NSFont fontWithName:label.font.fontName size:11.0]];
         
         // to show a gray border, one must either set NO nor YES to the "border", just no touch!
     }
@@ -122,12 +125,12 @@
     
     CGRect labelFrame;
     labelFrame.size = CGSizeMake(labelWidth, entryHeight);
-    labelFrame.origin = CGPointMake(0, (entryHeight + lineSpace) * 3 + 15);
+    labelFrame.origin = CGPointMake(0, (entryHeight + lineSpace) * 4 + 15);
     [_nameLabel setFrame:labelFrame];
     
     CGRect fieldFrame;
     fieldFrame.size = CGSizeMake(viewSize.width - labelWidth - labelSpace * 2 - 10, entryHeight);
-    fieldFrame.origin = CGPointMake(labelWidth + labelSpace, (entryHeight + lineSpace) * 3 + 15);
+    fieldFrame.origin = CGPointMake(labelWidth + labelSpace, (entryHeight + lineSpace) * 4 + 15);
     [_nameField setFrame:fieldFrame];
     
     labelFrame.origin.y -= entryHeight + lineSpace;
@@ -136,8 +139,8 @@
     [_opacityLabel setFrame:labelFrame];
     [_opacitySlider setFrame:fieldFrame];
     
-    labelFrame.origin.y -= entryHeight + lineSpace;
-    fieldFrame.origin.y -= entryHeight + lineSpace;
+    labelFrame.origin.y -= entryHeight + lineSpace + 1.0;
+    fieldFrame.origin.y -= entryHeight + lineSpace + 1.0;
     
     CGRect editableFieldFrame = fieldFrame;
     editableFieldFrame.origin.x += 3;
@@ -176,6 +179,8 @@
     NSString* names = nil;
     NSControlStateValue smoothOption = NSOffState;
     NSControlStateValue reverseCullOption = NSOffState;
+    NSString* smoothToleranceStr;
+    CGFloat smoothTolerance = 0.0f;
     
     for (NuoMesh* mesh in meshes)
     {
@@ -187,16 +192,21 @@
                 smoothOption = NSMixedState;
             if (mesh.reverseCommonCullMode != reverseCullOption)
                 reverseCullOption = NSMixedState;
+            if (mesh.smoothTolerance != smoothTolerance)
+                smoothToleranceStr = @"<multiple values>";
         }
         else
         {
             names = mesh.modelName;
             smoothOption = mesh.smoothConservative;
             reverseCullOption = mesh.reverseCommonCullMode;
+            smoothToleranceStr = [[NSString alloc] initWithFormat:@"%.4f", mesh.smoothTolerance];
+            smoothTolerance = mesh.smoothTolerance;
         }
     }
     
     [_nameField setStringValue:names];
+    [_smoothToleranceField setStringValue:smoothToleranceStr];
     [_modelSmoothOption setState:smoothOption];
     [_modelCullOption setState:reverseCullOption];
     
