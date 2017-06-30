@@ -655,6 +655,7 @@
     // get the target render pass and draw the scene
     //
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    renderPass.label = @"Scene Render Pass";
     
     if (_cubeMesh)
         [_cubeMesh drawMesh:renderPass indexBuffer:inFlight];

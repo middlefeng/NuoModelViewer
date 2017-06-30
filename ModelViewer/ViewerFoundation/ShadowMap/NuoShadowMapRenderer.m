@@ -123,6 +123,7 @@
     [self updateUniformsForView:inFlight];
     
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    renderPass.label = @"Shadow Map";
 
     [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
     for (NuoMesh* mesh in _meshes)

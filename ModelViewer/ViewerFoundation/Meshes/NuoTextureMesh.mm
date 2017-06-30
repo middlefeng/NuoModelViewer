@@ -7,11 +7,12 @@
 //
 
 #import "NuoTextureMesh.h"
+#import "NuoTextureBase.h"
 
 
 @implementation NuoTextureMesh
 {
-    id<MTLSamplerState> _samplerState;
+    __weak id<MTLSamplerState> _samplerState;
 }
 
 
@@ -75,14 +76,7 @@
     
     self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
     
-    // create sampler state
-    MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
-    samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
-    samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
-    samplerDesc.minFilter = MTLSamplerMinMagFilterNearest;
-    samplerDesc.magFilter = MTLSamplerMinMagFilterNearest;
-    samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
-    _samplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
+    _samplerState = [[NuoTextureBase getInstance:self.device] textureSamplerState:YES];
 }
 
 

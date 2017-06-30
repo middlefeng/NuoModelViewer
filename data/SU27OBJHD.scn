@@ -1,0 +1,257 @@
+return
+{
+    canvas = 
+    {
+        width = 1005.000000,
+        height = 700.000000,
+    },
+
+    rotationMatrix = 
+    {
+        [0] = 
+        {
+            [0] = 0.900392,
+            [1] = -0.051076,
+            [2] = 0.432060,
+            [3] = 0.000000,
+        },
+        [1] = 
+        {
+            [0] = 0.433390,
+            [1] = 0.018073,
+            [2] = -0.901019,
+            [3] = 0.000000,
+        },
+        [2] = 
+        {
+            [0] = 0.038212,
+            [1] = 0.998527,
+            [2] = 0.038408,
+            [3] = 0.000000,
+        },
+        [3] = 
+        {
+            [0] = 0.004512,
+            [1] = -0.104219,
+            [2] = -0.021723,
+            [3] = 1.000000,
+        },
+    },
+
+    translationMatrix = 
+    {
+        [0] = 
+        {
+            [0] = 1.000000,
+            [1] = 0.000000,
+            [2] = 0.000000,
+            [3] = 0.000000,
+        },
+        [1] = 
+        {
+            [0] = 0.000000,
+            [1] = 1.000000,
+            [2] = 0.000000,
+            [3] = 0.000000,
+        },
+        [2] = 
+        {
+            [0] = 0.000000,
+            [1] = 0.000000,
+            [2] = 1.000000,
+            [3] = 0.000000,
+        },
+        [3] = 
+        {
+            [0] = 0.016931,
+            [1] = 0.141606,
+            [2] = -11.374726,
+            [3] = 1.000000,
+        },
+    },
+
+    boards = 
+    {
+        [1] = 
+        {
+            dimensions = 
+            {
+                width = 10.000000,
+                height = 10.000000,
+                thickness = 0.001000,
+            },
+
+            translationMatrix = 
+            {
+                [0] = 
+                {
+                    [0] = 1.000000,
+                    [1] = 0.000000,
+                    [2] = 0.000000,
+                    [3] = 0.000000,
+                },
+                [1] = 
+                {
+                    [0] = 0.000000,
+                    [1] = 1.000000,
+                    [2] = 0.000000,
+                    [3] = 0.000000,
+                },
+                [2] = 
+                {
+                    [0] = 0.000000,
+                    [1] = 0.000000,
+                    [2] = 1.000000,
+                    [3] = 0.000000,
+                },
+                [3] = 
+                {
+                    [0] = 0.019356,
+                    [1] = -0.533124,
+                    [2] = -13.295953,
+                    [3] = 1.000000,
+                },
+            },
+
+            rotationMatrix = 
+            {
+                [0] = 
+                {
+                    [0] = 0.966218,
+                    [1] = -0.050844,
+                    [2] = 0.252654,
+                    [3] = 0.000000,
+                },
+                [1] = 
+                {
+                    [0] = 0.253285,
+                    [1] = 0.006274,
+                    [2] = -0.967369,
+                    [3] = 0.000000,
+                },
+                [2] = 
+                {
+                    [0] = 0.047600,
+                    [1] = 0.998686,
+                    [2] = 0.018939,
+                    [3] = 0.000000,
+                },
+                [3] = 
+                {
+                    [0] = 0.000000,
+                    [1] = 0.000000,
+                    [2] = 0.000000,
+                    [3] = 1.000000,
+                },
+            },
+
+        },
+
+    },
+
+    view = 
+    {
+        FOV = 0.282892,
+    },
+
+    models = 
+    {
+        [1] = 
+        {
+            name = "CONTROL_Circle.001",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [2] = 
+        {
+            name = "GLASSMOVIL_Circle.003",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 0.141254,
+        },
+
+        [3] = 
+        {
+            name = "GEAR_Circle.022",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [4] = 
+        {
+            name = "GLASS_Circle.007",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 0.185064,
+        },
+
+        [5] = 
+        {
+            name = "FIRE_Circle",
+            enabled = false,
+            smooth = 0.000000,
+            smoothConservative = true,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+    },
+
+    lights = 
+    {
+        [0] = 
+        {
+            rotateX = 0.376991,
+            rotateY = -0.439823,
+            density = 1.720371,
+            spacular = 0.223541,
+            enableShadow = true,
+            shadowSoften = -0.243809,
+            shadowBias = 0.001548,
+        },
+
+        [1] = 
+        {
+            rotateX = -0.345575,
+            rotateY = -0.345575,
+            density = 0.000000,
+            spacular = 0.000000,
+            enableShadow = true,
+            shadowSoften = 0.000000,
+            shadowBias = 0.000000,
+        },
+
+        [2] = 
+        {
+            rotateX = 1.602212,
+            rotateY = -0.785398,
+            density = 0.302145,
+            spacular = 0.660672,
+            enableShadow = false,
+        },
+
+        [3] = 
+        {
+            rotateX = 0.000000,
+            rotateY = 0.000000,
+            density = 0.000000,
+            spacular = 0.000000,
+            enableShadow = false,
+        },
+
+        ambient = 0.877325,
+
+    },
+
+}

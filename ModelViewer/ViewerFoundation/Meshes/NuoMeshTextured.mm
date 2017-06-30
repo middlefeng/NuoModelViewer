@@ -69,14 +69,7 @@ static CIContext* sCIContext = nil;
     _hasTextureTransparency = texture.hasTransparency;
     [self setTransparency:texture.hasTransparency];
     
-    // create sampler state
-    MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
-    samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
-    samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
-    samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
-    samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
-    samplerDesc.mipFilter = MTLSamplerMipFilterLinear;
-    _samplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
+    _samplerState = [[NuoTextureBase getInstance:self.device] textureSamplerState:YES];
 }
 
 

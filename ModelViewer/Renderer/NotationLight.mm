@@ -97,7 +97,7 @@
         characters[i] = characterUniformBuffers;
     }
     
-    _characterUniformBuffers = [[NSArray alloc] initWithObjects:characters[0], characters[1], characters[2], nil];
+    _characterUniformBuffers = [[NSArray alloc] initWithObjects:characters count:kInFlightBufferCount];
 }
 
 
