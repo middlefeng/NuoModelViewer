@@ -91,21 +91,30 @@
 - (void)updateForMesh:(NSArray<NuoMesh*>*)mesh
 {
     _selectedMesh = mesh;
-    if (!mesh)
+    [self updateForSelectedMesh];
+}
+
+
+
+- (void)updateForSelectedMesh
+{
+    if (!_selectedMesh)
         return;
+    
+    NSArray<NuoMesh*>* mesh = _selectedMesh;
     
     NuoMeshBox* bounding = mesh[0].boundingBoxLocal;
     for (size_t i = 1; i < mesh.count; ++i)
         bounding = [bounding unionWith:mesh[i].boundingBoxLocal];
     
     NSString* dimensionString = [[NSString alloc] initWithFormat:@"%0.1f, %0.1f, %0.1f",
-                                            bounding.span.x,
-                                            bounding.span.y,
-                                            bounding.span.z];
+                                 bounding.span.x,
+                                 bounding.span.y,
+                                 bounding.span.z];
     NSString* centerString = [[NSString alloc] initWithFormat:@"%0.1f, %0.1f, %0.1f",
-                                            bounding.center.x,
-                                            bounding.center.y,
-                                            bounding.center.z];
+                              bounding.center.x,
+                              bounding.center.y,
+                              bounding.center.z];
     
     [_dimensionValue setStringValue:dimensionString];
     [_centerValue setStringValue:centerString];

@@ -30,6 +30,7 @@
 @property (nonatomic, weak) id<ModelPanelUpdate> panelUpdateDelegate;
 
 - (void)setMesh:(NSArray<NuoMesh*>*)mesh;
+- (void)updateParsPanelWithReload:(BOOL)reload;
 
 
 @end

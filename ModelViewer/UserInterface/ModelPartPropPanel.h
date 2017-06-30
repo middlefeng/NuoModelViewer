@@ -32,6 +32,11 @@
 - (void)updateForMesh:(NSArray<NuoMesh*>*)meshes;
 
 /**
+ *  When the selected item's property changes (without selection change)
+ */
+- (void)updateForSelectedMesh;
+
+/**
  *  The prop panel is shown usually only when there is a mesh selected. So
  *  rather than calling setHidden: with NO, a container shall call this method
  *  to have the panel shown according to the context.

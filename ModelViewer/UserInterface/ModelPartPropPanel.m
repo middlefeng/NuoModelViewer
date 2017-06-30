@@ -56,6 +56,7 @@
         
         _smoothToleranceLabel = [self createLabel:@"Smooth:" align:NSTextAlignmentRight editable:NO];
         _smoothToleranceField = [self createLabel:@"Smooth:" align:NSTextAlignmentRight editable:YES];
+        [_smoothToleranceField setTarget:self];
         [_smoothToleranceField setAction:@selector(modelPartsChanged:)];
     }
     
@@ -166,9 +167,16 @@
 - (void)updateForMesh:(NSArray<NuoMesh*>*)meshes
 {
     _selectedMeshes = meshes;
-    
-    if (!meshes)
+    [self updateForSelectedMesh];
+}
+
+
+- (void)updateForSelectedMesh
+{
+    if (!_selectedMeshes)
         return;
+    
+    NSArray<NuoMesh*>* meshes = _selectedMeshes;
     
     if (meshes.count > 1)
     {
@@ -240,13 +248,24 @@
         _modelSmoothOption.allowsMixedState = NO;
     }
     
+    bool smoothConservative = [_modelSmoothOption state] == NSOnState;
+    bool reverseCullMode = [_modelCullOption state] == NSOnState;
+    
+    float smoothTolerance = 0.0;
+    NSScanner* scanner = [[NSScanner alloc] initWithString:_smoothToleranceField.stringValue];
+    [scanner scanFloat:&smoothTolerance];
+    bool validSmoothTolerance = [scanner isAtEnd];
+    
     for (NuoMesh* mesh in _selectedMeshes)
     {
-        mesh.reverseCommonCullMode = [_modelCullOption state] == NSOnState;
+        mesh.reverseCommonCullMode = reverseCullMode;
         
         // change the smooth at the last because it may clone the vertex buffer
         //
-        mesh.smoothConservative = [_modelSmoothOption state] == NSOnState;
+        if (mesh.smoothConservative != smoothConservative)
+            [mesh setSmoothConservative:smoothConservative];
+        if (validSmoothTolerance && mesh.smoothTolerance != smoothTolerance)
+            [mesh smoothWithTolerance:smoothTolerance];
     }
 
     [_optionUpdateDelegate modelOptionUpdate:nil];

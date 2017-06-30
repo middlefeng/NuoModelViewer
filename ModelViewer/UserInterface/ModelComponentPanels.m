@@ -150,6 +150,15 @@
 
 
 
+- (void)updatePanels
+{
+    [_modelPartsPanel updateParsPanelWithReload:NO];
+    [_modelPartPropPanel updateForSelectedMesh];
+    [_modelPartDimensionPanel updateForSelectedMesh];
+}
+
+
+
 
 - (void)modelPartSelectionChanged:(NSArray<NuoMesh*>*)selection
 {
