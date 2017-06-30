@@ -38,8 +38,12 @@
 @property (nonatomic, weak) id<ModelPanelUpdate> panelUpdateDelegate;
 @property (nonatomic, weak) NSArray<NuoMesh*>* mesh;
 
+@property (nonatomic, assign, setter=setRowsBeingUpdated:) BOOL rowsBeingUpdated;
+
 - (void)cellEnablingChanged:(id)sender;
 - (void)smoothToleranceChanged:(id)sender;
+
+- (void)updateWithReload:(BOOL)reload;
 
 
 @end
@@ -78,7 +82,9 @@
 - (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)fieldEditor
 {
     ModelPartsListTable* table = (ModelPartsListTable*)self.target;
+    [table setRowsBeingUpdated:YES];
     [table smoothToleranceChanged:self];
+    [table setRowsBeingUpdated:NO];
     
     return YES;
 }
@@ -128,6 +134,25 @@
     return self;
 }
 
+
+- (void)updateWithReload:(BOOL)reload
+{
+    // when the change is fired by the row itself, ignore the reload
+    //
+    if ([self rowsBeingUpdated])
+        return;
+    
+    if (reload)
+    {
+        [self reloadData];
+    }
+    else
+    {
+        NSIndexSet* rowSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, self.numberOfRows)];
+        NSIndexSet* colSet = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, self.numberOfColumns)];
+        [self reloadDataForRowIndexes:rowSet columnIndexes:colSet];
+    }
+}
 
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
@@ -280,6 +305,12 @@
 {
     [_partsTable setMesh:mesh];
     [_partsTable reloadData];
+}
+
+
+- (void)updateParsPanelWithReload:(BOOL)reload
+{
+    [_partsTable updateWithReload:reload];
 }
 
 

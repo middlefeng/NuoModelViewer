@@ -27,6 +27,7 @@
 
 - (void)setMesh:(NSArray<NuoMesh*>*)mesh;
 - (void)setHidden:(BOOL)hidden;
+- (void)updatePanels;
 
 - (void)addPanels;
 

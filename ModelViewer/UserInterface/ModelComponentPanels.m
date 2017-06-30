@@ -62,7 +62,7 @@
 - (NSRect)modelPartPropPanelLocation
 {
     NSRect viewRect = [self modelPartsPanelLocation];
-    viewRect.size.height = 115;
+    viewRect.size.height = 140;
     viewRect.origin.y -= viewRect.size.height;
     viewRect.origin.y -= 20;
     
@@ -150,6 +150,15 @@
 
 
 
+- (void)updatePanels
+{
+    [_modelPartsPanel updateParsPanelWithReload:NO];
+    [_modelPartPropPanel updateForSelectedMesh];
+    [_modelPartDimensionPanel updateForSelectedMesh];
+}
+
+
+
 
 - (void)modelPartSelectionChanged:(NSArray<NuoMesh*>*)selection
 {
@@ -164,7 +173,7 @@
     {
         [_modelPartPropPanel setHidden:NO];
         [_modelPartDimensionPanel setHidden:NO];
-        [_modelPartPropPanel updateForMesh:selection[0]];
+        [_modelPartPropPanel updateForMesh:selection];
         [_modelPartDimensionPanel updateForMesh:selection];
     }
 }

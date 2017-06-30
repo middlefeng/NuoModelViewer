@@ -158,6 +158,8 @@
             [animation setProgress:panel.animationProgress];
     }
     
+    [_modelComponentPanels updatePanels];
+    
     [self render];
 }
 
