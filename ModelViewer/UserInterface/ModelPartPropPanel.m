@@ -78,7 +78,7 @@
         [label setControlSize:NSControlSizeMini];
         [label setFont:[NSFont fontWithName:label.font.fontName size:11.0]];
         
-        // to show a gray border, one must either set NO nor YES to the "border", just no touch!
+        // to show a gray border, one must neither set NO nor YES to the "border", just no touch!
     }
     else
     {
