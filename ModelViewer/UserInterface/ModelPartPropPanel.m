@@ -185,8 +185,13 @@
     }
     
     NSString* names = nil;
+#if METAL_2
     NSControlStateValue smoothOption = NSOffState;
     NSControlStateValue reverseCullOption = NSOffState;
+#else
+    NSInteger smoothOption = NSOffState;
+    NSInteger reverseCullOption = NSOffState;
+#endif
     NSString* smoothToleranceStr;
     CGFloat smoothTolerance = 0.0f;
     
@@ -196,9 +201,9 @@
         {
             names = [names stringByAppendingString:@", "];
             names = [names stringByAppendingString:mesh.modelName];
-            if (mesh.smoothConservative != smoothOption)
+            if (mesh.smoothConservative != (smoothOption == NSOnState))
                 smoothOption = NSMixedState;
-            if (mesh.reverseCommonCullMode != reverseCullOption)
+            if (mesh.reverseCommonCullMode != (reverseCullOption == NSOnState))
                 reverseCullOption = NSMixedState;
             if (mesh.smoothTolerance != smoothTolerance)
                 smoothToleranceStr = @"<multiple values>";
@@ -206,8 +211,8 @@
         else
         {
             names = mesh.modelName;
-            smoothOption = mesh.smoothConservative;
-            reverseCullOption = mesh.reverseCommonCullMode;
+            smoothOption = mesh.smoothConservative ? NSOnState : NSOffState;
+            reverseCullOption = mesh.reverseCommonCullMode ? NSOnState : NSOffState;
             smoothToleranceStr = [[NSString alloc] initWithFormat:@"%.4f", mesh.smoothTolerance];
             smoothTolerance = mesh.smoothTolerance;
         }

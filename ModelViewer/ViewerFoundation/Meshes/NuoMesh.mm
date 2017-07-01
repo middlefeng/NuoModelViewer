@@ -429,7 +429,7 @@ const BOOL kShadowPCSS = YES;
     
     MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
     shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShadowShader];
-    shadowPipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_shadow"];;
+    shadowPipelineDescriptor.fragmentFunction = nil;
     shadowPipelineDescriptor.sampleCount = 1 /*kSampleCount*/;
     shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
     shadowPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
