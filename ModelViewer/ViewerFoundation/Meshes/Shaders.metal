@@ -420,10 +420,15 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     
     if (shadowCoverage > 0)
     {
+        /* these interesting code come from somewhere being forgotten.
+         * cause some artifact
+         *
         float l = saturate(smoothstep(0, 0.2, shadowedSurfaceAngle));
         float t = smoothstep((rand(shadowCastModelPostion.x + shadowCastModelPostion.y)) * 0.5, 1.0f, l);
         
-        float shadowPercent = shadowCoverage / (float)shadowSampleCount * t;
+        float shadowPercent = shadowCoverage / (float)shadowSampleCount * t; */
+        
+        float shadowPercent = shadowCoverage / (float)shadowSampleCount;
         return shadowPercent;
     }
     
