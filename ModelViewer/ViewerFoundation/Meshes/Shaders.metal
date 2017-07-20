@@ -115,8 +115,8 @@ vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)
 fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                       constant LightUniform &lightUniform [[buffer(0)]],
                                       constant ModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
-                                      texture2d<float> shadowMap0 [[texture(0)]],
-                                      texture2d<float> shadowMap1 [[texture(1)]],
+                                      depth2d<float> shadowMap0 [[texture(0)]],
+                                      depth2d<float> shadowMap1 [[texture(1)]],
                                       sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
@@ -126,7 +126,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     float shadowOverlay = 0.0;
     float surfaceBrightness = 0.0;
     
-    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
     for (unsigned i = 0; i < 4; ++i)
@@ -184,7 +184,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                             float3 normal,
                                             constant LightUniform &lightingUniform,
                                             float4 diffuseTexel,
-                                            texture2d<float> shadowMap[2],
+                                            depth2d<float> shadowMap[2],
                                             sampler samplr)
 {
     normal = normalize(normal);
@@ -315,7 +315,7 @@ float3 specular_common(float3 materialSpecularColor, float materialSpecularPower
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                              float shadowBiasFactor, float shadowedSurfaceAngle,
                              float shadowSoftenFactor, float shadowMapSampleRadius,
-                             metal::texture2d<float> shadowMap, metal::sampler samplr)
+                             metal::depth2d<float> shadowMap, metal::sampler samplr)
 {
     float shadowMapBias = 0.002;
     shadowMapBias += shadowBiasFactor * (1 - shadowedSurfaceAngle);
@@ -348,7 +348,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
             float yCurrentSearch = shadowCoord.y - searchRegion;
             for (int j = 0; j < searchDiameter; ++j)
             {
-                float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch)).x;
+                float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch));
                 if (shadowDepth < modelDepth)
                 {
                     blockerSampleCount += 1;
@@ -393,7 +393,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                                 (rand(shadowCastModelPostion.x + shadowCastModelPostion.y + i + j) - 0.5) *
                                 sampleSize * 1.5;
             
-            float shadowDepth = shadowMap.sample(samplr, current).x;
+            float shadowDepth = shadowMap.sample(samplr, current);
             
             // increase the shadow bias in proportion to the distance to the sampling point
             //
