@@ -338,6 +338,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
         {
             float blocker = 0;
             int blockerSampleCount = 0;
+            int blockerSampleSkipped = 0;
             
             const float searchSampleSize = sampleSize * 40.0;
             const float searchRegion = shadowMapSampleRadius * searchSampleSize;
@@ -356,6 +357,10 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                         blockerSampleCount += 1;
                         blocker += shadowDepth;
                     }
+                    else
+                    {
+                        blockerSampleSkipped += 1;
+                    }
                     
                     yCurrentSearch += searchSampleSize;
                 }
@@ -365,6 +370,8 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
             
             if (blockerSampleCount == 0)
                 return 0.0;
+            if (blockerSampleSkipped == 0)
+                return 1.0;
             
             blocker /= blockerSampleCount;
             penumbraFactor = (modelDepth - blocker) / blocker;
