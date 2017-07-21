@@ -79,6 +79,7 @@ static CIContext* sCIContext = nil;
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
+    [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_textured"];

@@ -67,7 +67,9 @@ constant bool kAlphaChannelInTexture            [[ function_constant(0) ]];
 constant bool kAlphaChannelInSeparatedTexture   [[ function_constant(1) ]];
 constant bool kPhysicallyReflection             [[ function_constant(2) ]];
 constant bool kShadowOverlay                    [[ function_constant(3) ]];
+
 constant bool kShadowPCSS                       [[ function_constant(4) ]];
+constant bool kShadowPCF                        [[ function_constant(5) ]];
 
 
 

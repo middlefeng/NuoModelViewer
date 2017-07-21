@@ -329,119 +329,116 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     
     float modelDepth = (shadowCastModelPostion.z / shadowCastModelPostion.w) - shadowMapBias;
     
-    // find PCSS blocker and calculate the penumbra factor according to it
-    //
-    float penumbraFactor = 1.0;
-    if (kShadowPCSS)
+    if (kShadowPCF)
     {
-        float blocker = 0;
-        int blockerSampleCount = 0;
-        
-        const float searchSampleSize = sampleSize * 40.0;
-        const float searchRegion = shadowMapSampleRadius * searchSampleSize;
-        const float searchDiameter = shadowMapSampleRadius * 2;
-        
-        float xCurrentSearch = shadowCoord.x - searchRegion;
-        
-        for (int i = 0; i < searchDiameter; ++i)
+        // find PCSS blocker and calculate the penumbra factor according to it
+        //
+        float penumbraFactor = 1.0;
+        if (kShadowPCSS)
         {
-            float yCurrentSearch = shadowCoord.y - searchRegion;
-            for (int j = 0; j < searchDiameter; ++j)
+            float blocker = 0;
+            int blockerSampleCount = 0;
+            
+            const float searchSampleSize = sampleSize * 40.0;
+            const float searchRegion = shadowMapSampleRadius * searchSampleSize;
+            const float searchDiameter = shadowMapSampleRadius * 2;
+            
+            float xCurrentSearch = shadowCoord.x - searchRegion;
+            
+            for (int i = 0; i < searchDiameter; ++i)
             {
-                float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch));
-                if (shadowDepth < modelDepth)
+                float yCurrentSearch = shadowCoord.y - searchRegion;
+                for (int j = 0; j < searchDiameter; ++j)
                 {
-                    blockerSampleCount += 1;
-                    blocker += shadowDepth;
+                    float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch));
+                    if (shadowDepth < modelDepth)
+                    {
+                        blockerSampleCount += 1;
+                        blocker += shadowDepth;
+                    }
+                    
+                    yCurrentSearch += searchSampleSize;
                 }
                 
-                yCurrentSearch += searchSampleSize;
+                xCurrentSearch += searchSampleSize;
             }
             
-            xCurrentSearch += searchSampleSize;
+            if (blockerSampleCount == 0)
+                return 0.0;
+            
+            blocker /= blockerSampleCount;
+            penumbraFactor = (modelDepth - blocker) / blocker;
         }
         
-        if (blockerSampleCount == 0)
-            return 0.0;
+        float shadowCoverage = 0;
+        int shadowSampleCount = 0;
         
-        blocker /= blockerSampleCount;
-        penumbraFactor = (modelDepth - blocker) / blocker;
-    }
-    
-    int shadowCoverage = 0;
-    int shadowSampleCount = 0;
-    
-    // PCSS-based penumbra
-    //
-    if (kShadowPCSS)
-        sampleSize = kSampleSizeBase * 0.3 + sampleSize * (penumbraFactor * 25.0);
-    
-    const float shadowRegion = shadowMapSampleRadius * sampleSize;
-    const float shadowDiameter = shadowMapSampleRadius * 2;
-    
-    float xCurrent = shadowCoord.x - shadowRegion;
-    
-    for (int i = 0; i < shadowDiameter; ++i)
-    {
-        float yCurrent = shadowCoord.y - shadowRegion;
-        for (int j = 0; j < shadowDiameter; ++j)
+        // PCSS-based penumbra
+        //
+        if (kShadowPCSS)
+            sampleSize = kSampleSizeBase * 0.3 + sampleSize * (penumbraFactor * 25.0);
+        
+        const float shadowRegion = shadowMapSampleRadius * sampleSize;
+        const float shadowDiameter = shadowMapSampleRadius * 2;
+        
+        float xCurrent = shadowCoord.x - shadowRegion;
+        
+        for (int i = 0; i < shadowDiameter; ++i)
         {
-            shadowSampleCount += 1;
-            
-            float2 current = float2(xCurrent, yCurrent) +
-                                // randomized offset to avoid quantization
-                                (rand(shadowCastModelPostion.x + shadowCastModelPostion.y + i + j) - 0.5) *
-                                sampleSize * 1.5;
-            
-            float shadowDepth = shadowMap.sample(samplr, current);
-            
-            // increase the shadow bias in proportion to the distance to the sampling point
-            //
-            if (kShadowPCSS)
+            float yCurrent = shadowCoord.y - shadowRegion;
+            for (int j = 0; j < shadowDiameter; ++j)
             {
-                if (shadowDepth < modelDepth -
-                    shadowMapBias * length(current - shadowCoord) / sampleSize *
-                    (penumbraFactor * 4.0) /* PCSS effect compensation */)
+                shadowSampleCount += 1;
+                
+                float2 current = float2(xCurrent, yCurrent) +
+                                    // randomized offset to avoid quantization
+                                    (rand(shadowCastModelPostion.x + shadowCastModelPostion.y + i + j) - 0.5) *
+                                    sampleSize * 1.5;
+                
+                // increase the shadow bias in proportion to the distance to the sampling point
+                //
+                if (kShadowPCSS)
                 {
-                    shadowCoverage += 1;
+                    shadowCoverage += shadowMap.sample_compare(samplr, current,
+                                                               modelDepth -
+                                                               /* PCSS effect compensation */
+                                                               shadowMapBias * length(current - shadowCoord) / sampleSize * (penumbraFactor * 4.0));
                 }
-            }
-            else
-            {
-                if (shadowDepth < modelDepth -
-                    shadowMapBias * length(current - shadowCoord) / sampleSize)
+                else
                 {
-                    shadowCoverage += 1;
+                    shadowCoverage += shadowMap.sample_compare(samplr, current,
+                                                               modelDepth,
+                                                               shadowMapBias * length(current - shadowCoord) / sampleSize);
                 }
+                
+                yCurrent += sampleSize;
             }
             
-            yCurrent += sampleSize;
+            xCurrent += sampleSize;
         }
         
-        xCurrent += sampleSize;
+        if (shadowCoverage > 0)
+        {
+            /* these interesting code come from somewhere being forgotten.
+             * cause some artifact
+             *
+            float l = saturate(smoothstep(0, 0.2, shadowedSurfaceAngle));
+            float t = smoothstep((rand(shadowCastModelPostion.x + shadowCastModelPostion.y)) * 0.5, 1.0f, l);
+            
+            float shadowPercent = shadowCoverage / (float)shadowSampleCount * t; */
+            
+            float shadowPercent = shadowCoverage / (float)shadowSampleCount;
+            return shadowPercent;
+        }
+        
+        return 0.0;
     }
-    
-    if (shadowCoverage > 0)
+    else
     {
-        /* these interesting code come from somewhere being forgotten.
-         * cause some artifact
-         *
-        float l = saturate(smoothstep(0, 0.2, shadowedSurfaceAngle));
-        float t = smoothstep((rand(shadowCastModelPostion.x + shadowCastModelPostion.y)) * 0.5, 1.0f, l);
-        
-        float shadowPercent = shadowCoverage / (float)shadowSampleCount * t; */
-        
-        float shadowPercent = shadowCoverage / (float)shadowSampleCount;
-        return shadowPercent;
+        /** simpler shadow without PCF
+         */
+        return shadowMap.sample_compare(samplr, shadowCoord, modelDepth);
     }
-    
-    /** simpler shadow without PCF
-     *
-    float shadowDepth = shadowMap.sample(samplr, shadowCoord).x;
-    if (shadowDepth < modelDepth)
-        return 1.0; */
-    
-    return 0.0;
 }
 
 
