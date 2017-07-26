@@ -17,6 +17,7 @@
 
 
 @property (nonatomic, readonly) id<MTLTexture> shadowMap1;
+@property (nonatomic, readonly) id<MTLTexture> shadowMap2;
 
 
 - (void)makeTextures;
