@@ -58,12 +58,12 @@
         desc.resourceOptions = MTLResourceStorageModePrivate;
         desc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
             
-        self.targetTexture = [self.device newTextureWithDescriptor:desc];
+        _shadowMap1 = [self.device newTextureWithDescriptor:desc];
         
         if (self.name)
         {
             NSString* label = [[NSString alloc] initWithFormat:@"%@ - %@", self.name, @"depth target"];
-            [self.targetTexture setLabel:label];
+            [_shadowMap1 setLabel:label];
         }
     }
 }
@@ -74,17 +74,26 @@
 {
     MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
     
-    if (!self.targetTexture)
+    if (!_shadowMap1)
         return nil;
     
-    passDescriptor.depthAttachment.texture = (self.sampleCount == 1) ? self.targetTexture : _depthSampleTexture;
+    passDescriptor.depthAttachment.texture = (self.sampleCount == 1) ? _shadowMap1 : _depthSampleTexture;
     passDescriptor.depthAttachment.clearDepth = 1.0;
     passDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
     passDescriptor.depthAttachment.storeAction = (self.sampleCount == 1) ? MTLStoreActionStore : MTLStoreActionMultisampleResolve;
     if (self.sampleCount > 1)
-        passDescriptor.depthAttachment.resolveTexture = self.targetTexture;
+        passDescriptor.depthAttachment.resolveTexture = _shadowMap1;
     
     return passDescriptor;
+}
+
+
+
+- (id<MTLTexture>)targetTexture
+{
+    // not use the default target texture
+    assert(false);
+    return nil;
 }
 
 

@@ -16,6 +16,9 @@
 @interface NuoShadowMapTarget : NuoRenderPassTarget
 
 
+@property (nonatomic, readonly) id<MTLTexture> shadowMap1;
+
+
 - (void)makeTextures;
 - (MTLRenderPassDescriptor *)currentRenderPassDescriptor;
 

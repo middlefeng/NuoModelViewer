@@ -10,7 +10,7 @@
 #import <Metal/Metal.h>
 
 
-#import "NuoRenderPassTarget.h"
+#import "NuoShadowMapTarget.h"
 
 
 
@@ -18,7 +18,7 @@
 
 @property (nonatomic, weak) id<MTLDevice> device;
 
-@property (nonatomic, strong) NuoRenderPassTarget* renderTarget;
+@property (nonatomic, strong) NuoShadowMapTarget* renderTarget;
 
 
 - (void)setDrawableSize:(CGSize)drawableSize;
