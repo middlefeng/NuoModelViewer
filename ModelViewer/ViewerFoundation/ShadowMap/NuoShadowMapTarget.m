@@ -35,7 +35,7 @@
                                                                                            height:[self drawableSize].height
                                                                                         mipmapped:NO];
             sampleDesc.sampleCount = self.sampleCount;
-            sampleDesc.textureType = (self.sampleCount == 1) ? MTLTextureType2D : MTLTextureType2DMultisample;
+            sampleDesc.textureType = MTLTextureType2DMultisample;
             sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
             sampleDesc.usage = MTLTextureUsageRenderTarget;
             
