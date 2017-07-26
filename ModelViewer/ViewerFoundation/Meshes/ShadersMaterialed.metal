@@ -68,8 +68,8 @@ vertex ProjectedVertex vertex_project_materialed(device Vertex *vertices [[buffe
 
 fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
                                           constant LightUniform &lightUniform [[buffer(0)]],
-                                          texture2d<float> shadowMap0 [[texture(0)]],
-                                          texture2d<float> shadowMap1 [[texture(1)]],
+                                          depth2d<float> shadowMap0 [[texture(0)]],
+                                          depth2d<float> shadowMap1 [[texture(1)]],
                                           sampler depthSamplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
@@ -78,7 +78,7 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
     
     float3 colorForLights = 0.0;
     
-    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
     float opacity = vert.specularPowerDisolve.y;

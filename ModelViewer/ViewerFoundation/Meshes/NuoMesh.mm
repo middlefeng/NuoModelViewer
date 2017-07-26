@@ -16,6 +16,7 @@
 
 
 const BOOL kShadowPCSS = YES;
+const BOOL kShadowPCF = YES;
 
 
 
@@ -395,6 +396,7 @@ const BOOL kShadowPCSS = YES;
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
     [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
+    [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];

@@ -95,8 +95,8 @@ vertex PositionSimple vertex_shadow_tex_materialed_bump(device Vertex *vertices 
 
 fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
                                              constant LightUniform &lighting [[buffer(0)]],
-                                             texture2d<float> shadowMap0 [[texture(0)]],
-                                             texture2d<float> shadowMap1 [[texture(1)]],
+                                             depth2d<float> shadowMap0 [[texture(0)]],
+                                             depth2d<float> shadowMap1 [[texture(1)]],
                                              texture2d<float> diffuseTexture [[texture(2)]],
                                              texture2d<float> opacityTexture [[texture(3),
                                                                                function_constant(kAlphaChannelInSeparatedTexture)]],
@@ -116,7 +116,7 @@ fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
     float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
     float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
     
-    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseColor,
                                                 shadowMap, depthSamplr);
 }

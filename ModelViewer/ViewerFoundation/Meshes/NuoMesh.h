@@ -7,6 +7,7 @@
 
 
 extern const BOOL kShadowPCSS;
+extern const BOOL kShadowPCF;
 
 
 
