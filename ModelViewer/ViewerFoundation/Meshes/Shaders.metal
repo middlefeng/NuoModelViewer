@@ -342,7 +342,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     shadowCoord.x = (shadowCoord.x + 1) * 0.5;
     shadowCoord.y = (-shadowCoord.y + 1) * 0.5;
     
-    float modelDepth = (shadowCastModelPostion.z / shadowCastModelPostion.w) - shadowMapBias;
+    float modelDepth = (shadowCastModelPostion.z / shadowCastModelPostion.w);
     
     if (kShadowPCF)
     {
@@ -385,14 +385,15 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
             
             if (blockerSampleCount == 0)
                 return 0.0;
-            if (blockerSampleSkipped == 0)
-                return 1.0;
+            //if (blockerSampleSkipped == 0)
+            //    return 1.0;
             
             blocker /= blockerSampleCount;
             penumbraFactor = (modelDepth - blocker) / blocker;
         }
         
-        float shadowCoverage = 0;
+        float M1 = 0;
+        float M2 = 0;
         int shadowSampleCount = 0;
         
         // PCSS-based penumbra
@@ -400,6 +401,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
         if (kShadowPCSS)
             sampleSize = kSampleSizeBase * 0.3 + sampleSize * (penumbraFactor * 25.0);
         
+        //shadowMapSampleRadius = 1;
         const float shadowRegion = shadowMapSampleRadius * sampleSize;
         const float shadowDiameter = shadowMapSampleRadius * 2;
         
@@ -412,26 +414,12 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
             {
                 shadowSampleCount += 1;
                 
-                float2 current = float2(xCurrent, yCurrent) +
-                                    // randomized offset to avoid quantization
-                                    (rand(shadowCastModelPostion.x + shadowCastModelPostion.y + i + j) - 0.5) *
-                                    sampleSize * 1.5;
+                float2 current = float2(xCurrent, yCurrent);
+                float depth = shadowMap.sample(samplr, current);
+                M1 += depth;
                 
-                // increase the shadow bias in proportion to the distance to the sampling point
-                //
-                if (kShadowPCSS)
-                {
-                    shadowCoverage += shadowMap.sample_compare(samplr, current,
-                                                               modelDepth -
-                                                               /* PCSS effect compensation */
-                                                               shadowMapBias * length(current - shadowCoord) / sampleSize * (penumbraFactor * 4.0));
-                }
-                else
-                {
-                    shadowCoverage += shadowMap.sample_compare(samplr, current,
-                                                               modelDepth,
-                                                               shadowMapBias * length(current - shadowCoord) / sampleSize);
-                }
+                float4 depthM2 = shadowMapM2.sample(samplr, current);
+                M2 += depthM2.r;
                 
                 yCurrent += sampleSize;
             }
@@ -439,21 +427,16 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
             xCurrent += sampleSize;
         }
         
-        if (shadowCoverage > 0)
-        {
-            /* these interesting code come from somewhere being forgotten.
-             * cause some artifact
-             *
-            float l = saturate(smoothstep(0, 0.2, shadowedSurfaceAngle));
-            float t = smoothstep((rand(shadowCastModelPostion.x + shadowCastModelPostion.y)) * 0.5, 1.0f, l);
-            
-            float shadowPercent = shadowCoverage / (float)shadowSampleCount * t; */
-            
-            float shadowPercent = shadowCoverage / (float)shadowSampleCount;
-            return shadowPercent;
-        }
+        M1 /= shadowSampleCount;
+        M2 /= shadowSampleCount;
         
-        return 0.0;
+        if (modelDepth < M1)
+            return 0.0;
+        
+        float variance = M2 - (M1 * M1);
+        variance = max(variance, 0.0001);
+        float d = modelDepth - M1;
+        return 1.0 - variance / (variance + d * d);
     }
     else
     {
