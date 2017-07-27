@@ -76,6 +76,7 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
     float3 colorForLights = 0.0;
     
     depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    texture2d<float> shadowMapM2[2] = {shadowMap0M2, shadowMap1M2};
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
     for (unsigned i = 0; i < 4; ++i)
@@ -98,7 +99,7 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
             shadowPercent = shadow_coverage_common(shadowPosition[i],
                                                    lightUniform.shadowBias[i], diffuseIntensity,
                                                    lightUniform.shadowSoften[i], 3,
-                                                   shadowMap[i], depthSamplr);
+                                                   shadowMap[i], shadowMapM2[i], depthSamplr);
         }
         
         colorForLights += (diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i]) * (1 - shadowPercent);

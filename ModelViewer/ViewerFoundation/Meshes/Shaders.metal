@@ -139,6 +139,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     float surfaceBrightness = 0.0;
     
     depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    texture2d<float> shadowMapM2[2] = {shadowMap0M2, shadowMap1M2};
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
     for (unsigned i = 0; i < 4; ++i)
@@ -153,7 +154,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                 shadowPercent = shadow_coverage_common(shadowPosition[i],
                                                        lightUniform.shadowBias[i], diffuseIntensity,
                                                        lightUniform.shadowSoften[i], 3,
-                                                       shadowMap[i], samplr);
+                                                       shadowMap[i], shadowMapM2[i], samplr);
             }
             
             shadowOverlay += lightUniform.density[i] * diffuseIntensity * shadowPercent;
@@ -178,7 +179,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                 shadowPercent = shadow_coverage_common(shadowPosition[i],
                                                        lightUniform.shadowBias[i], diffuseIntensity,
                                                        lightUniform.shadowSoften[i], 3,
-                                                       shadowMap[i], samplr);
+                                                       shadowMap[i], shadowMapM2[i], samplr);
             }
             
             colorForLights += (diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i]) * (1.0 - shadowPercent);
@@ -197,6 +198,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                             constant LightUniform &lightingUniform,
                                             float4 diffuseTexel,
                                             depth2d<float> shadowMap[2],
+                                            texture2d<float> shadowMapM2[2],
                                             sampler samplr)
 {
     normal = normalize(normal);
@@ -235,7 +237,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             shadowPercent = shadow_coverage_common(vert.shadowPosition[i],
                                                    lightingUniform.shadowBias[i], diffuseIntensity,
                                                    lightingUniform.shadowSoften[i], 3,
-                                                   shadowMap[i], samplr);
+                                                   shadowMap[i], shadowMapM2[i], samplr);
         }
         
         colorForLights += (diffuseTerm * lightingUniform.density[i] + specularTerm) *
@@ -327,7 +329,8 @@ float3 specular_common(float3 materialSpecularColor, float materialSpecularPower
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                              float shadowBiasFactor, float shadowedSurfaceAngle,
                              float shadowSoftenFactor, float shadowMapSampleRadius,
-                             metal::depth2d<float> shadowMap, metal::sampler samplr)
+                             metal::depth2d<float> shadowMap, metal::texture2d<float> shadowMapM2,
+                             metal::sampler samplr)
 {
     float shadowMapBias = 0.002;
     shadowMapBias += shadowBiasFactor * (1 - shadowedSurfaceAngle);

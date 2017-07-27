@@ -78,6 +78,7 @@ metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert
                                                    constant LightUniform &lighting,
                                                    metal::float4 diffuseTexel,
                                                    metal::depth2d<float> shadowMap[2],
+                                                   metal::texture2d<float> shadowMapM2[2],
                                                    metal::sampler samplr);
 
 
@@ -97,7 +98,7 @@ metal::float3 specular_common(metal::float3 materialSpecularColor, float materia
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                              float shadowBiasFactor, float shadowedSurfaceAngle,
                              float shadowSoftenFactor, float shadowMapSampleRadius,
-                             metal::depth2d<float> shadowMap, metal::sampler samplr);
+                             metal::depth2d<float> shadowMap, metal::texture2d<float> shadowMapM2, metal::sampler samplr);
 
 float rand(metal::float2 co);
 

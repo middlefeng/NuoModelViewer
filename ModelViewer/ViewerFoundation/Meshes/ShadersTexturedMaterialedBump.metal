@@ -119,8 +119,9 @@ fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
     float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
     
     depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    texture2d<float> shadowMapM2[2] = {shadowMap0M2, shadowMap1M2};
     return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseColor,
-                                                shadowMap, depthSamplr);
+                                                shadowMap, shadowMapM2, depthSamplr);
 }
 
 

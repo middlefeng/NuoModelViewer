@@ -105,8 +105,9 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
     float4 diffuseColor = diffuse_common(diffuseTexel, opacityTexel.a);
     
     depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    texture2d<float> shadowMapM2[2] = {shadowMap0M2, shadowMap1M2};
     return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseColor,
-                                                shadowMap, depthSamplr);
+                                                shadowMap, shadowMapM2, depthSamplr);
 }
 
 
