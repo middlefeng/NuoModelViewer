@@ -667,7 +667,9 @@
     [renderPass setFragmentBuffer:self.lightingUniformBuffers[inFlight] offset:0 atIndex:0];
     [renderPass setFragmentBuffer:self.modelCharacterUnfiromBuffer offset:0 atIndex:1];
     [renderPass setFragmentTexture:_shadowMapRenderer[0].renderTarget.shadowMap1 atIndex:0];
-    [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.shadowMap1 atIndex:1];
+    [renderPass setFragmentTexture:_shadowMapRenderer[0].renderTarget.shadowMap2 atIndex:1];
+    [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.shadowMap1 atIndex:2];
+    [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.shadowMap2 atIndex:3];
     [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
     
     for (NuoMesh* mesh in _meshes)

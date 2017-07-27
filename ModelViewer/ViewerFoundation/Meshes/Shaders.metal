@@ -126,7 +126,9 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                       constant LightUniform &lightUniform [[buffer(0)]],
                                       constant ModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
                                       depth2d<float> shadowMap0 [[texture(0)]],
-                                      depth2d<float> shadowMap1 [[texture(1)]],
+                                      texture2d<float> shadowMap0M2 [[texture(1)]],
+                                      depth2d<float> shadowMap1 [[texture(2)]],
+                                      texture2d<float> shadowMap1M2 [[texture(3)]],
                                       sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
