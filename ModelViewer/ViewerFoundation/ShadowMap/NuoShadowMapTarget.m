@@ -69,8 +69,10 @@
         
         if (self.name)
         {
-            NSString* label = [[NSString alloc] initWithFormat:@"%@ - %@", self.name, @"depth target 1"];
-            [_shadowMap1 setLabel:label];
+            NSString* label1 = [[NSString alloc] initWithFormat:@"%@ - %@", self.name, @"depth target 1"];
+            NSString* label2 = [[NSString alloc] initWithFormat:@"%@ - %@", self.name, @"depth target 2"];
+            [_shadowMap1 setLabel:label1];
+            [_shadowMap2 setLabel:label2];
         }
     }
 }
@@ -81,8 +83,15 @@
 {
     MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
     
-    if (!_shadowMap1)
+    if (!_shadowMap1 || !_shadowMap2)
         return nil;
+    
+    passDescriptor.colorAttachments[0].texture = (self.sampleCount == 1) ? _shadowMap2 : _depthSampleTexture2;
+    passDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(1.0, 1.0, 1.0, 1.0);
+    passDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[0].storeAction = (self.sampleCount == 1) ? MTLStoreActionStore : MTLStoreActionMultisampleResolve;
+    if (self.sampleCount > 1)
+        passDescriptor.colorAttachments[0].resolveTexture = _shadowMap2;
     
     passDescriptor.depthAttachment.texture = (self.sampleCount == 1) ? _shadowMap1 : _depthSampleTexture1;
     passDescriptor.depthAttachment.clearDepth = 1.0;

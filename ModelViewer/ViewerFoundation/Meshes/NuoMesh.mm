@@ -431,9 +431,9 @@ const BOOL kShadowPCF = YES;
     
     MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
     shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShadowShader];
-    shadowPipelineDescriptor.fragmentFunction = nil;
+    shadowPipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragement_shadow"];
     shadowPipelineDescriptor.sampleCount = 1 /*kSampleCount*/;
-    shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
+    shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatR32Float;
     shadowPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     NSError *error = nil;

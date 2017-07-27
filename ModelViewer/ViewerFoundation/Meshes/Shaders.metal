@@ -32,7 +32,6 @@ float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
 
 /**
  *  shader that generate shadow-map texture from the light view point.
- *  no fragement shader needed.
  */
 
 vertex PositionSimple vertex_shadow(device Vertex *vertices [[buffer(0)]],
@@ -44,6 +43,17 @@ vertex PositionSimple vertex_shadow(device Vertex *vertices [[buffer(0)]],
     outShadow.position = uniforms.viewProjectionMatrix *
                          meshUniform.transform * vertices[vid].position;
     return outShadow;
+}
+
+
+/**
+ *  shader that generate shadow-map texture from the light view point.
+ *  the color attachment (i.e. return value) is used for the squared depth (M2 for variance shadow map)
+ */
+fragment float4 fragement_shadow(PositionSimple vert [[stage_in]])
+{
+    float depth = vert.position.z / vert.position.w;
+    return float4(float3(depth * depth), 1.0f);
 }
 
 
