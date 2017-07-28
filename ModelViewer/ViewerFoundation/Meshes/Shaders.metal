@@ -414,7 +414,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                 else
                 {
                     shadowCoverage += shadowMap.sample_compare(samplr, current,
-                                                               modelDepth,
+                                                               modelDepth -
                                                                shadowMapBias * length(current - shadowCoord) / sampleSize);
                 }
                 
