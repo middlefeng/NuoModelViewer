@@ -44,7 +44,7 @@
         _lightSpacularSlider = [self createSliderMax:3.0 min:0.0];
 
         _shadowSoftenLabel = [self createLabel:@"Penumbra:"];
-        _shadowSoftenSlider = [self createSliderMax:3.0 min:-1.0];
+        _shadowSoftenSlider = [self createSliderMax:5.0 min:0.0];
         
         _shadowBiasLabel = [self createLabel:@"Bias:"];
         _shadowBiasSlider = [self createSliderMax:0.01 min:0.0];

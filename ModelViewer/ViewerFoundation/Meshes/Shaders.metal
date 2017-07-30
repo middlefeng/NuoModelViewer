@@ -142,7 +142,6 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                                        lightUniform.shadowBias[i], diffuseIntensity,
                                                        lightUniform.shadowSoften[i], 3,
                                                        shadowMap[i], samplr);
-                //return float4(shadowPercent, 0.0, 0.0, 1.0);
             }
             
             shadowOverlay += lightUniform.density[i] * diffuseIntensity * shadowPercent;
@@ -322,7 +321,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     shadowMapBias += shadowBiasFactor * (1 - shadowedSurfaceAngle);
     
     const float kSampleSizeBase = 1.0 / shadowMap.get_width();
-    float sampleSize = kSampleSizeBase/* * (1 + shadowSoftenFactor)*/;
+    float sampleSize = kSampleSizeBase;
     
     float2 shadowCoord = shadowCastModelPostion.xy / shadowCastModelPostion.w;
     shadowCoord.x = (shadowCoord.x + 1) * 0.5;
@@ -369,24 +368,21 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                 xCurrentSearch += searchSampleSize;
             }
             
-            /*if (blockerSampleCount == 0)
-                return 0.0;*/
+            /* not turning on this short cut because the penumbra-factor is clamp to a
+             * small positive number to alliveate the shadow-map-sampling alias
+             *
+            if (blockerSampleCount == 0)
+                return 0.0; */
+            
             if (blockerSampleSkipped == 0)
                 return 1.0;
             
             blocker /= blockerSampleCount;
             penumbraFactor = (modelDepth - blocker) / blocker;
             
+            // in order to alliveate alias, always present a bit softness
+            //
             penumbraFactor = max(0.04, penumbraFactor);
-            
-            //return blocker;
-            //return penumbraFactor;
-            
-            /*float shadowDepth = shadowMap.sample(samplr, shadowCoord);
-            if (shadowDepth < modelDepth)
-                return 0.0;
-            else
-                return 1.0;*/
         }
         
         float shadowCoverage = 0;
@@ -395,7 +391,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
         // PCSS-based penumbra
         //
         if (kShadowPCSS)
-            sampleSize = kSampleSizeBase * 0.3 + sampleSize * ((penumbraFactor) * 5  * (1 + shadowSoftenFactor));
+            sampleSize = kSampleSizeBase * 0.3 + sampleSize * ((penumbraFactor) * 5  * shadowSoftenFactor);
         
         const float shadowRegion = shadowMapSampleRadius * sampleSize;
         const float shadowDiameter = shadowMapSampleRadius * 2;
