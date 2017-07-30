@@ -369,15 +369,15 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                 xCurrentSearch += searchSampleSize;
             }
             
-            if (blockerSampleCount == 0)
-                return 0.0;
+            /*if (blockerSampleCount == 0)
+                return 0.0;*/
             if (blockerSampleSkipped == 0)
                 return 1.0;
             
             blocker /= blockerSampleCount;
             penumbraFactor = (modelDepth - blocker) / blocker;
             
-            //penumbraFactor = max(1.0, penumbraFactor);
+            penumbraFactor = max(0.04, penumbraFactor);
             
             //return blocker;
             //return penumbraFactor;
