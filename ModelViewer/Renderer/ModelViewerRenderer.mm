@@ -599,14 +599,14 @@
         
         vector_float4 lightVector { 0, 0, 1, 0 };
         lightVector = matrix_multiply(rotationMatrix, lightVector);
-        lighting.direction[i] = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
-        lighting.density[i] = _lights[i].lightingDensity;
-        lighting.spacular[i] = _lights[i].lightingSpacular;
+        lighting.lightParams[i].direction = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
+        lighting.lightParams[i].density = _lights[i].lightingDensity;
+        lighting.lightParams[i].spacular = _lights[i].lightingSpacular;
         
         if (i < 2)
         {
-            lighting.shadowSoften[i] = _lights[i].shadowSoften;
-            lighting.shadowBias[i] = _lights[i].shadowBias;
+            lighting.shadowParams[i].soften = _lights[i].shadowSoften;
+            lighting.shadowParams[i].bias = _lights[i].shadowBias;
         }
     }
     

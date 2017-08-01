@@ -35,18 +35,34 @@ typedef struct
 LightVertexUniforms;
 
 
+
+typedef struct
+{
+    vector4 direction;
+    float density;
+    float spacular;
+}
+LightParameters;
+
+
+
+typedef struct
+{
+    float soften;
+    float bias;
+}
+ShadowParameters;
+
+
 /**
  *  fragement shader uniform to calulate lighted color
  */
 typedef struct
 {
-    vector4 direction[4];
-    float density[4];
-    float spacular[4];
-    float ambientDensity;
+    LightParameters lightParams[4];
+    ShadowParameters shadowParams[2];
     
-    float shadowSoften[2];
-    float shadowBias[2];
+    float ambientDensity;
 }
 LightUniform;
 
