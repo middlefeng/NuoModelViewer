@@ -336,6 +336,9 @@ const BOOL kShadowPCF = YES;
 - (void)setUnifiedOpacity:(float)unifiedOpacity
 {
     const std::shared_ptr<NuoMaterial>& material = _rawModel->GetUnifiedMaterial();
+    if (!material)
+        return;
+    
     material.get()->dissolve = unifiedOpacity;
     
     _rawModel->UpdateBufferWithUnifiedMaterial();
