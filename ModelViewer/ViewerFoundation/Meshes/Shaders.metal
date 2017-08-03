@@ -408,7 +408,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                 
                 float2 current = float2(xCurrent, yCurrent) +
                                     // randomized offset to avoid quantization
-                                    (rand(shadowCastModelPostion.x + shadowCastModelPostion.y + i + j) - 0.5) *
+                                    (rand(shadowCastModelPostion.xy * shadowCastModelPostion.z + float2(i + j)) - 0.5) *
                                     sampleSize * 1.5;
                 
                 // increase the shadow bias in proportion to the distance to the sampling point
@@ -458,9 +458,10 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
 }
 
 
-float rand(float2 co)
+float2 rand(float2 co)
 {
-    return fract(sin(dot(co.xy, float2(12.9898, 78.233))) * 43758.5453);
+    return float2(fract(sin(dot(float2(co.x, co.y / 2.0), float2(12.9898, 78.233))) * 43758.5453),
+                  fract(sin(dot(float2(co.y, co.x / 2.0), float2(12.9898, 78.233))) * 43758.5453));
 }
 
 
