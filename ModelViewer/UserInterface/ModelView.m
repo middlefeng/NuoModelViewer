@@ -629,7 +629,10 @@
          {
              __block __weak id<MTLDevice> device = self.metalLayer.device;
              
-             NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:device withTarget:3900
+             CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
+                                        _modelRender.renderTarget.drawableSize.width);
+             
+             NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:device withTarget:previewSize
                                                                           withClearColor:[NSColor colorWithRed:0.0
                                                                                                          green:0.0
                                                                                                           blue:0.0
