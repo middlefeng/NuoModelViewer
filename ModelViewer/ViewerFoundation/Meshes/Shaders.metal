@@ -313,6 +313,65 @@ float3 specular_common(float3 materialSpecularColor, float materialSpecularPower
 
 
 
+float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius,
+                             float shadowMapBias, float modelDepth, float2 shadowCoord,
+                             metal::depth2d<float> shadowMap, metal::sampler samplr)
+{
+    float penumbraFactor = 1.0;
+    float blocker = 0;
+    int blockerSampleCount = 0;
+    int blockerSampleSkipped = 0;
+    
+    const float sampleEnlargeFactor = 20.0;
+    
+    const float2 searchSampleSize = texelSize * sampleEnlargeFactor;
+    const float2 searchRegion = shadowMapSampleRadius * 2 * searchSampleSize;
+    const float searchDiameter = shadowMapSampleRadius * 2 * 2;
+    const float sampleDiameter = length(texelSize);
+    
+    float xCurrentSearch = shadowCoord.x - searchRegion.x;
+    
+    for (int i = 0; i < searchDiameter; ++i)
+    {
+        float yCurrentSearch = shadowCoord.y - searchRegion.y;
+        for (int j = 0; j < searchDiameter; ++j)
+        {
+            float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch));
+            if (shadowDepth < modelDepth - shadowMapBias * length(shadowCoord - float2(xCurrentSearch, yCurrentSearch)) / sampleDiameter * 0.25)
+            {
+                blockerSampleCount += 1;
+                blocker += shadowDepth;
+            }
+            else
+            {
+                blockerSampleSkipped += 1;
+            }
+            
+            yCurrentSearch += searchSampleSize.y;
+        }
+        
+        xCurrentSearch += searchSampleSize.x;
+    }
+    
+    /* not turning on this short cut because the penumbra-factor is clamp to a
+     * small positive number to alliveate the shadow-map-sampling alias
+     *
+     if (blockerSampleCount == 0)
+     return 0.0; */
+    
+    if (blockerSampleSkipped == 0)
+        return 1.0;
+    
+    blocker /= blockerSampleCount;
+    penumbraFactor = (modelDepth - blocker) / blocker;
+    
+    // in order to alliveate alias, always present a bit softness
+    //
+    return max(0.04, penumbraFactor);
+}
+
+
+
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                              ShadowParameters shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
@@ -339,56 +398,9 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
         float penumbraFactor = 1.0;
         if (kShadowPCSS)
         {
-            float blocker = 0;
-            int blockerSampleCount = 0;
-            int blockerSampleSkipped = 0;
-            
-            const float sampleEnlargeFactor = 20.0;
-            
-            const float2 searchSampleSize = sampleSize * sampleEnlargeFactor;
-            const float2 searchRegion = shadowMapSampleRadius * 2 * searchSampleSize;
-            const float searchDiameter = shadowMapSampleRadius * 2 * 2;
-            const float sampleDiameter = length(sampleSize);
-            
-            float xCurrentSearch = shadowCoord.x - searchRegion.x;
-            
-            for (int i = 0; i < searchDiameter; ++i)
-            {
-                float yCurrentSearch = shadowCoord.y - searchRegion.y;
-                for (int j = 0; j < searchDiameter; ++j)
-                {
-                    float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch));
-                    if (shadowDepth < modelDepth - shadowMapBias * length(shadowCoord - float2(xCurrentSearch, yCurrentSearch)) / sampleDiameter * 0.25)
-                    {
-                        blockerSampleCount += 1;
-                        blocker += shadowDepth;
-                    }
-                    else
-                    {
-                        blockerSampleSkipped += 1;
-                    }
-                    
-                    yCurrentSearch += searchSampleSize.y;
-                }
-                
-                xCurrentSearch += searchSampleSize.x;
-            }
-            
-            /* not turning on this short cut because the penumbra-factor is clamp to a
-             * small positive number to alliveate the shadow-map-sampling alias
-             *
-            if (blockerSampleCount == 0)
-                return 0.0; */
-            
-            if (blockerSampleSkipped == 0)
-                return 1.0;
-            
-            blocker /= blockerSampleCount;
-            penumbraFactor = (modelDepth - blocker) / blocker;
-            
-            // in order to alliveate alias, always present a bit softness
-            //
-            penumbraFactor = max(0.04, penumbraFactor);
+            penumbraFactor = shadow_penumbra_factor(kSampleSizeBase, shadowMapSampleRadius,
+                                                    shadowMapBias, modelDepth, shadowCoord,
+                                                    shadowMap, samplr);
         }
         
         float shadowCoverage = 0;
