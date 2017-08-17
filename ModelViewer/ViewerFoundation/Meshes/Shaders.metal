@@ -323,6 +323,8 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     
     const float2 kSampleSizeBase = 1.0 / float2(shadowMap.get_width(), shadowMap.get_height());
     float2 sampleSize = kSampleSizeBase;
+    if (!kShadowPCSS && kShadowPCF)
+        sampleSize *= shadowParams.soften;
     
     float2 shadowCoord = shadowCastModelPostion.xy / shadowCastModelPostion.w;
     shadowCoord.x = (shadowCoord.x + 1) * 0.5;
