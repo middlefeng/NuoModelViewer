@@ -11,6 +11,15 @@ extern const BOOL kShadowPCF;
 
 
 
+enum NuoMeshMode
+{
+    kMeshMode_Normal,
+    kMeshMode_ShadowOccluder,
+    kMeshMode_ShadowPenumbraFactor
+};
+
+
+
 @interface NuoCoord : NSObject
 
 @property (nonatomic, assign) float x;
@@ -103,6 +112,8 @@ extern const BOOL kShadowPCF;
 - (instancetype)initWithDevice:(id<MTLDevice>)device
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength;
+
+- (instancetype)cloneForMode:(enum NuoMeshMode)mode;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader;

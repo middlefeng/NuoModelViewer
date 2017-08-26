@@ -197,6 +197,7 @@ const BOOL kShadowPCF = YES;
 
 @implementation NuoMesh
 {
+    BOOL _debugModel;
     BOOL _hasTransparency;
     std::shared_ptr<NuoModelBase> _rawModel;
 }
@@ -247,6 +248,13 @@ const BOOL kShadowPCF = YES;
         _transformTranslate = matrix_identity_float4x4;
     }
     
+    return self;
+}
+
+
+
+- (instancetype)cloneForMode:(enum NuoMeshMode)mode
+{
     return self;
 }
 
