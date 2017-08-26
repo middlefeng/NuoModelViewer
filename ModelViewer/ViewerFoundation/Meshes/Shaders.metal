@@ -322,7 +322,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
     int blockerSampleCount = 0;
     int blockerSampleSkipped = 0;
     
-    const float sampleEnlargeFactor = 20.0;
+    const float sampleEnlargeFactor = 8.0;
     
     const float2 searchSampleSize = texelSize * sampleEnlargeFactor;
     const float2 searchRegion = shadowMapSampleRadius * 2 * searchSampleSize;
@@ -337,7 +337,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
         for (int j = 0; j < searchDiameter; ++j)
         {
             float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch));
-            if (shadowDepth < modelDepth - shadowMapBias * length(shadowCoord - float2(xCurrentSearch, yCurrentSearch)) / sampleDiameter * 0.25)
+            if (shadowDepth < modelDepth - shadowMapBias * length(shadowCoord - float2(xCurrentSearch, yCurrentSearch)) / sampleDiameter)
             {
                 blockerSampleCount += 1;
                 blocker += shadowDepth;
