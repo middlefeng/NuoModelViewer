@@ -146,6 +146,9 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                 shadowPercent = shadow_coverage_common(shadowPosition[i],
                                                        shadowParams, diffuseIntensity, 3,
                                                        shadowMap[i], samplr);
+                
+                // debug pcss
+                //return float4(shadowPercent, 0.0, 0.0, 1.0);
             }
             
             shadowOverlay += lightUniform.lightParams[i].density * diffuseIntensity * shadowPercent;
@@ -228,6 +231,9 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             shadowPercent = shadow_coverage_common(vert.shadowPosition[i],
                                                    shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], samplr);
+            
+            // debug pcss
+            //return float4(shadowPercent, 0.0, 0.0, 1.0);
         }
         
         colorForLights += (diffuseTerm * lightParams.density + specularTerm) *
@@ -322,7 +328,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
     int blockerSampleCount = 0;
     int blockerSampleSkipped = 0;
     
-    const float sampleEnlargeFactor = 20.0;
+    const float sampleEnlargeFactor = 5.0;
     
     const float2 searchSampleSize = texelSize * sampleEnlargeFactor;
     const float2 searchRegion = shadowMapSampleRadius * 2 * searchSampleSize;
@@ -337,7 +343,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
         for (int j = 0; j < searchDiameter; ++j)
         {
             float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch));
-            if (shadowDepth < modelDepth - shadowMapBias * length(shadowCoord - float2(xCurrentSearch, yCurrentSearch)) / sampleDiameter * 0.25)
+            if (shadowDepth < modelDepth - shadowMapBias * length(shadowCoord - float2(xCurrentSearch, yCurrentSearch)) / sampleDiameter)
             {
                 blockerSampleCount += 1;
                 blocker += shadowDepth;
@@ -360,7 +366,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
      return 0.0; */
     
     if (blockerSampleSkipped == 0)
-        return 1.0;
+        return 0.0;
     
     blocker /= blockerSampleCount;
     penumbraFactor = (modelDepth - blocker) / blocker;
@@ -401,6 +407,11 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
             penumbraFactor = shadow_penumbra_factor(kSampleSizeBase, shadowMapSampleRadius,
                                                     shadowMapBias, modelDepth, shadowCoord,
                                                     shadowMap, samplr);
+            
+            // debug pcss
+            //return penumbraFactor;
+            if (penumbraFactor == 0.0)
+                return 1.0;
         }
         
         float shadowCoverage = 0;
@@ -409,7 +420,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
         // PCSS-based penumbra
         //
         if (kShadowPCSS)
-            sampleSize = kSampleSizeBase * 0.3 + sampleSize * (penumbraFactor * 5  * shadowParams.soften);
+            sampleSize = kSampleSizeBase * 0.3 + sampleSize * (penumbraFactor * 5 * shadowParams.soften);
         
         const float2 shadowRegion = shadowMapSampleRadius * sampleSize;
         const float shadowDiameter = shadowMapSampleRadius * 2;
@@ -436,7 +447,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                     shadowCoverage += shadowMap.sample_compare(samplr, current,
                                                                modelDepth -
                                                                /* PCSS effect compensation */
-                                                               shadowMapBias * length(current - shadowCoord) / sampleDiameter * (penumbraFactor * 4.0));
+                                                               shadowMapBias * length(current - shadowCoord) / sampleDiameter * (penumbraFactor < 0.01 ? 4.0 : pow(penumbraFactor, 3.0) * 500.0));
                 }
                 else
                 {
