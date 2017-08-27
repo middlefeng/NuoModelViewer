@@ -136,18 +136,17 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         const LightParameters lightParams = lightUniform.lightParams[i];
         
         float diffuseIntensity = saturate(dot(normal, normalize(lightParams.direction.xyz)));
+        float shadowPercent = 0.0;
+        if (i < 2)
+        {
+            const ShadowParameters shadowParams = lightUniform.shadowParams[i];
+            shadowPercent = shadow_coverage_common(shadowPosition[i],
+                                                   shadowParams, diffuseIntensity, 3,
+                                                   shadowMap[i], samplr);
+        }
         
         if (kShadowOverlay)
         {
-            float shadowPercent = 0.0;
-            if (i < 2)
-            {
-                const ShadowParameters shadowParams = lightUniform.shadowParams[i];
-                shadowPercent = shadow_coverage_common(shadowPosition[i],
-                                                       shadowParams, diffuseIntensity, 3,
-                                                       shadowMap[i], samplr);
-            }
-            
             shadowOverlay += lightUniform.lightParams[i].density * diffuseIntensity * shadowPercent;
             surfaceBrightness += lightUniform.lightParams[i].density * diffuseIntensity;
         }
@@ -162,15 +161,6 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                 float3 halfway = normalize(normalize(lightUniform.lightParams[i].direction.xyz) + eyeDirection);
                 float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower);
                 specularTerm = material.specularColor * specularFactor;
-            }
-            
-            float shadowPercent = 0.0;
-            if (i < 2)
-            {
-                const ShadowParameters shadowParams = lightUniform.shadowParams[i];
-                shadowPercent = shadow_coverage_common(shadowPosition[i],
-                                                       shadowParams, diffuseIntensity, 3,
-                                                       shadowMap[i], samplr);
             }
             
             colorForLights += (diffuseTerm * lightParams.density +
