@@ -146,12 +146,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         }
         
         if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
-        {
-            float4 red(1.0, 0.0, 0.0, 1.0);
-            float4 yellow(0.0, 0.0, 1.0, 1.0);
-            //return red * shadowPercent + yellow * (1.0 - shadowPercent);
             return float4(shadowPercent, 0.0, 0.0, 1.0);
-        }
         
         if (kShadowOverlay)
         {
