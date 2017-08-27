@@ -145,6 +145,14 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                                    shadowMap[i], samplr);
         }
         
+        if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
+        {
+            float4 red(1.0, 0.0, 0.0, 1.0);
+            float4 yellow(0.0, 0.0, 1.0, 1.0);
+            //return red * shadowPercent + yellow * (1.0 - shadowPercent);
+            return float4(shadowPercent, 0.0, 0.0, 1.0);
+        }
+        
         if (kShadowOverlay)
         {
             shadowOverlay += lightUniform.lightParams[i].density * diffuseIntensity * shadowPercent;
@@ -347,13 +355,16 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
      * small positive number to alliveate the shadow-map-sampling alias
      *
      if (blockerSampleCount == 0)
-     return 0.0; */
+     return 0.0;
     
     if (blockerSampleSkipped == 0)
-        return 1.0;
+        return 1.0; */
     
     blocker /= blockerSampleCount;
     penumbraFactor = (modelDepth - blocker) / blocker;
+    
+    if (kMeshMode == kMeshMode_ShadowOccluder)
+        return blocker;
     
     // in order to alliveate alias, always present a bit softness
     //
@@ -391,6 +402,9 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
             penumbraFactor = shadow_penumbra_factor(kSampleSizeBase, shadowMapSampleRadius,
                                                     shadowMapBias, modelDepth, shadowCoord,
                                                     shadowMap, samplr);
+            
+            if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
+                return penumbraFactor;
         }
         
         float shadowCoverage = 0;

@@ -71,6 +71,8 @@ constant bool kShadowOverlay                    [[ function_constant(3) ]];
 constant bool kShadowPCSS                       [[ function_constant(4) ]];
 constant bool kShadowPCF                        [[ function_constant(5) ]];
 
+constant int  kMeshMode                         [[ function_constant(6) ]];
+
 
 
 metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,

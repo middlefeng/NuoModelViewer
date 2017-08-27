@@ -74,5 +74,14 @@ typedef struct
 ModelCharacterUniforms;
 
 
+typedef enum
+{
+    kMeshMode_Normal,
+    kMeshMode_ShadowOccluder,
+    kMeshMode_ShadowPenumbraFactor
+}
+MeshMode;
+
+
 #endif
 

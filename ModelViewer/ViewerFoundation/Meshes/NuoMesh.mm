@@ -253,7 +253,7 @@ const BOOL kShadowPCF = YES;
 
 
 
-- (instancetype)cloneForMode:(enum NuoMeshMode)mode
+- (instancetype)cloneForMode:(MeshMode)mode
 {
     return self;
 }
@@ -408,6 +408,10 @@ const BOOL kShadowPCF = YES;
     [funcConstant setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
     [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    
+    // debug
+    MeshMode debuging = kMeshMode_ShadowOccluder;
+    [funcConstant setConstantValue:&debuging type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];

@@ -3,20 +3,12 @@
 
 #include "NuoMeshOptions.h"
 #include "NuoMeshRotation.h"
+#include "NuoUniforms.h"
 
 
 
 extern const BOOL kShadowPCSS;
 extern const BOOL kShadowPCF;
-
-
-
-enum NuoMeshMode
-{
-    kMeshMode_Normal,
-    kMeshMode_ShadowOccluder,
-    kMeshMode_ShadowPenumbraFactor
-};
 
 
 
@@ -113,7 +105,7 @@ enum NuoMeshMode
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength;
 
-- (instancetype)cloneForMode:(enum NuoMeshMode)mode;
+- (instancetype)cloneForMode:(MeshMode)mode;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader;
