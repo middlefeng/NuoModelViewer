@@ -16,6 +16,8 @@
     id<MTLTexture> _textureBump;
     BOOL _ignoreTextureAlpha;
     BOOL _physicallyReflection;
+    
+    MeshMode _meshMode;
 }
 
 
@@ -29,7 +31,34 @@
                      withIndices:indices
                       withLength:indicesLength];
     
+    _meshMode = kMeshMode_Normal;
+    
     return self;
+}
+
+
+- (instancetype)cloneForMode:(MeshMode)mode
+{
+    NuoMeshTexMatieraled* texMaterialMesh = [NuoMeshTexMatieraled new];
+    [texMaterialMesh shareResourcesFrom:self];
+    
+    texMaterialMesh->_meshMode = mode;
+    
+    [texMaterialMesh makePipelineShadowState];
+    [texMaterialMesh makePipelineState:[texMaterialMesh makePipelineStateDescriptor]];
+    [texMaterialMesh makeDepthStencilState];
+    
+    return texMaterialMesh;
+}
+
+
+- (void)shareResourcesFrom:(NuoMesh*)mesh
+{
+    NuoMeshTexMatieraled* meshTextured = (NuoMeshTexMatieraled*)mesh;
+    
+    [super shareResourcesFrom:mesh];
+    _textureBump = meshTextured->_textureBump;
+    _textureOpacity = meshTextured->_textureOpacity;
 }
 
 
@@ -92,6 +121,7 @@
     [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];
     [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&_meshMode type:MTLDataTypeInt atIndex:6];
     
     if (!_textureBump)
     {

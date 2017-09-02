@@ -36,6 +36,18 @@ static CIContext* sCIContext = nil;
 
 
 
+- (void)shareResourcesFrom:(NuoMesh*)mesh
+{
+    NuoMeshTextured* meshTextured = (NuoMeshTextured*)mesh;
+    
+    [super shareResourcesFrom:mesh];
+    _diffuseTex = meshTextured.diffuseTex;
+    _samplerState = meshTextured.samplerState;
+    _hasTextureTransparency = meshTextured.hasTextureTransparency;
+}
+
+
+
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];

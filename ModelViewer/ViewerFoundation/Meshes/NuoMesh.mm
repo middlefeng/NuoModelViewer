@@ -197,7 +197,6 @@ const BOOL kShadowPCF = YES;
 
 @implementation NuoMesh
 {
-    BOOL _debugModel;
     BOOL _hasTransparency;
     std::shared_ptr<NuoModelBase> _rawModel;
 }
@@ -210,6 +209,19 @@ const BOOL kShadowPCF = YES;
 @synthesize boundingBoxLocal = _boundingBoxLocal;
 
 
+
+- (instancetype)init
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _transformPoise = matrix_identity_float4x4;
+        _transformTranslate = matrix_identity_float4x4;
+    }
+    
+    return self;
+}
 
 
 
@@ -256,6 +268,18 @@ const BOOL kShadowPCF = YES;
 - (instancetype)cloneForMode:(MeshMode)mode
 {
     return self;
+}
+
+
+- (void)shareResourcesFrom:(NuoMesh*)mesh
+{
+    _device = mesh.device;
+    _vertexBuffer = mesh.vertexBuffer;
+    _indexBuffer = mesh.indexBuffer;
+    _transformBuffers = mesh.transformBuffers;
+    _enabled = mesh.enabled;
+    
+    [self setBoundingBoxLocal:mesh.boundingBoxLocal];
 }
 
 
@@ -404,14 +428,12 @@ const BOOL kShadowPCF = YES;
     // there is material and color, not only shadow overlay
     //
     BOOL shadowOverlay = NO;
+    int meshMode = kMeshMode_Normal;
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
     [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
-    
-    // debug
-    MeshMode debuging = kMeshMode_ShadowOccluder;
-    [funcConstant setConstantValue:&debuging type:MTLDataTypeInt atIndex:6];
+    [funcConstant setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];

@@ -12,6 +12,7 @@
 
 @implementation NuoBoardMesh
 {
+    MeshMode _meshMode;
     NuoCoord* _dimensions;
 }
 
@@ -27,9 +28,28 @@
                       withLength:indicesLength];
     
     if (self)
+    {
         _dimensions = dimensions;
+        _meshMode = kMeshMode_Normal;
+    }
     
     return self;
+}
+
+
+
+- (instancetype)cloneForMode:(MeshMode)mode
+{
+    NuoBoardMesh* boardMesh = [NuoBoardMesh new];
+    [boardMesh shareResourcesFrom:self];
+    
+    boardMesh->_meshMode = mode;
+    
+    [boardMesh makePipelineShadowState];
+    [boardMesh makePipelineState:[boardMesh makePipelineStateDescriptor]];
+    [boardMesh makeDepthStencilState];
+    
+    return boardMesh;
 }
 
 
@@ -41,16 +61,11 @@
     NSString* vertexFunc = @"vertex_project_shadow";
     NSString* fragmnFunc = @"fragment_light_shadow";
     
-    _shadowOverlayOnly = YES;
-    
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&_shadowOverlayOnly type:MTLDataTypeBool atIndex:3];
     [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
-    
-    // debug
-    MeshMode debuging = kMeshMode_ShadowPenumbraFactor;
-    [funcConstant setConstantValue:&debuging type:MTLDataTypeInt atIndex:6];
+    [funcConstant setConstantValue:&_meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];
