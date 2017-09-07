@@ -305,7 +305,7 @@
         
         NuoRenderPassTarget* notationRenderTarget = [NuoRenderPassTarget new];
         notationRenderTarget.device = self.metalLayer.device;
-        notationRenderTarget.sampleCount = 1;
+        notationRenderTarget.sampleCount = kSampleCount;
         notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         notationRenderTarget.manageTargetTexture = NO;
         notationRenderTarget.name = @"Notation";
