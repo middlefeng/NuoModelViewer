@@ -70,7 +70,9 @@
                                            withIndices:arrow->IndicesPtr() withLength:arrow->IndicesLength()];
         
         MTLRenderPipelineDescriptor* pipelineDesc = [_lightVector makePipelineStateDescriptor];
-        pipelineDesc.sampleCount = 1;
+        
+        // if no MSAA, shoud uncomment the floowing line
+        // pipelineDesc.sampleCount = 1;
         
         [_lightVector setBoundingBoxLocal:meshBounding];
         [_lightVector makePipelineState:pipelineDesc];
