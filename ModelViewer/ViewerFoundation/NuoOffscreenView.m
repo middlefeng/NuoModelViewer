@@ -99,8 +99,10 @@
 - (void)renderWithCommandQueue:(id<MTLCommandBuffer>)commandBuffer
                 withCompletion:(void (^)(id<MTLTexture>))completionBlock;
 {
+    // final pass to convert the result to RGBA
     NuoIntermediateRenderPass* finalPass = [[NuoIntermediateRenderPass alloc] initWithDevice:_device
-                                                                             withPixelFormat:_exportTarget.targetPixelFormat];
+                                                                             withPixelFormat:_exportTarget.targetPixelFormat
+                                                                             withSampleCount:1 /* no MSAA for mere conversion */];
     NSUInteger lastRender = [_renderPasses count] - 1;
     NuoRenderPass* lastScenePass = _renderPasses[lastRender];
     NuoRenderPassTarget* displayTarget = [lastScenePass renderTarget];

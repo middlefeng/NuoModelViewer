@@ -44,14 +44,14 @@
 }
 
 
-- (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
+- (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat withSampleCount:(NSUInteger)sampleCount
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"texture_project"];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_texutre"];
-    pipelineDescriptor.sampleCount = 1;
+    pipelineDescriptor.sampleCount = sampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = pixelFormat;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
