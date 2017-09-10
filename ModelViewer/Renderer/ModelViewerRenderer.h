@@ -1,8 +1,11 @@
 
 #import "ModelView.h"
+
+#import "NuoUniforms.h"
 #import "NuoRenderPipelinePass.h"
 
 
+@class NuoMesh;
 @class NuoMeshOption;
 @class NuoLua;
 @class NuoMeshCompound;
@@ -48,6 +51,12 @@
 
 - (NuoBoardMesh*)createBoard:(CGSize)size;
 - (void)selectMeshWithScreen:(CGPoint)point;
+
+// there might be other renderers share the same set of meshes/scene with the model renderer.
+// one example is the model dissect renderer. the following methods are used for the state-sharing
+//
+- (void)setSceneBuffersTo:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight;
+- (NSArray<NuoMesh*>*)cloneMeshesFor:(MeshMode)mode;
 
 
 @end

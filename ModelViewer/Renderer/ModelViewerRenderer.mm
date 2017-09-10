@@ -647,6 +647,20 @@
     memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
 }
 
+
+- (void)setSceneBuffersTo:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight
+{
+    [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:_lightCastBuffers[inFlight] offset:0 atIndex:2];
+    
+    [renderPass setFragmentBuffer:self.lightingUniformBuffers[inFlight] offset:0 atIndex:0];
+    [renderPass setFragmentBuffer:self.modelCharacterUnfiromBuffer offset:0 atIndex:1];
+    [renderPass setFragmentTexture:_shadowMapRenderer[0].renderTarget.targetTexture atIndex:0];
+    [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.targetTexture atIndex:1];
+    [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
+}
+
+
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
     MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
@@ -661,14 +675,7 @@
     if (_cubeMesh)
         [_cubeMesh drawMesh:renderPass indexBuffer:inFlight];
     
-    [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
-    [renderPass setVertexBuffer:_lightCastBuffers[inFlight] offset:0 atIndex:2];
-    
-    [renderPass setFragmentBuffer:self.lightingUniformBuffers[inFlight] offset:0 atIndex:0];
-    [renderPass setFragmentBuffer:self.modelCharacterUnfiromBuffer offset:0 atIndex:1];
-    [renderPass setFragmentTexture:_shadowMapRenderer[0].renderTarget.targetTexture atIndex:0];
-    [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.targetTexture atIndex:1];
-    [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
+    [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
     
     for (NuoMesh* mesh in _meshes)
     {
@@ -704,6 +711,20 @@
             _selectedMesh = mesh;
         }
     }
+}
+
+
+- (NSArray<NuoMesh*>*)cloneMeshesFor:(MeshMode)mode
+{
+    NSMutableArray<NuoMesh*>* cloned = [NSMutableArray new];
+    
+    for (NuoMesh* mesh in _meshes)
+    {
+        NuoMesh* newMesh = [mesh cloneForMode:kMeshMode_ShadowPenumbraFactor];
+        [cloned addObject:newMesh];
+    }
+    
+    return cloned;
 }
 
 @end

@@ -109,6 +109,9 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
             shadowPercent = shadow_coverage_common(shadowPosition[i],
                                                    shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], depthSamplr);
+            
+            if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
+                return float4(shadowPercent, 0.0f, 0.0f, 1.0f);
         }
         
         colorForLights += (diffuseTerm * lightParams.density + specularTerm) *

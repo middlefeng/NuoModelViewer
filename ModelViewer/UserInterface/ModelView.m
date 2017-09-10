@@ -14,6 +14,7 @@
 #import "BoardSettingsPanel.h"
 
 #import "ModelViewerRenderer.h"
+#import "ModelDissectRenderer.h"
 #import "NotationRenderer.h"
 
 #import "NuoLua.h"
@@ -41,6 +42,7 @@
 {
     NuoLua* _lua;
     ModelRenderer* _modelRender;
+    ModelDissectRenderer* _modelDissectRenderer;
     NotationRenderer* _notationRender;
     NSArray<NuoRenderPass*>* _renders;
     
@@ -127,6 +129,9 @@
     [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
     [_animations removeAllObjects];
     [_modelPanel setModelPartAnimations:_animations];
+    
+    NSArray<NuoMesh*>* dissectMeshes = [_modelRender cloneMeshesFor:kMeshMode_ShadowPenumbraFactor];
+    [_modelDissectRenderer setDissectMeshes:dissectMeshes];
 }
 
 
@@ -253,6 +258,8 @@
     [super commonInit];
     
     _modelRender = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
+    _modelDissectRenderer = [[ModelDissectRenderer alloc] initWithDevice:self.metalLayer.device];
+    _modelDissectRenderer.modelRenderer = _modelRender;
     _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
     _notationRender.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
@@ -314,16 +321,25 @@
     }
     else
     {
-        _renders = [[NSArray alloc] initWithObjects:_modelRender, nil];
+        _renders = [[NSArray alloc] initWithObjects:_modelRender, _modelDissectRenderer, nil];
         
         NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
         modelRenderTarget.device = self.metalLayer.device;
         modelRenderTarget.sampleCount = kSampleCount;
         modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
-        modelRenderTarget.manageTargetTexture = NO;
+        modelRenderTarget.manageTargetTexture = YES;
         modelRenderTarget.name = @"Model";
         
         [_modelRender setRenderTarget:modelRenderTarget];
+        
+        NuoRenderPassTarget* modelDissectTarget = [NuoRenderPassTarget new];
+        modelDissectTarget.device = self.metalLayer.device;
+        modelDissectTarget.sampleCount = kSampleCount;
+        modelDissectTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+        modelDissectTarget.manageTargetTexture = NO;
+        modelDissectTarget.name = @"Model-Dissect";
+        
+        [_modelDissectRenderer setRenderTarget:modelDissectTarget];
     }
 
     [_lightPanel setHidden:!_modelPanel.showLightSettings];
