@@ -11,6 +11,12 @@ struct Vertex
 };
 
 
+struct TextureMixFragment
+{
+    float mixProportion;
+};
+
+
 
 struct ProjectedVertex
 {
@@ -35,5 +41,21 @@ fragment float4 fragment_texutre(ProjectedVertex vert [[stage_in]],
                                  sampler samplr [[sampler(0)]])
 {
     float4 color = texture.sample(samplr, vert.texCoord);
+    return color;
+}
+
+
+fragment float4 fragment_texutre_mix(ProjectedVertex vert [[stage_in]],
+                                     texture2d<float> texture1 [[texture(0)]],
+                                     texture2d<float> texture2 [[texture(1)]],
+                                     constant TextureMixFragment& mixFragment [[buffer(0)]],
+                                     sampler samplr [[sampler(0)]])
+{
+    float4 color;
+    if (vert.texCoord.x > mixFragment.mixProportion)
+        color = texture1.sample(samplr, vert.texCoord);
+    else
+        color = texture2.sample(samplr, vert.texCoord);
+        
     return color;
 }

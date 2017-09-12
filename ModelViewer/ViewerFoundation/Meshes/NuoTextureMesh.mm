@@ -9,10 +9,17 @@
 #import "NuoTextureMesh.h"
 #import "NuoTextureBase.h"
 
+struct TextureMixFragment
+{
+    float mixProportion;
+};
+
 
 @implementation NuoTextureMesh
 {
     __weak id<MTLSamplerState> _samplerState;
+    
+    NSArray<id<MTLBuffer>>* _textureMixBuffer;
 }
 
 
@@ -38,6 +45,11 @@
     
     if (self)
     {
+        id<MTLBuffer> buffers[kInFlightBufferCount];
+        for (size_t i = 0; i < kInFlightBufferCount; ++i)
+            buffers[i] = [device newBufferWithLength:sizeof(TextureMixFragment)
+                                            options:MTLResourceOptionCPUCacheModeDefault];
+        _textureMixBuffer = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
     }
     
     return self;
@@ -50,7 +62,8 @@
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"texture_project"];
-    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_texutre"];
+    pipelineDescriptor.fragmentFunction = _auxiliaryTexture ? [library newFunctionWithName:@"fragment_texutre_mix"] :
+                                                              [library newFunctionWithName:@"fragment_texutre"];
     pipelineDescriptor.sampleCount = sampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = pixelFormat;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
@@ -80,14 +93,35 @@
 }
 
 
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
+{
+    [super updateUniform:bufferIndex withTransform:transform];
+    
+    if (_auxiliaryTexture)
+    {
+        TextureMixFragment mixFragment;
+        mixFragment.mixProportion = _auxiliaryProportion;
+        memcpy(_textureMixBuffer[bufferIndex].contents, &mixFragment, sizeof(TextureMixFragment));
+    }
+}
+
+
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
+    [self updateUniform:index withTransform:matrix_identity_float4x4];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
     [renderPass setFragmentTexture:_modelTexture atIndex:0];
+    if (_auxiliaryTexture)
+    {
+        [renderPass setFragmentTexture:_auxiliaryTexture atIndex:1];
+        [renderPass setFragmentBuffer:_textureMixBuffer[index] offset:0 atIndex:0];
+    }
+    
     [renderPass setFragmentSamplerState:_samplerState atIndex:0];
     
     [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle

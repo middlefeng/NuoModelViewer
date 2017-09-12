@@ -14,6 +14,13 @@
 
 @property (nonatomic, weak) id<MTLTexture> modelTexture;
 
+/**
+ *  in addition to showing a single texture, the mesh can take a second texture and display
+ *  both textures in a split view
+ */
+@property (nonatomic, weak) id<MTLTexture> auxiliaryTexture;
+@property (nonatomic, assign) float auxiliaryProportion;
+
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
