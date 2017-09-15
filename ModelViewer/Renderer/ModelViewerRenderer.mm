@@ -720,7 +720,7 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        NuoMesh* newMesh = [mesh cloneForMode:kMeshMode_ShadowPenumbraFactor];
+        NuoMesh* newMesh = [mesh cloneForMode:mode];
         [cloned addObject:newMesh];
     }
     

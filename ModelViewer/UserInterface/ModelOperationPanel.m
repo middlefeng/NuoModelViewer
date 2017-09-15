@@ -29,6 +29,7 @@
 @property (nonatomic, strong) NSSlider* ambientDensitySlider;
 @property (nonatomic, strong) NSButton* lightSettings;
 @property (nonatomic, strong) NSButton* checkBrdfMode;
+@property (nonatomic, strong) NSPopUpButton* checkDissectMode;
 
 @property (nonatomic, strong) NSSlider* animationSlider;
 
@@ -233,7 +234,54 @@
     [scrollDocumentView addSubview:brdfMode];
     _checkBrdfMode = brdfMode;
     
-    rowCoord += 1.8;
+    rowCoord += 0.5;
+    
+    NSImageView* imageView = [NSImageView new];
+    imageView.imageScaling = NSImageScaleProportionallyUpOrDown;
+    imageView.image = [NSImage imageNamed:@"ArrowDown"];
+    imageView.hidden = NO;
+    NSRect imageViewFrame = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    imageViewFrame.size.height = 6;
+    imageView.frame = imageViewFrame;
+    imageView.alphaValue = 0.6;
+    [scrollDocumentView addSubview:imageView];
+    
+    rowCoord += 1.5;
+    
+    static const float kLabelHead = 105;
+    
+    NSRect dissectModelFrame = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    NSRect dissectModelLabelFrame = dissectModelFrame;
+    dissectModelFrame.size.height = 20.0;
+    dissectModelFrame.origin.x += kLabelHead;
+    dissectModelFrame.size.width -= kLabelHead;
+    dissectModelLabelFrame.size.width = 90;
+    dissectModelLabelFrame.origin.y += 2;
+    
+    NSPopUpButton* dissectMode = [NSPopUpButton new];
+    NSTextField* dissectModelLabel = [NSTextField new];
+    [dissectModelLabel setEditable:NO];
+    [dissectModelLabel setSelectable:NO];
+    [dissectModelLabel setBordered:NO];
+    [dissectModelLabel setAlignment:NSTextAlignmentLeft];
+    [dissectModelLabel setStringValue:@"Render Mode:"];
+    [dissectModelLabel setFrame:dissectModelLabelFrame];
+    [scrollDocumentView addSubview:dissectModelLabel];
+    
+    [dissectMode setTitle:@"Dissect View"];
+    [dissectMode setFrame:dissectModelFrame];
+    [dissectMode setTarget:self];
+    [dissectMode setFont:[NSFont fontWithName:dissectMode.font.fontName size:11]];
+    [dissectMode setControlSize:NSControlSizeSmall];
+    
+    [dissectMode addItemWithTitle:@"Model"];
+    [dissectMode addItemWithTitle:@"Occluder"];
+    [dissectMode addItemWithTitle:@"Penumbra"];
+    [dissectMode setAction:@selector(dissectModeChanged:)];
+    [scrollDocumentView addSubview:dissectMode];
+    _checkDissectMode = dissectMode;
+    
+    rowCoord += 1.5;
     
     // animation list/slider
     //
@@ -392,6 +440,26 @@
     _meshOptions.physicallyReflection = [_checkBrdfMode state] == NSOnState;
     
     [_optionUpdateDelegate modelUpdate:self];
+}
+
+
+- (void)dissectModeChanged:(id)sender
+{
+    NSInteger index = [_checkDissectMode indexOfSelectedItem];
+    switch(index)
+    {
+        case 0:
+            _meshMode = kMeshMode_Normal;
+            break;
+        case 1:
+            _meshMode = kMeshMode_ShadowOccluder;
+            break;
+        case 2:
+            _meshMode = kMeshMode_ShadowPenumbraFactor;
+            break;
+    }
+    
+    [_optionUpdateDelegate modelOptionUpdate:self];
 }
 
 

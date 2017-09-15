@@ -53,6 +53,7 @@
     LightOperationPanel* _lightPanel;
     
     BOOL _trackingLighting;
+    BOOL _trackingSplitView;
     BOOL _mouseMoved;
     
     NSString* _documentName;
@@ -72,7 +73,7 @@
 - (NSRect)operationPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize panelSize = NSMakeSize(225, 338);
+    NSSize panelSize = NSMakeSize(225, 346);
     NSSize panelMargin = NSMakeSize(15, 25);
     NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
                                       viewRect.size.height - panelMargin.height - panelSize.height);
@@ -130,8 +131,15 @@
     [_animations removeAllObjects];
     [_modelPanel setModelPartAnimations:_animations];
     
-    NSArray<NuoMesh*>* dissectMeshes = [_modelRender cloneMeshesFor:kMeshMode_ShadowPenumbraFactor];
-    [_modelDissectRenderer setDissectMeshes:dissectMeshes];
+    if (_modelPanel.meshMode == kMeshMode_Normal)
+    {
+        [_modelDissectRenderer setDissectMeshes:nil];
+    }
+    else
+    {
+        NSArray<NuoMesh*>* dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
+        [_modelDissectRenderer setDissectMeshes:dissectMeshes];
+    }
 }
 
 
@@ -161,6 +169,11 @@
         
         for (NuoMeshAnimation* animation in _animations)
             [animation setProgress:panel.animationProgress];
+        
+        if (panel.meshMode == kMeshMode_Normal)
+            [self.window setAcceptsMouseMovedEvents:NO];
+        else
+            [self.window setAcceptsMouseMovedEvents:YES];
     }
     
     [_modelComponentPanels updatePanels];
@@ -260,6 +273,7 @@
     _modelRender = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
     _modelDissectRenderer = [[ModelDissectRenderer alloc] initWithDevice:self.metalLayer.device];
     _modelDissectRenderer.modelRenderer = _modelRender;
+    _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
     _notationRender.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
@@ -299,7 +313,24 @@
 {
     if (_modelPanel.showLightSettings)
     {
-        _renders = [[NSArray alloc] initWithObjects:_modelRender, _notationRender, nil];
+        if (_modelPanel.meshMode == kMeshMode_Normal)
+        {
+            _renders = [[NSArray alloc] initWithObjects:_modelRender, _notationRender, nil];
+        }
+        else
+        {
+            _renders = [[NSArray alloc] initWithObjects:_modelRender, _modelDissectRenderer, _notationRender, nil];
+            _modelDissectRenderer.dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
+            
+            NuoRenderPassTarget* modelDissectTarget = [NuoRenderPassTarget new];
+            modelDissectTarget.device = self.metalLayer.device;
+            modelDissectTarget.sampleCount = kSampleCount;
+            modelDissectTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+            modelDissectTarget.manageTargetTexture = YES;
+            modelDissectTarget.name = @"Model-Dissect";
+            
+            [_modelDissectRenderer setRenderTarget:modelDissectTarget];
+        }
         
         NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
         modelRenderTarget.device = self.metalLayer.device;
@@ -321,25 +352,33 @@
     }
     else
     {
-        _renders = [[NSArray alloc] initWithObjects:_modelRender, _modelDissectRenderer, nil];
+        if (_modelPanel.meshMode == kMeshMode_Normal)
+        {
+            _renders = [[NSArray alloc] initWithObjects:_modelRender, nil];
+        }
+        else
+        {
+            _renders = [[NSArray alloc] initWithObjects:_modelRender, _modelDissectRenderer, nil];
+            _modelDissectRenderer.dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
+            
+            NuoRenderPassTarget* modelDissectTarget = [NuoRenderPassTarget new];
+            modelDissectTarget.device = self.metalLayer.device;
+            modelDissectTarget.sampleCount = kSampleCount;
+            modelDissectTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+            modelDissectTarget.manageTargetTexture = NO;
+            modelDissectTarget.name = @"Model-Dissect";
+            
+            [_modelDissectRenderer setRenderTarget:modelDissectTarget];
+        }
         
         NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
         modelRenderTarget.device = self.metalLayer.device;
         modelRenderTarget.sampleCount = kSampleCount;
         modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
-        modelRenderTarget.manageTargetTexture = YES;
+        modelRenderTarget.manageTargetTexture = (_modelPanel.meshMode != kMeshMode_Normal);
         modelRenderTarget.name = @"Model";
         
         [_modelRender setRenderTarget:modelRenderTarget];
-        
-        NuoRenderPassTarget* modelDissectTarget = [NuoRenderPassTarget new];
-        modelDissectTarget.device = self.metalLayer.device;
-        modelDissectTarget.sampleCount = kSampleCount;
-        modelDissectTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
-        modelDissectTarget.manageTargetTexture = NO;
-        modelDissectTarget.name = @"Model-Dissect";
-        
-        [_modelDissectRenderer setRenderTarget:modelDissectTarget];
     }
 
     [_lightPanel setHidden:!_modelPanel.showLightSettings];
@@ -349,9 +388,44 @@
 }
 
 
+
+- (BOOL)isDissectSplitViewHandler:(NSEvent*)event
+{
+    if (_modelPanel.meshMode == kMeshMode_Normal)
+        return NO;
+    
+    NSPoint location = event.locationInWindow;
+    location = [self convertPoint:location fromView:nil];
+    
+    CGFloat mousePos = location.x / [self frame].size.width;
+    CGFloat splitViewPostion = _modelDissectRenderer.splitViewProportion;
+    
+    return (fabs(splitViewPostion - mousePos) < 0.01);
+}
+
+
+- (void)mouseMoved:(NSEvent *)event
+{
+    if ([self isDissectSplitViewHandler:event])
+    {
+        NSCursor* cursor = [NSCursor resizeLeftRightCursor];
+        [cursor set];
+    }
+    else
+    {
+        NSCursor* cursor = [NSCursor arrowCursor];
+        [cursor set];
+    }
+}
+
+
 - (void)mouseDown:(NSEvent *)event
 {
-    if (_modelPanel.showLightSettings)
+    if ([self isDissectSplitViewHandler:event])
+    {
+        _trackingSplitView = YES;
+    }
+    else if (_modelPanel.showLightSettings)
     {
         NSPoint location = event.locationInWindow;
         location = [self convertPoint:location fromView:nil];
@@ -379,6 +453,7 @@
 - (void)mouseUp:(NSEvent *)event
 {
     _trackingLighting = NO;
+    _trackingSplitView = NO;
     [self render];
     
     if (!_mouseMoved)
@@ -395,7 +470,15 @@
     float deltaX = -0.01 * M_PI * theEvent.deltaY;
     float deltaY = -0.01 * M_PI * theEvent.deltaX;
     
-    if (_trackingLighting)
+    if (_trackingSplitView)
+    {
+        NSPoint location = theEvent.locationInWindow;
+        location = [self convertPoint:location fromView:nil];
+        
+        CGFloat mousePos = location.x / [self frame].size.width;
+        _modelDissectRenderer.splitViewProportion = mousePos;
+    }
+    else if (_trackingLighting)
     {
         NuoLightSource* lightSource = _notationRender.selectedLightSource;
         [_notationRender setRotateX:lightSource.lightingRotationX + deltaX];

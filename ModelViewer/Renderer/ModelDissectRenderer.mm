@@ -63,6 +63,12 @@
 }
 
 
+- (float)splitViewProportion
+{
+    return _textureMesh.auxiliaryProportion;
+}
+
+
 
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                withInFlightIndex:(unsigned int)inFlight
