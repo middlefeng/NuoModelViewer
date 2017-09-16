@@ -35,7 +35,7 @@
 
 @property (nonatomic, assign) BOOL showLightSettings;
 
-@property (nonatomic, assign) MeshMode meshMode;
+@property (nonatomic, assign) NuoMeshModeShaderParameter meshMode;
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 

@@ -53,7 +53,7 @@ vertex PositionSimple vertex_shadow_tex_materialed(device Vertex *vertices [[buf
 
 vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[buffer(0)]],
                                                      constant NuoUniforms &uniforms [[buffer(1)]],
-                                                     constant LightVertexUniforms &lightCast [[buffer(2)]],
+                                                     constant NuoLightVertexUniforms &lightCast [[buffer(2)]],
                                                      constant NuoMeshUniforms &meshUniforms [[buffer(3)]],
                                                      uint vid [[vertex_id]])
 {
@@ -85,7 +85,7 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert);
 
 
 fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
-                                              constant LightUniform &lighting [[buffer(0)]],
+                                              constant NuoLightUniforms &lighting [[buffer(0)]],
                                               depth2d<float> shadowMap0 [[texture(0)]],
                                               depth2d<float> shadowMap1 [[texture(1)]],
                                               texture2d<float> diffuseTexture [[texture(2)]],

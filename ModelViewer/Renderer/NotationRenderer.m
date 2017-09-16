@@ -71,7 +71,7 @@
         
         // the direction of light used to render the "light vector"
         //
-        LightUniform lightUniform; memset(&lightUniform, 0, sizeof(LightUniform));
+        NuoLightUniforms lightUniform; memset(&lightUniform, 0, sizeof(NuoLightUniforms));
         
         lightUniform.lightParams[0].direction.x = 0.13;
         lightUniform.lightParams[0].direction.y = 0.72;
@@ -79,10 +79,10 @@
         lightUniform.lightParams[0].density = 1.0f;
         lightUniform.lightParams[0].spacular = 0.6f;
         
-        _lightBuffer = [self.device newBufferWithLength:sizeof(LightUniform)
+        _lightBuffer = [self.device newBufferWithLength:sizeof(NuoLightUniforms)
                                                 options:MTLResourceOptionCPUCacheModeDefault];
         
-        memcpy([_lightBuffer contents], &lightUniform, sizeof(LightUniform));
+        memcpy([_lightBuffer contents], &lightUniform, sizeof(NuoLightUniforms));
         
         id<MTLBuffer> transformBuffer[kInFlightBufferCount];
         for (unsigned int i = 0; i < kInFlightBufferCount; ++i)

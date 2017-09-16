@@ -108,7 +108,7 @@ extern const BOOL kShadowPCF;
 // get a clone of the current mesh for debugging purpose.
 // the cloned version shall share most of GPU resources.
 //
-- (instancetype)cloneForMode:(MeshMode)mode;
+- (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode;
 
 // used to implement the "cloneForMode" through the class hierachy
 //

@@ -12,7 +12,7 @@
 
 @implementation NuoBoardMesh
 {
-    MeshMode _meshMode;
+    NuoMeshModeShaderParameter _meshMode;
     NuoCoord* _dimensions;
 }
 
@@ -38,7 +38,7 @@
 
 
 
-- (instancetype)cloneForMode:(MeshMode)mode
+- (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode
 {
     NuoBoardMesh* boardMesh = [NuoBoardMesh new];
     [boardMesh shareResourcesFrom:self];

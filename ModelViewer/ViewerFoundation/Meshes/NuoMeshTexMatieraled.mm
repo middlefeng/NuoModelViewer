@@ -17,7 +17,7 @@
     BOOL _ignoreTextureAlpha;
     BOOL _physicallyReflection;
     
-    MeshMode _meshMode;
+    NuoMeshModeShaderParameter _meshMode;
 }
 
 
@@ -37,7 +37,7 @@
 }
 
 
-- (instancetype)cloneForMode:(MeshMode)mode
+- (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode
 {
     NuoMeshTexMatieraled* texMaterialMesh = [NuoMeshTexMatieraled new];
     [texMaterialMesh shareResourcesFrom:self];
@@ -248,7 +248,7 @@
 {
     BOOL _hasTransparent;
     BOOL _physicallyReflection;
-    MeshMode _meshMode;
+    NuoMeshModeShaderParameter _meshMode;
 }
 
 
@@ -271,7 +271,7 @@
 
 
 
-- (instancetype)cloneForMode:(MeshMode)mode
+- (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode
 {
     NuoMeshMatieraled* materialMesh = [NuoMeshMatieraled new];
     [materialMesh shareResourcesFrom:self];

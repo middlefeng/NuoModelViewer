@@ -56,7 +56,7 @@
 // one example is the model dissect renderer. the following methods are used for the state-sharing
 //
 - (void)setSceneBuffersTo:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight;
-- (NSArray<NuoMesh*>*)cloneMeshesFor:(MeshMode)mode;
+- (NSArray<NuoMesh*>*)cloneMeshesFor:(NuoMeshModeShaderParameter)mode;
 
 
 @end

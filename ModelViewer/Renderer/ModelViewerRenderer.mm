@@ -501,9 +501,9 @@
     {
         modelBuffers[i] = [self.device newBufferWithLength:sizeof(NuoUniforms)
                                                    options:MTLResourceOptionCPUCacheModeDefault];
-        lightingBuffers[i] = [self.device newBufferWithLength:sizeof(LightUniform)
+        lightingBuffers[i] = [self.device newBufferWithLength:sizeof(NuoLightUniforms)
                                                       options:MTLResourceOptionCPUCacheModeDefault];
-        lightCastModelBuffers[i] = [self.device newBufferWithLength:sizeof(LightVertexUniforms)
+        lightCastModelBuffers[i] = [self.device newBufferWithLength:sizeof(NuoLightVertexUniforms)
                                                         options:MTLResourceOptionCPUCacheModeDefault];
         
     }
@@ -512,11 +512,11 @@
     _lightingUniformBuffers = [[NSArray alloc] initWithObjects:lightingBuffers count:kInFlightBufferCount];
     _lightCastBuffers = [[NSArray alloc] initWithObjects:lightCastModelBuffers count:kInFlightBufferCount];
     
-    ModelCharacterUniforms modelCharacter;
+    NuoModelCharacterUniforms modelCharacter;
     modelCharacter.opacity = 1.0f;
-    _modelCharacterUnfiromBuffer = [self.device newBufferWithLength:sizeof(ModelCharacterUniforms)
+    _modelCharacterUnfiromBuffer = [self.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
                                                             options:MTLResourceOptionCPUCacheModeDefault];
-    memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(ModelCharacterUniforms));
+    memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(NuoModelCharacterUniforms));
     
     // create sampler state for shadow map sampling
     MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
@@ -590,7 +590,7 @@
 
     memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
     
-    LightUniform lighting;
+    NuoLightUniforms lighting;
     lighting.ambientDensity = _ambientDensity;
     for (unsigned int i = 0; i < 4; ++i)
     {
@@ -610,7 +610,7 @@
         }
     }
     
-    memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(LightUniform));
+    memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(NuoLightUniforms));
     
     [_selectedMesh setTransformTranslate:transMatrix];
     
@@ -641,7 +641,7 @@
     
     // store the light view point projection for shadow map detection in the scene
     //
-    LightVertexUniforms lightUniforms;
+    NuoLightVertexUniforms lightUniforms;
     lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix;
     lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix;
     memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
@@ -714,7 +714,7 @@
 }
 
 
-- (NSArray<NuoMesh*>*)cloneMeshesFor:(MeshMode)mode
+- (NSArray<NuoMesh*>*)cloneMeshesFor:(NuoMeshModeShaderParameter)mode
 {
     NSMutableArray<NuoMesh*>* cloned = [NSMutableArray new];
     

@@ -27,7 +27,7 @@
 }
 
 
-- (instancetype)cloneForMode:(MeshMode)mode
+- (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode
 {
     NuoMeshCompound* meshCompound = [NuoMeshCompound new];
     NSMutableArray<NuoMesh*>* newMeshes = [NSMutableArray new];

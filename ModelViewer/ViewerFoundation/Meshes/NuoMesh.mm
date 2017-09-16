@@ -265,7 +265,7 @@ const BOOL kShadowPCF = YES;
 
 
 
-- (instancetype)cloneForMode:(MeshMode)mode
+- (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode
 {
     return self;
 }

@@ -77,7 +77,7 @@ constant int  kMeshMode                         [[ function_constant(6) ]];
 
 metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                                    metal::float3 normal,
-                                                   constant LightUniform &lighting,
+                                                   constant NuoLightUniforms &lighting,
                                                    metal::float4 diffuseTexel,
                                                    metal::depth2d<float> shadowMap[2],
                                                    metal::sampler samplr);
@@ -90,12 +90,12 @@ metal::float4 diffuse_common(metal::float4 diffuseTexel, float extraOpacity);
 
 
 metal::float3 specular_common(metal::float3 materialSpecularColor, float materialSecularPower,
-                              LightParameters lightParams,
+                              NuoLightParameterUniformField lightParams,
                               metal::float3 normal, metal::float3 halfway, float dotNL);
 
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
-                             ShadowParameters shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
+                             NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
                              metal::depth2d<float> shadowMap, metal::sampler samplr);
 
 metal::float2 rand(metal::float2 co);

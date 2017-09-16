@@ -94,7 +94,7 @@
     id<MTLBuffer> characters[kInFlightBufferCount];
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
-        id<MTLBuffer> characterUniformBuffers = [self.device newBufferWithLength:sizeof(ModelCharacterUniforms)
+        id<MTLBuffer> characterUniformBuffers = [self.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
                                                                          options:MTLResourceOptionCPUCacheModeDefault];
         characters[i] = characterUniformBuffers;
     }
@@ -119,7 +119,7 @@
     const matrix_float4x4 modelMatrix = matrix_rotation_append(modelCenteringMatrix, desc.lightingRotationX, desc.lightingRotationY);
     [_lightVector updateUniform:inFlight withTransform:modelMatrix];
     
-    ModelCharacterUniforms characters;
+    NuoModelCharacterUniforms characters;
     characters.opacity = _selected ? 1.0f : 0.1f;
     
     memcpy([self.characterUniformBuffers[inFlight] contents], &characters, sizeof(characters));

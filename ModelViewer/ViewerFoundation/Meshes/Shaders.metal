@@ -64,8 +64,8 @@ vertex ProjectedVertex vertex_project(device Vertex *vertices [[buffer(0)]],
 
 
 fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
-                               constant LightUniform &lightUniform [[buffer(0)]],
-                               constant ModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
+                               constant NuoLightUniforms &lightUniform [[buffer(0)]],
+                               constant NuoModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
                                sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
@@ -74,7 +74,7 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
     
     for (unsigned i = 0; i < 4; ++i)
     {
-        const LightParameters lightParams = lightUniform.lightParams[i];
+        const NuoLightParameterUniformField lightParams = lightUniform.lightParams[i];
         
         float diffuseIntensity = saturate(dot(normal, normalize(lightParams.direction.xyz)));
         float3 diffuseTerm = material.diffuseColor * diffuseIntensity;
@@ -102,7 +102,7 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
 
 vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)]],
                                              constant NuoUniforms &uniforms [[buffer(1)]],
-                                             constant LightVertexUniforms &lightCast [[buffer(2)]],
+                                             constant NuoLightVertexUniforms &lightCast [[buffer(2)]],
                                              constant NuoMeshUniforms &meshUniform [[buffer(3)]],
                                              uint vid [[vertex_id]])
 {
@@ -115,8 +115,8 @@ vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)
 
 
 fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
-                                      constant LightUniform &lightUniform [[buffer(0)]],
-                                      constant ModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
+                                      constant NuoLightUniforms &lightUniform [[buffer(0)]],
+                                      constant NuoModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
                                       depth2d<float> shadowMap0 [[texture(0)]],
                                       depth2d<float> shadowMap1 [[texture(1)]],
                                       sampler samplr [[sampler(0)]])
@@ -133,13 +133,13 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     
     for (unsigned i = 0; i < 4; ++i)
     {
-        const LightParameters lightParams = lightUniform.lightParams[i];
+        const NuoLightParameterUniformField lightParams = lightUniform.lightParams[i];
         
         float diffuseIntensity = saturate(dot(normal, normalize(lightParams.direction.xyz)));
         float shadowPercent = 0.0;
         if (i < 2)
         {
-            const ShadowParameters shadowParams = lightUniform.shadowParams[i];
+            const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(shadowPosition[i],
                                                    shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], samplr);
@@ -180,7 +180,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
 
 float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                             float3 normal,
-                                            constant LightUniform &lightingUniform,
+                                            constant NuoLightUniforms &lightingUniform,
                                             float4 diffuseTexel,
                                             depth2d<float> shadowMap[2],
                                             sampler samplr)
@@ -197,7 +197,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
     
     for (unsigned i = 0; i < 4; ++i)
     {
-        const LightParameters lightParams = lightingUniform.lightParams[i];
+        const NuoLightParameterUniformField lightParams = lightingUniform.lightParams[i];
         
         float3 lightVector = normalize(lightParams.direction.xyz);
         float diffuseIntensity = saturate(dot(normal, lightVector));
@@ -217,7 +217,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         float shadowPercent = 0.0;
         if (i < 2)
         {
-            const ShadowParameters shadowParams = lightingUniform.shadowParams[i];
+            const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(vert.shadowPosition[i],
                                                    shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], samplr);
@@ -289,7 +289,7 @@ float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
 
 
 float3 specular_common(float3 materialSpecularColor, float materialSpecularPower,
-                       LightParameters lightParams,
+                       NuoLightParameterUniformField lightParams,
                        float3 normal, float3 halfway, float dotNL)
 {
     float dotNHPower = pow(saturate(dot(normal, halfway)), materialSpecularPower);
@@ -373,7 +373,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
 
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
-                             ShadowParameters shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
+                             NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
                              metal::depth2d<float> shadowMap, metal::sampler samplr)
 {
     float shadowMapBias = 0.002;
