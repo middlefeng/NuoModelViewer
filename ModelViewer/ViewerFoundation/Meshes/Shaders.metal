@@ -318,7 +318,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
     int blockerSampleCount = 0;
     int blockerSampleSkipped = 0;
     
-    const float sampleEnlargeFactor = 20.0;
+    const float sampleEnlargeFactor = 5.0;
     
     const float2 searchSampleSize = texelSize * sampleEnlargeFactor;
     const float2 searchRegion = shadowMapSampleRadius * 2 * searchSampleSize;
@@ -333,7 +333,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
         for (int j = 0; j < searchDiameter; ++j)
         {
             float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch));
-            if (shadowDepth < modelDepth - shadowMapBias * length(shadowCoord - float2(xCurrentSearch, yCurrentSearch)) / sampleDiameter * 0.25)
+            if (shadowDepth < modelDepth - shadowMapBias * length(shadowCoord - float2(xCurrentSearch, yCurrentSearch)) / sampleDiameter)
             {
                 blockerSampleCount += 1;
                 blocker += shadowDepth;
@@ -366,7 +366,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
     
     // in order to alliveate alias, always present a bit softness
     //
-    return max(0.04, penumbraFactor);
+    return max(0.02, penumbraFactor);
 }
 
 
@@ -436,15 +436,14 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                 if (kShadowPCSS)
                 {
                     shadowCoverage += shadowMap.sample_compare(samplr, current,
-                                                               modelDepth -
-                                                               /* PCSS effect compensation */
-                                                               shadowMapBias * length(current - shadowCoord) / sampleDiameter * (penumbraFactor * 4.0));
+                                                               modelDepth + shadowMapBias -
+                                                               shadowMapBias * length(current - shadowCoord) / length(kSampleSizeBase));
                 }
                 else
                 {
                     shadowCoverage += shadowMap.sample_compare(samplr, current,
                                                                modelDepth -
-                                                               shadowMapBias * length(current - shadowCoord) / sampleDiameter);
+                                                               shadowMapBias * length(current - shadowCoord) / length(kSampleSizeBase));
                 }
                 
                 yCurrent += sampleSize.y;
