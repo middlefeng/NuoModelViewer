@@ -67,7 +67,10 @@ A simple Wavefront OBJ viewer.
 * Shadow
   * <del>Shadow to model</del>
   * <del>Shadow to ground.</del>
-  * Better soft shadow.
+  * PCSS.
+    * <del>Basic PCSS.</del>
+    * Adjustable occluder search range.
+    * Move adjustable bias.
   * Transparency (strength) of shadow overlay.
 * <del>Per light-source, per-surface shadow properties (bias, soft edge).</del>
 * <del>Cull mode.</del>
@@ -83,6 +86,7 @@ A simple Wavefront OBJ viewer.
 * Reflection.
 * <del>BRDF mode.</del>
 * Model visualization
+  * <del>PCSS steps visualization.<del>
   * Triangle mesh
   * Normal/tangent visualization
   
