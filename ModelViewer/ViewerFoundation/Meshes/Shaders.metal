@@ -362,7 +362,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
     penumbraFactor = (modelDepth - blocker) / blocker;
     
     if (kMeshMode == kMeshMode_ShadowOccluder)
-        return blocker;
+        return (modelDepth - blocker) * 10.0;
     
     // in order to alliveate alias, always present a bit softness
     //
