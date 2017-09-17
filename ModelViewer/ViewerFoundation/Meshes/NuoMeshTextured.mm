@@ -47,6 +47,11 @@ static CIContext* sCIContext = nil;
 }
 
 
+- (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode
+{
+    return self;
+}
+
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
@@ -90,8 +95,10 @@ static CIContext* sCIContext = nil;
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
+    NuoMeshModeShaderParameter meshMode = kMeshMode_Normal;
     [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_textured"];
