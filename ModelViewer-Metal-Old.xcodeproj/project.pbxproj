@@ -65,6 +65,7 @@
 		988442461D80853700EE2C4C /* NuoModelMaterialedBasic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 988442441D80853700EE2C4C /* NuoModelMaterialedBasic.cpp */; };
 		9884424B1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */; };
 		988B676D1E43F2BD00EA1453 /* NuoMeshAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 988B676C1E43F2BD00EA1453 /* NuoMeshAnimation.m */; };
+		988D79C01F708327002B5CD5 /* ModelDissectRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 988D79BF1F708327002B5CD5 /* ModelDissectRenderer.mm */; };
 		98CA11B81DD2B00900440C53 /* NotationRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 98CA11B71DD2B00900440C53 /* NotationRenderer.m */; };
 		98CD06BA1DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal in Sources */ = {isa = PBXBuildFile; fileRef = 98CD06B91DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal */; };
 		98E05A601E6A17A600D4068F /* NuoCubeMesh.m in Sources */ = {isa = PBXBuildFile; fileRef = 98E05A5F1E6A17A600D4068F /* NuoCubeMesh.m */; };
@@ -241,6 +242,8 @@
 		9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoMeshTexMatieraled.mm; sourceTree = "<group>"; };
 		988B676B1E43F2BD00EA1453 /* NuoMeshAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoMeshAnimation.h; sourceTree = "<group>"; };
 		988B676C1E43F2BD00EA1453 /* NuoMeshAnimation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoMeshAnimation.m; sourceTree = "<group>"; };
+		988D79BE1F708327002B5CD5 /* ModelDissectRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelDissectRenderer.h; sourceTree = "<group>"; };
+		988D79BF1F708327002B5CD5 /* ModelDissectRenderer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ModelDissectRenderer.mm; sourceTree = "<group>"; };
 		98CA11B61DD2B00900440C53 /* NotationRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotationRenderer.h; sourceTree = "<group>"; };
 		98CA11B71DD2B00900440C53 /* NotationRenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NotationRenderer.m; sourceTree = "<group>"; };
 		98CD06B91DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ShadersTexturedMaterialedBump.metal; sourceTree = "<group>"; };
@@ -401,6 +404,8 @@
 				98CA11B71DD2B00900440C53 /* NotationRenderer.m */,
 				2CDFB21C1DD99E2100C67FA3 /* NotationLight.h */,
 				2CDFB21D1DD99E2100C67FA3 /* NotationLight.mm */,
+				988D79BE1F708327002B5CD5 /* ModelDissectRenderer.h */,
+				988D79BF1F708327002B5CD5 /* ModelDissectRenderer.mm */,
 			);
 			path = Renderer;
 			sourceTree = "<group>";
@@ -520,7 +525,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 2C9D9AA01D658F0800283E46 /* Build configuration list for PBXProject "ModelViewer" */;
+			buildConfigurationList = 2C9D9AA01D658F0800283E46 /* Build configuration list for PBXProject "ModelViewer-Metal-Old" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -619,6 +624,7 @@
 				2C4042BE1E065B2700AAC06E /* NuoLua.m in Sources */,
 				2CDCDAF31DC185A800ECFE39 /* NuoModelArrow.cpp in Sources */,
 				2C235FD01DD6CBD700E68295 /* ShadersTexturedMaterialed.metal in Sources */,
+				988D79C01F708327002B5CD5 /* ModelDissectRenderer.mm in Sources */,
 				2C156CBA1EE845A8000C52D4 /* NuoBoardMesh.mm in Sources */,
 				2C5B92BD1D7160EC00722936 /* NuoModelLoader.mm in Sources */,
 				2C5DDACC1D6590DB00A9DC9A /* NuoMesh.mm in Sources */,
@@ -816,7 +822,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2C9D9AA01D658F0800283E46 /* Build configuration list for PBXProject "ModelViewer" */ = {
+		2C9D9AA01D658F0800283E46 /* Build configuration list for PBXProject "ModelViewer-Metal-Old" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2C9D9AB41D658F0800283E46 /* Debug */,
