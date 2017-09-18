@@ -2,8 +2,8 @@ return
 {
     canvas = 
     {
-        width = 1005.000000,
-        height = 700.000000,
+        width = 1440.000000,
+        height = 900.000000,
     },
 
     rotationMatrix = 
@@ -63,7 +63,7 @@ return
         },
         [3] = 
         {
-            [0] = 0.016931,
+            [0] = -0.157482,
             [1] = 0.141606,
             [2] = -11.374726,
             [3] = 1.000000,
@@ -106,7 +106,7 @@ return
                 },
                 [3] = 
                 {
-                    [0] = 0.019356,
+                    [0] = -0.196927,
                     [1] = -0.533124,
                     [2] = -13.295953,
                     [3] = 1.000000,
@@ -151,7 +151,7 @@ return
 
     view = 
     {
-        FOV = 0.282892,
+        FOV = 0.263681,
     },
 
     models = 
@@ -215,10 +215,10 @@ return
             rotateX = 0.376991,
             rotateY = -0.439823,
             density = 1.720371,
-            spacular = 0.223541,
+            spacular = 1.039652,
             enableShadow = true,
-            shadowSoften = -0.243809,
-            shadowBias = 0.001548,
+            shadowSoften = 2.664357,
+            shadowBias = 0.003167,
         },
 
         [1] = 
@@ -236,8 +236,8 @@ return
         {
             rotateX = 1.602212,
             rotateY = -0.785398,
-            density = 0.302145,
-            spacular = 0.660672,
+            density = 0.135871,
+            spacular = 1.572413,
             enableShadow = false,
         },
 
