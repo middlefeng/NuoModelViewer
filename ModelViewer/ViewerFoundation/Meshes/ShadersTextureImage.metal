@@ -52,10 +52,18 @@ fragment float4 fragment_texutre_mix(ProjectedVertex vert [[stage_in]],
                                      sampler samplr [[sampler(0)]])
 {
     float4 color;
-    if (vert.texCoord.x > mixFragment.mixProportion)
-        color = texture1.sample(samplr, vert.texCoord);
+    if (fabs(vert.texCoord.x - mixFragment.mixProportion) > 0.002)
+    {
+        if (vert.texCoord.x > mixFragment.mixProportion)
+            color = texture1.sample(samplr, vert.texCoord);
+        else
+            color = texture2.sample(samplr, vert.texCoord);
+    }
     else
-        color = texture2.sample(samplr, vert.texCoord);
+    {
+        float factor = (vert.texCoord.x - mixFragment.mixProportion + 0.002) / 0.004;
+        color = texture1.sample(samplr, vert.texCoord) * factor + texture2.sample(samplr, vert.texCoord) * (1.0 - factor);
+    }
         
     return color;
 }

@@ -400,6 +400,11 @@
     CGFloat mousePos = location.x / [self frame].size.width;
     CGFloat splitViewPostion = _modelDissectRenderer.splitViewProportion;
     
+    if (splitViewPostion > 0.95 && mousePos > 0.95)
+        return YES;
+    if (splitViewPostion < 0.05 && mousePos < 0.05)
+        return YES;
+    
     return (fabs(splitViewPostion - mousePos) < 0.01);
 }
 
