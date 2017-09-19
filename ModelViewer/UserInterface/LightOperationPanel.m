@@ -23,6 +23,7 @@
     
     NSTextField* _shadowSoftenLabel;
     NSSlider* _shadowSoftenSlider;
+    NSButton* _shadowSoftenPopButton;
     
     NSTextField* _shadowBiasLabel;
     NSSlider* _shadowBiasSlider;
@@ -45,6 +46,12 @@
 
         _shadowSoftenLabel = [self createLabel:@"Penumbra:"];
         _shadowSoftenSlider = [self createSliderMax:5.0 min:0.0];
+        
+        _shadowSoftenPopButton = [NSButton new];
+        _shadowSoftenPopButton.bezelStyle = NSBezelStyleRoundedDisclosure;
+        _shadowSoftenPopButton.bordered = YES;
+        _shadowSoftenPopButton.title = @"";
+        [self addSubview:_shadowSoftenPopButton];
         
         _shadowBiasLabel = [self createLabel:@"Bias:"];
         _shadowBiasSlider = [self createSliderMax:0.01 min:0.0];
@@ -121,8 +128,16 @@
     labelFrame.origin.y -= entryHeight + lineSpace;
     sliderFrame.origin.y -= entryHeight + lineSpace;
     
+    CGRect softenSliderFrame = sliderFrame;
+    softenSliderFrame.size.width -= 32;
     [_shadowSoftenLabel setFrame:labelFrame];
-    [_shadowSoftenSlider setFrame:sliderFrame];
+    [_shadowSoftenSlider setFrame:softenSliderFrame];
+    
+    CGRect popButtonFrame = sliderFrame;
+    popButtonFrame.size = CGSizeMake(30, 30);
+    popButtonFrame.origin.x = viewSize.width - popButtonFrame.size.width;
+    popButtonFrame.origin.y -= (popButtonFrame.size.height - sliderFrame.size.height) / 2.0;
+    [_shadowSoftenPopButton setFrame:popButtonFrame];
     
     labelFrame.origin.y -= entryHeight + lineSpace;
     sliderFrame.origin.y -= entryHeight + lineSpace;
@@ -161,6 +176,7 @@
     _shadowEnabled = shadowEnabled;
     [_shadowSoftenLabel setHidden:!shadowEnabled];
     [_shadowSoftenSlider setHidden:!shadowEnabled];
+    [_shadowSoftenPopButton setHidden:!shadowEnabled];
     [_shadowBiasLabel setHidden:!shadowEnabled];
     [_shadowBiasSlider setHidden:!shadowEnabled];
 }
