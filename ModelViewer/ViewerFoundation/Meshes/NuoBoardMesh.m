@@ -12,6 +12,7 @@
 
 @implementation NuoBoardMesh
 {
+    NuoMeshModeShaderParameter _meshMode;
     NuoCoord* _dimensions;
 }
 
@@ -27,9 +28,28 @@
                       withLength:indicesLength];
     
     if (self)
+    {
         _dimensions = dimensions;
+        _meshMode = kMeshMode_Normal;
+    }
     
     return self;
+}
+
+
+
+- (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode
+{
+    NuoBoardMesh* boardMesh = [NuoBoardMesh new];
+    [boardMesh shareResourcesFrom:self];
+    
+    boardMesh->_meshMode = mode;
+    
+    [boardMesh makePipelineShadowState];
+    [boardMesh makePipelineState:[boardMesh makePipelineStateDescriptor]];
+    [boardMesh makeDepthStencilState];
+    
+    return boardMesh;
 }
 
 
@@ -45,6 +65,7 @@
     [funcConstant setConstantValue:&_shadowOverlayOnly type:MTLDataTypeBool atIndex:3];
     [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&_meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];

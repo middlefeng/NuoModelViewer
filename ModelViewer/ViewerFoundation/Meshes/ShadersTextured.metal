@@ -39,7 +39,7 @@ fragment void fragment_shadow_textured(PositionSimple vert [[stage_in]])
 
 vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(0)]],
                                                constant NuoUniforms &uniforms [[buffer(1)]],
-                                               constant LightVertexUniforms &lightCast [[buffer(2)]],
+                                               constant NuoLightVertexUniforms &lightCast [[buffer(2)]],
                                                constant NuoMeshUniforms &meshUniforms [[buffer(3)]],
                                                uint vid [[vertex_id]])
 {
@@ -58,7 +58,7 @@ vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(
 }
 
 fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
-                                        constant LightUniform &lightUniform [[buffer(0)]],
+                                        constant NuoLightUniforms &lightUniform [[buffer(0)]],
                                         depth2d<float> shadowMap0 [[texture(0)]],
                                         depth2d<float> shadowMap1 [[texture(1)]],
                                         texture2d<float> diffuseTexture [[texture(2)]],
@@ -78,14 +78,16 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
     
     for (unsigned i = 0; i < 4; ++i)
     {
-        float diffuseIntensity = saturate(dot(normal, normalize(lightUniform.direction[i].xyz)));
+        const NuoLightParameterUniformField lightParams = lightUniform.lightParams[i];
+        
+        float diffuseIntensity = saturate(dot(normal, normalize(lightParams.direction.xyz)));
         float3 diffuseTerm = diffuseColor * diffuseIntensity;
         
         float3 specularTerm(0);
         if (diffuseIntensity > 0)
         {
             float3 eyeDirection = normalize(vert.eye);
-            float3 halfway = normalize(normalize(lightUniform.direction[i].xyz) + eyeDirection);
+            float3 halfway = normalize(normalize(lightParams.direction.xyz) + eyeDirection);
             float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower) * diffuseIntensity;
             specularTerm = material.specularColor * specularFactor;
         }
@@ -93,13 +95,13 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
         float shadowPercent = 0.0;
         if (i < 2)
         {
+            const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(shadowPosition[i],
-                                                   lightUniform.shadowBias[i], diffuseIntensity,
-                                                   lightUniform.shadowSoften[i], 3,
+                                                   shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], depthSamplr);
         }
         
-        colorForLights += (diffuseTerm * lightUniform.density[i] + specularTerm * lightUniform.spacular[i]) * (1 - shadowPercent);
+        colorForLights += (diffuseTerm * lightParams.density + specularTerm * lightParams.spacular) * (1 - shadowPercent);
     }
     
     return float4(ambientTerm + colorForLights, diffuseTexel.a);

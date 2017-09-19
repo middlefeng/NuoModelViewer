@@ -16,6 +16,8 @@
     id<MTLTexture> _textureBump;
     BOOL _ignoreTextureAlpha;
     BOOL _physicallyReflection;
+    
+    NuoMeshModeShaderParameter _meshMode;
 }
 
 
@@ -29,7 +31,34 @@
                      withIndices:indices
                       withLength:indicesLength];
     
+    _meshMode = kMeshMode_Normal;
+    
     return self;
+}
+
+
+- (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode
+{
+    NuoMeshTexMatieraled* texMaterialMesh = [NuoMeshTexMatieraled new];
+    [texMaterialMesh shareResourcesFrom:self];
+    
+    texMaterialMesh->_meshMode = mode;
+    
+    [texMaterialMesh makePipelineShadowState];
+    [texMaterialMesh makePipelineState:[texMaterialMesh makePipelineStateDescriptor]];
+    [texMaterialMesh makeDepthStencilState];
+    
+    return texMaterialMesh;
+}
+
+
+- (void)shareResourcesFrom:(NuoMesh*)mesh
+{
+    NuoMeshTexMatieraled* meshTextured = (NuoMeshTexMatieraled*)mesh;
+    
+    [super shareResourcesFrom:mesh];
+    _textureBump = meshTextured->_textureBump;
+    _textureOpacity = meshTextured->_textureOpacity;
 }
 
 
@@ -92,6 +121,7 @@
     [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];
     [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&_meshMode type:MTLDataTypeInt atIndex:6];
     
     if (!_textureBump)
     {
@@ -218,6 +248,7 @@
 {
     BOOL _hasTransparent;
     BOOL _physicallyReflection;
+    NuoMeshModeShaderParameter _meshMode;
 }
 
 
@@ -232,9 +263,27 @@
                      withIndices:indices
                       withLength:indicesLength];
     
+    if (self)
+        _meshMode = kMeshMode_Normal;
+    
     return self;
 }
 
+
+
+- (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode
+{
+    NuoMeshMatieraled* materialMesh = [NuoMeshMatieraled new];
+    [materialMesh shareResourcesFrom:self];
+    
+    materialMesh->_meshMode = mode;
+    
+    [materialMesh makePipelineShadowState];
+    [materialMesh makePipelineState:[materialMesh makePipelineStateDescriptor]];
+    [materialMesh makeDepthStencilState];
+    
+    return materialMesh;
+}
 
 
 - (void)makePipelineShadowState
@@ -252,6 +301,7 @@
     [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];
     [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&_meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_materialed"];

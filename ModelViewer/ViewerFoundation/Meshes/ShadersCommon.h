@@ -71,11 +71,13 @@ constant bool kShadowOverlay                    [[ function_constant(3) ]];
 constant bool kShadowPCSS                       [[ function_constant(4) ]];
 constant bool kShadowPCF                        [[ function_constant(5) ]];
 
+constant int  kMeshMode                         [[ function_constant(6) ]];
+
 
 
 metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                                    metal::float3 normal,
-                                                   constant LightUniform &lighting,
+                                                   constant NuoLightUniforms &lighting,
                                                    metal::float4 diffuseTexel,
                                                    metal::depth2d<float> shadowMap[2],
                                                    metal::sampler samplr);
@@ -88,18 +90,15 @@ metal::float4 diffuse_common(metal::float4 diffuseTexel, float extraOpacity);
 
 
 metal::float3 specular_common(metal::float3 materialSpecularColor, float materialSecularPower,
-                              metal::float3 lightVector,
-                              float lightIntensity,
-                              float lightSpecularIntensity,
+                              NuoLightParameterUniformField lightParams,
                               metal::float3 normal, metal::float3 halfway, float dotNL);
 
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
-                             float shadowBiasFactor, float shadowedSurfaceAngle,
-                             float shadowSoftenFactor, float shadowMapSampleRadius,
+                             NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
                              metal::depth2d<float> shadowMap, metal::sampler samplr);
 
-float rand(metal::float2 co);
+metal::float2 rand(metal::float2 co);
 
 
 

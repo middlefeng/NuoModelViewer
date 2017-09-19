@@ -32,7 +32,26 @@ typedef struct
     // enabling shadow casting for two light sources
     matrix44 lightCastMatrix[2];
 }
-LightVertexUniforms;
+NuoLightVertexUniforms;
+
+
+
+typedef struct
+{
+    vector4 direction;
+    float density;
+    float spacular;
+}
+NuoLightParameterUniformField;
+
+
+
+typedef struct
+{
+    float soften;
+    float bias;
+}
+NuoShadowParameterUniformField;
 
 
 /**
@@ -40,22 +59,28 @@ LightVertexUniforms;
  */
 typedef struct
 {
-    vector4 direction[4];
-    float density[4];
-    float spacular[4];
-    float ambientDensity;
+    NuoLightParameterUniformField lightParams[4];
+    NuoShadowParameterUniformField shadowParams[2];
     
-    float shadowSoften[2];
-    float shadowBias[2];
+    float ambientDensity;
 }
-LightUniform;
+NuoLightUniforms;
 
 
 typedef struct
 {
     float opacity;
 }
-ModelCharacterUniforms;
+NuoModelCharacterUniforms;
+
+
+typedef enum
+{
+    kMeshMode_Normal,
+    kMeshMode_ShadowOccluder,
+    kMeshMode_ShadowPenumbraFactor
+}
+NuoMeshModeShaderParameter;
 
 
 #endif

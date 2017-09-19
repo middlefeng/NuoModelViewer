@@ -3,6 +3,7 @@
 
 #include "NuoMeshOptions.h"
 #include "NuoMeshRotation.h"
+#include "NuoUniforms.h"
 
 
 
@@ -103,6 +104,15 @@ extern const BOOL kShadowPCF;
 - (instancetype)initWithDevice:(id<MTLDevice>)device
             withVerticesBuffer:(void*)buffer withLength:(size_t)length
                    withIndices:(void*)indices withLength:(size_t)indicesLength;
+
+// get a clone of the current mesh for debugging purpose.
+// the cloned version shall share most of GPU resources.
+//
+- (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode;
+
+// used to implement the "cloneForMode" through the class hierachy
+//
+- (void)shareResourcesFrom:(NuoMesh*)mesh;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader;

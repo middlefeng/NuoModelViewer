@@ -8,6 +8,7 @@
 
 #import "NuoRoundedView.h"
 #import "NuoTypes.h"
+#import "NuoUniforms.h"
 
 #import "ModelOptionUpdate.h"
 
@@ -33,6 +34,8 @@
 @property (nonatomic, assign) float ambientDensity;
 
 @property (nonatomic, assign) BOOL showLightSettings;
+
+@property (nonatomic, assign) NuoMeshModeShaderParameter meshMode;
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 

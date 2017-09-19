@@ -210,6 +210,19 @@ const BOOL kShadowPCF = YES;
 
 
 
+- (instancetype)init
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _transformPoise = matrix_identity_float4x4;
+        _transformTranslate = matrix_identity_float4x4;
+    }
+    
+    return self;
+}
+
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
@@ -248,6 +261,25 @@ const BOOL kShadowPCF = YES;
     }
     
     return self;
+}
+
+
+
+- (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode
+{
+    return self;
+}
+
+
+- (void)shareResourcesFrom:(NuoMesh*)mesh
+{
+    _device = mesh.device;
+    _vertexBuffer = mesh.vertexBuffer;
+    _indexBuffer = mesh.indexBuffer;
+    _transformBuffers = mesh.transformBuffers;
+    _enabled = mesh.enabled;
+    
+    [self setBoundingBoxLocal:mesh.boundingBoxLocal];
 }
 
 
@@ -396,10 +428,12 @@ const BOOL kShadowPCF = YES;
     // there is material and color, not only shadow overlay
     //
     BOOL shadowOverlay = NO;
+    int meshMode = kMeshMode_Normal;
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
     [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];

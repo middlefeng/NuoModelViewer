@@ -257,15 +257,15 @@ return
             density = 1.181309,
             spacular = 1.542578,
             enableShadow = true,
-            shadowSoften = 0.046137,
-            shadowBias = 0.006593,
+            shadowSoften = 2.652381,
+            shadowBias = 0.000000,
         },
 
         [1] = 
         {
             rotateX = 1.979203,
             rotateY = -0.534071,
-            density = 0.366930,
+            density = 0.000000,
             spacular = 1.975162,
             enableShadow = true,
             shadowSoften = 1.776680,
