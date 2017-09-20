@@ -7,6 +7,8 @@
 //
 
 #import "LightOperationPanel.h"
+#import "LightShadowPopoverController.h"
+
 #import "ModelOptionUpdate.h"
 #import "NuoLightSource.h"
 
@@ -51,6 +53,8 @@
         _shadowSoftenPopButton.bezelStyle = NSBezelStyleRoundedDisclosure;
         _shadowSoftenPopButton.bordered = YES;
         _shadowSoftenPopButton.title = @"";
+        [_shadowSoftenPopButton setTarget:self];
+        [_shadowSoftenPopButton setAction:@selector(shadowSoftenPopoverAction:)];
         [self addSubview:_shadowSoftenPopButton];
         
         _shadowBiasLabel = [self createLabel:@"Bias:"];
@@ -216,6 +220,23 @@
 }
 
 
+- (void)shadowSoftenPopoverAction:(id)sender
+{
+    
+    NSPopover* shadowSoftenPopover = [NSPopover new];
+    shadowSoftenPopover.contentSize = CGSizeMake(300, 50);
+    shadowSoftenPopover.behavior = NSPopoverBehaviorTransient;
+    
+    LightShadowPopoverController* controller = [[LightShadowPopoverController alloc] initWithPopover:shadowSoftenPopover
+                                                                                     withSourcePanel:self];
+    shadowSoftenPopover.contentViewController = controller;
+    controller.occluderSearchRadius = _shadowOccluderRadius;
+    
+    [shadowSoftenPopover showRelativeToRect:[_shadowSoftenPopButton frame]
+                                      ofView:self preferredEdge:NSRectEdgeMinY];
+}
+
+
 
 - (void)updateControls:(NuoLightSource*)lightSource
 {
@@ -226,6 +247,7 @@
     if (lightSource.enableShadow)
     {
         [self setShadowSoften:lightSource.shadowSoften];
+        [self setShadowOccluderRadius:lightSource.shadowOccluderRadius];
         [self setShadowBias:lightSource.shadowBias];
     }
 }

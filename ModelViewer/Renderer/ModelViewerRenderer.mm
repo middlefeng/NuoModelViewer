@@ -607,6 +607,7 @@
         {
             lighting.shadowParams[i].soften = _lights[i].shadowSoften;
             lighting.shadowParams[i].bias = _lights[i].shadowBias;
+            lighting.shadowParams[i].occluderRadius = _lights[i].shadowOccluderRadius;
         }
     }
     

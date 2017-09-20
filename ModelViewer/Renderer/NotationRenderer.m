@@ -68,6 +68,7 @@
         
         lightSourcesDesc[0].lightingDensity = 1.0f;
         lightSourcesDesc[0].lightingSpacular = 0.4f;
+        lightSourcesDesc[0].shadowOccluderRadius = 5.0f;
         
         // the direction of light used to render the "light vector"
         //
@@ -220,6 +221,12 @@
 - (void)setShadowSoften:(float)soften
 {
     _currentLightVector.lightSourceDesc.shadowSoften = soften;
+}
+
+
+- (void)setShadowOccluderRadius:(float)shadowOccluder
+{
+    _currentLightVector.lightSourceDesc.shadowOccluderRadius = shadowOccluder;
 }
 
 

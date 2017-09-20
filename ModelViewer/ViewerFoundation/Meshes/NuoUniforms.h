@@ -50,6 +50,7 @@ typedef struct
 {
     float soften;
     float bias;
+    float occluderRadius;
 }
 NuoShadowParameterUniformField;
 
