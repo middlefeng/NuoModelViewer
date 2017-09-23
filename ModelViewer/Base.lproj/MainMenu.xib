@@ -187,6 +187,10 @@
                                     <action selector="selectAll:" target="-1" id="VNm-Mi-diN"/>
                                 </connections>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="iUr-hf-RoM"/>
+                            <menuItem title="Reset Scene" id="tdI-aU-ZrC">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                            </menuItem>
                             <menuItem title="Remove Object" id="bqK-nn-B8F">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                             </menuItem>
