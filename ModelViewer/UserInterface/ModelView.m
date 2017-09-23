@@ -56,6 +56,7 @@
     BOOL _trackingSplitView;
     BOOL _mouseMoved;
     
+    IBOutlet NSMenuItem* _sceneResetMenu;
     IBOutlet NSMenuItem* _removeObjectMenu;
     
     NSString* _documentName;

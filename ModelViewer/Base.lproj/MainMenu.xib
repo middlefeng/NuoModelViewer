@@ -701,6 +701,7 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <connections>
                     <outlet property="_removeObjectMenu" destination="bqK-nn-B8F" id="RO5-4Q-ffV"/>
+                    <outlet property="_sceneResetMenu" destination="tdI-aU-ZrC" id="MXL-5c-pWW"/>
                 </connections>
             </view>
         </window>
