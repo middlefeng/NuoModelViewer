@@ -26,6 +26,8 @@ matrix_float4x4 matrix_orthor(float left, float right, float top, float bottom, 
 matrix_float3x3 matrix_extract_linear(matrix_float4x4);    
     
 matrix_float4x4 matrix_rotate(float rotationX, float rotationY);
+    
+matrix_float4x4 matrix_rotation_around(matrix_float4x4 rotate, vector_float3 center);
 
 matrix_float4x4 matrix_rotation_append(matrix_float4x4 start, float rotateX, float rotateY);
     

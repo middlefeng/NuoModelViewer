@@ -540,6 +540,7 @@
         _viewTrans = matrix_rotation_append(_viewTrans, _rotationXDelta, _rotationYDelta);
     else
         _selectedMesh.transformPoise = matrix_rotation_append(_selectedMesh.transformPoise, _rotationXDelta, _rotationYDelta);
+    
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
@@ -589,11 +590,12 @@
         [_selectedMesh setTransformTranslate:transMatrix];
     }
     
-    vector_float3 transVec1 = {0.0, 0.0, -sceneCenter};
-    matrix_float4x4 trans1 = matrix_translation(transVec1);
-    vector_float3 transVec2 = {0.0, 0.0, sceneCenter};
-    matrix_float4x4 trans2 = matrix_translation(transVec2);
-    matrix_float4x4 viewTrans = matrix_multiply(trans2, matrix_multiply(_viewTrans, trans1));
+    vector_float3 center = { 0.0, 0.0, sceneCenter };
+    vector_float4 center4 = { sceneSphere.center.x, sceneSphere.center.y, sceneSphere.center.z, 1.0 };
+    matrix_float4x4 viewTrans = matrix_rotation_around(_viewTrans, center);
+    
+    vector_float4 transferedCenter = matrix_multiply(viewTrans, center4);
+    sceneCenter = transferedCenter.z;
 
     float maxSpan = sceneRadius * 2.0;
     const CGSize drawableSize = self.renderTarget.drawableSize;
@@ -631,8 +633,6 @@
     }
     
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(NuoLightUniforms));
-    
-    //[_selectedMesh setTransformTranslate:transMatrix];
     
     for (NuoMesh* mesh in _meshes)
         [mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
