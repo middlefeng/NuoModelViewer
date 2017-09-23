@@ -56,6 +56,8 @@
     BOOL _trackingSplitView;
     BOOL _mouseMoved;
     
+    IBOutlet NSMenuItem* _removeObjectMenu;
+    
     NSString* _documentName;
 }
 
@@ -603,6 +605,9 @@
     [_modelRender loadMesh:path withCommandQueue:[self commandQueue]];
     [self modelMeshInvalid];
     
+    [_removeObjectMenu setTarget:self];
+    [_removeObjectMenu setAction:@selector(removeObject:)];
+    
     NSString* documentName = [path lastPathComponent];
     _documentName = [documentName stringByDeletingPathExtension];
     NSString* title = [[NSString alloc] initWithFormat:@"ModelView - %@", documentName];
@@ -756,6 +761,20 @@
 }
 
 
+- (void)removeObject:(id)sender
+{
+    [_modelRender removeSelectedMesh];
+    
+    if (!_modelRender.hasMeshes)
+    {
+        [_removeObjectMenu setTarget:nil];
+        [_removeObjectMenu setAction:nil];
+    }
+    
+    [self render];
+}
+
+
 - (IBAction)addBoardObject:(id)sender
 {
     BoardSettingsPanel* panel = [BoardSettingsPanel new];
@@ -773,6 +792,9 @@
              {
                  [renderer createBoard:size];
                  [self render];
+                 
+                 [_removeObjectMenu setTarget:self];
+                 [_removeObjectMenu setAction:@selector(removeObject:)];
              }
          }
      }];

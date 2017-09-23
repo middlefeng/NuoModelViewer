@@ -28,6 +28,7 @@ TransformMode;
 
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lights;
 @property (nonatomic, strong) NuoCubeMesh* cubeMesh;
+@property (nonatomic, readonly) BOOL hasMeshes;
 
 
 @property (nonatomic, assign) TransformMode transMode;
@@ -60,6 +61,7 @@ TransformMode;
        withCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (NuoBoardMesh*)createBoard:(CGSize)size;
+- (void)removeSelectedMesh;
 - (void)selectMeshWithScreen:(CGPoint)point;
 
 // there might be other renderers share the same set of meshes/scene with the model renderer.

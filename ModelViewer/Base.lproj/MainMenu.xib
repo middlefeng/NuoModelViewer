@@ -187,6 +187,9 @@
                                     <action selector="selectAll:" target="-1" id="VNm-Mi-diN"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Remove Object" id="bqK-nn-B8F">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                            </menuItem>
                             <menuItem title="Board Object..." id="VgF-cn-czt">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
@@ -692,6 +695,9 @@
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ" customClass="ModelView">
                 <rect key="frame" x="0.0" y="0.0" width="1000" height="700"/>
                 <autoresizingMask key="autoresizingMask"/>
+                <connections>
+                    <outlet property="_removeObjectMenu" destination="bqK-nn-B8F" id="RO5-4Q-ffV"/>
+                </connections>
             </view>
         </window>
     </objects>

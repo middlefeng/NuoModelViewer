@@ -113,6 +113,12 @@
 }
 
 
+- (BOOL)hasMeshes
+{
+    return [_meshes count] != 0;
+}
+
+
 - (void)createMeshs:(id<MTLCommandQueue>)commandQueue
 {
     NuoMeshCompound* mesh = [_modelLoader createMeshsWithOptions:_modelOptions
@@ -158,6 +164,20 @@
     [_meshes insertObject:boardMesh atIndex:0];
     
     return boardMesh;
+}
+
+
+- (void)removeSelectedMesh
+{
+    if (_meshes.count > 0)
+    {
+        [_meshes removeObject:_selectedMesh];
+        
+        if (_meshes.count > 0)
+            _selectedMesh = _meshes[0];
+        else
+            _selectedMesh = nil;
+    }
 }
 
 
