@@ -241,11 +241,11 @@ ProjectedVertex vertex_project_common(device Vertex *vertices,
                                       uint vid [[vertex_id]])
 {
     ProjectedVertex outVert;
-    //float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    float4 meshPosition = meshUniform.transform * vertices[vid].position;
     float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
     
-    outVert.position = uniforms.viewProjectionMatrix * meshUniform.transform * vertices[vid].position;
-    outVert.eye =  -(uniforms.viewMatrix * meshUniform.transform * vertices[vid].position).xyz;
+    outVert.position = uniforms.viewProjectionMatrix * meshPosition;
+    outVert.eye =  -(uniforms.viewMatrix * meshPosition).xyz;
     outVert.normal = meshNormal;
     
     return outVert;
