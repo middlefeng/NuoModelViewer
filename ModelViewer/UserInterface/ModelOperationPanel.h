@@ -11,6 +11,7 @@
 #import "NuoUniforms.h"
 
 #import "ModelOptionUpdate.h"
+#import "ModelViewerRenderer.h"
 
 
 
@@ -24,6 +25,8 @@
 
 
 @property (nonatomic, assign) BOOL showModelParts;
+
+@property (nonatomic, assign) TransformMode transformMode;
 
 @property (nonatomic, strong) NuoMeshOption* meshOptions;
 

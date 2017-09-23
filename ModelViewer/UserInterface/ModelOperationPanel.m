@@ -30,6 +30,7 @@
 @property (nonatomic, strong) NSButton* lightSettings;
 @property (nonatomic, strong) NSButton* checkBrdfMode;
 @property (nonatomic, strong) NSPopUpButton* checkDissectMode;
+@property (nonatomic, strong) NSPopUpButton* checkTransMode;
 
 @property (nonatomic, strong) NSSlider* animationSlider;
 
@@ -263,12 +264,11 @@
     [dissectModelLabel setEditable:NO];
     [dissectModelLabel setSelectable:NO];
     [dissectModelLabel setBordered:NO];
-    [dissectModelLabel setAlignment:NSTextAlignmentLeft];
+    [dissectModelLabel setAlignment:NSTextAlignmentRight];
     [dissectModelLabel setStringValue:@"Render Mode:"];
     [dissectModelLabel setFrame:dissectModelLabelFrame];
     [scrollDocumentView addSubview:dissectModelLabel];
     
-    [dissectMode setTitle:@"Dissect View"];
     [dissectMode setFrame:dissectModelFrame];
     [dissectMode setTarget:self];
     [dissectMode setFont:[NSFont fontWithName:dissectMode.font.fontName size:11]];
@@ -280,6 +280,37 @@
     [dissectMode setAction:@selector(dissectModeChanged:)];
     [scrollDocumentView addSubview:dissectMode];
     _checkDissectMode = dissectMode;
+    
+    rowCoord += 1.0;
+    
+    NSRect transferModelFrame = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    NSRect transferModelLabelFrame = transferModelFrame;
+    transferModelFrame.size.height = 20.0;
+    transferModelFrame.origin.x += kLabelHead;
+    transferModelFrame.size.width -= kLabelHead;
+    transferModelLabelFrame.size.width = 90;
+    transferModelLabelFrame.origin.y += 2;
+    
+    NSPopUpButton* transMode = [NSPopUpButton new];
+    NSTextField* transferModeLabel = [NSTextField new];
+    [transferModeLabel setEditable:NO];
+    [transferModeLabel setSelectable:NO];
+    [transferModeLabel setBordered:NO];
+    [transferModeLabel setAlignment:NSTextAlignmentRight];
+    [transferModeLabel setStringValue:@"Transfer Mode:"];
+    [transferModeLabel setFrame:transferModelLabelFrame];
+    [scrollDocumentView addSubview:transferModeLabel];
+    
+    [transMode setFrame:transferModelFrame];
+    [transMode setTarget:self];
+    [transMode setFont:[NSFont fontWithName:dissectMode.font.fontName size:11]];
+    [transMode setControlSize:NSControlSizeSmall];
+    
+    [transMode addItemWithTitle:@"Object"];
+    [transMode addItemWithTitle:@"Scene"];
+    [transMode setAction:@selector(transModeChanged:)];
+    [scrollDocumentView addSubview:transMode];
+    _checkTransMode = transMode;
     
     rowCoord += 1.5;
     
@@ -456,6 +487,26 @@
             break;
         case 2:
             _meshMode = kMeshMode_ShadowPenumbraFactor;
+            break;
+    }
+    
+    [_optionUpdateDelegate modelOptionUpdate:self];
+}
+
+
+- (void)transModeChanged:(id)sender
+{
+    NSInteger index = [_checkTransMode indexOfSelectedItem];
+    switch (index)
+    {
+        case 0:
+            _transformMode = kTransformMode_Model;
+            break;
+        case 1:
+            _transformMode = kTransformMode_View;
+            break;
+            
+        default:
             break;
     }
     

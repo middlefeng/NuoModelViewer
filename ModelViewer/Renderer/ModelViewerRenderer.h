@@ -14,6 +14,14 @@
 @class NuoLightSource;
 
 
+typedef enum
+{
+    kTransformMode_Model,
+    kTransformMode_View,
+}
+TransformMode;
+
+
 
 @interface ModelRenderer : NuoRenderPipelinePass
 
@@ -21,6 +29,8 @@
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lights;
 @property (nonatomic, strong) NuoCubeMesh* cubeMesh;
 
+
+@property (nonatomic, assign) TransformMode transMode;
 
 // delta control to the selected model
 //

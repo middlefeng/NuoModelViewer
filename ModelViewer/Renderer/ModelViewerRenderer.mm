@@ -30,6 +30,7 @@
 @property (nonatomic, weak) NuoMesh* selectedMesh;
 @property (nonatomic, strong) NSMutableArray<NuoMesh*>* meshes;
 
+@property (assign) matrix_float4x4 viewTrans;
 @property (assign) matrix_float4x4 projection;
 @property (strong) NSArray<id<MTLBuffer>>* transUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
@@ -70,6 +71,8 @@
         
         _meshes = [NSMutableArray new];
         _boardMeshes = [NSMutableArray new];
+        
+        _viewTrans = matrix_identity_float4x4;
     }
 
     return self;
@@ -533,7 +536,10 @@
 {
     // accumulate delta rotation into matrix
     //
-    _selectedMesh.transformPoise = matrix_rotation_append(_selectedMesh.transformPoise, _rotationXDelta, _rotationYDelta);
+    if (_transMode == kTransformMode_View)
+        _viewTrans = matrix_rotation_append(_viewTrans, _rotationXDelta, _rotationYDelta);
+    else
+        _selectedMesh.transformPoise = matrix_rotation_append(_selectedMesh.transformPoise, _rotationXDelta, _rotationYDelta);
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
@@ -571,10 +577,24 @@
     }
     sceneRadius = sceneSphere.radius;
     sceneCenter = sceneSphere.center.z;
-
-    const matrix_float4x4 transMatrix = matrix_multiply(matrix_translation(translation),
-                                                       _selectedMesh.transformTranslate);
     
+    matrix_float4x4 transMatrix = _selectedMesh.transformTranslate;
+    if (_transMode == kTransformMode_View)
+    {
+        _viewTrans = matrix_multiply(matrix_translation(translation), _viewTrans);
+    }
+    else
+    {
+        transMatrix = matrix_multiply(matrix_translation(translation), transMatrix);
+        [_selectedMesh setTransformTranslate:transMatrix];
+    }
+    
+    vector_float3 transVec1 = {0.0, 0.0, -sceneCenter};
+    matrix_float4x4 trans1 = matrix_translation(transVec1);
+    vector_float3 transVec2 = {0.0, 0.0, sceneCenter};
+    matrix_float4x4 trans2 = matrix_translation(transVec2);
+    matrix_float4x4 viewTrans = matrix_multiply(trans2, matrix_multiply(_viewTrans, trans1));
+
     float maxSpan = sceneRadius * 2.0;
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
@@ -585,7 +605,7 @@
     _projection = matrix_perspective(aspect, _fieldOfView, near, far);
 
     NuoUniforms uniforms;
-    uniforms.viewMatrix = matrix_identity_float4x4;
+    uniforms.viewMatrix = viewTrans;
     uniforms.viewProjectionMatrix = matrix_multiply(_projection, uniforms.viewMatrix);
 
     memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
@@ -612,7 +632,7 @@
     
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(NuoLightUniforms));
     
-    [_selectedMesh setTransformTranslate:transMatrix];
+    //[_selectedMesh setTransformTranslate:transMatrix];
     
     for (NuoMesh* mesh in _meshes)
         [mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
