@@ -596,6 +596,13 @@
 - (void)render
 {
     _modelRender.lights = _notationRender.lightSources;
+    
+    if (!_modelRender.viewTransformReset)
+    {
+        [_sceneResetMenu setTarget:self];
+        [_sceneResetMenu setAction:@selector(resetScene:)];
+    }
+    
     [super render];
 }
 
@@ -759,6 +766,19 @@
                                     }];
          }
      }];
+}
+
+
+- (void)resetScene:(id)sender
+{
+    if (!_modelRender.viewTransformReset)
+    {
+        [_modelRender resetViewTransform];
+        [self render];
+        
+        [_sceneResetMenu setTarget:nil];
+        [_sceneResetMenu setAction:nil];
+    }
 }
 
 

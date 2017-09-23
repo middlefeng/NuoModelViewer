@@ -119,6 +119,12 @@
 }
 
 
+- (BOOL)viewTransformReset
+{
+    return matrix_equal(_viewTrans, matrix_identity_float4x4);
+}
+
+
 - (void)createMeshs:(id<MTLCommandQueue>)commandQueue
 {
     NuoMeshCompound* mesh = [_modelLoader createMeshsWithOptions:_modelOptions
@@ -144,6 +150,12 @@
     
     _mainModelMesh = mesh;
     _selectedMesh = mesh;
+}
+
+
+- (void)resetViewTransform
+{
+    _viewTrans = matrix_identity_float4x4;
 }
 
 

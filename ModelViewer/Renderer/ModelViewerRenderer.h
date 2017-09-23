@@ -32,6 +32,7 @@ TransformMode;
 
 
 @property (nonatomic, assign) TransformMode transMode;
+@property (nonatomic, readonly) BOOL viewTransformReset;
 
 // delta control to the selected model
 //
@@ -61,6 +62,7 @@ TransformMode;
        withCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (NuoBoardMesh*)createBoard:(CGSize)size;
+- (void)resetViewTransform;
 - (void)removeSelectedMesh;
 - (void)selectMeshWithScreen:(CGPoint)point;
 
