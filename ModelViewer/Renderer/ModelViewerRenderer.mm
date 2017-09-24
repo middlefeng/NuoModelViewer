@@ -184,17 +184,29 @@
 }
 
 
-- (void)removeSelectedMesh
+- (void)removeMesh:(NuoMesh*)mesh
 {
     if (_meshes.count > 0)
     {
-        [_meshes removeObject:_selectedMesh];
+        [_meshes removeObject:mesh];
         
-        if (_meshes.count > 0)
+        if ([mesh isKindOfClass:[NuoBoardMesh class]])
+        {
+            NuoBoardMesh* boardMesh = (NuoBoardMesh*)mesh;
+            [_boardMeshes removeObject:boardMesh];
+        }
+        
+        if (_meshes.count > 0 && mesh == _selectedMesh)
             _selectedMesh = _meshes[0];
         else
             _selectedMesh = nil;
     }
+}
+
+
+- (void)removeSelectedMesh
+{
+    [self removeMesh:_selectedMesh];
 }
 
 
