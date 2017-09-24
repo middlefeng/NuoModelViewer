@@ -564,18 +564,8 @@
     _shadowMapSamplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 
-- (void)updateUniformsForView:(unsigned int)inFlight
+- (void)handleDeltaPosition
 {
-    // accumulate delta rotation into matrix
-    //
-    if (_transMode == kTransformMode_View)
-        _viewTrans = matrix_rotation_append(_viewTrans, _rotationXDelta, _rotationYDelta);
-    else
-        _selectedMesh.transformPoise = matrix_rotation_append(_selectedMesh.transformPoise, _rotationXDelta, _rotationYDelta);
-    
-    _rotationXDelta = 0;
-    _rotationYDelta = 0;
-    
     float radius = _selectedMesh.boundingSphere.radius;
     
     // simply using "z" works until the view matrix is no longer an identitiy
@@ -587,6 +577,18 @@
     const float bilateralFactor = cameraDistance / 750.0f;
     _zoomDelta = 0;
     
+    // accumulate delta rotation into matrix
+    //
+    if (_transMode == kTransformMode_View)
+        _viewTrans = matrix_rotation_append(_viewTrans, _rotationXDelta, _rotationYDelta);
+    else
+        _selectedMesh.transformPoise = matrix_rotation_append(_selectedMesh.transformPoise, _rotationXDelta, _rotationYDelta);
+    
+    _rotationXDelta = 0;
+    _rotationYDelta = 0;
+    
+    // accumulate delta translation into matrix
+    //
     const float doTransX = _transXDelta * bilateralFactor;
     const float doTransY = _transYDelta * bilateralFactor;
     _transXDelta = 0;
@@ -597,6 +599,25 @@
         doTransX, doTransY,
         distanceDelta
     };
+    
+    matrix_float4x4 transMatrix = _selectedMesh.transformTranslate;
+    if (_transMode == kTransformMode_View)
+    {
+        _viewTrans = matrix_multiply(matrix_translation(translation), _viewTrans);
+    }
+    else
+    {
+        transMatrix = matrix_multiply(matrix_translation(translation), transMatrix);
+        [_selectedMesh setTransformTranslate:transMatrix];
+    }
+}
+
+- (void)updateUniformsForView:(unsigned int)inFlight
+{
+    // move all delta position coming from the view's mouse/gesture into the matrix,
+    // according to the transform mode (i.e. scene or mesh)
+    //
+    [self handleDeltaPosition];
     
     float sceneRadius = 0;
     float sceneCenter = 0;
@@ -610,17 +631,6 @@
     }
     sceneRadius = sceneSphere.radius;
     sceneCenter = sceneSphere.center.z;
-    
-    matrix_float4x4 transMatrix = _selectedMesh.transformTranslate;
-    if (_transMode == kTransformMode_View)
-    {
-        _viewTrans = matrix_multiply(matrix_translation(translation), _viewTrans);
-    }
-    else
-    {
-        transMatrix = matrix_multiply(matrix_translation(translation), transMatrix);
-        [_selectedMesh setTransformTranslate:transMatrix];
-    }
     
     vector_float3 center = { 0.0, 0.0, sceneCenter };
     vector_float4 center4 = { sceneSphere.center.x, sceneSphere.center.y, sceneSphere.center.z, 1.0 };
