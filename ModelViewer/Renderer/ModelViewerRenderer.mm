@@ -30,8 +30,13 @@
 @property (nonatomic, weak) NuoMesh* selectedMesh;
 @property (nonatomic, strong) NSMutableArray<NuoMesh*>* meshes;
 
+// transform data. "viewTrans" is relative to the scene's center
+//
 @property (assign) matrix_float4x4 viewTrans;
 @property (assign) matrix_float4x4 projection;
+
+// per-frame GPU buffers
+//
 @property (strong) NSArray<id<MTLBuffer>>* transUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;

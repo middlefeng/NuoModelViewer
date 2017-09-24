@@ -13,6 +13,15 @@
 @class NuoCubeMesh;
 @class NuoLightSource;
 
+/**
+ TERMS:
+     - view is usually used in the context only coordinate frames involved. the scope (volume)
+       is infinite or indefinite.
+     - scene is usually used when it is critical to know the scope (or span) of visible objects (mesh)
+       occupying the space (e.g. when talking about the center or span, or near-far scope).
+ */
+
+
 
 typedef enum
 {
