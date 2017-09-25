@@ -24,12 +24,15 @@
 
 @property (nonatomic) BOOL shadowEnabled;
 @property (nonatomic) float shadowSoften;
+@property (nonatomic) float shadowOccluderRadius;
 @property (nonatomic) float shadowBias;
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 
 
 - (void)updateControls:(NuoLightSource*)lightSource;
+
+- (void)lightSettingsChange:(id)sender;
 
 
 @end

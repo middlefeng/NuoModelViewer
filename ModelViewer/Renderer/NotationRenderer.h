@@ -43,6 +43,7 @@
 - (void)setDensity:(float)density;
 - (void)setSpacular:(float)spacular;
 - (void)setShadowSoften:(float)shadowSoften;
+- (void)setShadowOccluderRadius:(float)shadowOccluderRadius;
 - (void)setShadowBias:(float)shadowBias;
 
 
