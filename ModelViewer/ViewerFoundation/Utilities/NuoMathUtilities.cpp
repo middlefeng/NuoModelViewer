@@ -34,6 +34,16 @@ matrix_float4x4 matrix_rotation(vector_float3 axis, float angle)
     return to_matrix(gmat);
 }
 
+matrix_float4x4 matrix_rotation_around(matrix_float4x4 rotate, vector_float3 center)
+{
+    vector_float3 transVec1 = -center;
+    matrix_float4x4 trans1 = matrix_translation(transVec1);
+    vector_float3 transVec2 = center;
+    matrix_float4x4 trans2 = matrix_translation(transVec2);
+    
+    return matrix_multiply(trans2, matrix_multiply(rotate, trans1));
+}
+
 matrix_float4x4 matrix_perspective(float aspect, float fovy, float near, float far)
 {
     // NOT use OpenGL persepctive!

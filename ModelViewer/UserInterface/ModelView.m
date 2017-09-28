@@ -31,6 +31,16 @@
 
 
 
+typedef enum
+{
+    kDrag_Shift_X,
+    kDrag_Shift_Y,
+    kDrag_Normal,
+}
+MouseDragMode;
+
+
+
 @interface ModelView() <ModelOptionUpdate>
 
 @end
@@ -55,6 +65,10 @@
     BOOL _trackingLighting;
     BOOL _trackingSplitView;
     BOOL _mouseMoved;
+    MouseDragMode _mouseDragMode;
+    
+    IBOutlet NSMenuItem* _sceneResetMenu;
+    IBOutlet NSMenuItem* _removeObjectMenu;
     
     NSString* _documentName;
 }
@@ -165,6 +179,7 @@
         [_modelRender setCullEnabled:[panel cullEnabled]];
         [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
         [_modelRender setAmbientDensity:[panel ambientDensity]];
+        [_modelRender setTransMode:[panel transformMode]];
         [self setupPipelineSettings];
         
         for (NuoMeshAnimation* animation in _animations)
@@ -476,6 +491,30 @@
     float deltaX = -0.01 * M_PI * theEvent.deltaY;
     float deltaY = -0.01 * M_PI * theEvent.deltaX;
     
+    BOOL mouseWasMoved = _mouseMoved;
+    if (!_mouseMoved && (deltaX != 0.0 || deltaY != 0.0))
+        _mouseMoved = YES;
+    
+    if (!mouseWasMoved && _mouseMoved)
+    {
+        if (theEvent.modifierFlags & NSEventModifierFlagShift)
+        {
+            if (fabs(deltaX) > fabs(deltaY))
+                _mouseDragMode = kDrag_Shift_X;
+            else
+                _mouseDragMode = kDrag_Shift_Y;
+        }
+        else
+        {
+            _mouseDragMode = kDrag_Normal;
+        }
+    }
+    
+    if (_mouseDragMode == kDrag_Shift_Y)
+        deltaX = 0.0;
+    if (_mouseDragMode == kDrag_Shift_X)
+        deltaY = 0.0;
+    
     if (_trackingSplitView)
     {
         NSPoint location = theEvent.locationInWindow;
@@ -506,8 +545,6 @@
     }
     
     [self render];
-    
-    _mouseMoved = YES;
 }
 
 
@@ -593,6 +630,13 @@
 - (void)render
 {
     _modelRender.lights = _notationRender.lightSources;
+    
+    if (!_modelRender.viewTransformReset)
+    {
+        [_sceneResetMenu setTarget:self];
+        [_sceneResetMenu setAction:@selector(resetScene:)];
+    }
+    
     [super render];
 }
 
@@ -602,6 +646,9 @@
 {
     [_modelRender loadMesh:path withCommandQueue:[self commandQueue]];
     [self modelMeshInvalid];
+    
+    [_removeObjectMenu setTarget:self];
+    [_removeObjectMenu setAction:@selector(removeObject:)];
     
     NSString* documentName = [path lastPathComponent];
     _documentName = [documentName stringByDeletingPathExtension];
@@ -756,6 +803,33 @@
 }
 
 
+- (void)resetScene:(id)sender
+{
+    if (!_modelRender.viewTransformReset)
+    {
+        [_modelRender resetViewTransform];
+        [self render];
+        
+        [_sceneResetMenu setTarget:nil];
+        [_sceneResetMenu setAction:nil];
+    }
+}
+
+
+- (void)removeObject:(id)sender
+{
+    [_modelRender removeSelectedMesh];
+    
+    if (!_modelRender.hasMeshes)
+    {
+        [_removeObjectMenu setTarget:nil];
+        [_removeObjectMenu setAction:nil];
+    }
+    
+    [self render];
+}
+
+
 - (IBAction)addBoardObject:(id)sender
 {
     BoardSettingsPanel* panel = [BoardSettingsPanel new];
@@ -773,6 +847,9 @@
              {
                  [renderer createBoard:size];
                  [self render];
+                 
+                 [_removeObjectMenu setTarget:self];
+                 [_removeObjectMenu setAction:@selector(removeObject:)];
              }
          }
      }];

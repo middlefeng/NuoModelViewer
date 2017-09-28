@@ -13,6 +13,23 @@
 @class NuoCubeMesh;
 @class NuoLightSource;
 
+/**
+ TERMS:
+     - view is usually used in the context only coordinate frames involved. the scope (volume)
+       is infinite or indefinite.
+     - scene is usually used when it is critical to know the scope (or span) of visible objects (mesh)
+       occupying the space (e.g. when talking about the center or span, or near-far scope).
+ */
+
+
+
+typedef enum
+{
+    kTransformMode_Model,
+    kTransformMode_View,
+}
+TransformMode;
+
 
 
 @interface ModelRenderer : NuoRenderPipelinePass
@@ -20,7 +37,11 @@
 
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lights;
 @property (nonatomic, strong) NuoCubeMesh* cubeMesh;
+@property (nonatomic, readonly) BOOL hasMeshes;
 
+
+@property (nonatomic, assign) TransformMode transMode;
+@property (nonatomic, readonly) BOOL viewTransformReset;
 
 // delta control to the selected model
 //
@@ -50,6 +71,8 @@
        withCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (NuoBoardMesh*)createBoard:(CGSize)size;
+- (void)resetViewTransform;
+- (void)removeSelectedMesh;
 - (void)selectMeshWithScreen:(CGPoint)point;
 
 // there might be other renderers share the same set of meshes/scene with the model renderer.

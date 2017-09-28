@@ -30,7 +30,13 @@
 @property (nonatomic, weak) NuoMesh* selectedMesh;
 @property (nonatomic, strong) NSMutableArray<NuoMesh*>* meshes;
 
+// transform data. "viewTrans" is relative to the scene's center
+//
+@property (assign) matrix_float4x4 viewTrans;
 @property (assign) matrix_float4x4 projection;
+
+// per-frame GPU buffers
+//
 @property (strong) NSArray<id<MTLBuffer>>* transUniformBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
 @property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
@@ -70,6 +76,8 @@
         
         _meshes = [NSMutableArray new];
         _boardMeshes = [NSMutableArray new];
+        
+        _viewTrans = matrix_identity_float4x4;
     }
 
     return self;
@@ -110,6 +118,18 @@
 }
 
 
+- (BOOL)hasMeshes
+{
+    return [_meshes count] != 0;
+}
+
+
+- (BOOL)viewTransformReset
+{
+    return matrix_equal(_viewTrans, matrix_identity_float4x4);
+}
+
+
 - (void)createMeshs:(id<MTLCommandQueue>)commandQueue
 {
     NuoMeshCompound* mesh = [_modelLoader createMeshsWithOptions:_modelOptions
@@ -138,6 +158,12 @@
 }
 
 
+- (void)resetViewTransform
+{
+    _viewTrans = matrix_identity_float4x4;
+}
+
+
 - (NuoBoardMesh*)createBoard:(CGSize)size
 {
     std::shared_ptr<NuoModelBoard> modelBoard(new NuoModelBoard(size.width, size.height, 0.001));
@@ -155,6 +181,32 @@
     [_meshes insertObject:boardMesh atIndex:0];
     
     return boardMesh;
+}
+
+
+- (void)removeMesh:(NuoMesh*)mesh
+{
+    if (_meshes.count > 0)
+    {
+        [_meshes removeObject:mesh];
+        
+        if ([mesh isKindOfClass:[NuoBoardMesh class]])
+        {
+            NuoBoardMesh* boardMesh = (NuoBoardMesh*)mesh;
+            [_boardMeshes removeObject:boardMesh];
+        }
+        
+        if (_meshes.count > 0 && mesh == _selectedMesh)
+            _selectedMesh = _meshes[0];
+        else
+            _selectedMesh = nil;
+    }
+}
+
+
+- (void)removeSelectedMesh
+{
+    [self removeMesh:_selectedMesh];
 }
 
 
@@ -529,14 +581,8 @@
     _shadowMapSamplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 
-- (void)updateUniformsForView:(unsigned int)inFlight
+- (void)handleDeltaPosition
 {
-    // accumulate delta rotation into matrix
-    //
-    _selectedMesh.transformPoise = matrix_rotation_append(_selectedMesh.transformPoise, _rotationXDelta, _rotationYDelta);
-    _rotationXDelta = 0;
-    _rotationYDelta = 0;
-    
     float radius = _selectedMesh.boundingSphere.radius;
     
     // simply using "z" works until the view matrix is no longer an identitiy
@@ -548,6 +594,18 @@
     const float bilateralFactor = cameraDistance / 750.0f;
     _zoomDelta = 0;
     
+    // accumulate delta rotation into matrix
+    //
+    if (_transMode == kTransformMode_View)
+        _viewTrans = matrix_rotation_append(_viewTrans, _rotationXDelta, _rotationYDelta);
+    else
+        _selectedMesh.transformPoise = matrix_rotation_append(_selectedMesh.transformPoise, _rotationXDelta, _rotationYDelta);
+    
+    _rotationXDelta = 0;
+    _rotationYDelta = 0;
+    
+    // accumulate delta translation into matrix
+    //
     const float doTransX = _transXDelta * bilateralFactor;
     const float doTransY = _transYDelta * bilateralFactor;
     _transXDelta = 0;
@@ -558,6 +616,25 @@
         doTransX, doTransY,
         distanceDelta
     };
+    
+    matrix_float4x4 transMatrix = _selectedMesh.transformTranslate;
+    if (_transMode == kTransformMode_View)
+    {
+        _viewTrans = matrix_multiply(matrix_translation(translation), _viewTrans);
+    }
+    else
+    {
+        transMatrix = matrix_multiply(matrix_translation(translation), transMatrix);
+        [_selectedMesh setTransformTranslate:transMatrix];
+    }
+}
+
+- (void)updateUniformsForView:(unsigned int)inFlight
+{
+    // move all delta position coming from the view's mouse/gesture into the matrix,
+    // according to the transform mode (i.e. scene or mesh)
+    //
+    [self handleDeltaPosition];
     
     float sceneRadius = 0;
     float sceneCenter = 0;
@@ -571,10 +648,14 @@
     }
     sceneRadius = sceneSphere.radius;
     sceneCenter = sceneSphere.center.z;
-
-    const matrix_float4x4 transMatrix = matrix_multiply(matrix_translation(translation),
-                                                       _selectedMesh.transformTranslate);
     
+    vector_float3 center = { 0.0, 0.0, sceneCenter };
+    vector_float4 center4 = { sceneSphere.center.x, sceneSphere.center.y, sceneSphere.center.z, 1.0 };
+    matrix_float4x4 viewTrans = matrix_rotation_around(_viewTrans, center);
+    
+    vector_float4 transferedCenter = matrix_multiply(viewTrans, center4);
+    sceneCenter = transferedCenter.z;
+
     float maxSpan = sceneRadius * 2.0;
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
@@ -585,7 +666,7 @@
     _projection = matrix_perspective(aspect, _fieldOfView, near, far);
 
     NuoUniforms uniforms;
-    uniforms.viewMatrix = matrix_identity_float4x4;
+    uniforms.viewMatrix = viewTrans;
     uniforms.viewProjectionMatrix = matrix_multiply(_projection, uniforms.viewMatrix);
 
     memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
@@ -612,8 +693,6 @@
     }
     
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(NuoLightUniforms));
-    
-    [_selectedMesh setTransformTranslate:transMatrix];
     
     for (NuoMesh* mesh in _meshes)
         [mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];

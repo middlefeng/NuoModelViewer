@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="13196" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12121"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="13196"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -25,7 +25,7 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Lighting" systemMenu="apple" id="uQy-DD-JDr">
                         <items>
-                            <menuItem title="About Lighting" id="5kV-Vb-QxS">
+                            <menuItem title="About ModelViewer" id="5kV-Vb-QxS">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="orderFrontStandardAboutPanel:" target="-1" id="Exp-CZ-Vem"/>
@@ -39,7 +39,7 @@
                                 <menu key="submenu" title="Services" systemMenu="services" id="hz9-B4-Xy5"/>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="4je-JR-u6R"/>
-                            <menuItem title="Hide Lighting" keyEquivalent="h" id="Olw-nP-bQN">
+                            <menuItem title="Hide ModelViewer" keyEquivalent="h" id="Olw-nP-bQN">
                                 <connections>
                                     <action selector="hide:" target="-1" id="PnN-Uc-m68"/>
                                 </connections>
@@ -57,7 +57,7 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="kCx-OE-vgT"/>
-                            <menuItem title="Quit Lighting" keyEquivalent="q" id="4sb-4s-VLi">
+                            <menuItem title="Quit ModelViewer" keyEquivalent="q" id="4sb-4s-VLi">
                                 <connections>
                                     <action selector="terminate:" target="-1" id="Te7-pn-YzF"/>
                                 </connections>
@@ -186,6 +186,13 @@
                                 <connections>
                                     <action selector="selectAll:" target="-1" id="VNm-Mi-diN"/>
                                 </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="iUr-hf-RoM"/>
+                            <menuItem title="Reset Scene" id="tdI-aU-ZrC">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                            </menuItem>
+                            <menuItem title="Remove Object" id="bqK-nn-B8F">
+                                <modifierMask key="keyEquivalentModifierMask"/>
                             </menuItem>
                             <menuItem title="Board Object..." id="VgF-cn-czt">
                                 <modifierMask key="keyEquivalentModifierMask"/>
@@ -692,6 +699,10 @@
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ" customClass="ModelView">
                 <rect key="frame" x="0.0" y="0.0" width="1000" height="700"/>
                 <autoresizingMask key="autoresizingMask"/>
+                <connections>
+                    <outlet property="_removeObjectMenu" destination="bqK-nn-B8F" id="RO5-4Q-ffV"/>
+                    <outlet property="_sceneResetMenu" destination="tdI-aU-ZrC" id="MXL-5c-pWW"/>
+                </connections>
             </view>
         </window>
     </objects>
