@@ -45,7 +45,11 @@
 
 @property (nonatomic, assign) MTLClearColor clearColor;
 
+/**
+ *  overriden by subclass, called on the drawable-size setting
+ */
 - (void)makeTextures;
+
 - (MTLRenderPassDescriptor *)currentRenderPassDescriptor;
 
 @end

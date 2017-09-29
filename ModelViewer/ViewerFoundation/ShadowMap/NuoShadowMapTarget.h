@@ -16,7 +16,4 @@
 @interface NuoShadowMapTarget : NuoRenderPassTarget
 
 
-- (void)makeTextures;
-- (MTLRenderPassDescriptor *)currentRenderPassDescriptor;
-
 @end
