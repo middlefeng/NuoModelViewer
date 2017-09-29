@@ -36,16 +36,6 @@
 @property (assign) matrix_float4x4 viewTrans;
 @property (assign) matrix_float4x4 projection;
 
-// per-frame GPU buffers
-//
-@property (strong) NSArray<id<MTLBuffer>>* transUniformBuffers;
-@property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
-@property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
-@property (strong) id<MTLBuffer> modelCharacterUnfiromBuffer;
-
-@property (nonatomic, readonly) id<MTLSamplerState> shadowMapSamplerState;
-
-
 @property (strong) NuoModelLoader* modelLoader;
 
 
@@ -55,6 +45,13 @@
 
 @implementation ModelRenderer
 {
+    // per-frame GPU buffers (confirm to protocol NuoMeshSceneParametersProvider)
+    //
+    NSArray<id<MTLBuffer>>* _transUniformBuffers;
+    NSArray<id<MTLBuffer>>* _lightCastBuffers;
+    NSArray<id<MTLBuffer>>* _lightingUniformBuffers;
+    id<MTLBuffer> _modelCharacterUnfiromBuffer;
+    
     NuoShadowMapRenderer* _shadowMapRenderer[2];
     NuoScreenSpaceRenderer* _screenSpaceRenderer;
 }
@@ -63,10 +60,8 @@
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
 {
-    if ((self = [super init]))
+    if ((self = [super initWithDevice:device]))
     {
-        self.device = device;
-        
         [self makeResources];
         
         _modelOptions = [NuoMeshOption new];
@@ -81,6 +76,8 @@
         _boardMeshes = [NSMutableArray new];
         
         _viewTrans = matrix_identity_float4x4;
+        
+        self.paramsProvider = self;
     }
 
     return self;
@@ -572,16 +569,6 @@
     _modelCharacterUnfiromBuffer = [self.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
                                                             options:MTLResourceOptionCPUCacheModeDefault];
     memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(NuoModelCharacterUniforms));
-    
-    // create sampler state for shadow map sampling
-    MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
-    samplerDesc.sAddressMode = MTLSamplerAddressModeClampToEdge;
-    samplerDesc.tAddressMode = MTLSamplerAddressModeClampToEdge;
-    samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
-    samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
-    samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
-    samplerDesc.compareFunction = MTLCompareFunctionGreater;
-    _shadowMapSamplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 
 - (void)handleDeltaPosition
@@ -731,19 +718,6 @@
 }
 
 
-- (void)setSceneBuffersTo:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight
-{
-    [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
-    [renderPass setVertexBuffer:_lightCastBuffers[inFlight] offset:0 atIndex:2];
-    
-    [renderPass setFragmentBuffer:self.lightingUniformBuffers[inFlight] offset:0 atIndex:0];
-    [renderPass setFragmentBuffer:self.modelCharacterUnfiromBuffer offset:0 atIndex:1];
-    [renderPass setFragmentTexture:_shadowMapRenderer[0].renderTarget.targetTexture atIndex:0];
-    [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.targetTexture atIndex:1];
-    [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
-}
-
-
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
     MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
@@ -809,5 +783,39 @@
     
     return cloned;
 }
+
+
+
+#pragma mark -- Protocol NuoMeshSceneParametersProvider
+
+- (NuoShadowMapRenderer*)shadowMapRenderer:(NSUInteger)index
+{
+    return _shadowMapRenderer[index];
+}
+
+- (NSArray<id<MTLBuffer>>*)lightCastBuffers
+{
+    return _lightCastBuffers;
+}
+
+
+- (NSArray<id<MTLBuffer>>*)lightingUniformBuffers
+{
+    return _lightingUniformBuffers;
+}
+
+
+- (id<MTLBuffer>)modelCharacterUnfiromBuffer
+{
+    return _modelCharacterUnfiromBuffer;
+}
+
+
+- (NSArray<id<MTLBuffer>>*)transUniformBuffers
+{
+    return _transUniformBuffers;
+}
+
+
 
 @end

@@ -46,6 +46,7 @@
 		2C8B80FD1E2EDB01001746FE /* NuoRenderPipelinePass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.m */; };
 		2C97774B1F7E07B80031F188 /* NuoScreenSpaceTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C97774A1F7E07B80031F188 /* NuoScreenSpaceTarget.m */; };
 		2C9777521F7E1AB60031F188 /* NuoScreenSpaceRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9777511F7E1AB60031F188 /* NuoScreenSpaceRenderer.m */; };
+		2C97775A1F7EC8B60031F188 /* NuoMeshSceneRenderPass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9777591F7EC8B60031F188 /* NuoMeshSceneRenderPass.m */; };
 		2C99908F1F5F350400AEF181 /* ModelDissectRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C99908E1F5F350300AEF181 /* ModelDissectRenderer.mm */; };
 		2C9D9AAA1D658F0800283E46 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AA91D658F0800283E46 /* AppDelegate.m */; };
 		2C9D9AAD1D658F0800283E46 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAC1D658F0800283E46 /* main.m */; };
@@ -209,6 +210,8 @@
 		2C97774A1F7E07B80031F188 /* NuoScreenSpaceTarget.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoScreenSpaceTarget.m; sourceTree = "<group>"; };
 		2C9777501F7E1AB60031F188 /* NuoScreenSpaceRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoScreenSpaceRenderer.h; sourceTree = "<group>"; };
 		2C9777511F7E1AB60031F188 /* NuoScreenSpaceRenderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoScreenSpaceRenderer.m; sourceTree = "<group>"; };
+		2C9777581F7EC8B60031F188 /* NuoMeshSceneRenderPass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoMeshSceneRenderPass.h; sourceTree = "<group>"; };
+		2C9777591F7EC8B60031F188 /* NuoMeshSceneRenderPass.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoMeshSceneRenderPass.m; sourceTree = "<group>"; };
 		2C9990891F5F350300AEF181 /* ModelDissectRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelDissectRenderer.h; sourceTree = "<group>"; };
 		2C99908E1F5F350300AEF181 /* ModelDissectRenderer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ModelDissectRenderer.mm; sourceTree = "<group>"; };
 		2C9D9AA51D658F0800283E46 /* ModelViewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ModelViewer.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -430,6 +433,8 @@
 				2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */,
 				2C8B80FB1E2EDB01001746FE /* NuoRenderPipelinePass.h */,
 				2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.m */,
+				2C9777581F7EC8B60031F188 /* NuoMeshSceneRenderPass.h */,
+				2C9777591F7EC8B60031F188 /* NuoMeshSceneRenderPass.m */,
 				2CCF9C7E1E5B7A43006EF8C4 /* NuoRenderPipeline.h */,
 				2CCF9C7F1E5B7A43006EF8C4 /* NuoRenderPipeline.m */,
 				2C52F1311DCFE8970034ACDC /* NuoIntermediateRenderPass.h */,
@@ -683,6 +688,7 @@
 				2C5A58501ED3F2FD00121A82 /* NuoModelBoard.cpp in Sources */,
 				2C9D9AAA1D658F0800283E46 /* AppDelegate.m in Sources */,
 				9884424B1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm in Sources */,
+				2C97775A1F7EC8B60031F188 /* NuoMeshSceneRenderPass.m in Sources */,
 				2C5DDADA1D65949E00A9DC9A /* ModelViewerRenderer.mm in Sources */,
 				988442461D80853700EE2C4C /* NuoModelMaterialedBasic.cpp in Sources */,
 				2C5DDAD61D6591B000A9DC9A /* NuoMathUtilities.cpp in Sources */,
