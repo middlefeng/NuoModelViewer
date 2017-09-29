@@ -57,6 +57,21 @@ struct VertexFragmentCharacters
 };
 
 
+struct VertexScreenSpace
+{
+    metal::float4 projectedPosition [[position]];
+    metal::float3 position;
+    metal::float3 normal;
+};
+
+
+struct FragementScreenSpace
+{
+    metal::float3 position [[ color(0) ]];
+    metal::float3 normal   [[ color(1) ]];
+};
+
+
 struct PositionSimple
 {
     metal::float4 position [[position]];

@@ -13,7 +13,6 @@
 @interface NuoRenderPassTarget()
 
 @property (nonatomic, strong) id<MTLTexture> sampleTexture;
-@property (nonatomic, strong) id<MTLTexture> depthTexture;
 
 @end
 

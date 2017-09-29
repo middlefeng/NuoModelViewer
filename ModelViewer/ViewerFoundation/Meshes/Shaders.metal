@@ -95,6 +95,16 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
 }
 
 
+fragment FragementScreenSpace fragement_screen_space(VertexScreenSpace vert [[stage_in]])
+{
+    FragementScreenSpace result;
+    result.position = vert.position;
+    result.normal = vert.normal;
+    
+    return result;
+}
+
+
 
 /**
  *  shaders that generate phong result wit shadow casting,
