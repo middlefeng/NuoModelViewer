@@ -95,6 +95,24 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
 }
 
 
+vertex VertexScreenSpace vertex_project_screen_space(device Vertex *vertices [[buffer(0)]],
+                                                     constant NuoUniforms &uniforms [[buffer(1)]],
+                                                     constant NuoMeshUniforms &meshUniform [[buffer(3)]],
+                                                     uint vid [[vertex_id]])
+{
+    VertexScreenSpace result;
+    
+    float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
+    
+    result.projectedPosition = uniforms.viewProjectionMatrix * meshPosition;
+    result.position =  uniforms.viewMatrix * meshPosition;
+    result.normal = float4(meshNormal, 1.0);
+    
+    return result;
+}
+
+
 fragment FragementScreenSpace fragement_screen_space(VertexScreenSpace vert [[stage_in]])
 {
     FragementScreenSpace result;

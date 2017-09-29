@@ -417,7 +417,6 @@ const BOOL kShadowPCF = YES;
 }
 
 
-
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
@@ -460,6 +459,28 @@ const BOOL kShadowPCF = YES;
     NSError *error = nil;
     _renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineDescriptor
                                                                        error:&error];
+}
+
+- (void)makePipelineScreenSpaceState:(NSString*)vertexScreenSpaceShader
+{
+    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    
+    MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
+    screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexScreenSpaceShader];
+    screenSpacePipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragement_screen_space"];
+    screenSpacePipelineDescriptor.sampleCount = 1 /*kSampleCount*/;
+    screenSpacePipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
+    screenSpacePipelineDescriptor.colorAttachments[1].pixelFormat = MTLPixelFormatRGBA16Float;
+    screenSpacePipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    
+    NSError *error = nil;
+    _screenSpacePipelineState = [self.device newRenderPipelineStateWithDescriptor:screenSpacePipelineDescriptor
+                                                                            error:&error];
+}
+
+- (void)makePipelineScreenSpaceState
+{
+    [self makePipelineScreenSpaceState:@"vertex_project_screen_space"];
 }
     
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader
@@ -666,6 +687,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
     }
     
     [resultMesh setRawModel:model.get()];
+    [resultMesh makePipelineScreenSpaceState];
     [resultMesh makePipelineShadowState];
     [resultMesh makePipelineState:[resultMesh makePipelineStateDescriptor]];
     [resultMesh makeDepthStencilState];

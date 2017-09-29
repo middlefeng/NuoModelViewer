@@ -20,6 +20,7 @@
 
 #import "NuoLightSource.h"
 #import "NuoShadowMapRenderer.h"
+#import "NuoScreenSpaceRenderer.h"
 
 @interface ModelRenderer ()
 
@@ -55,6 +56,7 @@
 @implementation ModelRenderer
 {
     NuoShadowMapRenderer* _shadowMapRenderer[2];
+    NuoScreenSpaceRenderer* _screenSpaceRenderer;
 }
 
 
@@ -73,6 +75,7 @@
         
         _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 0"];
         _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
+        // TODO _screenSpaceRenderer = [[NuoScreenSpaceRenderer alloc] initWith]
         
         _meshes = [NSMutableArray new];
         _boardMeshes = [NSMutableArray new];

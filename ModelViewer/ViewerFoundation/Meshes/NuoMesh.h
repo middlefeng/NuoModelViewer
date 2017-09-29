@@ -54,6 +54,7 @@ extern const BOOL kShadowPCF;
 
 @property (nonatomic, strong) id<MTLDevice> device;
 @property (nonatomic, strong) id<MTLRenderPipelineState> renderPipelineState;
+@property (nonatomic, strong) id<MTLRenderPipelineState> screenSpacePipelineState;
 @property (nonatomic, strong) id<MTLRenderPipelineState> shadowPipelineState;
 @property (nonatomic, strong) id<MTLDepthStencilState> depthStencilState;
 
@@ -115,6 +116,7 @@ extern const BOOL kShadowPCF;
 - (void)shareResourcesFrom:(NuoMesh*)mesh;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
+- (void)makePipelineScreenSpaceState:(NSString*)vertexScreenSpaceShader;
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader;
 - (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor;
 - (void)makeDepthStencilState;
