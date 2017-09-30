@@ -288,7 +288,7 @@ MouseDragMode;
     
     _modelRender = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
     _modelDissectRenderer = [[ModelDissectRenderer alloc] initWithDevice:self.metalLayer.device];
-    _modelDissectRenderer.modelRenderer = _modelRender;
+    _modelDissectRenderer.paramsProvider = _modelRender;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
     _notationRender.notationWidthCap = [self operationPanelLocation].size.width + 30;
