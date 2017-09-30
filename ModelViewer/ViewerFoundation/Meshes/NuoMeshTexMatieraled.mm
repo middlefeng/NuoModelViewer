@@ -286,6 +286,12 @@
 }
 
 
+- (void)makePipelineScreenSpaceState
+{
+    return [self makePipelineScreenSpaceState:@"vertex_screen_space_materialed"];
+}
+
+
 - (void)makePipelineShadowState
 {
     [super makePipelineShadowState:@"vertex_shadow_materialed"];

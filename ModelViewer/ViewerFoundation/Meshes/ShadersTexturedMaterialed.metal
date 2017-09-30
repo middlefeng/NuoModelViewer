@@ -79,6 +79,24 @@ vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[b
 }
 
 
+vertex VertexScreenSpace vertex_screen_space_tex_materialed(device Vertex *vertices [[buffer(0)]],
+                                                            constant NuoUniforms &uniforms [[buffer(1)]],
+                                                            constant NuoMeshUniforms &meshUniform [[buffer(3)]],
+                                                            uint vid [[vertex_id]])
+{
+    VertexScreenSpace result;
+    
+    float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
+    
+    result.projectedPosition = uniforms.viewProjectionMatrix * meshPosition;
+    result.position =  uniforms.viewMatrix * meshPosition;
+    result.normal = float4(meshNormal, 1.0);
+    
+    return result;
+}
+
+
 
 VertexFragmentCharacters vertex_characters(ProjectedVertex vert);
 
