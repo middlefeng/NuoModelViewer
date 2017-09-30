@@ -507,8 +507,8 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
 
 float2 rand(float2 co)
 {
-    return float2(fract(sin(dot(float2(co.x, co.y / 2.0), float2(12.9898, 78.233))) * 43758.5453),
-                  fract(sin(dot(float2(co.y, co.x / 2.0), float2(12.9898, 78.233))) * 43758.5453));
+    return normalize(float2(fract(sin(dot(float2(co.x, co.y / 2.0), float2(12.9898, 78.233))) * 43758.5453),
+                            fract(sin(dot(float2(co.y, co.x / 2.0), float2(12.9898, 78.233))) * 43758.5453)));
 }
 
 
