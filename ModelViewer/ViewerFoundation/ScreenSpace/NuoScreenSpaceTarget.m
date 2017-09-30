@@ -41,16 +41,12 @@
     if ([_normalBuffer width] != [self drawableSize].width ||
         [_normalBuffer height] != [self drawableSize].height)
     {
-        
-        
         _normalBuffer = [self.device newTextureWithDescriptor:texDesc];
     }
     
     if ([_positionBuffer width] != [self drawableSize].width ||
         [_positionBuffer height] != [self drawableSize].height)
     {
-        
-        
         _positionBuffer = [self.device newTextureWithDescriptor:texDesc];
     }
     

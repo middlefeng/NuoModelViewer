@@ -51,6 +51,7 @@ NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoMod
     
     [resultMesh setShadowOverlayOnly:shadowCastOnly];
     [resultMesh makePipelineShadowState];
+    [resultMesh makePipelineScreenSpaceState];
     [resultMesh makePipelineState:[resultMesh makePipelineStateDescriptor]];
     [resultMesh makeDepthStencilState];
     

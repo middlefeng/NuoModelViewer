@@ -552,6 +552,24 @@ const BOOL kShadowPCF = YES;
 }
 
 
+- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+{
+    [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
+    [renderPass setRenderPipelineState:_screenSpacePipelineState];
+    [renderPass setDepthStencilState:_depthStencilState];
+    
+    NSUInteger rotationIndex = _shadowPipelineState ? 3 : 2;
+    
+    [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
+    [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:rotationIndex];
+    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                           indexCount:[_indexBuffer length] / sizeof(uint32_t)
+                            indexType:MTLIndexTypeUInt32
+                          indexBuffer:_indexBuffer
+                    indexBufferOffset:0];
+}
+
+
 - (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
     if (_shadowPipelineState)

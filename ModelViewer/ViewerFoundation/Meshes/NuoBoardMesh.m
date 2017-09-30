@@ -92,6 +92,12 @@
 }
 
 
+- (void)makePipelineScreenSpaceState
+{
+    [super makePipelineScreenSpaceState:@"vertex_project_screen_space"];
+}
+
+
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
     [renderPass setCullMode:MTLCullModeBack];

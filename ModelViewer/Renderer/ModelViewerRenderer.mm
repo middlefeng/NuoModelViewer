@@ -70,7 +70,9 @@
         
         _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 0"];
         _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
-        // TODO _screenSpaceRenderer = [[NuoScreenSpaceRenderer alloc] initWith]
+        
+        _screenSpaceRenderer = [[NuoScreenSpaceRenderer alloc] initWithDevice:device withName:@"Screen"];
+        _screenSpaceRenderer.paramsProvider = self;
         
         _meshes = [NSMutableArray new];
         _boardMeshes = [NSMutableArray new];
@@ -89,6 +91,7 @@
     [super setDrawableSize:drawableSize];
     [_shadowMapRenderer[0] setDrawableSize:drawableSize];
     [_shadowMapRenderer[1] setDrawableSize:drawableSize];
+    [_screenSpaceRenderer setDrawableSize:drawableSize];
 }
 
 
@@ -715,6 +718,9 @@
     lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix;
     lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix;
     memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
+    
+    [_screenSpaceRenderer setMeshes:_meshes];
+    [_screenSpaceRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
 }
 
 

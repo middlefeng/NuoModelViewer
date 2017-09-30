@@ -6,19 +6,21 @@
 //  Copyright © 2017 middleware. All rights reserved.
 //
 
-#import "NuoRenderPass.h"
+#import "NuoMeshSceneRenderPass.h"
 
 
 @class NuoMesh;
 
 
-@interface NuoScreenSpaceRenderer : NuoRenderPass
+@interface NuoScreenSpaceRenderer : NuoMeshSceneRenderPass
 
 
 /**
  *  Scene model. Be weak reference because the owner should be the model render.
  */
 @property (nonatomic, weak) NSArray<NuoMesh*>* meshes;
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device withName:(NSString*)name;
 
 
 @end
