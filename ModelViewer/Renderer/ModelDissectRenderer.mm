@@ -82,11 +82,11 @@
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     renderPass.label = @"Dissection Render Pass";
     
-    [_modelRenderer setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
+    [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
     
     for (NuoMesh* mesh in _dissectMeshes)
     {
-        [mesh setCullEnabled:[_modelRenderer cullEnabled]];
+        [mesh setCullEnabled:[self.paramsProvider cullEnabled]];
         [mesh drawMesh:renderPass indexBuffer:inFlight];
     }
     

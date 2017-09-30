@@ -1,18 +1,16 @@
 
 
-#import "NuoRenderPipelinePass.h"
+#import "NuoMeshSceneRenderPass.h"
 
 
 @class NuoMesh;
 @class ModelRenderer;
 
 
-@interface ModelDissectRenderer : NuoRenderPipelinePass
+@interface ModelDissectRenderer : NuoMeshSceneRenderPass
 
 
 @property (nonatomic, strong) NSArray<NuoMesh*>* dissectMeshes;
-@property (nonatomic, weak) ModelRenderer* modelRenderer;
-
 @property (nonatomic, assign) float splitViewProportion;
 
 

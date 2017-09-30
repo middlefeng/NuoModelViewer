@@ -24,6 +24,7 @@
 - (NSArray<id<MTLBuffer>>*)lightCastBuffers;
 - (NSArray<id<MTLBuffer>>*)lightingUniformBuffers;
 - (id<MTLBuffer>)modelCharacterUnfiromBuffer;
+- (BOOL)cullEnabled;
 
 - (NuoShadowMapRenderer*)shadowMapRenderer:(NSUInteger)index;
 
@@ -43,9 +44,7 @@
 
 /**
  *  the function sets up all common uniforms that are shared by all meshes.
- *  the actual value of those uniforms come from the application-specific subclass.
- *  this is not only used by the rendering of the mesh-scene pass itself, but used by other passes which
- *  render meshes and require the common uniforms.
+ *  the actual value of those uniforms come from the NuoMeshSceneParametersProvider.
  */
 - (void)setSceneBuffersTo:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight;
 
