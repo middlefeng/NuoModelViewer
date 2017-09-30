@@ -1,6 +1,8 @@
 #include <metal_stdlib>
 #include <metal_matrix>
 
+#include "ShadersCommon.h"
+
 using namespace metal;
 
 
@@ -18,16 +20,10 @@ struct TextureMixFragment
 
 
 
-struct ProjectedVertex
+vertex PositionTextureSimple texture_project(device Vertex *vertices [[buffer(0)]],
+                                             uint vid [[vertex_id]])
 {
-    float4 position [[position]];
-    float2 texCoord;
-};
-
-vertex ProjectedVertex texture_project(device Vertex *vertices [[buffer(0)]],
-                                       uint vid [[vertex_id]])
-{
-    ProjectedVertex outVert;
+    PositionTextureSimple outVert;
     outVert.position = vertices[vid].position;
     outVert.position.z = 0.5;
     outVert.position.w = 1.0;
@@ -36,7 +32,7 @@ vertex ProjectedVertex texture_project(device Vertex *vertices [[buffer(0)]],
     return outVert;
 }
 
-fragment float4 fragment_texutre(ProjectedVertex vert [[stage_in]],
+fragment float4 fragment_texutre(PositionTextureSimple vert [[stage_in]],
                                  texture2d<float> texture [[texture(0)]],
                                  sampler samplr [[sampler(0)]])
 {
@@ -45,7 +41,7 @@ fragment float4 fragment_texutre(ProjectedVertex vert [[stage_in]],
 }
 
 
-fragment float4 fragment_texutre_mix(ProjectedVertex vert [[stage_in]],
+fragment float4 fragment_texutre_mix(PositionTextureSimple vert [[stage_in]],
                                      texture2d<float> texture1 [[texture(0)]],
                                      texture2d<float> texture2 [[texture(1)]],
                                      constant TextureMixFragment& mixFragment [[buffer(0)]],
