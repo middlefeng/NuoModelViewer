@@ -23,9 +23,8 @@
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
 {
-    if (self = [super init])
+    if (self = [super initWithDevice:device])
     {
-        self.device = device;
         [self makeResources];
     }
 
