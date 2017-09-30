@@ -72,9 +72,22 @@ struct FragementScreenSpace
 };
 
 
+/**
+ *  output for depth only vertex shaders
+ */
 struct PositionSimple
 {
     metal::float4 position [[position]];
+};
+
+
+/**
+ *  output for screen-space shaders
+ */
+struct PositionTextureSimple
+{
+    metal::float4 position [[position]];
+    metal::float2 texCoord;
 };
 
 
@@ -96,9 +109,6 @@ metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert
                                                    metal::float4 diffuseTexel,
                                                    metal::depth2d<float> shadowMap[2],
                                                    metal::sampler samplr);
-
-
-fragment void fragment_shadow(PositionSimple vert [[stage_in]]);
 
 
 metal::float4 diffuse_common(metal::float4 diffuseTexel, float extraOpacity);
