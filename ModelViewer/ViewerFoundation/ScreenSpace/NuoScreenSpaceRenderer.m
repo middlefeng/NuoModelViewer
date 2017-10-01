@@ -43,10 +43,7 @@
     [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
     
     for (NuoMesh* mesh in _meshes)
-    {
-        [mesh setCullEnabled:self.paramsProvider.cullEnabled];
         [mesh drawScreenSpace:renderPass indexBuffer:inFlight];
-    }
     
     [renderPass endEncoding];
 }

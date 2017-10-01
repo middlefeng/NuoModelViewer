@@ -688,7 +688,10 @@
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(NuoLightUniforms));
     
     for (NuoMesh* mesh in _meshes)
+    {
         [mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
+        [mesh setCullEnabled:_cullEnabled];
+    }
     
     if (_cubeMesh)
     {
@@ -741,10 +744,7 @@
     [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
     
     for (NuoMesh* mesh in _meshes)
-    {
-        [mesh setCullEnabled:_cullEnabled];
         [mesh drawMesh:renderPass indexBuffer:inFlight];
-    }
     
     [renderPass endEncoding];
 }

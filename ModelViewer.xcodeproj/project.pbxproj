@@ -39,6 +39,7 @@
 		2C5DDADA1D65949E00A9DC9A /* ModelViewerRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C5DDAD91D65949E00A9DC9A /* ModelViewerRenderer.mm */; };
 		2C6A8E5A1F7FE8BB0007551F /* ShadersAmbient.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A8E591F7FE8BB0007551F /* ShadersAmbient.metal */; };
 		2C6A8E701F80BBA70007551F /* NuoScreenSpaceMesh.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A8E6F1F80BBA70007551F /* NuoScreenSpaceMesh.m */; };
+		2C6A8E7B1F8134440007551F /* NuoAmbientOcclusionRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A8E7A1F8134440007551F /* NuoAmbientOcclusionRenderer.m */; };
 		2C723A991E42D05700484992 /* ModelPartDimensionPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C723A981E42D05700484992 /* ModelPartDimensionPanel.m */; };
 		2C723AA91E43A83600484992 /* NuoMeshRotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C723AA81E43A83600484992 /* NuoMeshRotation.m */; };
 		2C723AB01E44355300484992 /* ModelPartsAnimations.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C723AAF1E44355300484992 /* ModelPartsAnimations.xib */; };
@@ -196,6 +197,8 @@
 		2C6A8E591F7FE8BB0007551F /* ShadersAmbient.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ShadersAmbient.metal; sourceTree = "<group>"; };
 		2C6A8E6E1F80BBA70007551F /* NuoScreenSpaceMesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoScreenSpaceMesh.h; sourceTree = "<group>"; };
 		2C6A8E6F1F80BBA70007551F /* NuoScreenSpaceMesh.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoScreenSpaceMesh.m; sourceTree = "<group>"; };
+		2C6A8E791F8134440007551F /* NuoAmbientOcclusionRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoAmbientOcclusionRenderer.h; sourceTree = "<group>"; };
+		2C6A8E7A1F8134440007551F /* NuoAmbientOcclusionRenderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoAmbientOcclusionRenderer.m; sourceTree = "<group>"; };
 		2C6C7CDF1E45AB1200CEC76D /* NuoMatrixTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoMatrixTypes.h; sourceTree = "<group>"; };
 		2C723A971E42D05700484992 /* ModelPartDimensionPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelPartDimensionPanel.h; sourceTree = "<group>"; };
 		2C723A981E42D05700484992 /* ModelPartDimensionPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ModelPartDimensionPanel.m; sourceTree = "<group>"; };
@@ -356,8 +359,6 @@
 				2C6A8E6F1F80BBA70007551F /* NuoScreenSpaceMesh.m */,
 				2C52F12C1DCC03380034ACDC /* NuoTextureMesh.h */,
 				2C52F12D1DCC03380034ACDC /* NuoTextureMesh.mm */,
-				2C6A8E651F80B9AD0007551F /* NuoScreenSpaceMesh.h */,
-				2C6A8E661F80B9AD0007551F /* NuoScreenSpaceMesh.m */,
 				98E05A5E1E6A17A600D4068F /* NuoCubeMesh.h */,
 				98E05A5F1E6A17A600D4068F /* NuoCubeMesh.m */,
 				2C156CAC1EE7961C000C52D4 /* NuoBoardMesh.h */,
@@ -485,6 +486,8 @@
 				2C97774A1F7E07B80031F188 /* NuoScreenSpaceTarget.m */,
 				2C9777501F7E1AB60031F188 /* NuoScreenSpaceRenderer.h */,
 				2C9777511F7E1AB60031F188 /* NuoScreenSpaceRenderer.m */,
+				2C6A8E791F8134440007551F /* NuoAmbientOcclusionRenderer.h */,
+				2C6A8E7A1F8134440007551F /* NuoAmbientOcclusionRenderer.m */,
 			);
 			path = ScreenSpace;
 			sourceTree = "<group>";
@@ -660,6 +663,7 @@
 				2C8B80FD1E2EDB01001746FE /* NuoRenderPipelinePass.m in Sources */,
 				98E05A601E6A17A600D4068F /* NuoCubeMesh.m in Sources */,
 				2C5B92B71D7157EA00722936 /* ModelView.m in Sources */,
+				2C6A8E7B1F8134440007551F /* NuoAmbientOcclusionRenderer.m in Sources */,
 				2CEE8CF71F71BC3F00C4D4F6 /* LightShadowPopoverController.m in Sources */,
 				2CA55FA91DD21D2A0000AD21 /* NuoRenderPass.m in Sources */,
 				2C4042BE1E065B2700AAC06E /* NuoLua.m in Sources */,
@@ -679,7 +683,6 @@
 				2C3D9AA11D7E344F002C1226 /* NuoTypes.cpp in Sources */,
 				2C8974931D8BBAEF00460648 /* NuoMeshOptions.m in Sources */,
 				2C52F12E1DCC03380034ACDC /* NuoTextureMesh.mm in Sources */,
-				2C6A8E671F80B9AD0007551F /* NuoScreenSpaceMesh.m in Sources */,
 				2C4B60421D8AD32100A12968 /* ModelOperationPanel.m in Sources */,
 				2C723A991E42D05700484992 /* ModelPartDimensionPanel.m in Sources */,
 				2CCF9C771E5B4F77006EF8C4 /* NuoOffscreenView.m in Sources */,
