@@ -75,6 +75,16 @@ typedef struct
 NuoModelCharacterUniforms;
 
 
+typedef struct
+{
+    float sampleRadius;
+    float scale;
+    float bias;
+    float intensity;
+}
+NuoAmbientOcclusionUniforms;
+
+
 typedef enum
 {
     kMeshMode_Normal,
