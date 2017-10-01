@@ -3,13 +3,13 @@
 //  ModelViewer
 //
 //  Created by middleware on 11/3/16.
-//  Copyright © 2016 middleware. All rights reserved.
+//  Copyright © 2017 middleware. All rights reserved.
 //
 
-#import "NuoMesh.h"
+#import "NuoScreenSpaceMesh.h"
 
 
-@interface NuoTextureMesh : NuoMesh
+@interface NuoTextureMesh : NuoScreenSpaceMesh
 
 
 @property (nonatomic, weak) id<MTLTexture> modelTexture;
