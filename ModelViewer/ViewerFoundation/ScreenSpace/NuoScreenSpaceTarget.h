@@ -19,4 +19,7 @@
 @property (nonatomic, readonly) id<MTLTexture> ambientBuffer;
 
 
+- (instancetype)initWithSampleCount:(unsigned int)sampleCount;
+
+
 @end

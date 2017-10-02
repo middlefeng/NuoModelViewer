@@ -20,7 +20,7 @@
     
     if (self)
     {
-        self.renderTarget = [[NuoScreenSpaceTarget alloc] init];
+        self.renderTarget = [[NuoScreenSpaceTarget alloc] initWithSampleCount:kSampleCount];
         self.renderTarget.device = device;
         ((NuoScreenSpaceTarget*)self.renderTarget).name = name;
     }
