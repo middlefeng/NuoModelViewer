@@ -722,7 +722,7 @@
     memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
     
     [_deferredRenderer setMeshes:_meshes];
-    [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
 }
 
 
@@ -746,6 +746,8 @@
         [mesh drawMesh:renderPass indexBuffer:inFlight];
     
     [renderPass endEncoding];
+    
+    [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
 }
 
 

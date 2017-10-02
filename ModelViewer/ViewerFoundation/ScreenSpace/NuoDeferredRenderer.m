@@ -80,8 +80,6 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    [self predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
-    
     MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     renderPass.label = @"Deferred Render Pass";

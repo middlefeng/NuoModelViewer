@@ -471,6 +471,7 @@ const BOOL kShadowPCF = YES;
     screenSpacePipelineDescriptor.sampleCount = 1 /*kSampleCount*/;
     screenSpacePipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
     screenSpacePipelineDescriptor.colorAttachments[1].pixelFormat = MTLPixelFormatRGBA16Float;
+    screenSpacePipelineDescriptor.colorAttachments[2].pixelFormat = MTLPixelFormatRGBA16Float;
     screenSpacePipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     NSError *error = nil;

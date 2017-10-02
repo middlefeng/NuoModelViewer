@@ -108,16 +108,19 @@ vertex VertexScreenSpace vertex_project_screen_space(device Vertex *vertices [[b
     result.projectedPosition = uniforms.viewProjectionMatrix * meshPosition;
     result.position =  uniforms.viewMatrix * meshPosition;
     result.normal = float4(meshNormal, 1.0);
+    result.ambientColor = material.ambientColor;
     
     return result;
 }
 
 
-fragment FragementScreenSpace fragement_screen_space(VertexScreenSpace vert [[stage_in]])
+fragment FragementScreenSpace fragement_screen_space(VertexScreenSpace vert [[stage_in]],
+                                                     constant NuoLightUniforms& lightUniform [[ buffer(0) ]])
 {
     FragementScreenSpace result;
     result.position = vert.position;
     result.normal = vert.normal;
+    result.ambientColor = float4((vert.ambientColor * lightUniform.ambientDensity), 1.0);
     
     return result;
 }

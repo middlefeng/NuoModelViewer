@@ -22,6 +22,7 @@
     {
         self.sampleCount = 1;
         self.manageTargetTexture = NO;  // not use the default color target
+        self.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 0.0);
     }
     return self;
 }
@@ -50,6 +51,12 @@
         _positionBuffer = [self.device newTextureWithDescriptor:texDesc];
     }
     
+    if ([_ambientBuffer width] != [self drawableSize].width ||
+        [_ambientBuffer height] != [self drawableSize].height)
+    {
+        _ambientBuffer = [self.device newTextureWithDescriptor:texDesc];
+    }
+    
     [super makeTextures];
 }
 
@@ -67,6 +74,11 @@
     passDescriptor.colorAttachments[1].clearColor = self.clearColor;
     passDescriptor.colorAttachments[1].loadAction = MTLLoadActionClear;
     passDescriptor.colorAttachments[1].storeAction = MTLStoreActionStore;
+    
+    passDescriptor.colorAttachments[2].texture = _ambientBuffer;
+    passDescriptor.colorAttachments[2].clearColor = self.clearColor;
+    passDescriptor.colorAttachments[2].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[2].storeAction = MTLStoreActionStore;
     
     passDescriptor.depthAttachment.texture = self.depthTexture;
     passDescriptor.depthAttachment.clearDepth = 1.0;

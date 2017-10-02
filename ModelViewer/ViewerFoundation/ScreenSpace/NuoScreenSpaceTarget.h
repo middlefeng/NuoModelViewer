@@ -16,6 +16,7 @@
 
 @property (nonatomic, readonly) id<MTLTexture> positionBuffer;
 @property (nonatomic, readonly) id<MTLTexture> normalBuffer;
+@property (nonatomic, readonly) id<MTLTexture> ambientBuffer;
 
 
 @end
