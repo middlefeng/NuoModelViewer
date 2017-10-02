@@ -41,18 +41,18 @@
         
         _screenMesh = [[NuoScreenSpaceMesh alloc] initWithDevice:device];
         [_screenMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm
-                        withFragementShader:@"ambient_occlusion" withSampleCount:1];
+                        withFragementShader:@"fragement_deferred" withSampleCount:1];
         
-        _deferredRenderParamBuffer = [self.device newBufferWithLength:sizeof(NuoAmbientOcclusionUniforms)
+        _deferredRenderParamBuffer = [self.device newBufferWithLength:sizeof(NuoDeferredRenderUniforms)
                                                               options:MTLResourceOptionCPUCacheModeDefault];
         
-        NuoAmbientOcclusionUniforms paramUniforms;
-        paramUniforms.bias = 0.0;
-        paramUniforms.intensity = 3.0;
-        paramUniforms.sampleRadius = 3.0;
-        paramUniforms.scale = 1.0;
+        NuoDeferredRenderUniforms paramUniforms;
+        paramUniforms.ambientOcclusionParams.bias = 0.0;
+        paramUniforms.ambientOcclusionParams.intensity = 3.0;
+        paramUniforms.ambientOcclusionParams.sampleRadius = 2.0;
+        paramUniforms.ambientOcclusionParams.scale = 1.0;
         
-        memcpy(_deferredRenderParamBuffer.contents, &paramUniforms, sizeof(NuoAmbientOcclusionUniforms));
+        memcpy(_deferredRenderParamBuffer.contents, &paramUniforms, sizeof(NuoDeferredRenderUniforms));
     }
     
     return self;

@@ -82,7 +82,14 @@ typedef struct
     float bias;
     float intensity;
 }
-NuoAmbientOcclusionUniforms;
+NuoAmbientOcclusionUniformField;
+
+
+typedef struct
+{
+    NuoAmbientOcclusionUniformField ambientOcclusionParams;
+}
+NuoDeferredRenderUniforms;
 
 
 typedef enum

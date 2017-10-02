@@ -16,7 +16,7 @@ using namespace metal;
 
 static float do_ambient_occlusion(texture2d<float> positionBuffer, sampler samplr,
                                   float2 tcoord, float2 uv, float3 p, float3 cnorm,
-                                  constant NuoAmbientOcclusionUniforms& occlusionUniforms)
+                                  constant NuoAmbientOcclusionUniformField& occlusionUniforms)
 {
     float3 diff = positionBuffer.sample(samplr, tcoord + uv).xyz - p;
     const float3 v = normalize(diff);
@@ -25,17 +25,19 @@ static float do_ambient_occlusion(texture2d<float> positionBuffer, sampler sampl
 }
 
 
-fragment float4 ambient_occlusion(PositionTextureSimple vert         [[ stage_in   ]],
-                                 texture2d<float> positionBuffer    [[ texture(0) ]],
-                                 texture2d<float> normalBuffer      [[ texture(1) ]],
-                                 sampler samplr                     [[ sampler(0) ]],
-                                 constant NuoAmbientOcclusionUniforms& occlusionUniforms [[ buffer(0) ]])
+fragment float4 fragement_deferred(PositionTextureSimple vert                   [[ stage_in   ]],
+                                   texture2d<float> positionBuffer              [[ texture(0) ]],
+                                   texture2d<float> normalBuffer                [[ texture(1) ]],
+                                   sampler samplr                               [[ sampler(0) ]],
+                                   constant NuoDeferredRenderUniforms& params   [[ buffer(0)  ]])
 {
     const float2 vec[4] =
     {
         float2(1, 0), float2(-1, 0),
         float2(0, 1), float2(0, -1),
     };
+    
+    constant NuoAmbientOcclusionUniformField& occlusionUniforms = params.ambientOcclusionParams;
     
     float3 p = positionBuffer.sample(samplr, vert.texCoord).xyz;
     float3 n = normalBuffer.sample(samplr, vert.texCoord).xyz;
