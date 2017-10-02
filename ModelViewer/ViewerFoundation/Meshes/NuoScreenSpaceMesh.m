@@ -84,6 +84,7 @@
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
+    [renderPass setFragmentSamplerState:_samplerState atIndex:0];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
     [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle

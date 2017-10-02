@@ -71,8 +71,6 @@ struct TextureMixFragment
         [renderPass setFragmentBuffer:_textureMixBuffer[index] offset:0 atIndex:0];
     }
     
-    [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
-    
     [super drawMesh:renderPass indexBuffer:index];
 }
 
