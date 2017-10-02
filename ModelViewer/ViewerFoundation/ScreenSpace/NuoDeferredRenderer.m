@@ -6,14 +6,16 @@
 //  Copyright © 2017 middleware. All rights reserved.
 //
 
-#import "NuoAmbientOcclusionRenderer.h"
+#import "NuoDeferredRenderer.h"
 #import "NuoScreenSpaceRenderer.h"
+#import "NuoScreenSpaceMesh.h"
 
 
 
-@implementation NuoAmbientOcclusionRenderer
+@implementation NuoDeferredRenderer
 {
     NuoScreenSpaceRenderer* _screenSpaceRenderer;
+    NuoScreenSpaceMesh* _screenMesh;
 }
 
 
@@ -29,6 +31,7 @@
         _screenSpaceRenderer.paramsProvider = sceneParameter;
         
         self.renderTarget = [[NuoRenderPassTarget alloc] init];
+        self.renderTarget.name = @"deferred";
         self.renderTarget.device = device;
         self.renderTarget.manageTargetTexture = YES;
         self.renderTarget.sharedTargetTexture = YES;

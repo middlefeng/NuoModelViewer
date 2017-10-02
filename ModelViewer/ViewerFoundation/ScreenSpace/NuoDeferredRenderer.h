@@ -13,7 +13,7 @@
 @class NuoMesh;
 
 
-@interface NuoAmbientOcclusionRenderer : NuoRenderPass
+@interface NuoDeferredRenderer : NuoRenderPass
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
