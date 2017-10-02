@@ -21,15 +21,15 @@ static float do_ambient_occlusion(texture2d<float> positionBuffer, sampler sampl
     float3 diff = positionBuffer.sample(samplr, tcoord + uv).xyz - p;
     const float3 v = normalize(diff);
     const float d = length(diff) * occlusionUniforms.scale;
-    return max(0.0, dot(cnorm,v) - occlusionUniforms.bias) * (1.0 / (1.0 + d)) * occlusionUniforms.intensity;
+    return max(0.0, dot(cnorm, v) - occlusionUniforms.bias) * (1.0 / (1.0 + d)) * occlusionUniforms.intensity;
 }
 
 
-fragment float ambient_occlusion(PositionTextureSimple vert         [[ stage_in   ]],
+fragment float4 ambient_occlusion(PositionTextureSimple vert         [[ stage_in   ]],
                                  texture2d<float> positionBuffer    [[ texture(0) ]],
                                  texture2d<float> normalBuffer      [[ texture(1) ]],
                                  sampler samplr                     [[ sampler(0) ]],
-                                 constant NuoAmbientOcclusionUniforms& occlusionUniforms [[ buffer(0)  ]])
+                                 constant NuoAmbientOcclusionUniforms& occlusionUniforms [[ buffer(0) ]])
 {
     const float2 vec[4] =
     {
@@ -58,5 +58,5 @@ fragment float ambient_occlusion(PositionTextureSimple vert         [[ stage_in 
     
     ao /= (float)iterations * 4.0;
     
-    return ao;
+    return float4(1.0 - ao);
 }

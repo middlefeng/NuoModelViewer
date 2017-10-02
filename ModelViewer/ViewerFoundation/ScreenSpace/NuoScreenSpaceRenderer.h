@@ -20,6 +20,9 @@
  */
 @property (nonatomic, weak) NSArray<NuoMesh*>* meshes;
 
+@property (nonatomic, readonly) id<MTLTexture> positionBuffer;
+@property (nonatomic, readonly) id<MTLTexture> normalBuffer;
+
 - (instancetype)initWithDevice:(id<MTLDevice>)device withName:(NSString*)name;
 
 

@@ -49,4 +49,16 @@
 }
 
 
+- (id<MTLTexture>)positionBuffer
+{
+    return ((NuoScreenSpaceTarget*)self.renderTarget).positionBuffer;
+}
+
+
+- (id<MTLTexture>)normalBuffer
+{
+    return ((NuoScreenSpaceTarget*)self.renderTarget).normalBuffer;
+}
+
+
 @end
