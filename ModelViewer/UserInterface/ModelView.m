@@ -350,7 +350,7 @@ MouseDragMode;
         
         NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
         modelRenderTarget.device = self.metalLayer.device;
-        modelRenderTarget.sampleCount = kSampleCount;
+        modelRenderTarget.sampleCount = 1;
         modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         modelRenderTarget.manageTargetTexture = YES;
         modelRenderTarget.name = @"Model";
@@ -389,7 +389,7 @@ MouseDragMode;
         
         NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
         modelRenderTarget.device = self.metalLayer.device;
-        modelRenderTarget.sampleCount = kSampleCount;
+        modelRenderTarget.sampleCount = 1;
         modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         modelRenderTarget.manageTargetTexture = (_modelPanel.meshMode != kMeshMode_Normal);
         modelRenderTarget.name = @"Model";

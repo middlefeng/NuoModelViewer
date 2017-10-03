@@ -47,7 +47,7 @@
                                                               options:MTLResourceOptionCPUCacheModeDefault];
         
         NuoDeferredRenderUniforms paramUniforms;
-        paramUniforms.ambientOcclusionParams.bias = 0.0;
+        paramUniforms.ambientOcclusionParams.bias = 0.3;
         paramUniforms.ambientOcclusionParams.intensity = 3.0;
         paramUniforms.ambientOcclusionParams.sampleRadius = 2.0;
         paramUniforms.ambientOcclusionParams.scale = 1.0;

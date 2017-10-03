@@ -122,6 +122,25 @@ fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
 }
 
 
+vertex VertexScreenSpace vertex_screen_space_tex_materialed_bump(device Vertex *vertices [[buffer(0)]],
+                                                                 constant NuoUniforms &uniforms [[buffer(1)]],
+                                                                 constant NuoMeshUniforms &meshUniform [[buffer(3)]],
+                                                                 uint vid [[vertex_id]])
+{
+    VertexScreenSpace result;
+    
+    float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
+    
+    result.projectedPosition = uniforms.viewProjectionMatrix * meshPosition;
+    result.position =  uniforms.viewMatrix * meshPosition;
+    result.normal = float4(meshNormal, 1.0);
+    result.ambientColor = vertices[vid].diffuseColor;
+    
+    return result;
+}
+
+
 VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
 {
     VertexFragmentCharacters outVert;

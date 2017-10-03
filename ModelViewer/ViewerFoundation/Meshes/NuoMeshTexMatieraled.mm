@@ -82,6 +82,12 @@
 }
 
 
+- (void)makePipelineScreenSpaceState
+{
+    [self makePipelineScreenSpaceState:_textureBump ? @"vertex_screen_space_tex_materialed_bump" : @"vertex_screen_space_tex_materialed"];
+}
+
+
 - (void)makePipelineShadowState
 {
     NSString* shadowShader = _textureBump ? @"vertex_shadow_tex_materialed_bump" : @"vertex_shadow_tex_materialed";

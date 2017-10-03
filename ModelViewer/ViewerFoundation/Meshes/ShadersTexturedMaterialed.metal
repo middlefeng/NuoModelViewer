@@ -92,6 +92,7 @@ vertex VertexScreenSpace vertex_screen_space_tex_materialed(device Vertex *verti
     result.projectedPosition = uniforms.viewProjectionMatrix * meshPosition;
     result.position =  uniforms.viewMatrix * meshPosition;
     result.normal = float4(meshNormal, 1.0);
+    result.ambientColor = vertices[vid].diffuseColor;
     
     return result;
 }

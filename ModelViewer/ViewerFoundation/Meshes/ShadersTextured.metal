@@ -65,6 +65,7 @@ vertex VertexScreenSpace vertex_screen_space_textured(device Vertex *vertices [[
     result.projectedPosition = uniforms.viewProjectionMatrix * meshPosition;
     result.position =  uniforms.viewMatrix * meshPosition;
     result.normal = float4(meshNormal, 1.0);
+    result.ambientColor = material.ambientColor;
     
     return result;
 }

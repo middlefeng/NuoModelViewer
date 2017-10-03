@@ -135,6 +135,7 @@ vertex VertexScreenSpace vertex_screen_space_materialed(device Vertex *vertices 
     result.projectedPosition = uniforms.viewProjectionMatrix * meshPosition;
     result.position =  uniforms.viewMatrix * meshPosition;
     result.normal = float4(meshNormal, 1.0);
+    result.ambientColor = vertices[vid].ambientColor;
     
     return result;
 }

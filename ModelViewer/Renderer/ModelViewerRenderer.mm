@@ -53,6 +53,7 @@
     id<MTLBuffer> _modelCharacterUnfiromBuffer;
     
     NuoShadowMapRenderer* _shadowMapRenderer[2];
+    NuoRenderPassTarget* _immediateTarget;
     NuoDeferredRenderer* _deferredRenderer;
 }
 
@@ -71,6 +72,13 @@
         _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 0"];
         _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
         
+        _immediateTarget = [[NuoRenderPassTarget alloc] init];
+        _immediateTarget.name = @"immediate";
+        _immediateTarget.sampleCount = kSampleCount;
+        _immediateTarget.device = device;
+        _immediateTarget.manageTargetTexture = YES;
+        _immediateTarget.sharedTargetTexture = NO;
+        
         _deferredRenderer = [[NuoDeferredRenderer alloc] initWithDevice:device withSceneParameter:self];
         
         _meshes = [NSMutableArray new];
@@ -88,6 +96,7 @@
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
+    [_immediateTarget setDrawableSize:drawableSize];
     [_shadowMapRenderer[0] setDrawableSize:drawableSize];
     [_shadowMapRenderer[1] setDrawableSize:drawableSize];
     [_deferredRenderer setDrawableSize:drawableSize];
@@ -728,7 +737,7 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
+    MTLRenderPassDescriptor *passDescriptor = [_immediateTarget currentRenderPassDescriptor];
     if (!passDescriptor)
         return;
     
@@ -747,6 +756,7 @@
     
     [renderPass endEncoding];
     
+    [_deferredRenderer setRenderTarget:self.renderTarget];
     [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
 }
 
