@@ -46,11 +46,13 @@
         _deferredRenderParamBuffer = [self.device newBufferWithLength:sizeof(NuoDeferredRenderUniforms)
                                                               options:MTLResourceOptionCPUCacheModeDefault];
         
+        vector_float4 clearColor = { 0.95, 0.95, 0.95, 1 };
         NuoDeferredRenderUniforms paramUniforms;
         paramUniforms.ambientOcclusionParams.bias = 0.3;
         paramUniforms.ambientOcclusionParams.intensity = 3.0;
         paramUniforms.ambientOcclusionParams.sampleRadius = 2.0;
         paramUniforms.ambientOcclusionParams.scale = 1.0;
+        paramUniforms.clearColor = clearColor;
         
         memcpy(_deferredRenderParamBuffer.contents, &paramUniforms, sizeof(NuoDeferredRenderUniforms));
     }
@@ -86,6 +88,7 @@
     
     [renderPass setFragmentTexture:_screenSpaceRenderer.positionBuffer atIndex:0];
     [renderPass setFragmentTexture:_screenSpaceRenderer.normalBuffer atIndex:1];
+    [renderPass setFragmentTexture:_immediateResult atIndex:2];
     [renderPass setFragmentBuffer:_deferredRenderParamBuffer offset:0 atIndex:0];
     
     [_screenMesh drawMesh:renderPass indexBuffer:inFlight];

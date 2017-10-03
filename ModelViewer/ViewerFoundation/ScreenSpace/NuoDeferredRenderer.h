@@ -16,6 +16,12 @@
 @interface NuoDeferredRenderer : NuoRenderPass
 
 
+/**
+ *  result from the immediate phase
+ */
+@property (nonatomic, weak) id<MTLTexture> immediateResult;
+
+
 - (instancetype)initWithDevice:(id<MTLDevice>)device
             withSceneParameter:(id<NuoMeshSceneParametersProvider>)sceneParameter;
 

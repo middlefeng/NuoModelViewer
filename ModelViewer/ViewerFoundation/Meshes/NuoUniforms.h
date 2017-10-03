@@ -88,6 +88,7 @@ NuoAmbientOcclusionUniformField;
 typedef struct
 {
     NuoAmbientOcclusionUniformField ambientOcclusionParams;
+    vector4 clearColor;
 }
 NuoDeferredRenderUniforms;
 
