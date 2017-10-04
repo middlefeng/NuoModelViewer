@@ -48,9 +48,9 @@
         
         vector_float4 clearColor = { 0.95, 0.95, 0.95, 1 };
         NuoDeferredRenderUniforms paramUniforms;
-        paramUniforms.ambientOcclusionParams.bias = 0.3;
+        paramUniforms.ambientOcclusionParams.bias = 0.4;
         paramUniforms.ambientOcclusionParams.intensity = 3.0;
-        paramUniforms.ambientOcclusionParams.sampleRadius = 2.0;
+        paramUniforms.ambientOcclusionParams.sampleRadius = 0.8;
         paramUniforms.ambientOcclusionParams.scale = 1.0;
         paramUniforms.clearColor = clearColor;
         
@@ -88,7 +88,8 @@
     
     [renderPass setFragmentTexture:_screenSpaceRenderer.positionBuffer atIndex:0];
     [renderPass setFragmentTexture:_screenSpaceRenderer.normalBuffer atIndex:1];
-    [renderPass setFragmentTexture:_immediateResult atIndex:2];
+    [renderPass setFragmentTexture:_screenSpaceRenderer.ambientBuffer atIndex:2];
+    [renderPass setFragmentTexture:_immediateResult atIndex:3];
     [renderPass setFragmentBuffer:_deferredRenderParamBuffer offset:0 atIndex:0];
     
     [_screenMesh drawMesh:renderPass indexBuffer:inFlight];

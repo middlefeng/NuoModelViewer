@@ -28,7 +28,8 @@ static float do_ambient_occlusion(texture2d<float> positionBuffer, sampler sampl
 fragment float4 fragement_deferred(PositionTextureSimple vert                   [[ stage_in   ]],
                                    texture2d<float> positionBuffer              [[ texture(0) ]],
                                    texture2d<float> normalBuffer                [[ texture(1) ]],
-                                   texture2d<float> immediateResult             [[ texture(2) ]],
+                                   texture2d<float> ambientColor                [[ texture(2) ]],
+                                   texture2d<float> immediateResult             [[ texture(3) ]],
                                    sampler samplr                               [[ sampler(0) ]],
                                    constant NuoDeferredRenderUniforms& params   [[ buffer(0)  ]])
 {
@@ -63,6 +64,9 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
     
     //return float4(1.0 - ao);
     
-    float4 immediateColor = immediateResult.sample(samplr, vert.texCoord);
-    return float4(immediateColor.rgb * immediateColor.a + params.clearColor.rgb * (1.0 - immediateColor.a), 1.0);
+    float4 immediateTerm = immediateResult.sample(samplr, vert.texCoord);
+    float4 ambientTerm = ambientColor.sample(samplr, vert.texCoord);
+    ambientTerm = float4((ambientTerm.rgb) * (1.0 - ao), ambientTerm.a);
+    
+    return float4((immediateTerm + ambientTerm).rgb + params.clearColor.rgb * (1.0 - immediateTerm.a), 1.0);
 }

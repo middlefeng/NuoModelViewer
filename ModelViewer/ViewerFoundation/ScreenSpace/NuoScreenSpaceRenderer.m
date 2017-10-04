@@ -61,4 +61,10 @@
 }
 
 
+- (id<MTLTexture>)ambientBuffer
+{
+    return ((NuoScreenSpaceTarget*)self.renderTarget).ambientBuffer;
+}
+
+
 @end
