@@ -12,6 +12,12 @@
 #import "ModelOptionUpdate.h"
 #import "NuoLightSource.h"
 
+#import "NuoPopoverSheet.h"
+
+
+@interface LightOperationPanel () < NuoPopoverSheetDelegate >
+
+@end
 
 
 
@@ -25,7 +31,7 @@
     
     NSTextField* _shadowSoftenLabel;
     NSSlider* _shadowSoftenSlider;
-    NSButton* _shadowSoftenPopButton;
+    NuoPopoverSheet* _shadowSoftenPopover;
     
     NSTextField* _shadowBiasLabel;
     NSSlider* _shadowBiasSlider;
@@ -49,13 +55,8 @@
         _shadowSoftenLabel = [self createLabel:@"Penumbra:"];
         _shadowSoftenSlider = [self createSliderMax:5.0 min:0.0];
         
-        _shadowSoftenPopButton = [NSButton new];
-        _shadowSoftenPopButton.bezelStyle = NSBezelStyleRoundedDisclosure;
-        _shadowSoftenPopButton.bordered = YES;
-        _shadowSoftenPopButton.title = @"";
-        [_shadowSoftenPopButton setTarget:self];
-        [_shadowSoftenPopButton setAction:@selector(shadowSoftenPopoverAction:)];
-        [self addSubview:_shadowSoftenPopButton];
+        _shadowSoftenPopover = [[NuoPopoverSheet alloc] initWithParent:self];
+        _shadowSoftenPopover.sheetDelegate = self;
         
         _shadowBiasLabel = [self createLabel:@"Bias:"];
         _shadowBiasSlider = [self createSliderMax:0.01 min:0.0];
@@ -141,7 +142,7 @@
     popButtonFrame.size = CGSizeMake(30, 30);
     popButtonFrame.origin.x = viewSize.width - popButtonFrame.size.width;
     popButtonFrame.origin.y -= (popButtonFrame.size.height - sliderFrame.size.height) / 2.0;
-    [_shadowSoftenPopButton setFrame:popButtonFrame];
+    [_shadowSoftenPopover setFrame:popButtonFrame];
     
     labelFrame.origin.y -= entryHeight + lineSpace;
     sliderFrame.origin.y -= entryHeight + lineSpace;
@@ -180,7 +181,7 @@
     _shadowEnabled = shadowEnabled;
     [_shadowSoftenLabel setHidden:!shadowEnabled];
     [_shadowSoftenSlider setHidden:!shadowEnabled];
-    [_shadowSoftenPopButton setHidden:!shadowEnabled];
+    [_shadowSoftenPopover setHidden:!shadowEnabled];
     [_shadowBiasLabel setHidden:!shadowEnabled];
     [_shadowBiasSlider setHidden:!shadowEnabled];
 }
@@ -220,23 +221,6 @@
 }
 
 
-- (void)shadowSoftenPopoverAction:(id)sender
-{
-    
-    NSPopover* shadowSoftenPopover = [NSPopover new];
-    shadowSoftenPopover.contentSize = CGSizeMake(300, 50);
-    shadowSoftenPopover.behavior = NSPopoverBehaviorTransient;
-    
-    LightShadowPopoverController* controller = [[LightShadowPopoverController alloc] initWithPopover:shadowSoftenPopover
-                                                                                     withSourcePanel:self];
-    shadowSoftenPopover.contentViewController = controller;
-    controller.occluderSearchRadius = _shadowOccluderRadius;
-    
-    [shadowSoftenPopover showRelativeToRect:[_shadowSoftenPopButton frame]
-                                      ofView:self preferredEdge:NSRectEdgeMinY];
-}
-
-
 
 - (void)updateControls:(NuoLightSource*)lightSource
 {
@@ -252,6 +236,21 @@
     }
 }
 
+
+#pragma mark -- NuoPopoverSheetDelegate --
+
+- (CGSize)popoverSheetcontentSize:(NuoPopoverSheet *)sheet
+{
+    return CGSizeMake(300, 50);
+}
+
+- (NSViewController *)popoverSheetcontentViewController:(NuoPopoverSheet *)sheet
+{
+    LightShadowPopoverController* controller = [[LightShadowPopoverController alloc] initWithPopover:_shadowSoftenPopover.popover
+                                                                                     withSourcePanel:self];
+    controller.occluderSearchRadius = _shadowOccluderRadius;
+    return controller;
+}
 
 
 @end
