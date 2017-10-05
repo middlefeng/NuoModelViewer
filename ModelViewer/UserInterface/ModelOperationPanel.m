@@ -9,6 +9,7 @@
 #import "ModelOperationPanel.h"
 #import "NuoMeshOptions.h"
 #import "NuoMeshAnimation.h"
+#import "NuoPopoverSheet.h"
 
 
 @interface ModelOperationPanel() < NSTableViewDataSource, NSTableViewDelegate >
@@ -18,8 +19,10 @@
 
 @property (nonatomic, strong) NSButton* checkMaterial;
 @property (nonatomic, strong) NSButton* checkTexture;
-@property (nonatomic, strong) NSButton* checkTextureEmbedTrans;
-@property (nonatomic, strong) NSButton* checkTextureBump;
+@property (nonatomic, strong) NuoPopoverSheet* checkTexturePopover;
+
+//@property (nonatomic, strong) NSButton* checkTextureEmbedTrans;
+//@property (nonatomic, strong) NSButton* checkTextureBump;
 
 @property (nonatomic, strong) NSButton* cull;
 @property (nonatomic, strong) NSButton* combine;
@@ -115,18 +118,28 @@
     [scrollDocumentView addSubview:checkMaterial];
     _checkMaterial = checkMaterial;
     
-    rowCoord += 1;
+    rowCoord += 1.0;
     
     NSButton* checkTexture = [NSButton new];
     [checkTexture setButtonType:NSSwitchButton];
-    [checkTexture setTitle:@"Texture"];
+    [checkTexture setTitle:@"Model Textures"];
     [checkTexture setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [checkTexture setTarget:self];
     [checkTexture setAction:@selector(texturedChanged:)];
     [scrollDocumentView addSubview:checkTexture];
     _checkTexture = checkTexture;
     
-    rowCoord += 1;
+    NuoPopoverSheet* checkTexturePopover = [[NuoPopoverSheet alloc] initWithParent:scrollDocumentView];
+    CGSize popoverButtonSize = CGSizeMake(30, 30);
+    CGRect popoverFrame = [self buttonLoactionAtRow:rowCoord withLeading:108 inView:scrollDocumentView];
+    //popoverFrame.origin.x += (popoverFrame.size.width - popoverButtonSize.width);
+    popoverFrame.origin.y -= (popoverButtonSize.height - popoverFrame.size.height) / 2.0;
+    popoverFrame.size = popoverButtonSize;
+    [checkTexturePopover setFrame:popoverFrame];
+    //checkTexturePopover.sheetDelegate = self;
+    _checkTexturePopover = checkTexturePopover;
+    
+    /*rowCoord += 1;
     
     NSButton* checkTextureEmbedTrans = [NSButton new];
     [checkTextureEmbedTrans setButtonType:NSSwitchButton];
@@ -146,9 +159,9 @@
     [checkTextureBump setTarget:self];
     [checkTextureBump setAction:@selector(textureBumpChanged:)];
     [scrollDocumentView addSubview:checkTextureBump];
-    _checkTextureBump = checkTextureBump;
+    _checkTextureBump = checkTextureBump;*/
     
-    rowCoord += 1.2;
+    rowCoord += 1.0;
     
     NSButton* cull = [NSButton new];
     [cull setButtonType:NSSwitchButton];
@@ -411,7 +424,7 @@
 }
 
 
-- (void)textureEmbedTransChanged:(id)sender
+/*- (void)textureEmbedTransChanged:(id)sender
 {
     _meshOptions.textureEmbeddingMaterialTransparency = [_checkTextureEmbedTrans state] == NSOnState;
     
@@ -424,7 +437,7 @@
     _meshOptions.texturedBump = [_checkTextureBump state] == NSOnState;
     
     [_optionUpdateDelegate modelUpdate:_meshOptions];
-}
+}*/
 
 
 - (void)cullChanged:(id)sender
@@ -531,13 +544,13 @@
 
 - (void)updateControls
 {
-    [_checkTextureEmbedTrans setEnabled:[_checkTexture state]];
-    [_checkTextureBump setEnabled:[_checkTexture state]];
+    //[_checkTextureEmbedTrans setEnabled:[_checkTexture state]];
+    //[_checkTextureBump setEnabled:[_checkTexture state]];
     
     [_checkMaterial setState:_meshOptions.basicMaterialized ? NSOnState : NSOffState];
     [_checkTexture setState:_meshOptions.textured ? NSOnState : NSOffState];
-    [_checkTextureEmbedTrans setState:_meshOptions.textureEmbeddingMaterialTransparency ? NSOnState : NSOffState];
-    [_checkTextureBump setState:_meshOptions.texturedBump ? NSOnState : NSOffState];
+    //[_checkTextureEmbedTrans setState:_meshOptions.textureEmbeddingMaterialTransparency ? NSOnState : NSOffState];
+    //[_checkTextureBump setState:_meshOptions.texturedBump ? NSOnState : NSOffState];
     [_cull setState:_cullEnabled ? NSOnState : NSOffState];
     [_combine setState:_meshOptions.combineShapes ? NSOnState : NSOffState];
     [_fieldOfView setFloatValue:_fieldOfViewRadian];
