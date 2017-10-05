@@ -398,7 +398,7 @@
     _meshOptions.basicMaterialized = [_checkMaterial state] == NSOnState;
     [self updateControls];
     
-    [_optionUpdateDelegate modelUpdate:self];
+    [_optionUpdateDelegate modelUpdate:_meshOptions];
 }
 
 
@@ -407,7 +407,7 @@
     _meshOptions.textured = [_checkTexture state] == NSOnState;
     [self updateControls];
     
-    [_optionUpdateDelegate modelUpdate:self];
+    [_optionUpdateDelegate modelUpdate:_meshOptions];
 }
 
 
@@ -415,7 +415,7 @@
 {
     _meshOptions.textureEmbeddingMaterialTransparency = [_checkTextureEmbedTrans state] == NSOnState;
     
-    [_optionUpdateDelegate modelUpdate:self];
+    [_optionUpdateDelegate modelUpdate:_meshOptions];
 }
 
 
@@ -423,7 +423,7 @@
 {
     _meshOptions.texturedBump = [_checkTextureBump state] == NSOnState;
     
-    [_optionUpdateDelegate modelUpdate:self];
+    [_optionUpdateDelegate modelUpdate:_meshOptions];
 }
 
 
@@ -439,7 +439,7 @@
 {
     _meshOptions.combineShapes = [_combine state] == NSOnState;
     
-    [_optionUpdateDelegate modelUpdate:self];
+    [_optionUpdateDelegate modelUpdate:_meshOptions];
 }
 
 
@@ -470,7 +470,7 @@
 {
     _meshOptions.physicallyReflection = [_checkBrdfMode state] == NSOnState;
     
-    [_optionUpdateDelegate modelUpdate:self];
+    [_optionUpdateDelegate modelUpdate:_meshOptions];
 }
 
 

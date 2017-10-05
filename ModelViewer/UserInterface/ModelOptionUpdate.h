@@ -7,6 +7,7 @@
 //
 
 
+@class NuoMeshOption;
 @class ModelOperationPanel;
 @class LightOperationPanel;
 
@@ -14,7 +15,7 @@
 
 @protocol ModelOptionUpdate
 
-- (void)modelUpdate:(ModelOperationPanel*)panel;
+- (void)modelUpdate:(NuoMeshOption*)meshOptions;
 - (void)modelOptionUpdate:(ModelOperationPanel*)panel;
 - (void)lightOptionUpdate:(LightOperationPanel*)panel;
 - (void)animationLoad;
