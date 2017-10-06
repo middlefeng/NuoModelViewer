@@ -45,8 +45,11 @@
     self.view = [NSView new];
     self.view.frame = CGRectMake(0, 0, _popover.contentSize.width, _popover.contentSize.height);
     
+    CGFloat rowHeight = 22;
+    CGFloat rowCoord = rowHeight * 2 + 15;
+    
     CGSize viewSize = self.view.bounds.size;
-    CGRect labelFrame = CGRectMake(0, 0, 158, 18);
+    CGRect labelFrame = CGRectMake(15, 0, viewSize.width, rowCoord);
     labelFrame.origin.y = 12;
     
     NSButton* checkTextureEmbedTrans = [NSButton new];
@@ -58,7 +61,7 @@
     [self.view addSubview:checkTextureEmbedTrans];
     //_checkTextureEmbedTrans = checkTextureEmbedTrans;
 
-    //rowCoord += 1;
+    labelFrame.origin.y -= rowHeight;
 
     NSButton* checkTextureBump = [NSButton new];
     [checkTextureBump setButtonType:NSSwitchButton];
