@@ -135,7 +135,6 @@
     NuoPopoverSheet* checkTexturePopover = [[NuoPopoverSheet alloc] initWithParent:scrollDocumentView];
     CGSize popoverButtonSize = CGSizeMake(30, 30);
     CGRect popoverFrame = [self buttonLoactionAtRow:rowCoord withLeading:108 inView:scrollDocumentView];
-    //popoverFrame.origin.x += (popoverFrame.size.width - popoverButtonSize.width);
     popoverFrame.origin.y -= (popoverButtonSize.height - popoverFrame.size.height) / 2.0;
     popoverFrame.size = popoverButtonSize;
     [checkTexturePopover setFrame:popoverFrame];
@@ -405,22 +404,6 @@
 }
 
 
-/*- (void)textureEmbedTransChanged:(id)sender
-{
-    _meshOptions.textureEmbeddingMaterialTransparency = [_checkTextureEmbedTrans state] == NSOnState;
-    
-    [_optionUpdateDelegate modelUpdate:_meshOptions];
-}
-
-
-- (void)textureBumpChanged:(id)sender
-{
-    _meshOptions.texturedBump = [_checkTextureBump state] == NSOnState;
-    
-    [_optionUpdateDelegate modelUpdate:_meshOptions];
-}*/
-
-
 - (void)cullChanged:(id)sender
 {
     _cullEnabled = [_cull state] == NSOnState;
@@ -525,13 +508,10 @@
 
 - (void)updateControls
 {
-    //[_checkTextureEmbedTrans setEnabled:[_checkTexture state]];
-    //[_checkTextureBump setEnabled:[_checkTexture state]];
+    [_checkTexturePopover setEnabled:[_checkTexture state]];
     
     [_checkMaterial setState:_meshOptions.basicMaterialized ? NSOnState : NSOffState];
     [_checkTexture setState:_meshOptions.textured ? NSOnState : NSOffState];
-    //[_checkTextureEmbedTrans setState:_meshOptions.textureEmbeddingMaterialTransparency ? NSOnState : NSOffState];
-    //[_checkTextureBump setState:_meshOptions.texturedBump ? NSOnState : NSOffState];
     [_cull setState:_cullEnabled ? NSOnState : NSOffState];
     [_combine setState:_meshOptions.combineShapes ? NSOnState : NSOffState];
     [_fieldOfView setFloatValue:_fieldOfViewRadian];
@@ -607,7 +587,8 @@
 - (NSViewController *)popoverSheetcontentViewController:(NuoPopoverSheet *)sheet
 {
     ModelOperationTexturePopover* popover = [[ModelOperationTexturePopover alloc] initWithPopover:sheet.popover
-                                                                                  withSourcePanel:self];
+                                                                                  withSourcePanel:self
+                                                                                     withDelegate:_optionUpdateDelegate];
     return popover;
 }
 

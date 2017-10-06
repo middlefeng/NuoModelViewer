@@ -11,6 +11,7 @@
 
 
 @class ModelOperationPanel;
+@protocol ModelOptionUpdate;
 
 
 
@@ -18,7 +19,8 @@
 
 
 - (instancetype)initWithPopover:(NSPopover*)popover
-                withSourcePanel:(ModelOperationPanel*)sourcePanel;
+                withSourcePanel:(ModelOperationPanel*)sourcePanel
+                   withDelegate:(id<ModelOptionUpdate>)delegate;
 
 
 @end
