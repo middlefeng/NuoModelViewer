@@ -23,9 +23,6 @@
 @property (nonatomic, strong) NSButton* checkTexture;
 @property (nonatomic, strong) NuoPopoverSheet* checkTexturePopover;
 
-//@property (nonatomic, strong) NSButton* checkTextureEmbedTrans;
-//@property (nonatomic, strong) NSButton* checkTextureBump;
-
 @property (nonatomic, strong) NSButton* cull;
 @property (nonatomic, strong) NSButton* combine;
 
