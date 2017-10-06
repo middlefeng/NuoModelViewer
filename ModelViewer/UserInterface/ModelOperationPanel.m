@@ -10,16 +10,18 @@
 #import "NuoMeshOptions.h"
 #import "NuoMeshAnimation.h"
 
+#import "NuoPopoverSheet.h"
+#import "ModelOperationTexturePopover.h"
 
-@interface ModelOperationPanel() < NSTableViewDataSource, NSTableViewDelegate >
+
+@interface ModelOperationPanel() < NSTableViewDataSource, NSTableViewDelegate, NuoPopoverSheetDelegate >
 
 
 @property (nonatomic, strong) NSButton* checkModelParts;
 
 @property (nonatomic, strong) NSButton* checkMaterial;
 @property (nonatomic, strong) NSButton* checkTexture;
-@property (nonatomic, strong) NSButton* checkTextureEmbedTrans;
-@property (nonatomic, strong) NSButton* checkTextureBump;
+@property (nonatomic, strong) NuoPopoverSheet* checkTexturePopover;
 
 @property (nonatomic, strong) NSButton* cull;
 @property (nonatomic, strong) NSButton* combine;
@@ -54,6 +56,7 @@
     {
         _meshOptions = [NuoMeshOption new];
         _meshOptions.combineShapes = YES;
+        _meshOptions.texturedBump = YES;
         
         _cullEnabled = YES;
         
@@ -85,7 +88,7 @@
     
     CGRect docViewFrame = CGRectMake(0, 0, 0, 0);
     docViewFrame.size = rootViewFrame.size;
-    docViewFrame.size.height += 230.0;
+    docViewFrame.size.height += 165.0;
     
     rootScroll.frame = rootViewFrame;
     scrollDocumentView.frame = docViewFrame;
@@ -115,40 +118,27 @@
     [scrollDocumentView addSubview:checkMaterial];
     _checkMaterial = checkMaterial;
     
-    rowCoord += 1;
+    rowCoord += 1.0;
     
     NSButton* checkTexture = [NSButton new];
     [checkTexture setButtonType:NSSwitchButton];
-    [checkTexture setTitle:@"Texture"];
+    [checkTexture setTitle:@"Model Textures"];
     [checkTexture setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [checkTexture setTarget:self];
     [checkTexture setAction:@selector(texturedChanged:)];
     [scrollDocumentView addSubview:checkTexture];
     _checkTexture = checkTexture;
     
-    rowCoord += 1;
+    NuoPopoverSheet* checkTexturePopover = [[NuoPopoverSheet alloc] initWithParent:scrollDocumentView];
+    CGSize popoverButtonSize = CGSizeMake(30, 30);
+    CGRect popoverFrame = [self buttonLoactionAtRow:rowCoord withLeading:108 inView:scrollDocumentView];
+    popoverFrame.origin.y -= (popoverButtonSize.height - popoverFrame.size.height) / 2.0;
+    popoverFrame.size = popoverButtonSize;
+    [checkTexturePopover setFrame:popoverFrame];
+    checkTexturePopover.sheetDelegate = self;
+    _checkTexturePopover = checkTexturePopover;
     
-    NSButton* checkTextureEmbedTrans = [NSButton new];
-    [checkTextureEmbedTrans setButtonType:NSSwitchButton];
-    [checkTextureEmbedTrans setTitle:@"Texture Alpha as Transparency"];
-    [checkTextureEmbedTrans setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
-    [checkTextureEmbedTrans setTarget:self];
-    [checkTextureEmbedTrans setAction:@selector(textureEmbedTransChanged:)];
-    [scrollDocumentView addSubview:checkTextureEmbedTrans];
-    _checkTextureEmbedTrans = checkTextureEmbedTrans;
-    
-    rowCoord += 1;
-    
-    NSButton* checkTextureBump = [NSButton new];
-    [checkTextureBump setButtonType:NSSwitchButton];
-    [checkTextureBump setTitle:@"Texture Bump"];
-    [checkTextureBump setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
-    [checkTextureBump setTarget:self];
-    [checkTextureBump setAction:@selector(textureBumpChanged:)];
-    [scrollDocumentView addSubview:checkTextureBump];
-    _checkTextureBump = checkTextureBump;
-    
-    rowCoord += 1.2;
+    rowCoord += 1.0;
     
     NSButton* cull = [NSButton new];
     [cull setButtonType:NSSwitchButton];
@@ -181,7 +171,7 @@
     [labelFOV setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelFOV];
     
-    rowCoord += 0.8;
+    rowCoord += 0.7;
     
     NSSlider* fieldOfView = [NSSlider new];
     [fieldOfView setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6 inView:scrollDocumentView]];
@@ -192,7 +182,7 @@
     [scrollDocumentView addSubview:fieldOfView];
     _fieldOfView = fieldOfView;
     
-    rowCoord += 1.0;
+    rowCoord += 0.8;
     
     NSTextField* labelambientDensity = [NSTextField new];
     [labelambientDensity setEditable:NO];
@@ -202,7 +192,7 @@
     [labelambientDensity setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelambientDensity];
     
-    rowCoord += 0.9;
+    rowCoord += 0.8;
     
     NSSlider* ambientDensity = [NSSlider new];
     [ambientDensity setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6 inView:scrollDocumentView]];
@@ -213,7 +203,7 @@
     [scrollDocumentView addSubview:ambientDensity];
     _ambientDensitySlider = ambientDensity;
     
-    rowCoord += 1.0;
+    rowCoord += 1.2;
     
     NSButton* lightSettings = [NSButton new];
     [lightSettings setButtonType:NSSwitchButton];
@@ -235,19 +225,7 @@
     [scrollDocumentView addSubview:brdfMode];
     _checkBrdfMode = brdfMode;
     
-    rowCoord += 0.5;
-    
-    NSImageView* imageView = [NSImageView new];
-    imageView.imageScaling = NSImageScaleProportionallyUpOrDown;
-    imageView.image = [NSImage imageNamed:@"ArrowDown"];
-    imageView.hidden = NO;
-    NSRect imageViewFrame = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
-    imageViewFrame.size.height = 6;
-    imageView.frame = imageViewFrame;
-    imageView.alphaValue = 0.6;
-    [scrollDocumentView addSubview:imageView];
-    
-    rowCoord += 1.5;
+    rowCoord += 1.4;
     
     static const float kLabelHead = 105;
     
@@ -312,7 +290,19 @@
     [scrollDocumentView addSubview:transMode];
     _checkTransMode = transMode;
     
-    rowCoord += 1.5;
+    rowCoord += 0.6;
+    
+    NSImageView* imageView = [NSImageView new];
+    imageView.imageScaling = NSImageScaleProportionallyUpOrDown;
+    imageView.image = [NSImage imageNamed:@"ArrowDown"];
+    imageView.hidden = NO;
+    NSRect imageViewFrame = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    imageViewFrame.size.height = 6;
+    imageView.frame = imageViewFrame;
+    imageView.alphaValue = 0.6;
+    [scrollDocumentView addSubview:imageView];
+    
+    rowCoord += 1.4;
     
     // animation list/slider
     //
@@ -398,7 +388,7 @@
     _meshOptions.basicMaterialized = [_checkMaterial state] == NSOnState;
     [self updateControls];
     
-    [_optionUpdateDelegate modelUpdate:self];
+    [_optionUpdateDelegate modelUpdate:_meshOptions];
 }
 
 
@@ -407,23 +397,7 @@
     _meshOptions.textured = [_checkTexture state] == NSOnState;
     [self updateControls];
     
-    [_optionUpdateDelegate modelUpdate:self];
-}
-
-
-- (void)textureEmbedTransChanged:(id)sender
-{
-    _meshOptions.textureEmbeddingMaterialTransparency = [_checkTextureEmbedTrans state] == NSOnState;
-    
-    [_optionUpdateDelegate modelUpdate:self];
-}
-
-
-- (void)textureBumpChanged:(id)sender
-{
-    _meshOptions.texturedBump = [_checkTextureBump state] == NSOnState;
-    
-    [_optionUpdateDelegate modelUpdate:self];
+    [_optionUpdateDelegate modelUpdate:_meshOptions];
 }
 
 
@@ -439,7 +413,7 @@
 {
     _meshOptions.combineShapes = [_combine state] == NSOnState;
     
-    [_optionUpdateDelegate modelUpdate:self];
+    [_optionUpdateDelegate modelUpdate:_meshOptions];
 }
 
 
@@ -470,7 +444,7 @@
 {
     _meshOptions.physicallyReflection = [_checkBrdfMode state] == NSOnState;
     
-    [_optionUpdateDelegate modelUpdate:self];
+    [_optionUpdateDelegate modelUpdate:_meshOptions];
 }
 
 
@@ -531,13 +505,10 @@
 
 - (void)updateControls
 {
-    [_checkTextureEmbedTrans setEnabled:[_checkTexture state]];
-    [_checkTextureBump setEnabled:[_checkTexture state]];
+    [_checkTexturePopover setEnabled:[_checkTexture state]];
     
     [_checkMaterial setState:_meshOptions.basicMaterialized ? NSOnState : NSOffState];
     [_checkTexture setState:_meshOptions.textured ? NSOnState : NSOffState];
-    [_checkTextureEmbedTrans setState:_meshOptions.textureEmbeddingMaterialTransparency ? NSOnState : NSOffState];
-    [_checkTextureBump setState:_meshOptions.texturedBump ? NSOnState : NSOffState];
     [_cull setState:_cullEnabled ? NSOnState : NSOffState];
     [_combine setState:_meshOptions.combineShapes ? NSOnState : NSOffState];
     [_fieldOfView setFloatValue:_fieldOfViewRadian];
@@ -563,7 +534,7 @@
 }
 
 
-#pragma mark - Table Data Source
+#pragma mark -- Table Data Source --
 
 
 - (void)setModelPartAnimations:(NSArray<NuoMeshAnimation*>*)animations
@@ -599,6 +570,23 @@
     }
     
     return result;
+}
+
+
+#pragma mark -- Popover Delegate --
+
+
+- (CGSize)popoverSheetcontentSize:(NuoPopoverSheet *)sheet
+{
+    return CGSizeMake(250, 60);
+}
+
+- (NSViewController *)popoverSheetcontentViewController:(NuoPopoverSheet *)sheet
+{
+    ModelOperationTexturePopover* popover = [[ModelOperationTexturePopover alloc] initWithPopover:sheet.popover
+                                                                                  withSourcePanel:self
+                                                                                     withDelegate:_optionUpdateDelegate];
+    return popover;
 }
 
 
