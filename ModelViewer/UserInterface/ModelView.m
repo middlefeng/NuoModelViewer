@@ -157,12 +157,11 @@ MouseDragMode;
 }
 
 
-- (void)modelUpdate:(ModelOperationPanel *)panel
+- (void)modelUpdate:(NuoMeshOption *)meshOptions
 {
-    if (panel)
+    if (meshOptions)
     {
-        NuoMeshOption* options = panel.meshOptions;
-        [_modelRender setModelOptions:options withCommandQueue:[self commandQueue]];
+        [_modelRender setModelOptions:meshOptions withCommandQueue:[self commandQueue]];
         [self modelMeshInvalid];
     }
     
@@ -296,7 +295,7 @@ MouseDragMode;
     // sync the model renderer with the initial settings in the model panel
     //
     [self modelOptionUpdate:_modelPanel];
-    [self modelUpdate:_modelPanel];
+    [self modelUpdate:_modelPanel.meshOptions];
     
     // sync the light panel with the current initial light vector in the
     // notation renderer
