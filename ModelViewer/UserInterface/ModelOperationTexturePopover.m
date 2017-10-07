@@ -16,6 +16,8 @@
 @interface ModelOperationTexturePopover ()
 
 @property (nonatomic, weak) id<ModelOptionUpdate> updateDelegate;
+@property (nonatomic, weak) NSPopover* popover;
+@property (nonatomic, weak) ModelOperationPanel* sourcePanel;
 
 @end
 
@@ -24,10 +26,6 @@
 
 
 @implementation ModelOperationTexturePopover
-{
-    NSPopover* _popover;
-    ModelOperationPanel* _sourcePanel;
-}
 
 
 
@@ -80,12 +78,6 @@
         checkTextureEmbedTrans.state = NSOnState;
     if (_sourcePanel.meshOptions.texturedBump)
         checkTextureBump.state = NSOnState;
-}
-
-
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
 }
 
 
