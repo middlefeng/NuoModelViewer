@@ -175,6 +175,7 @@ MouseDragMode;
     {
         [_modelComponentPanels setHidden:![panel showModelParts]];
         
+        [_modelRender setDeferredParameters:[panel deferredRenderParameters]];
         [_modelRender setCullEnabled:[panel cullEnabled]];
         [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
         [_modelRender setAmbientDensity:[panel ambientDensity]];

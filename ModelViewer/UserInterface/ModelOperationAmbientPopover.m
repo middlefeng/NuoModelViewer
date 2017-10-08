@@ -8,6 +8,7 @@
 
 #import "ModelOperationAmbientPopover.h"
 #import "ModelOperationPanel.h"
+#import "NuoMeshOptions.h"
 
 
 
@@ -23,6 +24,12 @@
 
 
 @implementation ModelOperationAmbientPopover
+{
+    NSSlider* _sliderBias;
+    NSSlider* _sliderIntensity;
+    NSSlider* _sliderRadius;
+    NSSlider* _sliderScale;
+}
 
 
 
@@ -74,7 +81,9 @@
     [sliderBias setTarget:self];
     [sliderBias setFrame:sliderFrame];
     [self.view addSubview:sliderBias];
-    //[slider setAction:@selector(lightShadowSettingsChange:)];
+    [sliderBias setTarget:self];
+    [sliderBias setAction:@selector(slidersChanged:)];
+    _sliderBias = sliderBias;
     
     labelFrame.origin.y -= rowHeight;
     
@@ -93,34 +102,40 @@
     sliderFrame.origin.y += 2;
     sliderFrame.size.width = viewSize.width - sliderFrame.origin.x - 20;
     NSSlider* sliderIntensity = [NSSlider new];
-    [sliderIntensity setMaxValue:1.0];
+    [sliderIntensity setMaxValue:6.0];
     [sliderIntensity setMinValue:0.0];
     [sliderIntensity setTarget:self];
     [sliderIntensity setFrame:sliderFrame];
     [self.view addSubview:sliderIntensity];
+    [sliderIntensity setTarget:self];
+    [sliderIntensity setAction:@selector(slidersChanged:)];
+    _sliderIntensity = sliderIntensity;
     
     labelFrame.origin.y -= rowHeight;
     
-    NSTextField* labelRange = [NSTextField new];
-    [labelRange setEditable:NO];
-    [labelRange setSelectable:NO];
-    [labelRange setBordered:NO];
-    [labelRange setBackgroundColor:[NSColor colorWithWhite:0.0 alpha:0.0]];
-    [labelRange setStringValue:@"Range:"];
-    [labelRange setAlignment:NSTextAlignmentRight];
-    [labelRange setFrame:labelFrame];
-    [self.view addSubview:labelRange];
+    NSTextField* labelRadius = [NSTextField new];
+    [labelRadius setEditable:NO];
+    [labelRadius setSelectable:NO];
+    [labelRadius setBordered:NO];
+    [labelRadius setBackgroundColor:[NSColor colorWithWhite:0.0 alpha:0.0]];
+    [labelRadius setStringValue:@"Radius:"];
+    [labelRadius setAlignment:NSTextAlignmentRight];
+    [labelRadius setFrame:labelFrame];
+    [self.view addSubview:labelRadius];
     
     sliderFrame = labelFrame;
     sliderFrame.origin.x += labelFrame.size.width + 3;
     sliderFrame.origin.y += 2;
     sliderFrame.size.width = viewSize.width - sliderFrame.origin.x - 20;
-    NSSlider* sliderRange = [NSSlider new];
-    [sliderRange setMaxValue:1.0];
-    [sliderRange setMinValue:0.0];
-    [sliderRange setTarget:self];
-    [sliderRange setFrame:sliderFrame];
-    [self.view addSubview:sliderRange];
+    NSSlider* sliderRadius = [NSSlider new];
+    [sliderRadius setMaxValue:2.0];
+    [sliderRadius setMinValue:0.0];
+    [sliderRadius setTarget:self];
+    [sliderRadius setFrame:sliderFrame];
+    [self.view addSubview:sliderRadius];
+    [sliderRadius setTarget:self];
+    [sliderRadius setAction:@selector(slidersChanged:)];
+    _sliderRadius = sliderRadius;
     
     labelFrame.origin.y -= rowHeight;
     
@@ -139,12 +154,44 @@
     sliderFrame.origin.y += 2;
     sliderFrame.size.width = viewSize.width - sliderFrame.origin.x - 20;
     NSSlider* sliderScale = [NSSlider new];
-    [sliderScale setMaxValue:1.0];
+    [sliderScale setMaxValue:3.0];
     [sliderScale setMinValue:0.0];
     [sliderScale setTarget:self];
     [sliderScale setFrame:sliderFrame];
     [self.view addSubview:sliderScale];
+    [sliderScale setTarget:self];
+    [sliderScale setAction:@selector(slidersChanged:)];
+    _sliderScale = sliderScale;
+    
+    [self setupSliders:_sourcePanel.deferredRenderParameters];
 }
+
+
+- (void)setupSliders:(NuoDeferredRenderUniforms)params
+{
+    _sliderBias.floatValue = params.ambientOcclusionParams.bias;
+    _sliderIntensity.floatValue = params.ambientOcclusionParams.intensity;
+    _sliderRadius.floatValue = params.ambientOcclusionParams.sampleRadius;
+    _sliderScale.floatValue = params.ambientOcclusionParams.scale;
+}
+
+
+- (void)slidersChanged:(id)sender
+{
+    NuoDeferredRenderUniforms newParams;
+    
+    newParams.ambientOcclusionParams.bias = _sliderBias.floatValue;
+    newParams.ambientOcclusionParams.intensity = _sliderIntensity.floatValue;
+    newParams.ambientOcclusionParams.sampleRadius = _sliderRadius.floatValue;
+    newParams.ambientOcclusionParams.scale = _sliderScale.floatValue;
+    
+    vector_float4 clearColor = { 0.95, 0.95, 0.95, 1 };
+    newParams.clearColor = clearColor;
+    
+    [_sourcePanel setDeferredRenderParameters:newParams];
+    [_updateDelegate modelOptionUpdate:_sourcePanel];
+}
+
 
 
 @end

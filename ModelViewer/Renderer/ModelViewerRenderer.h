@@ -57,6 +57,7 @@ TransformMode;
 @property (nonatomic, assign) float ambientDensity;
 
 @property (nonatomic, strong, readonly) NuoMeshOption* modelOptions;
+@property (nonatomic, assign) NuoDeferredRenderUniforms deferredParameters;
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;

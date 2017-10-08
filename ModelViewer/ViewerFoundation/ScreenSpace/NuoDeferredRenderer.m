@@ -45,16 +45,6 @@
         
         _deferredRenderParamBuffer = [self.device newBufferWithLength:sizeof(NuoDeferredRenderUniforms)
                                                               options:MTLResourceOptionCPUCacheModeDefault];
-        
-        vector_float4 clearColor = { 0.95, 0.95, 0.95, 1 };
-        NuoDeferredRenderUniforms paramUniforms;
-        paramUniforms.ambientOcclusionParams.bias = 0.4;
-        paramUniforms.ambientOcclusionParams.intensity = 3.0;
-        paramUniforms.ambientOcclusionParams.sampleRadius = 0.8;
-        paramUniforms.ambientOcclusionParams.scale = 1.0;
-        paramUniforms.clearColor = clearColor;
-        
-        memcpy(_deferredRenderParamBuffer.contents, &paramUniforms, sizeof(NuoDeferredRenderUniforms));
     }
     
     return self;
@@ -71,6 +61,12 @@
 - (void)setMeshes:(NSArray<NuoMesh*>*)meshes
 {
     [_screenSpaceRenderer setMeshes:meshes];
+}
+
+
+- (void)setParameters:(NuoDeferredRenderUniforms*)params
+{
+    memcpy(_deferredRenderParamBuffer.contents, params, sizeof(NuoDeferredRenderUniforms));
 }
 
 

@@ -7,6 +7,7 @@
 //
 
 #import "NuoRenderPass.h"
+#import "NuoUniforms.h"
 
 
 @protocol NuoMeshSceneParametersProvider;
@@ -26,6 +27,8 @@
             withSceneParameter:(id<NuoMeshSceneParametersProvider>)sceneParameter;
 
 - (void)setMeshes:(NSArray<NuoMesh*>*)meshes;
+
+- (void)setParameters:(NuoDeferredRenderUniforms*)params;
 
 
 @end

@@ -554,6 +554,13 @@
 }
 
 
+- (void)setDeferredParameters:(NuoDeferredRenderUniforms)deferredParameters
+{
+    _deferredParameters = deferredParameters;
+    [_deferredRenderer setParameters:&deferredParameters];
+}
+
+
 - (void)makeResources
 {
     id<MTLBuffer> modelBuffers[kInFlightBufferCount];

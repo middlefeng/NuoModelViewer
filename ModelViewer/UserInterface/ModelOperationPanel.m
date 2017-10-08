@@ -61,6 +61,14 @@
         _meshOptions.combineShapes = YES;
         _meshOptions.texturedBump = YES;
         
+        _deferredRenderParameters.ambientOcclusionParams.bias = 0.4;
+        _deferredRenderParameters.ambientOcclusionParams.intensity = 3.0;
+        _deferredRenderParameters.ambientOcclusionParams.sampleRadius = 0.8;
+        _deferredRenderParameters.ambientOcclusionParams.scale = 1.0;
+
+        vector_float4 clearColor = { 0.95, 0.95, 0.95, 1 };
+        _deferredRenderParameters.clearColor = clearColor;
+        
         _cullEnabled = YES;
         
         _fieldOfViewRadian = (2 * M_PI) / 8;
