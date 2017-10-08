@@ -4,6 +4,7 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Transform of the entire scene (including the light sources).
 * Better PCSS soft shadow
 
 <p align="left">
