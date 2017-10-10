@@ -88,26 +88,6 @@
                                                                     : @"vertex_screen_space_tex_materialed"
                                     withFragemtnShader:@"fragement_screen_space_textured"];
 }
-/*
-- (void)makePipelineScreenSpaceState
-{
-    
-    
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
-    
-    MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
-    screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_screen_space_tex_materialed_bump"];
-    screenSpacePipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragement_screen_space_textured"];
-    screenSpacePipelineDescriptor.sampleCount = kSampleCount;
-    screenSpacePipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
-    screenSpacePipelineDescriptor.colorAttachments[1].pixelFormat = MTLPixelFormatRGBA16Float;
-    screenSpacePipelineDescriptor.colorAttachments[2].pixelFormat = MTLPixelFormatRGBA16Float;
-    screenSpacePipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
-    
-    NSError *error = nil;
-    self.screenSpacePipelineState = [self.device newRenderPipelineStateWithDescriptor:screenSpacePipelineDescriptor
-                                                                                error:&error];
-}*/
 
 
 - (void)makePipelineShadowState
