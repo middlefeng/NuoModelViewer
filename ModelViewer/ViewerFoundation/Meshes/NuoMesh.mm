@@ -461,13 +461,14 @@ const BOOL kShadowPCF = YES;
                                                                        error:&error];
 }
 
-- (void)makePipelineScreenSpaceState:(NSString*)vertexScreenSpaceShader
+- (void)makePipelineScreenSpaceStateWithVertexShader:(NSString*)vertexShader
+                                  withFragemtnShader:(NSString*)fragmentShader
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
-    screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexScreenSpaceShader];
-    screenSpacePipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragement_screen_space"];
+    screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShader];
+    screenSpacePipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmentShader];
     screenSpacePipelineDescriptor.sampleCount = kSampleCount;
     screenSpacePipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
     screenSpacePipelineDescriptor.colorAttachments[1].pixelFormat = MTLPixelFormatRGBA16Float;
@@ -481,7 +482,8 @@ const BOOL kShadowPCF = YES;
 
 - (void)makePipelineScreenSpaceState
 {
-    [self makePipelineScreenSpaceState:@"vertex_project_screen_space"];
+    [self makePipelineScreenSpaceStateWithVertexShader:@"vertex_project_screen_space"
+                                    withFragemtnShader:@"fragement_screen_space"];
 }
     
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader

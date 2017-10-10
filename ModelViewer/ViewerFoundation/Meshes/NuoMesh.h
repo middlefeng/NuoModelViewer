@@ -116,7 +116,8 @@ extern const BOOL kShadowPCF;
 - (void)shareResourcesFrom:(NuoMesh*)mesh;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
-- (void)makePipelineScreenSpaceState:(NSString*)vertexScreenSpaceShader;
+- (void)makePipelineScreenSpaceStateWithVertexShader:(NSString*)vertexShader
+                                  withFragemtnShader:(NSString*)fragmentShader;
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader;
 - (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor;
 - (void)makeDepthStencilState;

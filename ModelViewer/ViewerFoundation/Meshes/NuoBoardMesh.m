@@ -94,7 +94,8 @@
 
 - (void)makePipelineScreenSpaceState
 {
-    [super makePipelineScreenSpaceState:@"vertex_project_screen_space"];
+    [super makePipelineScreenSpaceStateWithVertexShader:@"vertex_project_screen_space"
+                                     withFragemtnShader:@"fragement_screen_space"];
 }
 
 

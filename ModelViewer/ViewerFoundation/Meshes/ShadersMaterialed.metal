@@ -41,6 +41,9 @@ vertex PositionSimple vertex_shadow_materialed(device Vertex *vertices [[buffer(
 }
 
 
+#pragma mark -- Phong Model Shaders --
+
+
 vertex ProjectedVertex vertex_project_materialed(device Vertex *vertices [[buffer(0)]],
                                                  constant NuoUniforms &uniforms [[buffer(1)]],
                                                  constant NuoLightVertexUniforms &lightCast [[buffer(2)]],
@@ -122,6 +125,9 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
 }
 
 
+#pragma mark -- Screen Space Shaders --
+
+
 vertex VertexScreenSpace vertex_screen_space_materialed(device Vertex *vertices [[buffer(0)]],
                                                         constant NuoUniforms &uniforms [[buffer(1)]],
                                                         constant NuoMeshUniforms &meshUniform [[buffer(3)]],
@@ -135,9 +141,9 @@ vertex VertexScreenSpace vertex_screen_space_materialed(device Vertex *vertices 
     result.projectedPosition = uniforms.viewProjectionMatrix * meshPosition;
     result.position =  uniforms.viewMatrix * meshPosition;
     result.normal = float4(meshNormal, 1.0);
-    result.ambientColor = vertices[vid].ambientColor;
+    result.diffuseColorFactor = vertices[vid].diffuseColor.rgb;
+    result.opacity = vertices[vid].specularPowerDisolve.y;
     
     return result;
 }
-
 

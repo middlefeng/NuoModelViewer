@@ -141,7 +141,8 @@ static CIContext* sCIContext = nil;
 
 - (void)makePipelineScreenSpaceState
 {
-    [self makePipelineScreenSpaceState:@"vertex_screen_space_textured"];
+    [self makePipelineScreenSpaceStateWithVertexShader:@"vertex_screen_space_textured"
+                                    withFragemtnShader:@"fragement_screen_space_textured"];
 }
 
 

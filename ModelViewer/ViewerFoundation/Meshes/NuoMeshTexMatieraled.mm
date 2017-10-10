@@ -84,8 +84,30 @@
 
 - (void)makePipelineScreenSpaceState
 {
-    [self makePipelineScreenSpaceState:_textureBump ? @"vertex_screen_space_tex_materialed_bump" : @"vertex_screen_space_tex_materialed"];
+    [self makePipelineScreenSpaceStateWithVertexShader:_textureBump ? @"vertex_screen_space_tex_materialed_bump"
+                                                                    : @"vertex_screen_space_tex_materialed"
+                                    withFragemtnShader:@"fragement_screen_space_textured"];
 }
+/*
+- (void)makePipelineScreenSpaceState
+{
+    
+    
+    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    
+    MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
+    screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_screen_space_tex_materialed_bump"];
+    screenSpacePipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragement_screen_space_textured"];
+    screenSpacePipelineDescriptor.sampleCount = kSampleCount;
+    screenSpacePipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
+    screenSpacePipelineDescriptor.colorAttachments[1].pixelFormat = MTLPixelFormatRGBA16Float;
+    screenSpacePipelineDescriptor.colorAttachments[2].pixelFormat = MTLPixelFormatRGBA16Float;
+    screenSpacePipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    
+    NSError *error = nil;
+    self.screenSpacePipelineState = [self.device newRenderPipelineStateWithDescriptor:screenSpacePipelineDescriptor
+                                                                                error:&error];
+}*/
 
 
 - (void)makePipelineShadowState
@@ -198,6 +220,15 @@
 }
 
 
+- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+{
+    [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
+    [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
+    
+    [super drawScreenSpace:renderPass indexBuffer:index];
+}
+
+
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
@@ -294,7 +325,8 @@
 
 - (void)makePipelineScreenSpaceState
 {
-    return [self makePipelineScreenSpaceState:@"vertex_screen_space_materialed"];
+    return [self makePipelineScreenSpaceStateWithVertexShader:@"vertex_screen_space_materialed"
+                                           withFragemtnShader:@"fragement_screen_space"];
 }
 
 

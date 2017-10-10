@@ -62,15 +62,18 @@ struct VertexScreenSpace
     metal::float4 projectedPosition [[position]];
     metal::float4 position;
     metal::float4 normal;
-    metal::float3 ambientColor;
+    metal::float2 texCoord;
+    
+    metal::float3 diffuseColorFactor;
+    float opacity;
 };
 
 
 struct FragementScreenSpace
 {
-    metal::float4 position      [[ color(0) ]];
-    metal::float4 normal        [[ color(1) ]];
-    metal::float4 ambientColor  [[ color(2) ]];
+    metal::float4 position              [[ color(0) ]];
+    metal::float4 normal                [[ color(1) ]];
+    metal::float4 ambientColorFactor    [[ color(2) ]];
 };
 
 

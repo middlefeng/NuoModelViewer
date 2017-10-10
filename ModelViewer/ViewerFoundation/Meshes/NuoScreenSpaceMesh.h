@@ -22,7 +22,8 @@
 
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
            withFragementShader:(NSString*)shaderName
-               withSampleCount:(NSUInteger)sampleCount;
+               withSampleCount:(NSUInteger)sampleCount
+                     withAlpha:(BOOL)alpha;
 
 
 @end

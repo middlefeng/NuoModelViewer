@@ -66,7 +66,9 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
     
     float4 immediateTerm = immediateResult.sample(samplr, vert.texCoord);
     float4 ambientTerm = ambientColor.sample(samplr, vert.texCoord);
-    ambientTerm = float4((ambientTerm.rgb) * (1.0 - ao), ambientTerm.a);
+    ambientTerm = float4((ambientTerm.rgb) * (1.0 - ao), immediateTerm.a);
     
-    return float4((immediateTerm + ambientTerm).rgb + params.clearColor.rgb * (1.0 - immediateTerm.a), 1.0);
+    return float4(ambientTerm.rgb * immediateTerm.a + immediateTerm.rgb + params.clearColor.rgb * (1.0 - immediateTerm.a), 1.0);
+    //return float4(immediateTerm.rgb + params.clearColor.rgb * (1.0 - immediateTerm.a), 1.0);
+    //float4((immediateTerm + ambientTerm).rgb + params.clearColor.rgb * (1.0 - immediateTerm.a), 1.0);
 }

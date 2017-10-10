@@ -41,7 +41,8 @@
         
         _screenMesh = [[NuoScreenSpaceMesh alloc] initWithDevice:device];
         [_screenMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm
-                        withFragementShader:@"fragement_deferred" withSampleCount:1];
+                        withFragementShader:@"fragement_deferred"
+                            withSampleCount:1 withAlpha:YES];
         
         _deferredRenderParamBuffer = [self.device newBufferWithLength:sizeof(NuoDeferredRenderUniforms)
                                                               options:MTLResourceOptionCPUCacheModeDefault];

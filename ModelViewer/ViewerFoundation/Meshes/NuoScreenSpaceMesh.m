@@ -42,6 +42,7 @@
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
            withFragementShader:(NSString*)shaderName
                withSampleCount:(NSUInteger)sampleCount
+                     withAlpha:(BOOL)alpha
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
@@ -50,6 +51,17 @@
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:shaderName];
     pipelineDescriptor.sampleCount = sampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = pixelFormat;
+    
+    if (alpha)
+    {
+        pipelineDescriptor.colorAttachments[0].blendingEnabled = YES;
+        pipelineDescriptor.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
+        pipelineDescriptor.colorAttachments[0].alphaBlendOperation = MTLBlendOperationAdd;
+        pipelineDescriptor.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
+        pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+        pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+    }
+    
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];
