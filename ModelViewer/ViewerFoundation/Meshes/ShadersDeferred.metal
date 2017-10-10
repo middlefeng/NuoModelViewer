@@ -48,6 +48,7 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
     float rad = occlusionUniforms.sampleRadius / p.z;
     
     // SSAO Calculation
+    // -- https://www.gamedev.net/articles/programming/graphics/a-simple-and-practical-approach-to-ssao-r2753/
     int iterations = 4;
     for (int j = 0; j < iterations; ++j)
     {
