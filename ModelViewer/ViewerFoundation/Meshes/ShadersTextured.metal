@@ -113,8 +113,6 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     float3 diffuseColor = diffuseTexel.rgb / diffuseTexel.a;
     
-    float3 ambientTerm = lightUniform.ambientDensity * material.ambientColor;
-    
     float3 colorForLights = 0.0;
     
     depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
@@ -148,6 +146,6 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
         colorForLights += (diffuseTerm * lightParams.density + specularTerm * lightParams.spacular) * (1 - shadowPercent);
     }
     
-    return float4(ambientTerm + colorForLights, diffuseTexel.a);
+    return float4(colorForLights, diffuseTexel.a);
 }
 
