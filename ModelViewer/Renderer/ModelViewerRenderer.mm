@@ -430,6 +430,30 @@
             exporter.StartEntry("ambient");
             exporter.SetEntryValueFloat(_ambientDensity);
             exporter.EndEntry(true);
+            
+            exporter.StartEntry("ambientParams");
+            exporter.StartTable();
+            
+            {
+                exporter.StartEntry("bias");
+                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.bias);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("intensity");
+                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.intensity);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("range");
+                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.sampleRadius);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("scale");
+                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.scale);
+                exporter.EndEntry(false);
+            }
+            
+            exporter.EndTable();
+            exporter.EndEntry(true);
         }
         
         exporter.EndTable();
@@ -525,7 +549,24 @@
     [lua removeField];
     
     [lua getField:@"lights" fromTable:-1];
+    
     _ambientDensity = [lua getFieldAsNumber:@"ambient" fromTable:-1];
+    
+    {
+        [lua getField:@"ambientParams" fromTable:-1];
+        
+        if (![lua isNil:-1])
+        {
+            NuoDeferredRenderUniforms params = _deferredParameters;
+            params.ambientOcclusionParams.bias = [lua getFieldAsNumber:@"bias" fromTable:-1];
+            params.ambientOcclusionParams.intensity = [lua getFieldAsNumber:@"intensity" fromTable:-1];
+            params.ambientOcclusionParams.sampleRadius = [lua getFieldAsNumber:@"range" fromTable:-1];
+            params.ambientOcclusionParams.scale = [lua getFieldAsNumber:@"scale" fromTable:-1];
+            [self setDeferredParameters:params];
+        }
+        [lua removeField];
+    }
+    
     [lua removeField];
 }
 
