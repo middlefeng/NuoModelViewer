@@ -71,8 +71,16 @@ struct VertexScreenSpace
 
 struct FragementScreenSpace
 {
+    // alpha channel is always 1.0
+    //
     metal::float4 position              [[ color(0) ]];
     metal::float4 normal                [[ color(1) ]];
+    
+    // alpha channel is the material opacity (i.e. considering both vertex material and texture opacity).
+    //
+    // the blending is turned OFF so the alpha is that of the last rendered object (in the ordered rendering it's
+    // a semi-translucent one if there is any). the color is "premuliplyed"
+    //
     metal::float4 ambientColorFactor    [[ color(2) ]];
 };
 

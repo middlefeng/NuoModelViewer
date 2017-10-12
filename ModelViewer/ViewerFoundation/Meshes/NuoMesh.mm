@@ -470,9 +470,13 @@ const BOOL kShadowPCF = YES;
     screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShader];
     screenSpacePipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmentShader];
     screenSpacePipelineDescriptor.sampleCount = kSampleCount;
+    
+    // blending is turned OFF for all attachments, see comments to "FragementScreenSpace"
+    //
     screenSpacePipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
     screenSpacePipelineDescriptor.colorAttachments[1].pixelFormat = MTLPixelFormatRGBA16Float;
     screenSpacePipelineDescriptor.colorAttachments[2].pixelFormat = MTLPixelFormatRGBA16Float;
+    
     screenSpacePipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     NSError *error = nil;
