@@ -70,7 +70,7 @@ fragment FragementScreenSpace fragement_screen_space_textured(VertexScreenSpace 
     
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     float3 diffuseColor = diffuseTexel.rgb / diffuseTexel.a;
-    result.ambientColorFactor = float4((vert.diffuseColorFactor * diffuseColor * lightUniform.ambientDensity),
+    result.ambientColorFactor = float4(saturate(vert.diffuseColorFactor * diffuseColor * lightUniform.ambientDensity),
                                        diffuseTexel.a * vert.opacity);
     
     return result;
