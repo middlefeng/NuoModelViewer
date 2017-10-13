@@ -77,7 +77,6 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
 {
     float3 normal = normalize(vert.normal);
     float3 diffuseColor = vert.diffuseColor;
-    float3 ambientTerm = lightUniform.ambientDensity * vert.ambientColor;
     
     float3 colorForLights = 0.0;
     
@@ -121,7 +120,7 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
                           (1 - shadowPercent);
     }
     
-    return float4(ambientTerm + colorForLights, 1.0 - transparency);
+    return float4(colorForLights, 1.0 - transparency);
 }
 
 
