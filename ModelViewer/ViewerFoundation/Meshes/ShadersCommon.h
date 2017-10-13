@@ -79,7 +79,11 @@ struct FragementScreenSpace
     // alpha channel is the material opacity (i.e. considering both vertex material and texture opacity).
     //
     // the blending is turned OFF so the alpha is that of the last rendered object (in the ordered rendering it's
-    // a semi-translucent one if there is any). the color is "premuliplyed"
+    // a semi-translucent one if there is any). the color is "premultiplyed" by "hand" in the shader code.
+    //
+    // the premultiplication is mandatory because of the presence of MSAA. and the mutiplication must be done at the end
+    // of the fragement shader, rather than deferred to after the texture sampling, otherwise the result is incorrect
+    // because the order of MSAA and the multipication
     //
     metal::float4 ambientColorFactor    [[ color(2) ]];
 };
