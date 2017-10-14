@@ -417,7 +417,6 @@ const BOOL kShadowPCF = YES;
 }
 
 
-
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
@@ -460,6 +459,35 @@ const BOOL kShadowPCF = YES;
     NSError *error = nil;
     _renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineDescriptor
                                                                        error:&error];
+}
+
+- (void)makePipelineScreenSpaceStateWithVertexShader:(NSString*)vertexShader
+                                  withFragemtnShader:(NSString*)fragmentShader
+{
+    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    
+    MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
+    screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShader];
+    screenSpacePipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmentShader];
+    screenSpacePipelineDescriptor.sampleCount = kSampleCount;
+    
+    // blending is turned OFF for all attachments, see comments to "FragementScreenSpace"
+    //
+    screenSpacePipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
+    screenSpacePipelineDescriptor.colorAttachments[1].pixelFormat = MTLPixelFormatRGBA16Float;
+    screenSpacePipelineDescriptor.colorAttachments[2].pixelFormat = MTLPixelFormatRGBA16Float;
+    
+    screenSpacePipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    
+    NSError *error = nil;
+    _screenSpacePipelineState = [self.device newRenderPipelineStateWithDescriptor:screenSpacePipelineDescriptor
+                                                                            error:&error];
+}
+
+- (void)makePipelineScreenSpaceState
+{
+    [self makePipelineScreenSpaceStateWithVertexShader:@"vertex_project_screen_space"
+                                    withFragemtnShader:@"fragement_screen_space"];
 }
     
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader
@@ -517,6 +545,24 @@ const BOOL kShadowPCF = YES;
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_renderPipelineState];
+    [renderPass setDepthStencilState:_depthStencilState];
+    
+    NSUInteger rotationIndex = _shadowPipelineState ? 3 : 2;
+    
+    [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
+    [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:rotationIndex];
+    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                           indexCount:[_indexBuffer length] / sizeof(uint32_t)
+                            indexType:MTLIndexTypeUInt32
+                          indexBuffer:_indexBuffer
+                    indexBufferOffset:0];
+}
+
+
+- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+{
+    [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
+    [renderPass setRenderPipelineState:_screenSpacePipelineState];
     [renderPass setDepthStencilState:_depthStencilState];
     
     NSUInteger rotationIndex = _shadowPipelineState ? 3 : 2;
@@ -666,6 +712,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
     }
     
     [resultMesh setRawModel:model.get()];
+    [resultMesh makePipelineScreenSpaceState];
     [resultMesh makePipelineShadowState];
     [resultMesh makePipelineState:[resultMesh makePipelineStateDescriptor]];
     [resultMesh makeDepthStencilState];

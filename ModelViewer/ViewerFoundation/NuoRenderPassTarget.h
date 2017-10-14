@@ -28,6 +28,8 @@
  */
 @property (nonatomic, strong) id<MTLTexture> targetTexture;
 
+@property (nonatomic, strong) id<MTLTexture> depthTexture;
+
 /**
  *  whether the target texture is managed by the render-pass itself
  *  or by external (e.g. the drawable of a Metal view)

@@ -12,6 +12,7 @@
 
 #import "NuoPopoverSheet.h"
 #import "ModelOperationTexturePopover.h"
+#import "ModelOperationAmbientPopover.h"
 
 
 @interface ModelOperationPanel() < NSTableViewDataSource, NSTableViewDelegate, NuoPopoverSheetDelegate >
@@ -29,6 +30,8 @@
 @property (nonatomic, assign) NSSlider* fieldOfView;
 
 @property (nonatomic, strong) NSSlider* ambientDensitySlider;
+@property (nonatomic, strong) NuoPopoverSheet* ambientPopover;
+
 @property (nonatomic, strong) NSButton* lightSettings;
 @property (nonatomic, strong) NSButton* checkBrdfMode;
 @property (nonatomic, strong) NSPopUpButton* checkDissectMode;
@@ -57,6 +60,14 @@
         _meshOptions = [NuoMeshOption new];
         _meshOptions.combineShapes = YES;
         _meshOptions.texturedBump = YES;
+        
+        _deferredRenderParameters.ambientOcclusionParams.bias = 0.4;
+        _deferredRenderParameters.ambientOcclusionParams.intensity = 3.0;
+        _deferredRenderParameters.ambientOcclusionParams.sampleRadius = 0.8;
+        _deferredRenderParameters.ambientOcclusionParams.scale = 1.0;
+
+        vector_float4 clearColor = { 0.95, 0.95, 0.95, 1 };
+        _deferredRenderParameters.clearColor = clearColor;
         
         _cullEnabled = YES;
         
@@ -195,13 +206,23 @@
     rowCoord += 0.8;
     
     NSSlider* ambientDensity = [NSSlider new];
-    [ambientDensity setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6 inView:scrollDocumentView]];
+    CGRect ambientDensityFrame = [self buttonLoactionAtRow:rowCoord withLeading:6 inView:scrollDocumentView];
+    ambientDensityFrame.size.width -= 27;
+    [ambientDensity setFrame:ambientDensityFrame];
     [ambientDensity setMaxValue:2.0];
     [ambientDensity setMinValue:0];
     [ambientDensity setTarget:self];
     [ambientDensity setAction:@selector(ambientDensityChanged:)];
     [scrollDocumentView addSubview:ambientDensity];
     _ambientDensitySlider = ambientDensity;
+    
+    popoverFrame = ambientDensity.frame;
+    popoverFrame.size = CGSizeMake(30, 30);
+    popoverFrame.origin.x = ambientDensity.frame.origin.x + ambientDensity.frame.size.width + 2;
+    popoverFrame.origin.y -= ((popoverFrame.size.height - labelambientDensity.frame.size.height) / 2.0);
+    NuoPopoverSheet* ambientPopover = [[NuoPopoverSheet alloc] initWithParent:scrollDocumentView];
+    ambientPopover.sheetDelegate = self;
+    [ambientPopover setFrame:popoverFrame];
     
     rowCoord += 1.2;
     
@@ -578,15 +599,28 @@
 
 - (CGSize)popoverSheetcontentSize:(NuoPopoverSheet *)sheet
 {
-    return CGSizeMake(250, 60);
+    if (sheet == _checkTexturePopover)
+        return CGSizeMake(250, 60);
+    else
+        return CGSizeMake(250, 125);
 }
 
 - (NSViewController *)popoverSheetcontentViewController:(NuoPopoverSheet *)sheet
 {
-    ModelOperationTexturePopover* popover = [[ModelOperationTexturePopover alloc] initWithPopover:sheet.popover
-                                                                                  withSourcePanel:self
-                                                                                     withDelegate:_optionUpdateDelegate];
-    return popover;
+    if (sheet == _checkTexturePopover)
+    {
+        ModelOperationTexturePopover* popover = [[ModelOperationTexturePopover alloc] initWithPopover:sheet.popover
+                                                                                      withSourcePanel:self
+                                                                                         withDelegate:_optionUpdateDelegate];
+        return popover;
+    }
+    else
+    {
+        ModelOperationAmbientPopover* popover = [[ModelOperationAmbientPopover alloc] initWithPopover:sheet.popover
+                                                                                      withSourcePanel:self
+                                                                                         withDelegate:_optionUpdateDelegate];
+        return popover;
+    }
 }
 
 

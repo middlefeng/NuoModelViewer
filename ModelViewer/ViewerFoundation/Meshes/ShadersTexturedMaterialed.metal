@@ -125,3 +125,27 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
     return outVert;
 }
 
+
+#pragma mark -- Screen Space Shaders --
+
+
+vertex VertexScreenSpace vertex_screen_space_tex_materialed(device Vertex *vertices [[buffer(0)]],
+                                                            constant NuoUniforms &uniforms [[buffer(1)]],
+                                                            constant NuoMeshUniforms &meshUniform [[buffer(3)]],
+                                                            uint vid [[vertex_id]])
+{
+    VertexScreenSpace result;
+    
+    float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
+    
+    result.projectedPosition = uniforms.viewProjectionMatrix * meshPosition;
+    result.position =  uniforms.viewMatrix * meshPosition;
+    result.normal = float4(meshNormal, 1.0);
+    result.diffuseColorFactor = vertices[vid].diffuseColor;
+    result.texCoord = vertices[vid].texCoord;
+    result.opacity = vertices[vid].specularPowerDisolve.y;
+    
+    return result;
+}
+

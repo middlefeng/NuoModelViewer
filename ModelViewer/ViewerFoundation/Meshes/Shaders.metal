@@ -69,7 +69,6 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
                                sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
-    float3 ambientTerm = lightUniform.ambientDensity * material.ambientColor;
     float3 colorForLights = 0.0;
     
     for (unsigned i = 0; i < 4; ++i)
@@ -91,8 +90,48 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
         colorForLights += diffuseTerm * lightParams.density + specularTerm * lightParams.spacular;
     }
     
-    return float4(ambientTerm + colorForLights, modelCharacterUniforms.opacity);
+    return float4(colorForLights, modelCharacterUniforms.opacity);
 }
+
+
+
+#pragma mark -- Screen Space Shaders --
+
+
+vertex VertexScreenSpace vertex_project_screen_space(device Vertex *vertices [[buffer(0)]],
+                                                     constant NuoUniforms &uniforms [[buffer(1)]],
+                                                     constant NuoMeshUniforms &meshUniform [[buffer(3)]],
+                                                     uint vid [[vertex_id]])
+{
+    VertexScreenSpace result;
+    
+    float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
+    
+    result.projectedPosition = uniforms.viewProjectionMatrix * meshPosition;
+    result.position =  uniforms.viewMatrix * meshPosition;
+    result.normal = float4(meshNormal, 1.0);
+    result.diffuseColorFactor = material.diffuseColor;
+    result.opacity = 1.0;
+    
+    return result;
+}
+
+
+fragment FragementScreenSpace fragement_screen_space(VertexScreenSpace vert [[stage_in]],
+                                                     constant NuoLightUniforms& lightUniform [[ buffer(0) ]])
+{
+    FragementScreenSpace result;
+    result.position = vert.position;
+    result.normal = vert.normal;
+    result.ambientColorFactor = float4(saturate(vert.diffuseColorFactor * lightUniform.ambientDensity) * vert.opacity, vert.opacity);
+    
+    return result;
+}
+
+
+
+#pragma mark -- Phong Model Shaders --
 
 
 
@@ -122,7 +161,6 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                       sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
-    float3 ambientTerm = kShadowOverlay ? 0.0 : lightUniform.ambientDensity * material.ambientColor;
     float3 colorForLights = 0.0;
     
     float shadowOverlay = 0.0;
@@ -174,7 +212,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     if (kShadowOverlay)
         return float4(0.0, 0.0, 0.0, shadowOverlay / surfaceBrightness);
     else
-        return float4(ambientTerm + colorForLights, modelCharacterUniforms.opacity);
+        return float4(colorForLights, modelCharacterUniforms.opacity);
 }
 
 
@@ -190,7 +228,6 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
     float3 diffuseColor = diffuseTexel.rgb * vert.diffuseColor;
     float opacity = diffuseTexel.a * vert.opacity;
     
-    float3 ambientTerm = lightingUniform.ambientDensity * vert.ambientColor;
     float3 colorForLights = 0.0;
     
     float transparency = (1 - opacity);
@@ -230,7 +267,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                           (1 - shadowPercent);
     }
     
-    return float4(ambientTerm + colorForLights, 1.0 - transparency);
+    return float4(colorForLights, 1.0 - transparency);
 }
 
 

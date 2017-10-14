@@ -30,6 +30,8 @@
 
 @property (nonatomic, strong) NuoMeshOption* meshOptions;
 
+@property (nonatomic, assign) NuoDeferredRenderUniforms deferredRenderParameters;
+
 @property (nonatomic, assign) BOOL cullEnabled;
 
 @property (nonatomic, assign) float fieldOfViewRadian;

@@ -20,6 +20,7 @@
 
 #import "NuoLightSource.h"
 #import "NuoShadowMapRenderer.h"
+#import "NuoDeferredRenderer.h"
 
 @interface ModelRenderer ()
 
@@ -35,16 +36,6 @@
 @property (assign) matrix_float4x4 viewTrans;
 @property (assign) matrix_float4x4 projection;
 
-// per-frame GPU buffers
-//
-@property (strong) NSArray<id<MTLBuffer>>* transUniformBuffers;
-@property (strong) NSArray<id<MTLBuffer>>* lightCastBuffers;
-@property (strong) NSArray<id<MTLBuffer>>* lightingUniformBuffers;
-@property (strong) id<MTLBuffer> modelCharacterUnfiromBuffer;
-
-@property (nonatomic, readonly) id<MTLSamplerState> shadowMapSamplerState;
-
-
 @property (strong) NuoModelLoader* modelLoader;
 
 
@@ -54,17 +45,24 @@
 
 @implementation ModelRenderer
 {
+    // per-frame GPU buffers (confirm to protocol NuoMeshSceneParametersProvider)
+    //
+    NSArray<id<MTLBuffer>>* _transUniformBuffers;
+    NSArray<id<MTLBuffer>>* _lightCastBuffers;
+    NSArray<id<MTLBuffer>>* _lightingUniformBuffers;
+    id<MTLBuffer> _modelCharacterUnfiromBuffer;
+    
     NuoShadowMapRenderer* _shadowMapRenderer[2];
+    NuoRenderPassTarget* _immediateTarget;
+    NuoDeferredRenderer* _deferredRenderer;
 }
 
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
 {
-    if ((self = [super init]))
+    if ((self = [super initWithDevice:device]))
     {
-        self.device = device;
-        
         [self makeResources];
         
         _modelOptions = [NuoMeshOption new];
@@ -74,10 +72,21 @@
         _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 0"];
         _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
         
+        _immediateTarget = [[NuoRenderPassTarget alloc] init];
+        _immediateTarget.name = @"immediate";
+        _immediateTarget.sampleCount = kSampleCount;
+        _immediateTarget.device = device;
+        _immediateTarget.manageTargetTexture = YES;
+        _immediateTarget.sharedTargetTexture = NO;
+        
+        _deferredRenderer = [[NuoDeferredRenderer alloc] initWithDevice:device withSceneParameter:self];
+        
         _meshes = [NSMutableArray new];
         _boardMeshes = [NSMutableArray new];
         
         _viewTrans = matrix_identity_float4x4;
+        
+        self.paramsProvider = self;
     }
 
     return self;
@@ -87,8 +96,10 @@
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
+    [_immediateTarget setDrawableSize:drawableSize];
     [_shadowMapRenderer[0] setDrawableSize:drawableSize];
     [_shadowMapRenderer[1] setDrawableSize:drawableSize];
+    [_deferredRenderer setDrawableSize:drawableSize];
 }
 
 
@@ -419,6 +430,30 @@
             exporter.StartEntry("ambient");
             exporter.SetEntryValueFloat(_ambientDensity);
             exporter.EndEntry(true);
+            
+            exporter.StartEntry("ambientParams");
+            exporter.StartTable();
+            
+            {
+                exporter.StartEntry("bias");
+                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.bias);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("intensity");
+                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.intensity);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("range");
+                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.sampleRadius);
+                exporter.EndEntry(false);
+                
+                exporter.StartEntry("scale");
+                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.scale);
+                exporter.EndEntry(false);
+            }
+            
+            exporter.EndTable();
+            exporter.EndEntry(true);
         }
         
         exporter.EndTable();
@@ -514,7 +549,24 @@
     [lua removeField];
     
     [lua getField:@"lights" fromTable:-1];
+    
     _ambientDensity = [lua getFieldAsNumber:@"ambient" fromTable:-1];
+    
+    {
+        [lua getField:@"ambientParams" fromTable:-1];
+        
+        if (![lua isNil:-1])
+        {
+            NuoDeferredRenderUniforms params = _deferredParameters;
+            params.ambientOcclusionParams.bias = [lua getFieldAsNumber:@"bias" fromTable:-1];
+            params.ambientOcclusionParams.intensity = [lua getFieldAsNumber:@"intensity" fromTable:-1];
+            params.ambientOcclusionParams.sampleRadius = [lua getFieldAsNumber:@"range" fromTable:-1];
+            params.ambientOcclusionParams.scale = [lua getFieldAsNumber:@"scale" fromTable:-1];
+            [self setDeferredParameters:params];
+        }
+        [lua removeField];
+    }
+    
     [lua removeField];
 }
 
@@ -540,6 +592,13 @@
         board.shadowOverlayOnly = [modelOptions basicMaterialized];
         [board makePipelineState:[board makePipelineStateDescriptor]];
     }
+}
+
+
+- (void)setDeferredParameters:(NuoDeferredRenderUniforms)deferredParameters
+{
+    _deferredParameters = deferredParameters;
+    [_deferredRenderer setParameters:&deferredParameters];
 }
 
 
@@ -569,16 +628,6 @@
     _modelCharacterUnfiromBuffer = [self.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
                                                             options:MTLResourceOptionCPUCacheModeDefault];
     memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(NuoModelCharacterUniforms));
-    
-    // create sampler state for shadow map sampling
-    MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
-    samplerDesc.sAddressMode = MTLSamplerAddressModeClampToEdge;
-    samplerDesc.tAddressMode = MTLSamplerAddressModeClampToEdge;
-    samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
-    samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
-    samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
-    samplerDesc.compareFunction = MTLCompareFunctionGreater;
-    _shadowMapSamplerState = [self.device newSamplerStateWithDescriptor:samplerDesc];
 }
 
 - (void)handleDeltaPosition
@@ -695,7 +744,10 @@
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(NuoLightUniforms));
     
     for (NuoMesh* mesh in _meshes)
+    {
         [mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
+        [mesh setCullEnabled:_cullEnabled];
+    }
     
     if (_cubeMesh)
     {
@@ -725,25 +777,15 @@
     lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix;
     lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix;
     memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
-}
-
-
-- (void)setSceneBuffersTo:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight
-{
-    [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
-    [renderPass setVertexBuffer:_lightCastBuffers[inFlight] offset:0 atIndex:2];
     
-    [renderPass setFragmentBuffer:self.lightingUniformBuffers[inFlight] offset:0 atIndex:0];
-    [renderPass setFragmentBuffer:self.modelCharacterUnfiromBuffer offset:0 atIndex:1];
-    [renderPass setFragmentTexture:_shadowMapRenderer[0].renderTarget.targetTexture atIndex:0];
-    [renderPass setFragmentTexture:_shadowMapRenderer[1].renderTarget.targetTexture atIndex:1];
-    [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
+    [_deferredRenderer setMeshes:_meshes];
+    [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
 }
 
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
+    MTLRenderPassDescriptor *passDescriptor = [_immediateTarget currentRenderPassDescriptor];
     if (!passDescriptor)
         return;
     
@@ -758,12 +800,13 @@
     [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
     
     for (NuoMesh* mesh in _meshes)
-    {
-        [mesh setCullEnabled:_cullEnabled];
         [mesh drawMesh:renderPass indexBuffer:inFlight];
-    }
     
     [renderPass endEncoding];
+    
+    [_deferredRenderer setRenderTarget:self.renderTarget];
+    [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
+    [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
 }
 
 
@@ -806,5 +849,39 @@
     
     return cloned;
 }
+
+
+
+#pragma mark -- Protocol NuoMeshSceneParametersProvider
+
+- (NuoShadowMapRenderer*)shadowMapRenderer:(NSUInteger)index
+{
+    return _shadowMapRenderer[index];
+}
+
+- (NSArray<id<MTLBuffer>>*)lightCastBuffers
+{
+    return _lightCastBuffers;
+}
+
+
+- (NSArray<id<MTLBuffer>>*)lightingUniformBuffers
+{
+    return _lightingUniformBuffers;
+}
+
+
+- (id<MTLBuffer>)modelCharacterUnfiromBuffer
+{
+    return _modelCharacterUnfiromBuffer;
+}
+
+
+- (NSArray<id<MTLBuffer>>*)transUniformBuffers
+{
+    return _transUniformBuffers;
+}
+
+
 
 @end

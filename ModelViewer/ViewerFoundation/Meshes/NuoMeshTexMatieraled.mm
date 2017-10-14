@@ -82,6 +82,14 @@
 }
 
 
+- (void)makePipelineScreenSpaceState
+{
+    [self makePipelineScreenSpaceStateWithVertexShader:_textureBump ? @"vertex_screen_space_tex_materialed_bump"
+                                                                    : @"vertex_screen_space_tex_materialed"
+                                    withFragemtnShader:@"fragement_screen_space_textured"];
+}
+
+
 - (void)makePipelineShadowState
 {
     NSString* shadowShader = _textureBump ? @"vertex_shadow_tex_materialed_bump" : @"vertex_shadow_tex_materialed";
@@ -192,6 +200,15 @@
 }
 
 
+- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+{
+    [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
+    [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
+    
+    [super drawScreenSpace:renderPass indexBuffer:index];
+}
+
+
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
@@ -283,6 +300,13 @@
     [materialMesh makeDepthStencilState];
     
     return materialMesh;
+}
+
+
+- (void)makePipelineScreenSpaceState
+{
+    return [self makePipelineScreenSpaceStateWithVertexShader:@"vertex_screen_space_materialed"
+                                           withFragemtnShader:@"fragement_screen_space"];
 }
 
 

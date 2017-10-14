@@ -155,3 +155,28 @@ float3 bumpped_normal(float3 normal, float3 tangent, float3 bitangent, float3 bu
 }
 
 
+#pragma mark -- Screen Space Shader --
+
+
+vertex VertexScreenSpace vertex_screen_space_tex_materialed_bump(device Vertex *vertices [[buffer(0)]],
+                                                                 constant NuoUniforms &uniforms [[buffer(1)]],
+                                                                 constant NuoMeshUniforms &meshUniform [[buffer(3)]],
+                                                                 uint vid [[vertex_id]])
+{
+    VertexScreenSpace result;
+    
+    float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
+    
+    result.projectedPosition = uniforms.viewProjectionMatrix * meshPosition;
+    result.position =  uniforms.viewMatrix * meshPosition;
+    result.normal = float4(meshNormal, 1.0);
+    result.diffuseColorFactor = vertices[vid].diffuseColor;
+    result.texCoord = vertices[vid].texCoord;
+    result.opacity = vertices[vid].specularPowerDisolve.y;
+    
+    return result;
+}
+
+
+

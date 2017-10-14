@@ -138,6 +138,14 @@ static CIContext* sCIContext = nil;
     return pipelineDescriptor;
 }
 
+
+- (void)makePipelineScreenSpaceState
+{
+    [self makePipelineScreenSpaceStateWithVertexShader:@"vertex_screen_space_textured"
+                                    withFragemtnShader:@"fragement_screen_space_textured"];
+}
+
+
 - (void)makePipelineShadowState
 {
     [super makePipelineShadowState:@"vertex_shadow_textured"];

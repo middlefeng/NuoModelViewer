@@ -13,7 +13,6 @@
 @interface NuoRenderPassTarget()
 
 @property (nonatomic, strong) id<MTLTexture> sampleTexture;
-@property (nonatomic, strong) id<MTLTexture> depthTexture;
 
 @end
 
@@ -91,7 +90,7 @@
             _targetTexture = [_device newTextureWithDescriptor:sampleDesc];
             
             NSString* name = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"target"];
-            [self.sampleTexture setLabel:name];
+            [_targetTexture setLabel:name];
         }
     }
 }

@@ -16,6 +16,7 @@
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 - (void)makePipelineShadowState;
+- (void)makePipelineScreenSpaceState;
 
 @end
 

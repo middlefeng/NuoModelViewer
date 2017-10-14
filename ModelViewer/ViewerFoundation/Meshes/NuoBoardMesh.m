@@ -92,6 +92,13 @@
 }
 
 
+- (void)makePipelineScreenSpaceState
+{
+    [super makePipelineScreenSpaceStateWithVertexShader:@"vertex_project_screen_space"
+                                     withFragemtnShader:@"fragement_screen_space"];
+}
+
+
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
     [renderPass setCullMode:MTLCullModeBack];

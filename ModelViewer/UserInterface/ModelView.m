@@ -175,6 +175,7 @@ MouseDragMode;
     {
         [_modelComponentPanels setHidden:![panel showModelParts]];
         
+        [_modelRender setDeferredParameters:[panel deferredRenderParameters]];
         [_modelRender setCullEnabled:[panel cullEnabled]];
         [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
         [_modelRender setAmbientDensity:[panel ambientDensity]];
@@ -287,7 +288,7 @@ MouseDragMode;
     
     _modelRender = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
     _modelDissectRenderer = [[ModelDissectRenderer alloc] initWithDevice:self.metalLayer.device];
-    _modelDissectRenderer.modelRenderer = _modelRender;
+    _modelDissectRenderer.paramsProvider = _modelRender;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
     _notationRender.notationWidthCap = [self operationPanelLocation].size.width + 30;
@@ -349,7 +350,7 @@ MouseDragMode;
         
         NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
         modelRenderTarget.device = self.metalLayer.device;
-        modelRenderTarget.sampleCount = kSampleCount;
+        modelRenderTarget.sampleCount = 1;
         modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         modelRenderTarget.manageTargetTexture = YES;
         modelRenderTarget.name = @"Model";
@@ -388,7 +389,7 @@ MouseDragMode;
         
         NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
         modelRenderTarget.device = self.metalLayer.device;
-        modelRenderTarget.sampleCount = kSampleCount;
+        modelRenderTarget.sampleCount = 1;
         modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         modelRenderTarget.manageTargetTexture = (_modelPanel.meshMode != kMeshMode_Normal);
         modelRenderTarget.name = @"Model";
@@ -783,6 +784,13 @@ MouseDragMode;
              CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
                                         _modelRender.renderTarget.drawableSize.width);
              
+             NuoDeferredRenderUniforms params = _modelRender.deferredParameters;
+             NuoDeferredRenderUniforms oldParams = params;
+             
+             vector_float4 clearColor = { 0.0, 0.0, 0.0, 0.0 };
+             params.clearColor = clearColor;
+             _modelRender.deferredParameters = params;
+             
              NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:device withTarget:previewSize
                                                                           withClearColor:[NSColor colorWithRed:0.0
                                                                                                          green:0.0
@@ -794,6 +802,8 @@ MouseDragMode;
              [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
                                 withCompletion:^(id<MTLTexture> result)
                                     {
+                                        _modelRender.deferredParameters = oldParams;
+                                        
                                         NuoTextureBase* textureBase = [NuoTextureBase getInstance:device];
                                         [textureBase saveTexture:result toImage:path];
                                     }];

@@ -41,6 +41,9 @@ vertex PositionSimple vertex_shadow_materialed(device Vertex *vertices [[buffer(
 }
 
 
+#pragma mark -- Phong Model Shaders --
+
+
 vertex ProjectedVertex vertex_project_materialed(device Vertex *vertices [[buffer(0)]],
                                                  constant NuoUniforms &uniforms [[buffer(1)]],
                                                  constant NuoLightVertexUniforms &lightCast [[buffer(2)]],
@@ -74,7 +77,6 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
 {
     float3 normal = normalize(vert.normal);
     float3 diffuseColor = vert.diffuseColor;
-    float3 ambientTerm = lightUniform.ambientDensity * vert.ambientColor;
     
     float3 colorForLights = 0.0;
     
@@ -118,5 +120,29 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
                           (1 - shadowPercent);
     }
     
-    return float4(ambientTerm + colorForLights, 1.0 - transparency);
+    return float4(colorForLights, 1.0 - transparency);
 }
+
+
+#pragma mark -- Screen Space Shaders --
+
+
+vertex VertexScreenSpace vertex_screen_space_materialed(device Vertex *vertices [[buffer(0)]],
+                                                        constant NuoUniforms &uniforms [[buffer(1)]],
+                                                        constant NuoMeshUniforms &meshUniform [[buffer(3)]],
+                                                        uint vid [[vertex_id]])
+{
+    VertexScreenSpace result;
+    
+    float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
+    
+    result.projectedPosition = uniforms.viewProjectionMatrix * meshPosition;
+    result.position =  uniforms.viewMatrix * meshPosition;
+    result.normal = float4(meshNormal, 1.0);
+    result.diffuseColorFactor = vertices[vid].diffuseColor.rgb;
+    result.opacity = vertices[vid].specularPowerDisolve.y;
+    
+    return result;
+}
+

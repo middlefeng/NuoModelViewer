@@ -57,9 +57,54 @@ struct VertexFragmentCharacters
 };
 
 
+struct VertexScreenSpace
+{
+    metal::float4 projectedPosition [[position]];
+    metal::float4 position;
+    metal::float4 normal;
+    metal::float2 texCoord;
+    
+    metal::float3 diffuseColorFactor;
+    float opacity;
+};
+
+
+struct FragementScreenSpace
+{
+    // alpha channel is always 1.0
+    //
+    metal::float4 position              [[ color(0) ]];
+    metal::float4 normal                [[ color(1) ]];
+    
+    // alpha channel is the material opacity (i.e. considering both vertex material and texture opacity).
+    //
+    // the blending is turned OFF so the alpha is that of the last rendered object (in the ordered rendering it's
+    // a semi-translucent one if there is any). the color is "premultiplyed" by "hand" in the shader code.
+    //
+    // the premultiplication is mandatory because of the presence of MSAA. and the mutiplication must be done at the end
+    // of the fragement shader, rather than deferred to after the texture sampling, otherwise the result is incorrect
+    // because the order of MSAA and the multipication
+    //
+    metal::float4 ambientColorFactor    [[ color(2) ]];
+};
+
+
+/**
+ *  output for depth only vertex shaders
+ */
 struct PositionSimple
 {
     metal::float4 position [[position]];
+};
+
+
+/**
+ *  output for screen-space shaders
+ */
+struct PositionTextureSimple
+{
+    metal::float4 position [[position]];
+    metal::float2 texCoord;
 };
 
 
@@ -81,9 +126,6 @@ metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert
                                                    metal::float4 diffuseTexel,
                                                    metal::depth2d<float> shadowMap[2],
                                                    metal::sampler samplr);
-
-
-fragment void fragment_shadow(PositionSimple vert [[stage_in]]);
 
 
 metal::float4 diffuse_common(metal::float4 diffuseTexel, float extraOpacity);

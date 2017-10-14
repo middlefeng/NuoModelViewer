@@ -21,6 +21,10 @@ struct ProjectedVertex
     float4 shadowPosition1;
 };
 
+/**
+ *   shader to generate the shadow map from the light source view point
+ */
+
 vertex PositionSimple vertex_shadow_textured(device Vertex *vertices [[buffer(0)]],
                                              constant NuoUniforms &uniforms [[buffer(1)]],
                                              constant NuoMeshUniforms &meshUniforms [[buffer(2)]],
@@ -30,6 +34,50 @@ vertex PositionSimple vertex_shadow_textured(device Vertex *vertices [[buffer(0)
     outShadow.position = uniforms.viewProjectionMatrix * meshUniforms.transform * vertices[vid].position;
     return outShadow;
 }
+
+
+#pragma mark -- SCreen Space Shaders --
+
+
+vertex VertexScreenSpace vertex_screen_space_textured(device Vertex *vertices [[buffer(0)]],
+                                                      constant NuoUniforms &uniforms [[buffer(1)]],
+                                                      constant NuoMeshUniforms &meshUniform [[buffer(3)]],
+                                                      uint vid [[vertex_id]])
+{
+    VertexScreenSpace result;
+    
+    float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
+    
+    result.projectedPosition = uniforms.viewProjectionMatrix * meshPosition;
+    result.position =  uniforms.viewMatrix * meshPosition;
+    result.normal = float4(meshNormal, 1.0);
+    result.diffuseColorFactor = material.diffuseColor;
+    result.opacity = 1.0;
+    
+    return result;
+}
+
+
+fragment FragementScreenSpace fragement_screen_space_textured(VertexScreenSpace vert [[stage_in]],
+                                                              constant NuoLightUniforms& lightUniform [[ buffer(0) ]],
+                                                              texture2d<float> diffuseTexture [[ texture(0) ]],
+                                                              sampler samplr [[ sampler(0) ]])
+{
+    FragementScreenSpace result;
+    result.position = vert.position;
+    result.normal = vert.normal;
+    
+    float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
+    float3 diffuseColor = diffuseTexel.rgb / diffuseTexel.a;
+    float alpha = diffuseTexel.a * vert.opacity;
+    result.ambientColorFactor = float4(saturate(vert.diffuseColorFactor * diffuseColor * lightUniform.ambientDensity) * alpha, alpha);
+    
+    return result;
+}
+
+
+#pragma mark -- Phong Model Shaders --
 
 
 vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(0)]],
@@ -48,9 +96,10 @@ vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(
     
     outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * meshPosition;
     outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * meshPosition;
-
+    
     return outVert;
 }
+
 
 fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
                                         constant NuoLightUniforms &lightUniform [[buffer(0)]],
@@ -63,8 +112,6 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
     float3 normal = normalize(vert.normal);
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     float3 diffuseColor = diffuseTexel.rgb / diffuseTexel.a;
-    
-    float3 ambientTerm = lightUniform.ambientDensity * material.ambientColor;
     
     float3 colorForLights = 0.0;
     
@@ -99,6 +146,6 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
         colorForLights += (diffuseTerm * lightParams.density + specularTerm * lightParams.spacular) * (1 - shadowPercent);
     }
     
-    return float4(ambientTerm + colorForLights, diffuseTexel.a);
+    return float4(colorForLights, diffuseTexel.a);
 }
 

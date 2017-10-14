@@ -2,7 +2,7 @@
 #import "ModelView.h"
 
 #import "NuoUniforms.h"
-#import "NuoRenderPipelinePass.h"
+#import "NuoMeshSceneRenderPass.h"
 
 
 @class NuoMesh;
@@ -32,7 +32,7 @@ TransformMode;
 
 
 
-@interface ModelRenderer : NuoRenderPipelinePass
+@interface ModelRenderer : NuoMeshSceneRenderPass <NuoMeshSceneParametersProvider> 
 
 
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lights;
@@ -57,6 +57,7 @@ TransformMode;
 @property (nonatomic, assign) float ambientDensity;
 
 @property (nonatomic, strong, readonly) NuoMeshOption* modelOptions;
+@property (nonatomic, assign) NuoDeferredRenderUniforms deferredParameters;
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
@@ -75,10 +76,6 @@ TransformMode;
 - (void)removeSelectedMesh;
 - (void)selectMeshWithScreen:(CGPoint)point;
 
-// there might be other renderers share the same set of meshes/scene with the model renderer.
-// one example is the model dissect renderer. the following methods are used for the state-sharing
-//
-- (void)setSceneBuffersTo:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight;
 - (NSArray<NuoMesh*>*)cloneMeshesFor:(NuoMeshModeShaderParameter)mode;
 
 
