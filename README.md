@@ -4,6 +4,12 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Ambient occlusion.
+
+<p align="left">
+  <img height="295" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/SDROBJ-no-occlusion.jpg"/>
+</p>
+
 * Transform of the entire scene (including the light sources).
 * Better PCSS soft shadow
 
@@ -76,8 +82,8 @@ A simple Wavefront OBJ viewer.
   * <del>Shadow to ground.</del>
   * PCSS.
     * <del>Basic PCSS.</del>
-    * Adjustable occluder search range.
-    * Move adjustable bias.
+    * <del>Adjustable occluder search range.</del>
+    * <del>More adjustable bias.</del>
   * Transparency (strength) of shadow overlay.
 * <del>Per light-source, per-surface shadow properties (bias, soft edge).</del>
 * <del>Cull mode.</del>
@@ -92,6 +98,7 @@ A simple Wavefront OBJ viewer.
   * List of board objects.
 * Reflection.
 * <del>BRDF mode.</del>
+* <del>Ambient occlusion.</del>
 * Model visualization
   * <del>PCSS steps visualization.<del>
   * Triangle mesh
