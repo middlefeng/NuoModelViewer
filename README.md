@@ -80,11 +80,11 @@ A simple Wavefront OBJ viewer.
 * Shadow
   * <del>Shadow to model</del>
   * <del>Shadow to ground.</del>
-  * PCSS.
+  * <del>PCSS.</del>
     * <del>Basic PCSS.</del>
     * <del>Adjustable occluder search range.</del>
     * <del>More adjustable bias.</del>
-  * Transparency (strength) of shadow overlay.
+  * <del>Transparency (strength) of shadow overlay.</del> (Achieved by ambient)
 * <del>Per light-source, per-surface shadow properties (bias, soft edge).</del>
 * <del>Cull mode.</del>
 * Surrounding.
