@@ -574,7 +574,7 @@ MouseDragMode;
         NSString* path = draggedFilePaths[0];
         if ([path hasSuffix:@".obj"])
         {
-            return NSDragOperationGeneric;
+            return NSDragOperationCopy;
         }
         else
         {
@@ -588,7 +588,7 @@ MouseDragMode;
                 name = [name stringByAppendingString:@".obj"];
                 
                 NSString* filePath = [path stringByAppendingPathComponent:name];
-                return [manager fileExistsAtPath:filePath];
+                return [manager fileExistsAtPath:filePath] ? NSDragOperationCopy : NSDragOperationNone;
             }
         }
     }
