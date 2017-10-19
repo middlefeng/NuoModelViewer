@@ -14,7 +14,7 @@
 
 
 template <class ItemBase>
-class NuoModelBoardBase : public NuoModelCommon<ItemBase>
+class NuoModelBoardBase : virtual public NuoModelCommon<ItemBase>
 {
     enum
     {
@@ -42,32 +42,13 @@ private:
 
 
 
-class NuoModelBoard : public NuoModelBoardBase<NuoItemSimple>
+class NuoModelBoard : virtual public NuoModelBoardBase<NuoItemSimple>,
+                      virtual public NuoModelSimple
 {
     
 public:
     
-    NuoModelBoard(const NuoModelBoard& other);
-    
     NuoModelBoard(float width, float height, float thickness);
-    
-    IMPL_CLONE(NuoModelBoard);
-    
-    virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
-    virtual void AddMaterial(const NuoMaterial& material) override;
-    
-    virtual void GenerateTangents() override;
-    
-    virtual void SetTexturePathDiffuse(const std::string texPath) override;
-    virtual std::string GetTexturePathDiffuse() override;
-    virtual void SetTexturePathOpacity(const std::string texPath) override;
-    virtual std::string GetTexturePathOpacity() override;
-    virtual void SetTexturePathBump(const std::string texPath) override;
-    virtual std::string GetTexturePathBump() override;
-    
-    virtual bool HasTransparent() override;
-    virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
-    virtual void UpdateBufferWithUnifiedMaterial() override;
     
 };
 

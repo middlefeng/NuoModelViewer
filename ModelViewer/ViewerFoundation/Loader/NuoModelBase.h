@@ -201,7 +201,7 @@ bool ItemTexCoordEequal<NuoItemSimple>(const NuoItemSimple& i1, const NuoItemSim
 
 
 
-class NuoModelSimple : public NuoModelCommon<NuoItemSimple>
+class NuoModelSimple : virtual public NuoModelCommon<NuoItemSimple>
 {
 protected:
     
