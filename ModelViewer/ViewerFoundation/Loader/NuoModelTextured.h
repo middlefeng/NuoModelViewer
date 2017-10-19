@@ -68,7 +68,7 @@ public:
 
 
 
-class NuoModelTextured : public NuoModelTextureBase<NuoItemTextured>
+class NuoModelTextured : virtual public NuoModelTextureBase<NuoItemTextured>
 {
 public:
     

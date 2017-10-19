@@ -11,6 +11,7 @@
 
 
 #include "NuoModelBase.h"
+#include "NuoModelTextured.h"
 
 
 template <class ItemBase>
@@ -60,7 +61,29 @@ typedef std::shared_ptr<NuoModelBoard> PNuoModelBoard;
 
 
 
-// class NuoModelBackdrop :
+
+class NuoModelBackDrop : virtual public NuoModelBoardBase<NuoItemTextured>,
+                         virtual public NuoModelTextureBase<NuoItemTextured>
+{
+
+public:
+    
+    NuoModelBackDrop(float width, float height, float thickness);
+    NuoModelBackDrop(const NuoModelBackDrop& other);
+    
+    IMPL_CLONE(NuoModelBackDrop);
+    
+    virtual void AddMaterial(const NuoMaterial& material) override;
+    virtual bool HasTransparent() override;
+    virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
+    virtual void UpdateBufferWithUnifiedMaterial() override;
+    
+    virtual void GenerateTangents() override;
+    
+    virtual void SetTexturePathBump(const std::string texPath) override;
+    virtual std::string GetTexturePathBump() override;
+    
+};
 
 
 
