@@ -491,6 +491,12 @@ MouseDragMode;
     float deltaX = -0.01 * M_PI * theEvent.deltaY;
     float deltaY = -0.01 * M_PI * theEvent.deltaX;
     
+    if (theEvent.modifierFlags & NSEventModifierFlagControl)
+    {
+        deltaX *= 0.005;
+        deltaY *= 0.005;
+    }
+    
     BOOL mouseWasMoved = _mouseMoved;
     if (!_mouseMoved && (deltaX != 0.0 || deltaY != 0.0))
         _mouseMoved = YES;
@@ -558,8 +564,17 @@ MouseDragMode;
 
 - (void)scrollWheel:(NSEvent *)event
 {
-    _modelRender.transXDelta = -event.deltaX;
-    _modelRender.transYDelta = event.deltaY;
+    CGFloat deltaX = -event.deltaX;
+    CGFloat deltaY = event.deltaY;
+    
+    if (event.modifierFlags & NSEventModifierFlagControl)
+    {
+        deltaX *= 0.005;
+        deltaY *= 0.005;
+    }
+    
+    _modelRender.transXDelta = deltaX;
+    _modelRender.transYDelta = deltaY;
     [self render];
 }
 
