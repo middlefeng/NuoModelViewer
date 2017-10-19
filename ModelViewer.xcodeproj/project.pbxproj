@@ -293,6 +293,33 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2C26D1D71F99234A006F0DE9 /* ModelMeshes */ = {
+			isa = PBXGroup;
+			children = (
+				2CE2CA201D804EC5005509EE /* NuoMeshTextured.h */,
+				2CE2CA211D804EC5005509EE /* NuoMeshTextured.mm */,
+				988442491D80B07500EE2C4C /* NuoMeshTexMatieraled.h */,
+				9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */,
+			);
+			path = ModelMeshes;
+			sourceTree = "<group>";
+		};
+		2C26D1DC1F99238F006F0DE9 /* AuxiliaryMeshes */ = {
+			isa = PBXGroup;
+			children = (
+				2C6A8E6E1F80BBA70007551F /* NuoScreenSpaceMesh.h */,
+				2C6A8E6F1F80BBA70007551F /* NuoScreenSpaceMesh.m */,
+				2C52F12C1DCC03380034ACDC /* NuoTextureMesh.h */,
+				2C52F12D1DCC03380034ACDC /* NuoTextureMesh.mm */,
+				98E05A5E1E6A17A600D4068F /* NuoCubeMesh.h */,
+				98E05A5F1E6A17A600D4068F /* NuoCubeMesh.m */,
+				2C156CAC1EE7961C000C52D4 /* NuoBoardMesh.h */,
+				2C156CAD1EE7961C000C52D4 /* NuoBoardMesh.m */,
+				2C156CB91EE845A8000C52D4 /* NuoBoardMesh.mm */,
+			);
+			path = AuxiliaryMeshes;
+			sourceTree = "<group>";
+		};
 		2C4DE7731DFB558B00199F1D /* Scripting */ = {
 			isa = PBXGroup;
 			children = (
@@ -362,21 +389,10 @@
 				2C5DDACA1D6590DB00A9DC9A /* NuoMesh.mm */,
 				2C5A58351ECEB7CA00121A82 /* NuoMeshCompound.h */,
 				2C5A58361ECEB7CA00121A82 /* NuoMeshCompound.m */,
+				2C26D1D71F99234A006F0DE9 /* ModelMeshes */,
+				2C26D1DC1F99238F006F0DE9 /* AuxiliaryMeshes */,
 				2C8974911D8BBAEF00460648 /* NuoMeshOptions.h */,
 				2C8974921D8BBAEF00460648 /* NuoMeshOptions.m */,
-				2CE2CA201D804EC5005509EE /* NuoMeshTextured.h */,
-				2CE2CA211D804EC5005509EE /* NuoMeshTextured.mm */,
-				988442491D80B07500EE2C4C /* NuoMeshTexMatieraled.h */,
-				9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */,
-				2C6A8E6E1F80BBA70007551F /* NuoScreenSpaceMesh.h */,
-				2C6A8E6F1F80BBA70007551F /* NuoScreenSpaceMesh.m */,
-				2C52F12C1DCC03380034ACDC /* NuoTextureMesh.h */,
-				2C52F12D1DCC03380034ACDC /* NuoTextureMesh.mm */,
-				98E05A5E1E6A17A600D4068F /* NuoCubeMesh.h */,
-				98E05A5F1E6A17A600D4068F /* NuoCubeMesh.m */,
-				2C156CAC1EE7961C000C52D4 /* NuoBoardMesh.h */,
-				2C156CAD1EE7961C000C52D4 /* NuoBoardMesh.m */,
-				2C156CB91EE845A8000C52D4 /* NuoBoardMesh.mm */,
 				2C6C7CDF1E45AB1200CEC76D /* NuoMatrixTypes.h */,
 				2CE2D7F31E2042F3000CCD2D /* NuoUniforms.h */,
 				2C723AA21E43973200484992 /* NuoMeshUniform.h */,
