@@ -12,7 +12,9 @@
 
 #include "NuoModelBase.h"
 
-class NuoModelBoard : public NuoModelSimple
+
+template <class ItemBase>
+class NuoModelBoardBase : public NuoModelCommon<ItemBase>
 {
     enum
     {
@@ -29,7 +31,7 @@ public:
     float _height;
     float _thickness;
     
-    NuoModelBoard(float width, float height, float thickness);
+    NuoModelBoardBase(float width, float height, float thickness);
     
     void CreateBuffer();
     
@@ -39,6 +41,313 @@ private:
 };
 
 
+
+template <class ItemBase>
+NuoModelBoardBase<ItemBase>::NuoModelBoardBase(float width, float height, float thickness)
+    : _width(width), _height(height), _thickness(thickness)
+{
+}
+
+
+template <class ItemBase>
+void NuoModelBoardBase<ItemBase>::CreateBuffer()
+{
+    vector_float2 corners[4];
+    
+    corners[kCorner_BL].x = -_width / 2.0;
+    corners[kCorner_BL].y = -_height / 2.0;
+    
+    corners[kCorner_BR].x = _width / 2.0;
+    corners[kCorner_BR].y = -_height / 2.0;
+    
+    corners[kCorner_TL].x = -_width / 2.0;
+    corners[kCorner_TL].y = _height / 2.0;
+    
+    corners[kCorner_TR].x = _width / 2.0;
+    corners[kCorner_TR].y = _height / 2.0;
+    
+    std::vector<float> bufferPosition(9), bufferNormal(3);
+    float halfHeight = _thickness / 2.0;
+    
+    // top-half
+    bufferPosition[0] = corners[kCorner_TL].x;
+    bufferPosition[1] = corners[kCorner_TL].y;
+    bufferPosition[2] = halfHeight;
+    bufferPosition[3] = corners[kCorner_BL].x;
+    bufferPosition[4] = corners[kCorner_BL].y;
+    bufferPosition[5] = halfHeight;
+    bufferPosition[6] = corners[kCorner_TR].x;
+    bufferPosition[7] = corners[kCorner_TR].y;
+    bufferPosition[8] = halfHeight;
+    
+    bufferNormal[0] = 0;
+    bufferNormal[1] = 0;
+    bufferNormal[2] = 1;
+    
+    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    
+    // top-half
+    bufferPosition[0] = corners[kCorner_TR].x;
+    bufferPosition[1] = corners[kCorner_TR].y;
+    bufferPosition[2] = halfHeight;
+    bufferPosition[3] = corners[kCorner_BL].x;
+    bufferPosition[4] = corners[kCorner_BL].y;
+    bufferPosition[5] = halfHeight;
+    bufferPosition[6] = corners[kCorner_BR].x;
+    bufferPosition[7] = corners[kCorner_BR].y;
+    bufferPosition[8] = halfHeight;
+    
+    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    
+    // bottom-half
+    bufferPosition[0] = corners[kCorner_TL].x;
+    bufferPosition[1] = corners[kCorner_TL].y;
+    bufferPosition[2] = -halfHeight;
+    bufferPosition[3] = corners[kCorner_TR].x;
+    bufferPosition[4] = corners[kCorner_TR].y;
+    bufferPosition[5] = -halfHeight;
+    bufferPosition[6] = corners[kCorner_BL].x;
+    bufferPosition[7] = corners[kCorner_BL].y;
+    bufferPosition[8] = -halfHeight;
+    
+    bufferNormal[0] = 0;
+    bufferNormal[1] = 0;
+    bufferNormal[2] = -1;
+    
+    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    
+    // bottom-half
+    bufferPosition[0] = corners[kCorner_TR].x;
+    bufferPosition[1] = corners[kCorner_TR].y;
+    bufferPosition[2] = -halfHeight;
+    bufferPosition[3] = corners[kCorner_BR].x;
+    bufferPosition[4] = corners[kCorner_BR].y;
+    bufferPosition[5] = -halfHeight;
+    bufferPosition[6] = corners[kCorner_BL].x;
+    bufferPosition[7] = corners[kCorner_BL].y;
+    bufferPosition[8] = -halfHeight;
+    
+    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    
+    // front-half
+    bufferPosition[0] = corners[kCorner_BL].x;
+    bufferPosition[1] = corners[kCorner_BL].y;
+    bufferPosition[2] = halfHeight;
+    bufferPosition[3] = corners[kCorner_BL].x;
+    bufferPosition[4] = corners[kCorner_BL].y;
+    bufferPosition[5] = -halfHeight;
+    bufferPosition[6] = corners[kCorner_BR].x;
+    bufferPosition[7] = corners[kCorner_BR].y;
+    bufferPosition[8] = halfHeight;
+    
+    bufferNormal[0] = 0;
+    bufferNormal[1] = -1;
+    bufferNormal[2] = 0;
+    
+    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    
+    // front-half
+    bufferPosition[0] = corners[kCorner_BR].x;
+    bufferPosition[1] = corners[kCorner_BR].y;
+    bufferPosition[2] = halfHeight;
+    bufferPosition[3] = corners[kCorner_BL].x;
+    bufferPosition[4] = corners[kCorner_BL].y;
+    bufferPosition[5] = -halfHeight;
+    bufferPosition[6] = corners[kCorner_BR].x;
+    bufferPosition[7] = corners[kCorner_BR].y;
+    bufferPosition[8] = -halfHeight;
+    
+    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    
+    // left-half
+    bufferPosition[0] = corners[kCorner_TL].x;
+    bufferPosition[1] = corners[kCorner_TL].y;
+    bufferPosition[2] = halfHeight;
+    bufferPosition[3] = corners[kCorner_TL].x;
+    bufferPosition[4] = corners[kCorner_TL].y;
+    bufferPosition[5] = -halfHeight;
+    bufferPosition[6] = corners[kCorner_BL].x;
+    bufferPosition[7] = corners[kCorner_BL].y;
+    bufferPosition[8] = halfHeight;
+    
+    bufferNormal[0] = -1;
+    bufferNormal[1] = 0;
+    bufferNormal[2] = 0;
+    
+    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    
+    // left-half
+    bufferPosition[0] = corners[kCorner_BL].x;
+    bufferPosition[1] = corners[kCorner_BL].y;
+    bufferPosition[2] = halfHeight;
+    bufferPosition[3] = corners[kCorner_TL].x;
+    bufferPosition[4] = corners[kCorner_TL].y;
+    bufferPosition[5] = -halfHeight;
+    bufferPosition[6] = corners[kCorner_BL].x;
+    bufferPosition[7] = corners[kCorner_BL].y;
+    bufferPosition[8] = -halfHeight;
+    
+    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    
+    // right-half
+    bufferPosition[0] = corners[kCorner_BR].x;
+    bufferPosition[1] = corners[kCorner_BR].y;
+    bufferPosition[2] = halfHeight;
+    bufferPosition[3] = corners[kCorner_BR].x;
+    bufferPosition[4] = corners[kCorner_BR].y;
+    bufferPosition[5] = -halfHeight;
+    bufferPosition[6] = corners[kCorner_TR].x;
+    bufferPosition[7] = corners[kCorner_TR].y;
+    bufferPosition[8] = halfHeight;
+    
+    bufferNormal[0] = 1;
+    bufferNormal[1] = 0;
+    bufferNormal[2] = 0;
+    
+    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    
+    // right-half
+    bufferPosition[0] = corners[kCorner_TR].x;
+    bufferPosition[1] = corners[kCorner_TR].y;
+    bufferPosition[2] = halfHeight;
+    bufferPosition[3] = corners[kCorner_BR].x;
+    bufferPosition[4] = corners[kCorner_BR].y;
+    bufferPosition[5] = -halfHeight;
+    bufferPosition[6] = corners[kCorner_TR].x;
+    bufferPosition[7] = corners[kCorner_TR].y;
+    bufferPosition[8] = -halfHeight;
+    
+    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    
+    // back-half
+    bufferPosition[0] = corners[kCorner_TR].x;
+    bufferPosition[1] = corners[kCorner_TR].y;
+    bufferPosition[2] = halfHeight;
+    bufferPosition[3] = corners[kCorner_TR].x;
+    bufferPosition[4] = corners[kCorner_TR].y;
+    bufferPosition[5] = -halfHeight;
+    bufferPosition[6] = corners[kCorner_TL].x;
+    bufferPosition[7] = corners[kCorner_TL].y;
+    bufferPosition[8] = -halfHeight;
+    
+    bufferNormal[0] = 0;
+    bufferNormal[1] = 1;
+    bufferNormal[2] = 0;
+    
+    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    
+    // back-half
+    bufferPosition[0] = corners[kCorner_TL].x;
+    bufferPosition[1] = corners[kCorner_TL].y;
+    bufferPosition[2] = halfHeight;
+    bufferPosition[3] = corners[kCorner_TR].x;
+    bufferPosition[4] = corners[kCorner_TR].y;
+    bufferPosition[5] = halfHeight;
+    bufferPosition[6] = corners[kCorner_TL].x;
+    bufferPosition[7] = corners[kCorner_TL].y;
+    bufferPosition[8] = -halfHeight;
+    
+    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
+    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    
+    NuoModelCommon<ItemBase>::GenerateIndices();
+}
+
+
+
+class NuoModelBoard : virtual public NuoModelBoardBase<NuoItemSimple>
+{
+
+public:
+    
+    NuoModelBoard(const NuoModelBoard& other);
+
+    NuoModelBoard(float width, float height, float thickness);
+    
+    IMPL_CLONE(NuoModelBoard);
+    
+    virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
+    virtual void AddMaterial(const NuoMaterial& material) override;
+    
+    virtual void GenerateTangents() override;
+    
+    virtual void SetTexturePathDiffuse(const std::string texPath) override;
+    virtual std::string GetTexturePathDiffuse() override;
+    virtual void SetTexturePathOpacity(const std::string texPath) override;
+    virtual std::string GetTexturePathOpacity() override;
+    virtual void SetTexturePathBump(const std::string texPath) override;
+    virtual std::string GetTexturePathBump() override;
+    
+    virtual bool HasTransparent() override;
+    virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
+    virtual void UpdateBufferWithUnifiedMaterial() override;
+    
+};
+
+
+
+
 typedef std::shared_ptr<NuoModelBoard> PNuoModelBoard;
+
+
 
 #endif /* NuoModelCube_hpp */
