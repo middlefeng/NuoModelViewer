@@ -34,7 +34,7 @@ public:
     
     NuoModelBoardBase(float width, float height, float thickness);
     
-    void CreateBuffer();
+    virtual void CreateBuffer();
     
 private:
     
@@ -112,7 +112,7 @@ void NuoModelBoardBase<ItemBase>::CreateBuffer()
     corners[kCorner_TR].x = _width / 2.0;
     corners[kCorner_TR].y = _height / 2.0;
     
-    std::vector<float> bufferPosition(9), bufferNormal(3);
+    std::vector<float> bufferPosition(9), bufferNormal(3), bufferTexCoord(6);
     float halfHeight = _thickness / 2.0;
     
     // top-half
@@ -130,12 +130,22 @@ void NuoModelBoardBase<ItemBase>::CreateBuffer()
     bufferNormal[1] = 0;
     bufferNormal[2] = 1;
     
-    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
-    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
-    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
-    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
-    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
-    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    bufferTexCoord[0] = 0.0;
+    bufferTexCoord[1] = 0.0;
+    bufferTexCoord[2] = 0.0;
+    bufferTexCoord[3] = 1.0;
+    bufferTexCoord[4] = 1.0;
+    bufferTexCoord[5] = 0.0;
+    
+    this->AddPosition(0, bufferPosition);
+    this->AddTexCoord(0, bufferTexCoord);
+    this->AddNormal(0, bufferNormal);
+    this->AddPosition(1, bufferPosition);
+    this->AddTexCoord(1, bufferTexCoord);
+    this->AddNormal(0, bufferNormal);
+    this->AddPosition(2, bufferPosition);
+    this->AddTexCoord(2, bufferTexCoord);
+    this->AddNormal(0, bufferNormal);
     
     // top-half
     bufferPosition[0] = corners[kCorner_TR].x;
@@ -148,12 +158,22 @@ void NuoModelBoardBase<ItemBase>::CreateBuffer()
     bufferPosition[7] = corners[kCorner_BR].y;
     bufferPosition[8] = halfHeight;
     
-    NuoModelCommon<ItemBase>::AddPosition(0, bufferPosition);
-    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
-    NuoModelCommon<ItemBase>::AddPosition(1, bufferPosition);
-    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
-    NuoModelCommon<ItemBase>::AddPosition(2, bufferPosition);
-    NuoModelCommon<ItemBase>::AddNormal(0, bufferNormal);
+    bufferTexCoord[0] = 1.0;
+    bufferTexCoord[1] = 0.0;
+    bufferTexCoord[2] = 0.0;
+    bufferTexCoord[3] = 1.0;
+    bufferTexCoord[4] = 1.0;
+    bufferTexCoord[5] = 1.0;
+    
+    this->AddPosition(0, bufferPosition);
+    this->AddTexCoord(0, bufferTexCoord);
+    this->AddNormal(0, bufferNormal);
+    this->AddPosition(1, bufferPosition);
+    this->AddTexCoord(1, bufferTexCoord);
+    this->AddNormal(0, bufferNormal);
+    this->AddPosition(2, bufferPosition);
+    this->AddTexCoord(2, bufferTexCoord);
+    this->AddNormal(0, bufferNormal);
     
     // bottom-half
     bufferPosition[0] = corners[kCorner_TL].x;
