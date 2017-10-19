@@ -42,6 +42,48 @@ private:
 
 
 
+class NuoModelBoard : public NuoModelBoardBase<NuoItemSimple>
+{
+    
+public:
+    
+    NuoModelBoard(const NuoModelBoard& other);
+    
+    NuoModelBoard(float width, float height, float thickness);
+    
+    IMPL_CLONE(NuoModelBoard);
+    
+    virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
+    virtual void AddMaterial(const NuoMaterial& material) override;
+    
+    virtual void GenerateTangents() override;
+    
+    virtual void SetTexturePathDiffuse(const std::string texPath) override;
+    virtual std::string GetTexturePathDiffuse() override;
+    virtual void SetTexturePathOpacity(const std::string texPath) override;
+    virtual std::string GetTexturePathOpacity() override;
+    virtual void SetTexturePathBump(const std::string texPath) override;
+    virtual std::string GetTexturePathBump() override;
+    
+    virtual bool HasTransparent() override;
+    virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
+    virtual void UpdateBufferWithUnifiedMaterial() override;
+    
+};
+
+
+
+
+typedef std::shared_ptr<NuoModelBoard> PNuoModelBoard;
+
+
+
+
+// class NuoModelBackdrop :
+
+
+
+
 template <class ItemBase>
 NuoModelBoardBase<ItemBase>::NuoModelBoardBase(float width, float height, float thickness)
     : _width(width), _height(height), _thickness(thickness)
@@ -311,42 +353,6 @@ void NuoModelBoardBase<ItemBase>::CreateBuffer()
     
     NuoModelCommon<ItemBase>::GenerateIndices();
 }
-
-
-
-class NuoModelBoard : virtual public NuoModelBoardBase<NuoItemSimple>
-{
-
-public:
-    
-    NuoModelBoard(const NuoModelBoard& other);
-
-    NuoModelBoard(float width, float height, float thickness);
-    
-    IMPL_CLONE(NuoModelBoard);
-    
-    virtual void AddTexCoord(size_t sourceIndex, const std::vector<float>& texCoordBuffer) override;
-    virtual void AddMaterial(const NuoMaterial& material) override;
-    
-    virtual void GenerateTangents() override;
-    
-    virtual void SetTexturePathDiffuse(const std::string texPath) override;
-    virtual std::string GetTexturePathDiffuse() override;
-    virtual void SetTexturePathOpacity(const std::string texPath) override;
-    virtual std::string GetTexturePathOpacity() override;
-    virtual void SetTexturePathBump(const std::string texPath) override;
-    virtual std::string GetTexturePathBump() override;
-    
-    virtual bool HasTransparent() override;
-    virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
-    virtual void UpdateBufferWithUnifiedMaterial() override;
-    
-};
-
-
-
-
-typedef std::shared_ptr<NuoModelBoard> PNuoModelBoard;
 
 
 
