@@ -166,7 +166,9 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     float shadowOverlay = 0.0;
     float surfaceBrightness = 0.0;
     
+#if METAL_2
     depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+#endif
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
     for (unsigned i = 0; i < 4; ++i)
@@ -177,10 +179,15 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         float shadowPercent = 0.0;
         if (i < 2)
         {
+    #if METAL_2
+            depth2d<float> shadowMapCurrent = shadowMap[i];
+    #else
+            depth2d<float> shadowMapCurrent = (i == 0) ? shadowMap0 : shadowMap1;
+    #endif
             const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(shadowPosition[i],
                                                    shadowParams, diffuseIntensity, 3,
-                                                   shadowMap[i], samplr);
+                                                   shadowMapCurrent, samplr);
         }
         
         if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
@@ -220,7 +227,12 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                             float3 normal,
                                             constant NuoLightUniforms &lightingUniform,
                                             float4 diffuseTexel,
-                                            depth2d<float> shadowMap[2],
+                                    #if METAL_2
+                                            metal::depth2d<float> shadowMap[2],
+                                    #else
+                                            metal::depth2d<float> shadowMap0,
+                                            metal::depth2d<float> shadowMap1,
+                                    #endif
                                             sampler samplr)
 {
     normal = normalize(normal);
@@ -254,10 +266,15 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         float shadowPercent = 0.0;
         if (i < 2)
         {
+    #if METAL_2
+            depth2d<float> shadowMapCurrent = shadowMap[i];
+    #else
+            depth2d<float> shadowMapCurrent = (i == 0) ? shadowMap0 : shadowMap1;
+    #endif
             const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(vert.shadowPosition[i],
                                                    shadowParams, diffuseIntensity, 3,
-                                                   shadowMap[i], samplr);
+                                                   shadowMapCurrent, samplr);
             
             if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
                 return float4(shadowPercent, 0.0, 0.0, 1.0);

@@ -996,8 +996,8 @@
 				HEADER_SEARCH_PATHS = glm;
 				INFOPLIST_FILE = "ModelViewer/Metal1-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MTL_LANGUAGE_REVISION = Metal20;
-				MTL_PREPROCESSOR_DEFINITIONS = Metal;
+				MTL_LANGUAGE_REVISION = Metal12;
+				MTL_PREPROCESSOR_DEFINITIONS = "Metal METAL_2=0";
 				PRODUCT_BUNDLE_IDENTIFIER = fengdong.model.viewer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1016,8 +1016,8 @@
 				HEADER_SEARCH_PATHS = glm;
 				INFOPLIST_FILE = "ModelViewer/Metal1-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MTL_LANGUAGE_REVISION = Metal20;
-				MTL_PREPROCESSOR_DEFINITIONS = Metal;
+				MTL_LANGUAGE_REVISION = Metal12;
+				MTL_PREPROCESSOR_DEFINITIONS = "Metal METAL_2=0";
 				PRODUCT_BUNDLE_IDENTIFIER = fengdong.model.viewer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1137,7 +1137,7 @@
 				INFOPLIST_FILE = ModelViewer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MTL_LANGUAGE_REVISION = Metal20;
-				MTL_PREPROCESSOR_DEFINITIONS = Metal;
+				MTL_PREPROCESSOR_DEFINITIONS = "Metal METAL_2=1";
 				PRODUCT_BUNDLE_IDENTIFIER = fengdong.model.viewer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1157,7 +1157,7 @@
 				INFOPLIST_FILE = ModelViewer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MTL_LANGUAGE_REVISION = Metal20;
-				MTL_PREPROCESSOR_DEFINITIONS = Metal;
+				MTL_PREPROCESSOR_DEFINITIONS = "Metal METAL_2=1";
 				PRODUCT_BUNDLE_IDENTIFIER = fengdong.model.viewer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

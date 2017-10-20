@@ -124,7 +124,12 @@ metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert
                                                    metal::float3 normal,
                                                    constant NuoLightUniforms &lighting,
                                                    metal::float4 diffuseTexel,
+                                            #if METAL_2
                                                    metal::depth2d<float> shadowMap[2],
+                                            #else
+                                                   metal::depth2d<float> shadowMap0,
+                                                   metal::depth2d<float> shadowMap1,
+                                            #endif
                                                    metal::sampler samplr);
 
 

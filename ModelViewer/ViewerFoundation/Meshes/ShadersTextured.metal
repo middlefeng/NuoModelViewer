@@ -114,8 +114,10 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
     float3 diffuseColor = diffuseTexel.rgb / diffuseTexel.a;
     
     float3 colorForLights = 0.0;
-    
+
+#if METAL_2
     depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+#endif
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
     for (unsigned i = 0; i < 4; ++i)
@@ -137,10 +139,15 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
         float shadowPercent = 0.0;
         if (i < 2)
         {
+    #if METAL_2
+            depth2d<float> shadowMapCurrent = shadowMap[i];
+    #else
+            depth2d<float> shadowMapCurrent = (i == 0) ? shadowMap0 : shadowMap1;
+    #endif
             const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(shadowPosition[i],
                                                    shadowParams, diffuseIntensity, 3,
-                                                   shadowMap[i], depthSamplr);
+                                                   shadowMapCurrent, depthSamplr);
         }
         
         colorForLights += (diffuseTerm * lightParams.density + specularTerm * lightParams.spacular) * (1 - shadowPercent);

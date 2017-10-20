@@ -116,9 +116,14 @@ fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
     float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
     float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
     
+#if METAL_2
     depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseColor,
                                                 shadowMap, depthSamplr);
+#else
+    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseColor,
+                                                shadowMap0, shadowMap1, depthSamplr);
+#endif
 }
 
 
