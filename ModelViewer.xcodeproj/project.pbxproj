@@ -994,7 +994,7 @@
 					"METAL_2=1",
 				);
 				HEADER_SEARCH_PATHS = glm;
-				INFOPLIST_FILE = "Metal1-Info.plist";
+				INFOPLIST_FILE = "ModelViewer/Metal1-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MTL_LANGUAGE_REVISION = Metal20;
 				MTL_PREPROCESSOR_DEFINITIONS = Metal;
@@ -1014,7 +1014,7 @@
 					"METAL_2=1",
 				);
 				HEADER_SEARCH_PATHS = glm;
-				INFOPLIST_FILE = "Metal1-Info.plist";
+				INFOPLIST_FILE = "ModelViewer/Metal1-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MTL_LANGUAGE_REVISION = Metal20;
 				MTL_PREPROCESSOR_DEFINITIONS = Metal;
