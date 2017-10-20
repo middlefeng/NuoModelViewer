@@ -43,6 +43,79 @@
 		2C723A991E42D05700484992 /* ModelPartDimensionPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C723A981E42D05700484992 /* ModelPartDimensionPanel.m */; };
 		2C723AA91E43A83600484992 /* NuoMeshRotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C723AA81E43A83600484992 /* NuoMeshRotation.m */; };
 		2C723AB01E44355300484992 /* ModelPartsAnimations.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C723AAF1E44355300484992 /* ModelPartsAnimations.xib */; };
+		2C80B4AD1F9A915C0089E849 /* NuoMeshAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 988B676C1E43F2BD00EA1453 /* NuoMeshAnimation.m */; };
+		2C80B4AE1F9A915C0089E849 /* NuoMeshTextured.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2CA211D804EC5005509EE /* NuoMeshTextured.mm */; };
+		2C80B4AF1F9A915C0089E849 /* ModelComponentPanels.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2873061E3E77790098092C /* ModelComponentPanels.m */; };
+		2C80B4B01F9A915C0089E849 /* NuoTextureBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C1B28061D95FF17009F5912 /* NuoTextureBase.m */; };
+		2C80B4B11F9A915C0089E849 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAC1D658F0800283E46 /* main.m */; };
+		2C80B4B21F9A915C0089E849 /* ModelPartPropPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C28730F1E3ED5A40098092C /* ModelPartPropPanel.m */; };
+		2C80B4B31F9A915C0089E849 /* NuoRoundedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CC5EDED1D8A62B100419168 /* NuoRoundedView.m */; };
+		2C80B4B41F9A915C0089E849 /* LightOperationPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C44344F1E1EAAF800C861AF /* LightOperationPanel.m */; };
+		2C80B4B51F9A915C0089E849 /* NuoScreenSpaceRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9777511F7E1AB60031F188 /* NuoScreenSpaceRenderer.m */; };
+		2C80B4B61F9A915C0089E849 /* ShadersCube.metal in Sources */ = {isa = PBXBuildFile; fileRef = 98E05A611E6A188F00D4068F /* ShadersCube.metal */; };
+		2C80B4B71F9A915C0089E849 /* NuoLightSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CF62A681EEF5E11003E23EF /* NuoLightSource.m */; };
+		2C80B4B81F9A915C0089E849 /* NuoScreenSpaceMesh.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A8E6F1F80BBA70007551F /* NuoScreenSpaceMesh.m */; };
+		2C80B4B91F9A915C0089E849 /* NuoRenderPassTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2A58AF1DD1457200E9F9BC /* NuoRenderPassTarget.m */; };
+		2C80B4BA1F9A915C0089E849 /* ModelOperationTexturePopover.m in Sources */ = {isa = PBXBuildFile; fileRef = 983C2E191F86D60200D8E689 /* ModelOperationTexturePopover.m */; };
+		2C80B4BB1F9A915C0089E849 /* NuoRenderPipelinePass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.m */; };
+		2C80B4BC1F9A915C0089E849 /* NuoCubeMesh.m in Sources */ = {isa = PBXBuildFile; fileRef = 98E05A5F1E6A17A600D4068F /* NuoCubeMesh.m */; };
+		2C80B4BD1F9A915C0089E849 /* ModelView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C5B92B61D7157EA00722936 /* ModelView.m */; };
+		2C80B4BE1F9A915C0089E849 /* NuoDeferredRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A8E7A1F8134440007551F /* NuoDeferredRenderer.m */; };
+		2C80B4BF1F9A915C0089E849 /* LightShadowPopoverController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CEE8CF61F71BC3F00C4D4F6 /* LightShadowPopoverController.m */; };
+		2C80B4C01F9A915C0089E849 /* NuoRenderPass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */; };
+		2C80B4C11F9A915C0089E849 /* NuoLua.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C4042BD1E065B2700AAC06E /* NuoLua.m */; };
+		2C80B4C21F9A915C0089E849 /* NuoModelArrow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CDCDAF11DC185A800ECFE39 /* NuoModelArrow.cpp */; };
+		2C80B4C31F9A915C0089E849 /* ShadersTexturedMaterialed.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C235FCB1DD6CBD700E68295 /* ShadersTexturedMaterialed.metal */; };
+		2C80B4C41F9A915C0089E849 /* ModelDissectRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C99908E1F5F350300AEF181 /* ModelDissectRenderer.mm */; };
+		2C80B4C51F9A915C0089E849 /* NuoBoardMesh.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C156CB91EE845A8000C52D4 /* NuoBoardMesh.mm */; };
+		2C80B4C61F9A915C0089E849 /* NuoModelLoader.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C5B92BC1D7160EC00722936 /* NuoModelLoader.mm */; };
+		2C80B4C71F9A915C0089E849 /* NuoMesh.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C5DDACA1D6590DB00A9DC9A /* NuoMesh.mm */; };
+		2C80B4C81F9A915C0089E849 /* NuoShadowMapTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8B80EB1E2D6654001746FE /* NuoShadowMapTarget.m */; };
+		2C80B4C91F9A915C0089E849 /* NuoMeshCompound.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C5A58361ECEB7CA00121A82 /* NuoMeshCompound.m */; };
+		2C80B4CA1F9A915C0089E849 /* NotationRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 98CA11B71DD2B00900440C53 /* NotationRenderer.m */; };
+		2C80B4CB1F9A915C0089E849 /* ShadersTextured.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C235FCA1DD6CBD700E68295 /* ShadersTextured.metal */; };
+		2C80B4CC1F9A915C0089E849 /* NuoIntermediateRenderPass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C52F1321DCFE8970034ACDC /* NuoIntermediateRenderPass.m */; };
+		2C80B4CD1F9A915C0089E849 /* NuoRenderPipeline.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CCF9C7F1E5B7A43006EF8C4 /* NuoRenderPipeline.m */; };
+		2C80B4CE1F9A915C0089E849 /* NotationLight.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CDFB21D1DD99E2100C67FA3 /* NotationLight.mm */; };
+		2C80B4CF1F9A915C0089E849 /* NuoTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9F1D7E344F002C1226 /* NuoTypes.cpp */; };
+		2C80B4D01F9A915C0089E849 /* NuoPopoverSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 987469FE1F8565F900DD058F /* NuoPopoverSheet.m */; };
+		2C80B4D11F9A915C0089E849 /* NuoMeshOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8974921D8BBAEF00460648 /* NuoMeshOptions.m */; };
+		2C80B4D21F9A915C0089E849 /* NuoTextureMesh.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C52F12D1DCC03380034ACDC /* NuoTextureMesh.mm */; };
+		2C80B4D31F9A915C0089E849 /* ModelOperationPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C4B60411D8AD32100A12968 /* ModelOperationPanel.m */; };
+		2C80B4D41F9A915C0089E849 /* ModelPartDimensionPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C723A981E42D05700484992 /* ModelPartDimensionPanel.m */; };
+		2C80B4D51F9A915C0089E849 /* NuoOffscreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CCF9C761E5B4F77006EF8C4 /* NuoOffscreenView.m */; };
+		2C80B4D61F9A915C0089E849 /* ShadersDeferred.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C6A8E591F7FE8BB0007551F /* ShadersDeferred.metal */; };
+		2C80B4D71F9A915C0089E849 /* NuoShadowMapRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CF62A711EEF7CD0003E23EF /* NuoShadowMapRenderer.m */; };
+		2C80B4D81F9A915C0089E849 /* NuoMeshRotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C723AA81E43A83600484992 /* NuoMeshRotation.m */; };
+		2C80B4D91F9A915C0089E849 /* NuoMaterial.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C5B92C11D73F51E00722936 /* NuoMaterial.cpp */; };
+		2C80B4DA1F9A915C0089E849 /* NuoMetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C840D0D1D7001C2000D2956 /* NuoMetalView.m */; };
+		2C80B4DB1F9A915C0089E849 /* NuoBoardMesh.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C156CAD1EE7961C000C52D4 /* NuoBoardMesh.m */; };
+		2C80B4DC1F9A915C0089E849 /* tiny_obj_loader.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */; };
+		2C80B4DD1F9A915C0089E849 /* BoardSettingsPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CF62A461EE9B4E7003E23EF /* BoardSettingsPanel.m */; };
+		2C80B4DE1F9A915C0089E849 /* ShadersTexturedMaterialedBump.metal in Sources */ = {isa = PBXBuildFile; fileRef = 98CD06B91DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal */; };
+		2C80B4DF1F9A915C0089E849 /* NuoSheetPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C156CCF1EE9B357000C52D4 /* NuoSheetPanel.m */; };
+		2C80B4E01F9A915C0089E849 /* NuoModelBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C5B92BE1D72D11E00722936 /* NuoModelBase.cpp */; };
+		2C80B4E11F9A915C0089E849 /* ShadersMaterialed.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C235FC91DD6CBD700E68295 /* ShadersMaterialed.metal */; };
+		2C80B4E21F9A915C0089E849 /* ModelOperationAmbientPopover.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C82E1081F874B2500D2C85C /* ModelOperationAmbientPopover.m */; };
+		2C80B4E31F9A915C0089E849 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C235FC71DD6CBD700E68295 /* Shaders.metal */; };
+		2C80B4E41F9A915C0089E849 /* ShadersTextureImage.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C235FCC1DD6CBD700E68295 /* ShadersTextureImage.metal */; };
+		2C80B4E51F9A915C0089E849 /* NuoScreenSpaceTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C97774A1F7E07B80031F188 /* NuoScreenSpaceTarget.m */; };
+		2C80B4E61F9A915C0089E849 /* NuoModelBoard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C5A584E1ED3F2FD00121A82 /* NuoModelBoard.cpp */; };
+		2C80B4E71F9A915C0089E849 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AA91D658F0800283E46 /* AppDelegate.m */; };
+		2C80B4E81F9A915C0089E849 /* NuoMeshTexMatieraled.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9884424A1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm */; };
+		2C80B4E91F9A915C0089E849 /* NuoMeshSceneRenderPass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9777591F7EC8B60031F188 /* NuoMeshSceneRenderPass.m */; };
+		2C80B4EA1F9A915C0089E849 /* ModelViewerRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C5DDAD91D65949E00A9DC9A /* ModelViewerRenderer.mm */; };
+		2C80B4EB1F9A915C0089E849 /* NuoModelMaterialedBasic.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 988442441D80853700EE2C4C /* NuoModelMaterialedBasic.cpp */; };
+		2C80B4EC1F9A915C0089E849 /* NuoMathUtilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C5DDAD41D6591B000A9DC9A /* NuoMathUtilities.cpp */; };
+		2C80B4ED1F9A915C0089E849 /* NuoTableExporter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C9E39791DF7D8BC00286EA0 /* NuoTableExporter.cpp */; };
+		2C80B4EE1F9A915C0089E849 /* ModelPartsPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2D7FE1E2167F2000CCD2D /* ModelPartsPanel.m */; };
+		2C80B4EF1F9A915C0089E849 /* NuoModelTextured.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9A1D7DF5C3002C1226 /* NuoModelTextured.cpp */; };
+		2C80B4F11F9A915C0089E849 /* libluad.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C4DE7851DFB55E100199F1D /* libluad.dylib */; };
+		2C80B4F31F9A915C0089E849 /* ModelPartsTableView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2CE2D80A1E254790000CCD2D /* ModelPartsTableView.xib */; };
+		2C80B4F41F9A915C0089E849 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAE1D658F0800283E46 /* Assets.xcassets */; };
+		2C80B4F51F9A915C0089E849 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C5B92B21D7157A600722936 /* MainMenu.xib */; };
+		2C80B4F61F9A915C0089E849 /* ModelPartsAnimations.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C723AAF1E44355300484992 /* ModelPartsAnimations.xib */; };
+		2C80B4F81F9A915C0089E849 /* libluad.dylib in Copy Dylibs */ = {isa = PBXBuildFile; fileRef = 2C4DE7851DFB55E100199F1D /* libluad.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		2C82E1091F874B2500D2C85C /* ModelOperationAmbientPopover.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C82E1081F874B2500D2C85C /* ModelOperationAmbientPopover.m */; };
 		2C840D0E1D7001C2000D2956 /* NuoMetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C840D0D1D7001C2000D2956 /* NuoMetalView.m */; };
 		2C8974931D8BBAEF00460648 /* NuoMeshOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8974921D8BBAEF00460648 /* NuoMeshOptions.m */; };
@@ -125,9 +198,27 @@
 			remoteGlobalIDString = 2C57C8DF163F909000C9AA4A;
 			remoteInfo = libluad;
 		};
+		2C80B4AB1F9A915C0089E849 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2C4DE7741DFB55E100199F1D /* lua.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 2C57C8DF163F909000C9AA4A;
+			remoteInfo = libluad;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		2C80B4F71F9A915C0089E849 /* Copy Dylibs */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				2C80B4F81F9A915C0089E849 /* libluad.dylib in Copy Dylibs */,
+			);
+			name = "Copy Dylibs";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		2CD624981F016B220058CCB7 /* Copy Dylibs */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -209,6 +300,8 @@
 		2C723AA71E43A83600484992 /* NuoMeshRotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoMeshRotation.h; sourceTree = "<group>"; };
 		2C723AA81E43A83600484992 /* NuoMeshRotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoMeshRotation.m; sourceTree = "<group>"; };
 		2C723AAF1E44355300484992 /* ModelPartsAnimations.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ModelPartsAnimations.xib; sourceTree = "<group>"; };
+		2C80B4FC1F9A915C0089E849 /* ModelViewerMetal1.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ModelViewerMetal1.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C80B4FD1F9A915C0089E849 /* Metal1-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Metal1-Info.plist"; path = "/Users/middleware/UserData/Source/NuoModelViewer/ModelViewer/Metal1-Info.plist"; sourceTree = "<absolute>"; };
 		2C82E1071F874B2500D2C85C /* ModelOperationAmbientPopover.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelOperationAmbientPopover.h; sourceTree = "<group>"; };
 		2C82E1081F874B2500D2C85C /* ModelOperationAmbientPopover.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ModelOperationAmbientPopover.m; sourceTree = "<group>"; };
 		2C840D0C1D7001C2000D2956 /* NuoMetalView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoMetalView.h; sourceTree = "<group>"; };
@@ -282,6 +375,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		2C80B4F01F9A915C0089E849 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2C80B4F11F9A915C0089E849 /* libluad.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		2C9D9AA21D658F0800283E46 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -535,6 +636,7 @@
 			isa = PBXGroup;
 			children = (
 				2C9D9AA51D658F0800283E46 /* ModelViewer.app */,
+				2C80B4FC1F9A915C0089E849 /* ModelViewerMetal1.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -548,6 +650,7 @@
 				2C65E57A1D77F30000FE77C5 /* Renderer */,
 				2C9D9AAE1D658F0800283E46 /* Assets.xcassets */,
 				2C9D9AB31D658F0800283E46 /* Info.plist */,
+				2C80B4FD1F9A915C0089E849 /* Metal1-Info.plist */,
 				2C9D9AAB1D658F0800283E46 /* Supporting Files */,
 			);
 			path = ModelViewer;
@@ -564,6 +667,25 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		2C80B4A91F9A915C0089E849 /* ModelViewerMetal1 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2C80B4F91F9A915C0089E849 /* Build configuration list for PBXNativeTarget "ModelViewerMetal1" */;
+			buildPhases = (
+				2C80B4AC1F9A915C0089E849 /* Sources */,
+				2C80B4F01F9A915C0089E849 /* Frameworks */,
+				2C80B4F21F9A915C0089E849 /* Resources */,
+				2C80B4F71F9A915C0089E849 /* Copy Dylibs */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2C80B4AA1F9A915C0089E849 /* PBXTargetDependency */,
+			);
+			name = ModelViewerMetal1;
+			productName = ModelViewer;
+			productReference = 2C80B4FC1F9A915C0089E849 /* ModelViewerMetal1.app */;
+			productType = "com.apple.product-type.application";
+		};
 		2C9D9AA41D658F0800283E46 /* ModelViewer */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2C9D9AB61D658F0800283E46 /* Build configuration list for PBXNativeTarget "ModelViewer" */;
@@ -617,6 +739,7 @@
 			projectRoot = "";
 			targets = (
 				2C9D9AA41D658F0800283E46 /* ModelViewer */,
+				2C80B4A91F9A915C0089E849 /* ModelViewerMetal1 */,
 			);
 		};
 /* End PBXProject section */
@@ -660,6 +783,17 @@
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
+		2C80B4F21F9A915C0089E849 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2C80B4F31F9A915C0089E849 /* ModelPartsTableView.xib in Resources */,
+				2C80B4F41F9A915C0089E849 /* Assets.xcassets in Resources */,
+				2C80B4F51F9A915C0089E849 /* MainMenu.xib in Resources */,
+				2C80B4F61F9A915C0089E849 /* ModelPartsAnimations.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		2C9D9AA31D658F0800283E46 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -674,6 +808,80 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		2C80B4AC1F9A915C0089E849 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2C80B4AD1F9A915C0089E849 /* NuoMeshAnimation.m in Sources */,
+				2C80B4AE1F9A915C0089E849 /* NuoMeshTextured.mm in Sources */,
+				2C80B4AF1F9A915C0089E849 /* ModelComponentPanels.m in Sources */,
+				2C80B4B01F9A915C0089E849 /* NuoTextureBase.m in Sources */,
+				2C80B4B11F9A915C0089E849 /* main.m in Sources */,
+				2C80B4B21F9A915C0089E849 /* ModelPartPropPanel.m in Sources */,
+				2C80B4B31F9A915C0089E849 /* NuoRoundedView.m in Sources */,
+				2C80B4B41F9A915C0089E849 /* LightOperationPanel.m in Sources */,
+				2C80B4B51F9A915C0089E849 /* NuoScreenSpaceRenderer.m in Sources */,
+				2C80B4B61F9A915C0089E849 /* ShadersCube.metal in Sources */,
+				2C80B4B71F9A915C0089E849 /* NuoLightSource.m in Sources */,
+				2C80B4B81F9A915C0089E849 /* NuoScreenSpaceMesh.m in Sources */,
+				2C80B4B91F9A915C0089E849 /* NuoRenderPassTarget.m in Sources */,
+				2C80B4BA1F9A915C0089E849 /* ModelOperationTexturePopover.m in Sources */,
+				2C80B4BB1F9A915C0089E849 /* NuoRenderPipelinePass.m in Sources */,
+				2C80B4BC1F9A915C0089E849 /* NuoCubeMesh.m in Sources */,
+				2C80B4BD1F9A915C0089E849 /* ModelView.m in Sources */,
+				2C80B4BE1F9A915C0089E849 /* NuoDeferredRenderer.m in Sources */,
+				2C80B4BF1F9A915C0089E849 /* LightShadowPopoverController.m in Sources */,
+				2C80B4C01F9A915C0089E849 /* NuoRenderPass.m in Sources */,
+				2C80B4C11F9A915C0089E849 /* NuoLua.m in Sources */,
+				2C80B4C21F9A915C0089E849 /* NuoModelArrow.cpp in Sources */,
+				2C80B4C31F9A915C0089E849 /* ShadersTexturedMaterialed.metal in Sources */,
+				2C80B4C41F9A915C0089E849 /* ModelDissectRenderer.mm in Sources */,
+				2C80B4C51F9A915C0089E849 /* NuoBoardMesh.mm in Sources */,
+				2C80B4C61F9A915C0089E849 /* NuoModelLoader.mm in Sources */,
+				2C80B4C71F9A915C0089E849 /* NuoMesh.mm in Sources */,
+				2C80B4C81F9A915C0089E849 /* NuoShadowMapTarget.m in Sources */,
+				2C80B4C91F9A915C0089E849 /* NuoMeshCompound.m in Sources */,
+				2C80B4CA1F9A915C0089E849 /* NotationRenderer.m in Sources */,
+				2C80B4CB1F9A915C0089E849 /* ShadersTextured.metal in Sources */,
+				2C80B4CC1F9A915C0089E849 /* NuoIntermediateRenderPass.m in Sources */,
+				2C80B4CD1F9A915C0089E849 /* NuoRenderPipeline.m in Sources */,
+				2C80B4CE1F9A915C0089E849 /* NotationLight.mm in Sources */,
+				2C80B4CF1F9A915C0089E849 /* NuoTypes.cpp in Sources */,
+				2C80B4D01F9A915C0089E849 /* NuoPopoverSheet.m in Sources */,
+				2C80B4D11F9A915C0089E849 /* NuoMeshOptions.m in Sources */,
+				2C80B4D21F9A915C0089E849 /* NuoTextureMesh.mm in Sources */,
+				2C80B4D31F9A915C0089E849 /* ModelOperationPanel.m in Sources */,
+				2C80B4D41F9A915C0089E849 /* ModelPartDimensionPanel.m in Sources */,
+				2C80B4D51F9A915C0089E849 /* NuoOffscreenView.m in Sources */,
+				2C80B4D61F9A915C0089E849 /* ShadersDeferred.metal in Sources */,
+				2C80B4D71F9A915C0089E849 /* NuoShadowMapRenderer.m in Sources */,
+				2C80B4D81F9A915C0089E849 /* NuoMeshRotation.m in Sources */,
+				2C80B4D91F9A915C0089E849 /* NuoMaterial.cpp in Sources */,
+				2C80B4DA1F9A915C0089E849 /* NuoMetalView.m in Sources */,
+				2C80B4DB1F9A915C0089E849 /* NuoBoardMesh.m in Sources */,
+				2C80B4DC1F9A915C0089E849 /* tiny_obj_loader.cc in Sources */,
+				2C80B4DD1F9A915C0089E849 /* BoardSettingsPanel.m in Sources */,
+				2C80B4DE1F9A915C0089E849 /* ShadersTexturedMaterialedBump.metal in Sources */,
+				2C80B4DF1F9A915C0089E849 /* NuoSheetPanel.m in Sources */,
+				2C80B4E01F9A915C0089E849 /* NuoModelBase.cpp in Sources */,
+				2C80B4E11F9A915C0089E849 /* ShadersMaterialed.metal in Sources */,
+				2C80B4E21F9A915C0089E849 /* ModelOperationAmbientPopover.m in Sources */,
+				2C80B4E31F9A915C0089E849 /* Shaders.metal in Sources */,
+				2C80B4E41F9A915C0089E849 /* ShadersTextureImage.metal in Sources */,
+				2C80B4E51F9A915C0089E849 /* NuoScreenSpaceTarget.m in Sources */,
+				2C80B4E61F9A915C0089E849 /* NuoModelBoard.cpp in Sources */,
+				2C80B4E71F9A915C0089E849 /* AppDelegate.m in Sources */,
+				2C80B4E81F9A915C0089E849 /* NuoMeshTexMatieraled.mm in Sources */,
+				2C80B4E91F9A915C0089E849 /* NuoMeshSceneRenderPass.m in Sources */,
+				2C80B4EA1F9A915C0089E849 /* ModelViewerRenderer.mm in Sources */,
+				2C80B4EB1F9A915C0089E849 /* NuoModelMaterialedBasic.cpp in Sources */,
+				2C80B4EC1F9A915C0089E849 /* NuoMathUtilities.cpp in Sources */,
+				2C80B4ED1F9A915C0089E849 /* NuoTableExporter.cpp in Sources */,
+				2C80B4EE1F9A915C0089E849 /* ModelPartsPanel.m in Sources */,
+				2C80B4EF1F9A915C0089E849 /* NuoModelTextured.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		2C9D9AA11D658F0800283E46 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -756,6 +964,11 @@
 			name = libluad;
 			targetProxy = 2C4DE7861DFB565300199F1D /* PBXContainerItemProxy */;
 		};
+		2C80B4AA1F9A915C0089E849 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = libluad;
+			targetProxy = 2C80B4AB1F9A915C0089E849 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -770,6 +983,46 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		2C80B4FA1F9A915C0089E849 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"METAL_2=1",
+				);
+				HEADER_SEARCH_PATHS = glm;
+				INFOPLIST_FILE = "Metal1-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MTL_LANGUAGE_REVISION = Metal20;
+				MTL_PREPROCESSOR_DEFINITIONS = Metal;
+				PRODUCT_BUNDLE_IDENTIFIER = fengdong.model.viewer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		2C80B4FB1F9A915C0089E849 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"METAL_2=1",
+				);
+				HEADER_SEARCH_PATHS = glm;
+				INFOPLIST_FILE = "Metal1-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MTL_LANGUAGE_REVISION = Metal20;
+				MTL_PREPROCESSOR_DEFINITIONS = Metal;
+				PRODUCT_BUNDLE_IDENTIFIER = fengdong.model.viewer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		2C9D9AB41D658F0800283E46 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -913,6 +1166,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		2C80B4F91F9A915C0089E849 /* Build configuration list for PBXNativeTarget "ModelViewerMetal1" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2C80B4FA1F9A915C0089E849 /* Debug */,
+				2C80B4FB1F9A915C0089E849 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		2C9D9AA01D658F0800283E46 /* Build configuration list for PBXProject "ModelViewer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
