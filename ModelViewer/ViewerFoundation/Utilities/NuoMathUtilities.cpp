@@ -26,6 +26,12 @@ matrix_float4x4 matrix_uniform_scale(float scale)
     return to_matrix(gmat);
 }
 
+matrix_float4x4 matrix_uniform_scale_v(vector_float3 scale)
+{
+    glm::mat4x4 gmat = glm::scale(glm::mat4x4(1.0), glm::vec3(scale.x, scale.y, scale.z));
+    return to_matrix(gmat);
+}
+
 matrix_float4x4 matrix_rotation(vector_float3 axis, float angle)
 {
     glm::vec3 gaxis(axis.x, axis.y, axis.z);

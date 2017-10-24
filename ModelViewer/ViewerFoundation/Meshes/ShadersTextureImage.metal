@@ -19,6 +19,20 @@ struct TextureMixFragment
 };
 
 
+vertex PositionTextureSimple backdrop_project(device Vertex *vertices [[buffer(0)]],
+                                              constant NuoUniforms& uniforms [[buffer(1)]],
+                                              uint vid [[vertex_id]])
+{
+    PositionTextureSimple outVert;
+    outVert.position = uniforms.viewMatrix * vertices[vid].position;
+    outVert.position.z = 0.5;
+    outVert.position.w = 1.0;
+    outVert.texCoord = vertices[vid].texCoord;
+    
+    return outVert;
+}
+
+
 
 vertex PositionTextureSimple texture_project(device Vertex *vertices [[buffer(0)]],
                                              uint vid [[vertex_id]])

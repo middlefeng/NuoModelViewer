@@ -7,6 +7,9 @@
 //
 
 #import "NuoBackdropMesh.h"
+#import "NuoTextureBase.h"
+
+#include "NuoMathUtilities.h"
 
 
 
@@ -14,6 +17,7 @@
 {
     id<MTLTexture> _backdropTex;
     NSArray<id<MTLBuffer>>* _backdropTransformBuffers;
+    id<MTLSamplerState> _samplerState;
 }
 
 
@@ -57,13 +61,94 @@
         for (uint i = 0; i < kInFlightBufferCount; ++i)
         {
             matrix[i] = [device newBufferWithLength:sizeof(NuoUniforms)
-                                            options:MTLResourceOptionCPUCacheModeDefault];
+                                            options:MTLResourceStorageModeManaged];
         }
         _backdropTransformBuffers = [[NSArray alloc] initWithObjects:matrix count:kInFlightBufferCount];
+        
+        _scale = 1.0;
+        _translation = CGPointMake(0, 0);
     }
     
     return self;
 }
+
+
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
+{
+    NuoUniforms uniforms;
+    
+    vector_float3 scale = { _scale, _scale, 1.0 };
+    vector_float3 translate = { _translation.x, _translation.y, 0.0 };
+    
+    matrix_float4x4 matrix = matrix_uniform_scale_v(scale);
+    matrix_float4x4 matrixTrans = matrix_translation(translate);
+    
+    uniforms.viewProjectionMatrix = matrix_multiply(matrixTrans, matrix);
+    uniforms.viewMatrix = uniforms.viewProjectionMatrix;
+    
+    memcpy([_backdropTransformBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
+    [_backdropTransformBuffers[bufferIndex] didModifyRange:NSMakeRange(0, sizeof(uniforms))];
+}
+
+
+- (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
+               withSampleCount:(NSUInteger)sampleCount
+                     withAlpha:(BOOL)alpha
+{
+    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    
+    MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
+    pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"backdrop_project"];
+    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_texutre"];
+    pipelineDescriptor.sampleCount = sampleCount;
+    pipelineDescriptor.colorAttachments[0].pixelFormat = pixelFormat;
+    
+    pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+    
+    MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];
+    vertexDescriptor.attributes[0].format = MTLVertexFormatFloat4;
+    vertexDescriptor.attributes[0].offset = 0;
+    vertexDescriptor.attributes[0].bufferIndex = 0;
+    vertexDescriptor.attributes[1].format = MTLVertexFormatFloat2;
+    vertexDescriptor.attributes[1].offset = 16;
+    vertexDescriptor.attributes[1].bufferIndex = 0;
+    vertexDescriptor.layouts[0].stride = 32;
+    vertexDescriptor.layouts[0].stepRate = 1;
+    vertexDescriptor.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
+    
+    pipelineDescriptor.vertexDescriptor = vertexDescriptor;
+    
+    [self makePipelineState:pipelineDescriptor];
+    
+    MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
+    depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionNever;
+    depthStencilDescriptor.depthWriteEnabled = NO;
+    
+    self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
+    
+    _samplerState = [[NuoTextureBase getInstance:self.device] textureSamplerState:YES];
+}
+
+
+- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+{
+    [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
+    [renderPass setRenderPipelineState:self.renderPipelineState];
+    [renderPass setDepthStencilState:self.depthStencilState];
+    [renderPass setFragmentSamplerState:_samplerState atIndex:0];
+    
+    [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
+    [renderPass setVertexBuffer:_backdropTransformBuffers[index] offset:0 atIndex:1];
+    
+    [renderPass setFragmentTexture:_backdropTex atIndex:0];
+    
+    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                           indexCount:[self.indexBuffer length] / sizeof(uint32_t)
+                            indexType:MTLIndexTypeUInt32
+                          indexBuffer:self.indexBuffer
+                    indexBufferOffset:0];
+}
+
 
 
 @end

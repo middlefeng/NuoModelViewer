@@ -14,7 +14,7 @@
 
 
 @property (nonatomic, assign) CGPoint translation;
-@property (nonatomic, assign) CGPoint scale;
+@property (nonatomic, assign) CGFloat scale;
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withBackdrop:(id<MTLTexture>)backdrop;
