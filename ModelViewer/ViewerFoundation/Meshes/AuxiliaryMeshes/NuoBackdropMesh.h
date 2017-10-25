@@ -19,5 +19,8 @@
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withBackdrop:(id<MTLTexture>)backdrop;
 
+- (void)makePipelineAndSampler;
+- (void)updateUniform:(NSInteger)bufferIndex withDrawableSize:(CGSize)drawableSize;
+
 
 @end

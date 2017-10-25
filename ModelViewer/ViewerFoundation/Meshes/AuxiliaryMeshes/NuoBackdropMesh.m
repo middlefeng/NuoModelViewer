@@ -37,10 +37,10 @@
     
     float vertices[] =
     {
-        -normalizedW, normalizedH,  0, 1.0,    0, 0, 0, 0,
-        -normalizedW, -normalizedH, 0, 1.0,    0, 1, 0, 0,
-        normalizedW, -normalizedH,  0, 1.0,    1, 1, 0, 0,
-        normalizedW, normalizedH,   0, 1.0,    1, 0, 0, 0,
+        -normalizedW, normalizedH,  0, 1.0,    0, 1, 0, 0,
+        -normalizedW, -normalizedH, 0, 1.0,    0, 0, 0, 0,
+        normalizedW, -normalizedH,  0, 1.0,    1, 0, 0, 0,
+        normalizedW, normalizedH,   0, 1.0,    1, 1, 0, 0,
     };
     
     uint32_t indices[] =
@@ -73,12 +73,18 @@
 }
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
+- (void)updateUniform:(NSInteger)bufferIndex withDrawableSize:(CGSize)drawableSize
 {
     NuoUniforms uniforms;
     
     vector_float3 scale = { _scale, _scale, 1.0 };
     vector_float3 translate = { _translation.x, _translation.y, 0.0 };
+    
+    float aspectRatio = drawableSize.width / drawableSize.height;
+    if (aspectRatio > 1.0)
+        scale.y *= aspectRatio;
+    else
+        scale.x /= aspectRatio;
     
     matrix_float4x4 matrix = matrix_uniform_scale_v(scale);
     matrix_float4x4 matrixTrans = matrix_translation(translate);
@@ -91,17 +97,15 @@
 }
 
 
-- (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
-               withSampleCount:(NSUInteger)sampleCount
-                     withAlpha:(BOOL)alpha
+- (void)makePipelineAndSampler
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"backdrop_project"];
-    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_texutre"];
-    pipelineDescriptor.sampleCount = sampleCount;
-    pipelineDescriptor.colorAttachments[0].pixelFormat = pixelFormat;
+    pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"backdrop_texutre"];
+    pipelineDescriptor.sampleCount = kSampleCount;
+    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
@@ -121,7 +125,7 @@
     [self makePipelineState:pipelineDescriptor];
     
     MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
-    depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionNever;
+    depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionAlways;
     depthStencilDescriptor.depthWriteEnabled = NO;
     
     self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
@@ -135,12 +139,12 @@
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
-    [renderPass setFragmentSamplerState:_samplerState atIndex:0];
+    [renderPass setFragmentSamplerState:_samplerState atIndex:1];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_backdropTransformBuffers[index] offset:0 atIndex:1];
+    [renderPass setVertexBuffer:_backdropTransformBuffers[index] offset:0 atIndex:3];
     
-    [renderPass setFragmentTexture:_backdropTex atIndex:0];
+    [renderPass setFragmentTexture:_backdropTex atIndex:2];
     
     [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
                            indexCount:[self.indexBuffer length] / sizeof(uint32_t)
