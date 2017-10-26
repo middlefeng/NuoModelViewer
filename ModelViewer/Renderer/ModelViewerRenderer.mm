@@ -20,7 +20,7 @@
 
 #import "NuoLightSource.h"
 #import "NuoShadowMapRenderer.h"
-#import "NuoDeferredRenderer.h"
+#import "ModelDeferredRenderer.h"
 
 @interface ModelRenderer ()
 
@@ -54,7 +54,7 @@
     
     NuoShadowMapRenderer* _shadowMapRenderer[2];
     NuoRenderPassTarget* _immediateTarget;
-    NuoDeferredRenderer* _deferredRenderer;
+    ModelDeferredRenderer* _deferredRenderer;
 }
 
 
@@ -79,7 +79,7 @@
         _immediateTarget.manageTargetTexture = YES;
         _immediateTarget.sharedTargetTexture = NO;
         
-        _deferredRenderer = [[NuoDeferredRenderer alloc] initWithDevice:device withSceneParameter:self];
+        _deferredRenderer = [[ModelDeferredRenderer alloc] initWithDevice:device withSceneParameter:self];
         
         _meshes = [NSMutableArray new];
         _boardMeshes = [NSMutableArray new];
