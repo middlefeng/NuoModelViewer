@@ -238,16 +238,22 @@ MouseDragMode;
     
     [self setMeasureFrameRate:show];
     
-    if (show && !_frameRateMeasuringTimer && !_frameRateDisplayTimer)
+    if (show)
     {
-        _frameRateMeasuringTimer = [NSTimer scheduledTimerWithTimeInterval:1 / 60.0 repeats:YES block:^(NSTimer* timer)
-                                     {
-                                         [self render];
-                                     }];
-        _frameRateDisplayTimer = [NSTimer scheduledTimerWithTimeInterval:2.0 repeats:YES block:^(NSTimer* timer)
-                                    {
-                                        [_frameRateView showFrameRate:[self frameRate]];
-                                    }];
+        if (!_frameRateMeasuringTimer && !_frameRateDisplayTimer)
+        {
+            __weak ModelView* weakSelf = self;
+            __weak FrameRateView* frameRateView = _frameRateView;
+            
+            _frameRateMeasuringTimer = [NSTimer scheduledTimerWithTimeInterval:1 / 60.0 repeats:YES block:^(NSTimer* timer)
+                                         {
+                                             [weakSelf render];
+                                         }];
+            _frameRateDisplayTimer = [NSTimer scheduledTimerWithTimeInterval:2.0 repeats:YES block:^(NSTimer* timer)
+                                        {
+                                            [frameRateView showFrameRate:[weakSelf frameRate]];
+                                        }];
+        }
     }
     else
     {

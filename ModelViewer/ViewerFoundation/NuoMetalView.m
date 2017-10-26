@@ -100,6 +100,9 @@ static const size_t kFrameDurationMeasureCount = 20;
     
     [self setWantsLayer:YES];
     self.metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+    
+    gettimeofday(&_lastFrameBegin, NULL);
+    memset(_frameDurations, 0, sizeof(_frameDurations));
 }
 
 
@@ -184,11 +187,6 @@ static const size_t kFrameDurationMeasureCount = 20;
 - (void)setMeasureFrameRate:(BOOL)measureFrameRate
 {
     _measureFrameRate = measureFrameRate;
-    if (_measureFrameRate)
-    {
-        gettimeofday(&_lastFrameBegin, NULL);
-        memset(_frameDurations, 0, sizeof(_frameDurations));
-    }
 }
 
 
