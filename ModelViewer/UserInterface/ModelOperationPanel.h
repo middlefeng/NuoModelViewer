@@ -24,7 +24,8 @@
 @interface ModelOperationPanel : NuoRoundedView
 
 
-@property (nonatomic, assign) BOOL showModelParts;
+@property (nonatomic, readonly) BOOL showModelParts;
+@property (nonatomic, readonly) BOOL showFrameRate;
 
 @property (nonatomic, assign) TransformMode transformMode;
 
