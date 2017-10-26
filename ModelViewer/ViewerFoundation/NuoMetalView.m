@@ -32,7 +32,17 @@
 
 
 
+static const size_t kFrameDurationMeasureCount = 20;
+
+
+
 @implementation NuoMetalView
+{
+    struct timeval _lastFrameBegin;
+    float _frameDurations[kFrameDurationMeasureCount];
+}
+
+
 
 - (CALayer*)makeBackingLayer
 {
@@ -171,8 +181,43 @@
 }
 
 
+- (void)setMeasureFrameRate:(BOOL)measureFrameRate
+{
+    _measureFrameRate = measureFrameRate;
+    if (_measureFrameRate)
+    {
+        gettimeofday(&_lastFrameBegin, NULL);
+        memset(_frameDurations, 0, sizeof(_frameDurations));
+    }
+}
+
+
+- (float)frameRate
+{
+    float durationSum = 0;
+    for (size_t i = 1; i < kFrameDurationMeasureCount; ++i)
+        durationSum += _frameDurations[i];
+    
+    return 1e6 / (durationSum / (float)kFrameDurationMeasureCount);
+}
+
+
 - (void)render
 {
+    if (_measureFrameRate)
+    {
+        struct timeval frameBegin;
+        gettimeofday(&frameBegin, NULL);
+        
+        float duration = (frameBegin.tv_sec - _lastFrameBegin.tv_sec) * 1e6 + (frameBegin.tv_usec - _lastFrameBegin.tv_usec);
+        _lastFrameBegin = frameBegin;
+            
+        for (size_t i = 1; i < kFrameDurationMeasureCount; ++i)
+            _frameDurations[i - 1] = _frameDurations[i];
+            
+        _frameDurations[kFrameDurationMeasureCount - 1] = duration;
+    }
+    
     dispatch_semaphore_wait(_displaySemaphore, DISPATCH_TIME_FOREVER);
     
     _inFlightIndex = (_inFlightIndex + 1) % kInFlightBufferCount;

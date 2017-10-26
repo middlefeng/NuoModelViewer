@@ -19,6 +19,9 @@
 
 @property (nonatomic) MTLPixelFormat colorPixelFormat;
 
+@property (nonatomic) BOOL measureFrameRate;
+@property (nonatomic, readonly) float frameRate;
+
 
 - (void)commonInit;
 
