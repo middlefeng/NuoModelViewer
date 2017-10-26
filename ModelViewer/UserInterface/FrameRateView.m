@@ -22,13 +22,14 @@
         _frameRateField = [NSTextField new];
         [_frameRateField setEditable:NO];
         [_frameRateField setSelectable:NO];
+        [_frameRateField setAlignment:NSTextAlignmentRight];
         [_frameRateField setBordered:NO];
         [_frameRateField setStringValue:@"Field of View:"];
-        [_frameRateField setFrame:CGRectMake(10, 5, 100, 18)];
+        [_frameRateField setFrame:CGRectMake(10, 5, 65, 18)];
         [self addSubview:_frameRateField];
     }
     
-    NSString* fieldString = [[NSString alloc] initWithFormat:@"%0.03f FPS", frameRate];
+    NSString* fieldString = [[NSString alloc] initWithFormat:@"%0.01f FPS", frameRate];
     [_frameRateField setStringValue:fieldString];
 }
 

@@ -195,7 +195,7 @@ static const size_t kFrameDurationMeasureCount = 20;
 - (float)frameRate
 {
     float durationSum = 0;
-    for (size_t i = 1; i < kFrameDurationMeasureCount; ++i)
+    for (size_t i = 0; i < kFrameDurationMeasureCount; ++i)
         durationSum += _frameDurations[i];
     
     return 1e6 / (durationSum / (float)kFrameDurationMeasureCount);

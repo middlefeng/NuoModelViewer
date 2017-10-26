@@ -13,6 +13,7 @@
 #import "LightOperationPanel.h"
 #import "BoardSettingsPanel.h"
 
+#import "FrameRateView.h"
 #import "ModelViewerRenderer.h"
 #import "ModelDissectRenderer.h"
 #import "NotationRenderer.h"
@@ -58,6 +59,7 @@ MouseDragMode;
     
     NSMutableArray<NuoMeshAnimation*>* _animations;
     
+    FrameRateView* _frameRateView;
     ModelComponentPanels* _modelComponentPanels;
     ModelOperationPanel* _modelPanel;
     LightOperationPanel* _lightPanel;
@@ -71,6 +73,9 @@ MouseDragMode;
     IBOutlet NSMenuItem* _removeObjectMenu;
     
     NSString* _documentName;
+    
+    NSTimer* _frameRateMeasuringTimer;
+    NSTimer* _frameRateDisplayTimer;
 }
 
 
@@ -87,7 +92,7 @@ MouseDragMode;
 - (NSRect)operationPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize panelSize = NSMakeSize(225, 346);
+    NSSize panelSize = NSMakeSize(225, 372);
     NSSize panelMargin = NSMakeSize(15, 25);
     NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
                                       viewRect.size.height - panelMargin.height - panelSize.height);
@@ -97,6 +102,34 @@ MouseDragMode;
     panelRect.size = panelSize;
     
     return panelRect;
+}
+
+
+- (NSRect)frameRatePanelLocation
+{
+    NSSize panelSize = NSMakeSize(90, 30);
+    NSSize panelMargin = NSMakeSize(15, 25);
+    NSPoint panelOrigin = NSMakePoint(panelMargin.width, panelMargin.height);
+    
+    NSRect panelRect;
+    panelRect.origin = panelOrigin;
+    panelRect.size = panelSize;
+    
+    return panelRect;
+}
+
+
+- (void)addFrameRatePanel
+{
+    NSRect panelRect = [self frameRatePanelLocation];
+    
+    _frameRateView = [FrameRateView new];
+    _frameRateView.frame = panelRect;
+    _frameRateView.layer.opacity = 0.8f;
+    _frameRateView.layer.backgroundColor = [NSColor colorWithWhite:1.0 alpha:1.0].CGColor;
+    _frameRateView.hidden = YES;
+    
+    [self addSubview:_frameRateView];
 }
 
 
@@ -174,6 +207,7 @@ MouseDragMode;
     if (panel)
     {
         [_modelComponentPanels setHidden:![panel showModelParts]];
+        [self showHideFrameRate:[panel showFrameRate]];
         
         [_modelRender setDeferredParameters:[panel deferredRenderParameters]];
         [_modelRender setCullEnabled:[panel cullEnabled]];
@@ -194,6 +228,35 @@ MouseDragMode;
     [_modelComponentPanels updatePanels];
     
     [self render];
+}
+
+
+
+- (void)showHideFrameRate:(BOOL)show
+{
+    [_frameRateView setHidden:!show];
+    
+    [self setMeasureFrameRate:show];
+    
+    if (show && !_frameRateMeasuringTimer && !_frameRateDisplayTimer)
+    {
+        _frameRateMeasuringTimer = [NSTimer scheduledTimerWithTimeInterval:1 / 60.0 repeats:YES block:^(NSTimer* timer)
+                                     {
+                                         [self render];
+                                     }];
+        _frameRateDisplayTimer = [NSTimer scheduledTimerWithTimeInterval:2.0 repeats:YES block:^(NSTimer* timer)
+                                    {
+                                        [_frameRateView showFrameRate:[self frameRate]];
+                                    }];
+    }
+    else
+    {
+        [_frameRateMeasuringTimer invalidate];
+        [_frameRateDisplayTimer invalidate];
+        
+        _frameRateMeasuringTimer = nil;
+        _frameRateDisplayTimer = nil;
+    }
 }
 
 
@@ -258,6 +321,11 @@ MouseDragMode;
     NSRect popupRect;
     popupRect.origin = popupOrigin;
     popupRect.size = popupSize;
+    
+    if (!_frameRateView)
+    {
+        [self addFrameRatePanel];
+    }
     
     if (!_modelPanel)
     {
