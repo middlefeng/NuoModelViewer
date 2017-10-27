@@ -557,7 +557,11 @@ MouseDragMode;
 
 - (void)magnifyWithEvent:(NSEvent *)event
 {
-    _modelRender.zoomDelta = 10 * event.magnification;
+    if (event.modifierFlags & NSEventModifierFlagCommand)
+        _modelRender.backdropScaleDelta = event.magnification;
+    else
+        _modelRender.zoomDelta = 10 * event.magnification;
+    
     [self render];
 }
 
@@ -574,8 +578,17 @@ MouseDragMode;
         deltaY *= 0.005;
     }
     
-    _modelRender.transXDelta = deltaX;
-    _modelRender.transYDelta = deltaY;
+    if (event.modifierFlags & NSEventModifierFlagCommand)
+    {
+        _modelRender.backdropTransXDelta = -deltaX * 0.01;
+        _modelRender.backdropTransYDelta = -deltaY * 0.01;
+    }
+    else
+    {
+        _modelRender.transXDelta = deltaX;
+        _modelRender.transYDelta = deltaY;
+    }
+    
     [self render];
 }
 

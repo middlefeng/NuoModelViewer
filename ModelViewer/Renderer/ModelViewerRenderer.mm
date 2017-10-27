@@ -759,7 +759,20 @@
     }
     
     if (_backdropMesh)
+    {
+        [_backdropMesh setScale:_backdropMesh.scale + _backdropScaleDelta];
+        
+        CGPoint translation = [_backdropMesh translation];
+        translation.x += _backdropTransXDelta;
+        translation.y += _backdropTransYDelta;
+        [_backdropMesh setTranslation:translation];
+        
         [_backdropMesh updateUniform:inFlight withDrawableSize:self.renderTarget.drawableSize];
+        
+        _backdropScaleDelta = 0.0;
+        _backdropTransXDelta = 0.0;
+        _backdropTransYDelta = 0.0;
+    }
 }
 
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer

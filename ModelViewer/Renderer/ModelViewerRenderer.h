@@ -45,6 +45,10 @@ TransformMode;
 @property (nonatomic, assign) TransformMode transMode;
 @property (nonatomic, readonly) BOOL viewTransformReset;
 
+@property (nonatomic, assign) float backdropScaleDelta;
+@property (nonatomic, assign) float backdropTransXDelta;
+@property (nonatomic, assign) float backdropTransYDelta;
+
 // delta control to the selected model
 //
 @property (nonatomic, assign) float zoomDelta;
