@@ -19,6 +19,7 @@
 
 
 @property (nonatomic, strong) NSButton* checkModelParts;
+@property (nonatomic, strong) NSButton* checkFrameRate;
 
 @property (nonatomic, strong) NSButton* checkMaterial;
 @property (nonatomic, strong) NSButton* checkTexture;
@@ -117,6 +118,17 @@
     [checkModelParts setAction:@selector(showModelPartsChanged:)];
     [scrollDocumentView addSubview:checkModelParts];
     _checkModelParts = checkModelParts;
+    
+    rowCoord += 1.0;
+    
+    NSButton* checkFrameRate = [NSButton new];
+    [checkFrameRate setButtonType:NSSwitchButton];
+    [checkFrameRate setTitle:@"Show Frame Rate"];
+    [checkFrameRate setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
+    [checkFrameRate setTarget:self];
+    [checkFrameRate setAction:@selector(showModelFrameRateChanged:)];
+    [scrollDocumentView addSubview:checkFrameRate];
+    _checkFrameRate = checkFrameRate;
     
     rowCoord += 1.2;
     
@@ -394,10 +406,19 @@
 }
 
 
--(void)showModelPartsChanged:(id)sender
+- (void)showModelPartsChanged:(id)sender
 {
     _showModelParts = [_checkModelParts state] == NSOnState;
     [self updateControls];
+    
+    [_optionUpdateDelegate modelOptionUpdate:self];
+}
+
+
+
+- (void)showModelFrameRateChanged:(id)sender
+{
+    _showFrameRate = [_checkFrameRate state] == NSOnState;
     
     [_optionUpdateDelegate modelOptionUpdate:self];
 }
