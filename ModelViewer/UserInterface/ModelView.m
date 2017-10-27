@@ -675,7 +675,7 @@ MouseDragMode;
     if (draggedFilePaths.count > 0)
     {
         NSString* path = draggedFilePaths[0];
-        if ([path hasSuffix:@".obj"])
+        if ([path hasSuffix:@".obj"] || [path hasSuffix:@".jpg"] || [path hasSuffix:@".png"])
         {
             return NSDragOperationCopy;
         }
@@ -712,18 +712,25 @@ MouseDragMode;
     NSArray *draggedFilePaths = [paste propertyListForType:NSFilenamesPboardType];
     NSString* path = draggedFilePaths[0];
     
-    NSFileManager* manager = [NSFileManager defaultManager];
-    BOOL isDir = false;
-    
-    [manager fileExistsAtPath:path isDirectory:&isDir];
-    if (isDir)
+    if ([path hasSuffix:@".jpg"] || [path hasSuffix:@".png"])
     {
-        NSString* name = [path lastPathComponent];
-        name = [name stringByAppendingString:@".obj"];
-        path = [path stringByAppendingPathComponent:name];
+        [self loadBackDropWithPath:path];
     }
-    
-    [self loadMesh:path];
+    else
+    {
+        NSFileManager* manager = [NSFileManager defaultManager];
+        BOOL isDir = false;
+        
+        [manager fileExistsAtPath:path isDirectory:&isDir];
+        if (isDir)
+        {
+            NSString* name = [path lastPathComponent];
+            name = [name stringByAppendingString:@".obj"];
+            path = [path stringByAppendingPathComponent:name];
+        }
+        
+        [self loadMesh:path];
+    }
     [self render];
     return YES;
 }
@@ -787,6 +794,21 @@ MouseDragMode;
 
 
 
+- (void)loadBackDropWithPath:(NSString*)path
+{
+    id<MTLDevice> device = self.metalLayer.device;
+    
+    NuoTexture* tex = [[NuoTextureBase getInstance:device] texture2DWithImageNamed:path
+                                                                         mipmapped:NO
+                                                                 checkTransparency:NO
+                                                                      commandQueue:nil];
+    NuoBackdropMesh* backdrop = [[NuoBackdropMesh alloc] initWithDevice:device withBackdrop:tex.texture];
+    [backdrop makePipelineAndSampler];
+    [_modelRender setBackdropMesh:backdrop];
+}
+
+
+
 - (IBAction)openFile:(id)sender
 {
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
@@ -845,21 +867,13 @@ MouseDragMode;
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
     openPanel.allowedFileTypes = @[@"jpg", @"png"];
     
-    __weak __block id<MTLDevice> device = self.metalLayer.device;
-    
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
                  if (result == NSFileHandlingPanelOKButton)
                  {
                      NSString* path = openPanel.URL.path;
                      
-                     NuoTexture* tex = [[NuoTextureBase getInstance:device] texture2DWithImageNamed:path
-                                                                                          mipmapped:NO
-                                                                                  checkTransparency:NO
-                                                                                       commandQueue:nil];
-                     NuoBackdropMesh* backdrop = [[NuoBackdropMesh alloc] initWithDevice:device withBackdrop:tex.texture];
-                     [backdrop makePipelineAndSampler];
-                     [_modelRender setBackdropMesh:backdrop];
+                     [self loadBackDropWithPath:path];
                      [self render];
                  }
              }];
