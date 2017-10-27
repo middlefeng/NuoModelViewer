@@ -33,7 +33,8 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
                                    texture2d<float> positionBuffer              [[ texture(0) ]],
                                    texture2d<float> normalBuffer                [[ texture(1) ]],
                                    texture2d<float> ambientColor                [[ texture(2) ]],
-                                   texture2d<float> immediateResult             [[ texture(3) ]],
+                                   texture2d<float> shadowOverlay               [[ texture(3) ]],
+                                   texture2d<float> immediateResult             [[ texture(4) ]],
                                    sampler samplr                               [[ sampler(0) ]],
                                    constant NuoDeferredRenderUniforms& params   [[ buffer(0)  ]])
 {
@@ -79,6 +80,12 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
     //
     if (ambientTerm.a > 0.001 && ambientTerm.a > immediateTerm.a)
         ambientTerm.rgb = ambientTerm.rgb / ambientTerm.a * immediateTerm.a;
+    
+    float shadowOverlayFactor = shadowOverlay.sample(samplr, vert.texCoord).r;
+    if (shadowOverlayFactor > 0.9)
+    {
+        return float4(0.0, 0.0, 0.0, immediateTerm.a - (ambientTerm.r * 0.33 + ambientTerm.g * 0.33 + ambientTerm.b * 0.33));
+    }
     
     float resultAlpha = params.clearColor.a + immediateTerm.a - params.clearColor.a * immediateTerm.a;
     float3 resultColor = (ambientTerm.rgb + immediateTerm.rgb) /* these two terms are alpha-premultiplied */ +

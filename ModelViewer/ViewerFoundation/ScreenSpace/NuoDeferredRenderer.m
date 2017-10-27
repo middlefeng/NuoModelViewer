@@ -94,7 +94,8 @@
     [renderPass setFragmentTexture:_screenSpaceRenderer.positionBuffer atIndex:0];
     [renderPass setFragmentTexture:_screenSpaceRenderer.normalBuffer atIndex:1];
     [renderPass setFragmentTexture:_screenSpaceRenderer.ambientBuffer atIndex:2];
-    [renderPass setFragmentTexture:_immediateResult atIndex:3];
+    [renderPass setFragmentTexture:_screenSpaceRenderer.shdowOverlayBuffer atIndex:3];
+    [renderPass setFragmentTexture:_immediateResult atIndex:4];
     [renderPass setFragmentBuffer:_deferredRenderParamBuffer offset:0 atIndex:0];
     
     [_screenMesh drawMesh:renderPass indexBuffer:inFlight];

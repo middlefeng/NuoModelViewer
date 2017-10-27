@@ -67,4 +67,10 @@
 }
 
 
+- (id<MTLTexture>)shdowOverlayBuffer
+{
+    return ((NuoScreenSpaceTarget*)self.renderTarget).shadowOverlayBuffer;
+}
+
+
 @end
