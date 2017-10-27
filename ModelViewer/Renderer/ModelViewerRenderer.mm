@@ -10,6 +10,7 @@
 #include "NuoMeshCompound.h"
 #include "NuoBoardMesh.h"
 #include "NuoCubeMesh.h"
+#include "NuoBackdropMesh.h"
 #include "NuoRenderPassTarget.h"
 #include "NuoMathUtilities.h"
 #include "NuoModelBase.h"
@@ -21,6 +22,7 @@
 #import "NuoLightSource.h"
 #import "NuoShadowMapRenderer.h"
 #import "ModelDeferredRenderer.h"
+
 
 @interface ModelRenderer ()
 
@@ -755,6 +757,9 @@
         [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
         [_cubeMesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
     }
+    
+    if (_backdropMesh)
+        [_backdropMesh updateUniform:inFlight withDrawableSize:self.renderTarget.drawableSize];
 }
 
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
@@ -804,6 +809,7 @@
     
     [renderPass endEncoding];
     
+    [_deferredRenderer setBackdropMesh:_backdropMesh];
     [_deferredRenderer setRenderTarget:self.renderTarget];
     [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
     [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];

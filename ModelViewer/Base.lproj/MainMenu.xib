@@ -98,6 +98,12 @@
                                     <action selector="loadCube:" target="EiT-Mj-1SZ" id="dd3-Ut-STE"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Load Backdrop..." id="lfo-ra-G6n">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="loadBackdrop:" target="EiT-Mj-1SZ" id="kIC-C5-1ug"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="m54-Is-iLE"/>
                             <menuItem title="Close" keyEquivalent="w" id="DVo-aG-piG">
                                 <connections>

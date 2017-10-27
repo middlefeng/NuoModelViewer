@@ -23,6 +23,7 @@
 
 #import "NuoMeshCompound.h"
 #import "NuoCubeMesh.h"
+#import "NuoBackdropMesh.h"
 #import "NuoMeshRotation.h"
 #import "NuoMeshAnimation.h"
 #import "NuoTextureBase.h"
@@ -745,6 +746,33 @@ MouseDragMode;
                      [cubeMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
                  
                      [_modelRender setCubeMesh:cubeMesh];
+                     [self render];
+                 }
+             }];
+}
+
+
+
+- (IBAction)loadBackdrop:(id)sender
+{
+    NSOpenPanel* openPanel = [NSOpenPanel openPanel];
+    openPanel.allowedFileTypes = @[@"jpg", @"png"];
+    
+    __weak __block id<MTLDevice> device = self.metalLayer.device;
+    
+    [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
+             {
+                 if (result == NSFileHandlingPanelOKButton)
+                 {
+                     NSString* path = openPanel.URL.path;
+                     
+                     NuoTexture* tex = [[NuoTextureBase getInstance:device] texture2DWithImageNamed:path
+                                                                                          mipmapped:NO
+                                                                                  checkTransparency:NO
+                                                                                       commandQueue:nil];
+                     NuoBackdropMesh* backdrop = [[NuoBackdropMesh alloc] initWithDevice:device withBackdrop:tex.texture];
+                     [backdrop makePipelineAndSampler];
+                     [_modelRender setBackdropMesh:backdrop];
                      [self render];
                  }
              }];

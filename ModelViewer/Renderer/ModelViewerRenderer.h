@@ -11,6 +11,7 @@
 @class NuoMeshCompound;
 @class NuoBoardMesh;
 @class NuoCubeMesh;
+@class NuoBackdropMesh;
 @class NuoLightSource;
 
 /**
@@ -37,6 +38,7 @@ TransformMode;
 
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lights;
 @property (nonatomic, strong) NuoCubeMesh* cubeMesh;
+@property (nonatomic, strong) NuoBackdropMesh* backdropMesh;
 @property (nonatomic, readonly) BOOL hasMeshes;
 
 
