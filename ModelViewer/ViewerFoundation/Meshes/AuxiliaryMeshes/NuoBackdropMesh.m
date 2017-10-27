@@ -104,7 +104,7 @@
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"backdrop_project"];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"backdrop_texutre"];
-    pipelineDescriptor.sampleCount = kSampleCount;
+    pipelineDescriptor.sampleCount = 1;     // backdrop blends with no other fragments on one pixel
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;

@@ -799,13 +799,6 @@ MouseDragMode;
              CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
                                         _modelRender.renderTarget.drawableSize.width);
              
-             NuoDeferredRenderUniforms params = _modelRender.deferredParameters;
-             NuoDeferredRenderUniforms oldParams = params;
-             
-             vector_float4 clearColor = { 0.0, 0.0, 0.0, 0.0 };
-             params.clearColor = clearColor;
-             _modelRender.deferredParameters = params;
-             
              NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:device withTarget:previewSize
                                                                           withClearColor:[NSColor colorWithRed:0.0
                                                                                                          green:0.0
@@ -817,8 +810,6 @@ MouseDragMode;
              [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
                                 withCompletion:^(id<MTLTexture> result)
                                     {
-                                        _modelRender.deferredParameters = oldParams;
-                                        
                                         NuoTextureBase* textureBase = [NuoTextureBase getInstance:device];
                                         [textureBase saveTexture:result toImage:path];
                                     }];

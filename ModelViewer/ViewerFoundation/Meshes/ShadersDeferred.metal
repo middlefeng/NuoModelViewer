@@ -80,7 +80,9 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
     if (ambientTerm.a > 0.001 && ambientTerm.a > immediateTerm.a)
         ambientTerm.rgb = ambientTerm.rgb / ambientTerm.a * immediateTerm.a;
     
-    return float4(ambientTerm.rgb + immediateTerm.rgb + /* these two terms are alpha-premultiplied */
-                  params.clearColor.rgb * (1.0 - immediateTerm.a),
-                  params.clearColor.a + immediateTerm.a - params.clearColor.a * immediateTerm.a);
+    float resultAlpha = params.clearColor.a + immediateTerm.a - params.clearColor.a * immediateTerm.a;
+    float3 resultColor = (ambientTerm.rgb + immediateTerm.rgb) /* these two terms are alpha-premultiplied */ +
+                         (params.clearColor.rgb * params.clearColor.a) * (1.0 - immediateTerm.a);
+    
+    return float4(resultColor, resultAlpha);
 }

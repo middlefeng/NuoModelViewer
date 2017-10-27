@@ -7,6 +7,7 @@
 //
 
 #import "ModelDeferredRenderer.h"
+#import "NuoBackdropMesh.h"
 
 
 
@@ -27,8 +28,10 @@
     id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     renderPass.label = @"Deferred Render Pass";
     
-    [self drawWithRenderPass:renderPass withInFlightIndex:inFlight];
+    if (_backdropMesh)
+        [_backdropMesh drawMesh:renderPass indexBuffer:inFlight];
     
+    [self drawWithRenderPass:renderPass withInFlightIndex:inFlight];
     [renderPass endEncoding];
 }
 

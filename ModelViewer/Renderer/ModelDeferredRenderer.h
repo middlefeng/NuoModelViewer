@@ -8,6 +8,16 @@
 
 #import "NuoDeferredRenderer.h"
 
+
+
+@class NuoBackdropMesh;
+
+
+
 @interface ModelDeferredRenderer : NuoDeferredRenderer
+
+
+@property (nonatomic, strong) NuoBackdropMesh* backdropMesh;
+
 
 @end
