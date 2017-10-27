@@ -86,3 +86,6 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
     
     return float4(resultColor, resultAlpha);
 }
+
+
+

@@ -86,6 +86,8 @@ struct FragementScreenSpace
     // because the order of MSAA and the multipication
     //
     metal::float4 ambientColorFactor    [[ color(2) ]];
+    
+    float shadowOverlay                 [[ color(3) ]];
 };
 
 
