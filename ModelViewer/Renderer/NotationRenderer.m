@@ -243,8 +243,7 @@
     
     [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
-    id<MTLRenderCommandEncoder> renderPass = self.lastRenderPass;
-    self.lastRenderPass = nil;
+    id<MTLRenderCommandEncoder> renderPass = [self currentRenderPass:commandBuffer];
     
     const float lightSettingAreaFactor = 0.28;
     const float lightSlidersHeight = 140;
@@ -277,8 +276,6 @@
     {
         [_lightVectors[i] drawWithRenderPass:renderPass withInFlight:inFlight];
     }
-    
-    [renderPass endEncoding];
 }
 
 

@@ -19,7 +19,4 @@
  */
 @property (nonatomic, weak) id<MTLTexture> sourceTexture;
 
-@property (nonatomic, strong) id<MTLRenderCommandEncoder> lastRenderPass;
-
-
 @end

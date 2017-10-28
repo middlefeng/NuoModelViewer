@@ -24,15 +24,13 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
-    id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    id<MTLRenderCommandEncoder> renderPass = [self currentRenderPass:commandBuffer];
     renderPass.label = @"Deferred Render Pass";
     
     if (_backdropMesh)
         [_backdropMesh drawMesh:renderPass indexBuffer:inFlight];
     
-    [self drawWithRenderPass:renderPass withInFlightIndex:inFlight];
-    [renderPass endEncoding];
+    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
 }
 
 

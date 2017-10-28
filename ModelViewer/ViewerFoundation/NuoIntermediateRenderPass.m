@@ -42,10 +42,8 @@
 {
     [_textureMesh setModelTexture:self.sourceTexture];
     
-    MTLRenderPassDescriptor *renderPassDesc = [self.renderTarget currentRenderPassDescriptor];
-    id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDesc];
+    id<MTLRenderCommandEncoder> renderPass = [self currentRenderPass:commandBuffer];
     [_textureMesh drawMesh:renderPass indexBuffer:inFlight];
-    self.lastRenderPass = renderPass;
 }
 
 

@@ -24,6 +24,19 @@
 - (void)setDrawableSize:(CGSize)drawableSize;
 
 /**
+ *  manage the underlying graphics render-pass support (i.e. in Metal, a command encoder).
+ *
+ *  a Nuo render pass accepts a command-buffer from ouside for each frame, and always manage the render pass
+ *  through the following two functions. no code is allowed to create a render pass except through
+ *  "currentRenderPass:".
+ *
+ *  a render pass should never call its own "endCurrentPass", which is called only by the pipeline
+ *  or a parent render pass
+ */
+- (id<MTLRenderCommandEncoder>)currentRenderPass:(id<MTLCommandBuffer>)commandBuffer;
+- (void)endCurrentPass;
+
+/**
  *  draw calls that target to their own target (e.g. shadow map texture)
  */
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer

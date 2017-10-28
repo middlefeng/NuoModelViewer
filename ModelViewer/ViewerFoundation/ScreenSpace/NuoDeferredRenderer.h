@@ -32,7 +32,4 @@
 
 - (void)setParameters:(NuoDeferredRenderUniforms*)params;
 
-- (void)drawWithRenderPass:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight;
-
-
 @end

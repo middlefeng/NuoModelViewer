@@ -787,6 +787,7 @@
         _shadowMapRenderer[i].meshes = _meshes;
         _shadowMapRenderer[i].lightSource = _lights[i];
         [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        [_shadowMapRenderer[i] endCurrentPass];
     }
     
     // store the light view point projection for shadow map detection in the scene
@@ -826,6 +827,7 @@
     [_deferredRenderer setRenderTarget:self.renderTarget];
     [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
     [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    [_deferredRenderer endCurrentPass];
 }
 
 

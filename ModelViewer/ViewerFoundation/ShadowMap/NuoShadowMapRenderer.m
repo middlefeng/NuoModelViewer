@@ -116,20 +116,17 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
-    if (!passDescriptor)
-        return;
-    
     [self updateUniformsForView:inFlight];
     
-    id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    id<MTLRenderCommandEncoder> renderPass = [self currentRenderPass:commandBuffer];
+    if (!renderPass)
+        return;
+    
     renderPass.label = @"Shadow Map";
 
     [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
     for (NuoMesh* mesh in _meshes)
         [mesh drawShadow:renderPass indexBuffer:inFlight];
-    
-    [renderPass endEncoding];
 }
 
 
