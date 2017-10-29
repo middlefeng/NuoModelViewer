@@ -33,7 +33,7 @@
 {
     // get the target render pass and draw the scene
     //
-    id<MTLRenderCommandEncoder> renderPass = [self currentRenderPass:commandBuffer];
+    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
     if (!renderPass)
         return;
     
@@ -43,6 +43,8 @@
     
     for (NuoMesh* mesh in _meshes)
         [mesh drawScreenSpace:renderPass indexBuffer:inFlight];
+    
+    [self releaseDefaultEncoder];
 }
 
 

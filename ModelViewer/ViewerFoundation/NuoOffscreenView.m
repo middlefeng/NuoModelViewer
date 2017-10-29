@@ -124,7 +124,6 @@
     [finalPass setRenderTarget:_exportTarget];
     [finalPass setDrawableSize:drawSize];
     [finalPass drawWithCommandBuffer:commandBuffer withInFlightIndex:0];
-    [finalPass endCurrentPass];
     
     id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
     [encoder synchronizeResource:_exportTarget.targetTexture];

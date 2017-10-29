@@ -787,7 +787,6 @@
         _shadowMapRenderer[i].meshes = _meshes;
         _shadowMapRenderer[i].lightSource = _lights[i];
         [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
-        [_shadowMapRenderer[i] endCurrentPass];
     }
     
     // store the light view point projection for shadow map detection in the scene
@@ -804,13 +803,12 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    MTLRenderPassDescriptor *passDescriptor = [_immediateTarget currentRenderPassDescriptor];
-    if (!passDescriptor)
-        return;
-    
     // get the target render pass and draw the scene
     //
-    id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    id<MTLRenderCommandEncoder> renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
+    if (!renderPass)
+        return;
+    
     renderPass.label = @"Scene Render Pass";
     
     if (_cubeMesh)
@@ -821,13 +819,12 @@
     for (NuoMesh* mesh in _meshes)
         [mesh drawMesh:renderPass indexBuffer:inFlight];
     
-    [renderPass endEncoding];
+    [_immediateTarget releaseRenderPassEndcoder];
     
     [_deferredRenderer setBackdropMesh:_backdropMesh];
     [_deferredRenderer setRenderTarget:self.renderTarget];
     [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
     [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
-    [_deferredRenderer endCurrentPass];
 }
 
 

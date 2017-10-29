@@ -72,13 +72,12 @@
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                withInFlightIndex:(unsigned int)inFlight
 {
-    MTLRenderPassDescriptor *passDescriptor = [_dissectRenderTarget currentRenderPassDescriptor];
-    if (!passDescriptor)
-        return;
-    
     // get the target render pass and draw the scene
     //
-    id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    id<MTLRenderCommandEncoder> renderPass = [_dissectRenderTarget retainRenderPassEndcoder:commandBuffer];
+    if (!renderPass)
+        return;
+    
     renderPass.label = @"Dissection Render Pass";
     
     [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
@@ -89,7 +88,7 @@
         [mesh drawMesh:renderPass indexBuffer:inFlight];
     }
     
-    [renderPass endEncoding];
+    [_dissectRenderTarget releaseRenderPassEndcoder];
 }
 
 
@@ -99,11 +98,9 @@
 {
     [_textureMesh setModelTexture:self.sourceTexture];
     
-    MTLRenderPassDescriptor *renderPassDesc = [self.renderTarget currentRenderPassDescriptor];
-    id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDesc];
+    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
     [_textureMesh drawMesh:renderPass indexBuffer:inFlight];
-    
-    [renderPass endEncoding];
+    [self releaseDefaultEncoder];
 }
 
 

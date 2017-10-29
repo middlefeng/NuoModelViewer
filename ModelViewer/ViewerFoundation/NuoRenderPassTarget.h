@@ -52,6 +52,9 @@
  */
 - (void)makeTextures;
 
+- (id<MTLRenderCommandEncoder>)retainRenderPassEndcoder:(id<MTLCommandBuffer>)commandBuffer;
+- (void)releaseRenderPassEndcoder;
+
 - (MTLRenderPassDescriptor *)currentRenderPassDescriptor;
 
 @end

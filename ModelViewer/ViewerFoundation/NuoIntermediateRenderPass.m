@@ -42,8 +42,9 @@
 {
     [_textureMesh setModelTexture:self.sourceTexture];
     
-    id<MTLRenderCommandEncoder> renderPass = [self currentRenderPass:commandBuffer];
+    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
     [_textureMesh drawMesh:renderPass indexBuffer:inFlight];
+    [self releaseDefaultEncoder];
 }
 
 

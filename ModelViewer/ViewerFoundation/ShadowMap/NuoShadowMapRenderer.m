@@ -118,7 +118,7 @@
 {
     [self updateUniformsForView:inFlight];
     
-    id<MTLRenderCommandEncoder> renderPass = [self currentRenderPass:commandBuffer];
+    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
     if (!renderPass)
         return;
     
@@ -127,6 +127,8 @@
     [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
     for (NuoMesh* mesh in _meshes)
         [mesh drawShadow:renderPass indexBuffer:inFlight];
+    
+    [self releaseDefaultEncoder];
 }
 
 

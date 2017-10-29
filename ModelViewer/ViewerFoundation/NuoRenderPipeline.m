@@ -55,7 +55,6 @@
     {
         NuoRenderPass* render = [_renderPasses objectAtIndex:i];
         [render drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
-        [render endCurrentPass];
     }
     
     return YES;

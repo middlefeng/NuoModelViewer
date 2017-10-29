@@ -15,31 +15,6 @@
 
 
 @implementation NuoRenderPass
-{
-    id<MTLRenderCommandEncoder> _currentRenderPass;
-}
-
-
-- (id<MTLRenderCommandEncoder>)currentRenderPass:(id<MTLCommandBuffer>)commandBuffer
-{
-    if (!_currentRenderPass)
-    {
-        MTLRenderPassDescriptor *passDescriptor = [_renderTarget currentRenderPassDescriptor];
-        if (!passDescriptor)
-            return nil;
-        
-        _currentRenderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
-    }
-    
-    return _currentRenderPass;
-}
-
-
-- (void)endCurrentPass
-{
-    [_currentRenderPass endEncoding];
-    _currentRenderPass = nil;
-}
 
 
 
@@ -64,6 +39,18 @@
 - (BOOL)isPipelinePass
 {
     return NO;
+}
+
+
+- (id<MTLRenderCommandEncoder>)retainDefaultEncoder:(id<MTLCommandBuffer>)commandBuffer
+{
+    return [_renderTarget retainRenderPassEndcoder:commandBuffer];
+}
+
+
+- (void)releaseDefaultEncoder
+{
+    [_renderTarget releaseRenderPassEndcoder];
 }
 
 
