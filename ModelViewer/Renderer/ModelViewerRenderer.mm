@@ -21,7 +21,7 @@
 
 #import "NuoLightSource.h"
 #import "NuoShadowMapRenderer.h"
-#import "ModelDeferredRenderer.h"
+#import "NuoDeferredRenderer.h"
 
 
 @interface ModelRenderer ()
@@ -56,7 +56,7 @@
     
     NuoShadowMapRenderer* _shadowMapRenderer[2];
     NuoRenderPassTarget* _immediateTarget;
-    ModelDeferredRenderer* _deferredRenderer;
+    NuoDeferredRenderer* _deferredRenderer;
 }
 
 
@@ -81,7 +81,7 @@
         _immediateTarget.manageTargetTexture = YES;
         _immediateTarget.sharedTargetTexture = NO;
         
-        _deferredRenderer = [[ModelDeferredRenderer alloc] initWithDevice:device withSceneParameter:self];
+        _deferredRenderer = [[NuoDeferredRenderer alloc] initWithDevice:device withSceneParameter:self];
         
         _meshes = [NSMutableArray new];
         _boardMeshes = [NSMutableArray new];
@@ -821,10 +821,20 @@
     
     [_immediateTarget releaseRenderPassEndcoder];
     
-    [_deferredRenderer setBackdropMesh:_backdropMesh];
+    if (_backdropMesh)
+    {
+        id<MTLRenderCommandEncoder> deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
+        [_backdropMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
+    }
+    
     [_deferredRenderer setRenderTarget:self.renderTarget];
     [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
     [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    
+    if (_backdropMesh)
+    {
+        [self releaseDefaultEncoder];
+    }
 }
 
 
