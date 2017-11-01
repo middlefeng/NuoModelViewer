@@ -88,11 +88,13 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
     float shadowOverlayFactor = shadowOverlay.sample(samplr, vert.texCoord).r;
     float shadowOverlayAlpha = (ambientTerm.r * 0.33 + ambientTerm.g * 0.33 + ambientTerm.b * 0.33) * shadowOverlayFactor;
     
-    // reduction of alpha by board objects
+    // alpha channel composite formula: a1 + a2 - a1 * a2
     //
-    float resultAlpha = (params.clearColor.a + immediateTerm.a - params.clearColor.a * immediateTerm.a) - shadowOverlayAlpha;
+    float resultAlpha = (params.clearColor.a + immediateTerm.a - params.clearColor.a * immediateTerm.a)
+                                             - shadowOverlayAlpha /* reduction of alpha by board objects */;
     
-    
+    // color channels composite formula: c1 * a1 + c2 * a2 * (1 - a1)        ; the value is alpha-premultiplied
+    //
     float3 resultColor = (ambientTerm.rgb * (1.0 - shadowOverlayFactor) /* addition of diffuse          // these two terms are alpha-premultiplied
                                                                            color by normal objects */   //
                                                    + immediateTerm.rgb) +                               //
