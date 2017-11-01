@@ -11,7 +11,7 @@
 #import "NuoRenderPass.h"
 #import "NuoRenderPassTarget.h"
 #import "NuoRenderPipeline.h"
-#import "NuoIntermediateRenderPass.h"
+#import "NuoRenderPipelinePass.h"
 
 
 
@@ -100,9 +100,9 @@
                 withCompletion:(void (^)(id<MTLTexture>))completionBlock;
 {
     // final pass to convert the result to RGBA
-    NuoIntermediateRenderPass* finalPass = [[NuoIntermediateRenderPass alloc] initWithDevice:_device
-                                                                             withPixelFormat:_exportTarget.targetPixelFormat
-                                                                             withSampleCount:1 /* no MSAA for mere conversion */];
+    NuoRenderPipelinePass* finalPass = [[NuoRenderPipelinePass alloc] initWithDevice:_device
+                                                                     withPixelFormat:_exportTarget.targetPixelFormat
+                                                                     withSampleCount:1 /* no MSAA for mere conversion */];
     NSUInteger lastRender = [_renderPasses count] - 1;
     NuoRenderPass* lastScenePass = _renderPasses[lastRender];
     NuoRenderPassTarget* displayTarget = [lastScenePass renderTarget];

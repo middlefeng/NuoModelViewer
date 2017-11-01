@@ -18,6 +18,7 @@
 #import "NuoLightSource.h"
 
 #import <math.h>
+#import <AppKit/AppKit.h>
 
 
 @interface NotationRenderer()

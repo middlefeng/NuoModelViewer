@@ -8,14 +8,14 @@
 
 
 
-#import "NuoIntermediateRenderPass.h"
+#import "NuoRenderPipelinePass.h"
 
 
 @class NuoLightSource;
 @class NuoLua;
 
 
-@interface NotationRenderer : NuoIntermediateRenderPass
+@interface NotationRenderer : NuoRenderPipelinePass
 
 
 @property (nonatomic, readonly) NSArray<NuoLightSource*>* lightSources;
