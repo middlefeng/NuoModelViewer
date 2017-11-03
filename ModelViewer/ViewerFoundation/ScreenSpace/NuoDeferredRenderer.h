@@ -22,8 +22,6 @@
  */
 @property (nonatomic, weak) id<MTLTexture> immediateResult;
 
-@property (nonatomic, strong) id<MTLRenderCommandEncoder> lastRenderPass;
-
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
             withSceneParameter:(id<NuoMeshSceneParametersProvider>)sceneParameter;
@@ -31,5 +29,6 @@
 - (void)setMeshes:(NSArray<NuoMesh*>*)meshes;
 
 - (void)setParameters:(NuoDeferredRenderUniforms*)params;
+
 
 @end
