@@ -1,0 +1,20 @@
+
+
+-- anchor = { 2.8, 1.75, 0.6 }
+anchor = { 0.0, 0.15, 1.0 }
+axis = { -0.0, 0.0, 1 }
+radius = 3.1415 * 2.0
+
+animations =
+{
+	["Rotor"] =
+	{
+		object = { "main_rotor" },
+		axis = axis,
+		anchor = anchor,
+		radius = radius
+	}
+}
+
+
+return animations
