@@ -31,13 +31,12 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
-    if (!passDescriptor)
-        return;
-    
     // get the target render pass and draw the scene
     //
-    id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    if (!renderPass)
+        return;
+    
     renderPass.label = @"Screen Render Pass";
     
     [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
@@ -45,7 +44,7 @@
     for (NuoMesh* mesh in _meshes)
         [mesh drawScreenSpace:renderPass indexBuffer:inFlight];
     
-    [renderPass endEncoding];
+    [self releaseDefaultEncoder];
 }
 
 
@@ -64,6 +63,12 @@
 - (id<MTLTexture>)ambientBuffer
 {
     return ((NuoScreenSpaceTarget*)self.renderTarget).ambientBuffer;
+}
+
+
+- (id<MTLTexture>)shdowOverlayBuffer
+{
+    return ((NuoScreenSpaceTarget*)self.renderTarget).shadowOverlayBuffer;
 }
 
 

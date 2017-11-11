@@ -19,10 +19,10 @@
 {
     float vertices[] =
     {
-        -1, 1, 0, 1.0,     0, 0, 0, 0,
+        -1, 1,  0, 1.0,    0, 0, 0, 0,
         -1, -1, 0, 1.0,    0, 1, 0, 0,
-        1, -1, 0, 1.0,     1, 1, 0, 0,
-        1, 1, 0, 1.0,      1, 0, 0, 0,
+        1, -1,  0, 1.0,    1, 1, 0, 0,
+        1, 1,   0, 1.0,    1, 0, 0, 0,
     };
     
     uint32_t indices[] =
@@ -57,7 +57,7 @@
         pipelineDescriptor.colorAttachments[0].blendingEnabled = YES;
         pipelineDescriptor.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
         pipelineDescriptor.colorAttachments[0].alphaBlendOperation = MTLBlendOperationAdd;
-        pipelineDescriptor.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
+        pipelineDescriptor.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorOne;    // the shader returns pre-multiplied color
         pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
         pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
     }

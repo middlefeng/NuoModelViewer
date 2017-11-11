@@ -10,6 +10,17 @@
 #import "NuoRenderPass.h"
 
 
+/**
+ *  a render pass takes the result from its immediate previous
+ *  pass, draw it on the background, and leave its subclass draw method to
+ *  add additional objects
+ *
+ *  also, it can take the source as an texture of a pixel format and draw it
+ *  to the target of another format, in that way serving as pixel format convertor.
+ *
+ *  in the conversion-only case, or in a 2D only case, the sampleCount could be
+ *  set to 1 to turning off the MSAA
+ */
 
 @interface NuoRenderPipelinePass : NuoRenderPass
 
@@ -19,7 +30,9 @@
  */
 @property (nonatomic, weak) id<MTLTexture> sourceTexture;
 
-@property (nonatomic, strong) id<MTLRenderCommandEncoder> lastRenderPass;
 
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+               withPixelFormat:(MTLPixelFormat)pixelFormat
+               withSampleCount:(uint)sampleCount;
 
 @end

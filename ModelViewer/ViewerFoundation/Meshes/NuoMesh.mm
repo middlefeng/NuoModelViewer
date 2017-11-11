@@ -464,11 +464,24 @@ const BOOL kShadowPCF = YES;
 - (void)makePipelineScreenSpaceStateWithVertexShader:(NSString*)vertexShader
                                   withFragemtnShader:(NSString*)fragmentShader
 {
+    MTLFunctionConstantValues* constants = [MTLFunctionConstantValues new];
+    BOOL shadowOverlay = NO;
+    [constants setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
+    
+    [self makePipelineScreenSpaceStateWithVertexShader:vertexShader
+                                    withFragemtnShader:fragmentShader
+                                         withConstants:constants];
+}
+
+- (void)makePipelineScreenSpaceStateWithVertexShader:(NSString*)vertexShader
+                                  withFragemtnShader:(NSString*)fragmentShader
+                                       withConstants:(MTLFunctionConstantValues*)constants
+{
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
     screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShader];
-    screenSpacePipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmentShader];
+    screenSpacePipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmentShader constantValues:constants error:nil];
     screenSpacePipelineDescriptor.sampleCount = kSampleCount;
     
     // blending is turned OFF for all attachments, see comments to "FragementScreenSpace"
@@ -476,6 +489,7 @@ const BOOL kShadowPCF = YES;
     screenSpacePipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
     screenSpacePipelineDescriptor.colorAttachments[1].pixelFormat = MTLPixelFormatRGBA16Float;
     screenSpacePipelineDescriptor.colorAttachments[2].pixelFormat = MTLPixelFormatRGBA16Float;
+    screenSpacePipelineDescriptor.colorAttachments[3].pixelFormat = MTLPixelFormatR8Unorm;
     
     screenSpacePipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     

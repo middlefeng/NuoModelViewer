@@ -42,4 +42,16 @@
 }
 
 
+- (id<MTLRenderCommandEncoder>)retainDefaultEncoder:(id<MTLCommandBuffer>)commandBuffer
+{
+    return [_renderTarget retainRenderPassEndcoder:commandBuffer];
+}
+
+
+- (void)releaseDefaultEncoder
+{
+    [_renderTarget releaseRenderPassEndcoder];
+}
+
+
 @end

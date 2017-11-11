@@ -18,6 +18,7 @@
 #import "NuoLightSource.h"
 
 #import <math.h>
+#import <AppKit/AppKit.h>
 
 
 @interface NotationRenderer()
@@ -241,10 +242,9 @@
 {
     self.renderTarget.clearColor = MTLClearColorMake(0.0, 0.95, 0.95, 1);
     
-    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
     
-    id<MTLRenderCommandEncoder> renderPass = self.lastRenderPass;
-    self.lastRenderPass = nil;
+    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
     const float lightSettingAreaFactor = 0.28;
     const float lightSlidersHeight = 140;
@@ -278,7 +278,7 @@
         [_lightVectors[i] drawWithRenderPass:renderPass withInFlight:inFlight];
     }
     
-    [renderPass endEncoding];
+    [self releaseDefaultEncoder];
 }
 
 

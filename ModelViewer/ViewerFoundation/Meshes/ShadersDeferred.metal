@@ -33,7 +33,8 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
                                    texture2d<float> positionBuffer              [[ texture(0) ]],
                                    texture2d<float> normalBuffer                [[ texture(1) ]],
                                    texture2d<float> ambientColor                [[ texture(2) ]],
-                                   texture2d<float> immediateResult             [[ texture(3) ]],
+                                   texture2d<float> shadowOverlay               [[ texture(3) ]],
+                                   texture2d<float> immediateResult             [[ texture(4) ]],
                                    sampler samplr                               [[ sampler(0) ]],
                                    constant NuoDeferredRenderUniforms& params   [[ buffer(0)  ]])
 {
@@ -80,7 +81,27 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
     if (ambientTerm.a > 0.001 && ambientTerm.a > immediateTerm.a)
         ambientTerm.rgb = ambientTerm.rgb / ambientTerm.a * immediateTerm.a;
     
-    return float4(ambientTerm.rgb + immediateTerm.rgb + /* these two terms are alpha-premultiplied */
-                  params.clearColor.rgb * (1.0 - immediateTerm.a),
-                  params.clearColor.a + immediateTerm.a - params.clearColor.a * immediateTerm.a);
+    // shadow-overlay factor is 1.0 for board object, 0.0 for normal objects, and in between on edge through MSAA.
+    // a board object contributes to the reduction of alpha in proportion to the ambient illumination (i.e. let the backdrop come through more)
+    // a normal object contributes to the addition of diffuse color in proportion to the ambient illumination.
+    //
+    float shadowOverlayFactor = shadowOverlay.sample(samplr, vert.texCoord).r;
+    float shadowOverlayAlpha = (ambientTerm.r * 0.33 + ambientTerm.g * 0.33 + ambientTerm.b * 0.33) * shadowOverlayFactor;
+    
+    // alpha channel composite formula: a1 + a2 - a1 * a2
+    //
+    float resultAlpha = (params.clearColor.a + immediateTerm.a - params.clearColor.a * immediateTerm.a)
+                                             - shadowOverlayAlpha /* reduction of alpha by board objects */;
+    
+    // color channels composite formula: c1 * a1 + c2 * a2 * (1 - a1)        ; the value is alpha-premultiplied
+    //
+    float3 resultColor = (ambientTerm.rgb * (1.0 - shadowOverlayFactor) /* addition of diffuse          // these two terms are alpha-premultiplied
+                                                                           color by normal objects */   //
+                                                   + immediateTerm.rgb) +                               //
+                         (params.clearColor.rgb * params.clearColor.a) * (1.0 - immediateTerm.a);
+    
+    return float4(resultColor, resultAlpha);
 }
+
+
+

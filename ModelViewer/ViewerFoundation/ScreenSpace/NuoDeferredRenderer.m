@@ -79,18 +79,24 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    MTLRenderPassDescriptor *passDescriptor = [self.renderTarget currentRenderPassDescriptor];
-    id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
     renderPass.label = @"Deferred Render Pass";
     
+    [self drawWithRenderPass:renderPass withInFlightIndex:inFlight];
+    [self releaseDefaultEncoder];
+}
+
+
+- (void)drawWithRenderPass:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight
+{
     [renderPass setFragmentTexture:_screenSpaceRenderer.positionBuffer atIndex:0];
     [renderPass setFragmentTexture:_screenSpaceRenderer.normalBuffer atIndex:1];
     [renderPass setFragmentTexture:_screenSpaceRenderer.ambientBuffer atIndex:2];
-    [renderPass setFragmentTexture:_immediateResult atIndex:3];
+    [renderPass setFragmentTexture:_screenSpaceRenderer.shdowOverlayBuffer atIndex:3];
+    [renderPass setFragmentTexture:_immediateResult atIndex:4];
     [renderPass setFragmentBuffer:_deferredRenderParamBuffer offset:0 atIndex:0];
     
     [_screenMesh drawMesh:renderPass indexBuffer:inFlight];
-    [renderPass endEncoding];
 }
 
 

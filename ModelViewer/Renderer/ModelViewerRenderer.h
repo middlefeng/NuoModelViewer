@@ -11,6 +11,7 @@
 @class NuoMeshCompound;
 @class NuoBoardMesh;
 @class NuoCubeMesh;
+@class NuoBackdropMesh;
 @class NuoLightSource;
 
 /**
@@ -37,11 +38,16 @@ TransformMode;
 
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lights;
 @property (nonatomic, strong) NuoCubeMesh* cubeMesh;
+@property (nonatomic, strong) NuoBackdropMesh* backdropMesh;
 @property (nonatomic, readonly) BOOL hasMeshes;
 
 
 @property (nonatomic, assign) TransformMode transMode;
 @property (nonatomic, readonly) BOOL viewTransformReset;
+
+@property (nonatomic, assign) float backdropScaleDelta;
+@property (nonatomic, assign) float backdropTransXDelta;
+@property (nonatomic, assign) float backdropTransYDelta;
 
 // delta control to the selected model
 //

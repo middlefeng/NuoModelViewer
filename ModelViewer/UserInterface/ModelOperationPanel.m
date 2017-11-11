@@ -67,7 +67,7 @@
         _deferredRenderParameters.ambientOcclusionParams.sampleRadius = 0.8;
         _deferredRenderParameters.ambientOcclusionParams.scale = 1.0;
 
-        vector_float4 clearColor = { 0.95, 0.95, 0.95, 1 };
+        vector_float4 clearColor = { 0.0, 0.0, 0.0, 0.0 };
         _deferredRenderParameters.clearColor = clearColor;
         
         _cullEnabled = YES;

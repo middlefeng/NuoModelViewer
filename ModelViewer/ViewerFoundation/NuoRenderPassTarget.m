@@ -20,6 +20,10 @@
 
 
 @implementation NuoRenderPassTarget
+{
+    id<MTLRenderCommandEncoder> _renderPassEncoder;
+    size_t _renderPassEncoderCount;
+}
 
 
 - (instancetype)init
@@ -28,6 +32,7 @@
     if (self)
     {
         _targetPixelFormat = MTLPixelFormatBGRA8Unorm;
+        _renderPassEncoderCount = 0;
     }
     return self;
 }
@@ -92,6 +97,37 @@
             NSString* name = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"target"];
             [_targetTexture setLabel:name];
         }
+    }
+}
+
+
+
+- (id<MTLRenderCommandEncoder>)retainRenderPassEndcoder:(id<MTLCommandBuffer>)commandBuffer;
+{
+    if (_renderPassEncoder)
+    {
+        _renderPassEncoderCount += 1;
+        return _renderPassEncoder;
+    }
+    
+    MTLRenderPassDescriptor *passDescriptor = [self currentRenderPassDescriptor];
+    _renderPassEncoder = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    _renderPassEncoderCount = 1;
+    
+    return _renderPassEncoder;
+}
+
+
+
+- (void)releaseRenderPassEndcoder
+{
+    assert(_renderPassEncoderCount > 0);
+    
+    _renderPassEncoderCount -= 1;
+    if (_renderPassEncoderCount == 0)
+    {
+        [_renderPassEncoder endEncoding];
+        _renderPassEncoder = nil;
     }
 }
 

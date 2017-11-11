@@ -10,6 +10,7 @@
 #include "NuoMeshCompound.h"
 #include "NuoBoardMesh.h"
 #include "NuoCubeMesh.h"
+#include "NuoBackdropMesh.h"
 #include "NuoRenderPassTarget.h"
 #include "NuoMathUtilities.h"
 #include "NuoModelBase.h"
@@ -21,6 +22,7 @@
 #import "NuoLightSource.h"
 #import "NuoShadowMapRenderer.h"
 #import "NuoDeferredRenderer.h"
+
 
 @interface ModelRenderer ()
 
@@ -755,6 +757,22 @@
         [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
         [_cubeMesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
     }
+    
+    if (_backdropMesh)
+    {
+        [_backdropMesh setScale:_backdropMesh.scale + _backdropScaleDelta];
+        
+        CGPoint translation = [_backdropMesh translation];
+        translation.x += _backdropTransXDelta;
+        translation.y += _backdropTransYDelta;
+        [_backdropMesh setTranslation:translation];
+        
+        [_backdropMesh updateUniform:inFlight withDrawableSize:self.renderTarget.drawableSize];
+        
+        _backdropScaleDelta = 0.0;
+        _backdropTransXDelta = 0.0;
+        _backdropTransYDelta = 0.0;
+    }
 }
 
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
@@ -785,13 +803,12 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    MTLRenderPassDescriptor *passDescriptor = [_immediateTarget currentRenderPassDescriptor];
-    if (!passDescriptor)
-        return;
-    
     // get the target render pass and draw the scene
     //
-    id<MTLRenderCommandEncoder> renderPass = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    id<MTLRenderCommandEncoder> renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
+    if (!renderPass)
+        return;
+    
     renderPass.label = @"Scene Render Pass";
     
     if (_cubeMesh)
@@ -802,11 +819,22 @@
     for (NuoMesh* mesh in _meshes)
         [mesh drawMesh:renderPass indexBuffer:inFlight];
     
-    [renderPass endEncoding];
+    [_immediateTarget releaseRenderPassEndcoder];
+    
+    if (_backdropMesh)
+    {
+        id<MTLRenderCommandEncoder> deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
+        [_backdropMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
+    }
     
     [_deferredRenderer setRenderTarget:self.renderTarget];
     [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
     [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    
+    if (_backdropMesh)
+    {
+        [self releaseDefaultEncoder];
+    }
 }
 
 

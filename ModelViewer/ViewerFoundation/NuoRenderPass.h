@@ -37,5 +37,8 @@
 
 - (BOOL)isPipelinePass;
 
+- (id<MTLRenderCommandEncoder>)retainDefaultEncoder:(id<MTLCommandBuffer>)commandBuffer;
+- (void)releaseDefaultEncoder;
+
 
 @end

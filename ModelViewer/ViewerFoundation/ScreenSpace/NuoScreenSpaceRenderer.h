@@ -23,6 +23,7 @@
 @property (nonatomic, readonly) id<MTLTexture> positionBuffer;
 @property (nonatomic, readonly) id<MTLTexture> normalBuffer;
 @property (nonatomic, readonly) id<MTLTexture> ambientBuffer;
+@property (nonatomic, readonly) id<MTLTexture> shdowOverlayBuffer;
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withName:(NSString*)name;
 

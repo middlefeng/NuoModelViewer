@@ -24,6 +24,7 @@
 
 #import "NuoMeshCompound.h"
 #import "NuoCubeMesh.h"
+#import "NuoBackdropMesh.h"
 #import "NuoMeshRotation.h"
 #import "NuoMeshAnimation.h"
 #import "NuoTextureBase.h"
@@ -630,7 +631,11 @@ MouseDragMode;
 
 - (void)magnifyWithEvent:(NSEvent *)event
 {
-    _modelRender.zoomDelta = 10 * event.magnification;
+    if (event.modifierFlags & NSEventModifierFlagCommand)
+        _modelRender.backdropScaleDelta = event.magnification;
+    else
+        _modelRender.zoomDelta = 10 * event.magnification;
+    
     [self render];
 }
 
@@ -647,8 +652,17 @@ MouseDragMode;
         deltaY *= 0.005;
     }
     
-    _modelRender.transXDelta = deltaX;
-    _modelRender.transYDelta = deltaY;
+    if (event.modifierFlags & NSEventModifierFlagCommand)
+    {
+        _modelRender.backdropTransXDelta = -deltaX * 0.01;
+        _modelRender.backdropTransYDelta = -deltaY * 0.01;
+    }
+    else
+    {
+        _modelRender.transXDelta = deltaX;
+        _modelRender.transYDelta = deltaY;
+    }
+    
     [self render];
 }
 
@@ -661,7 +675,7 @@ MouseDragMode;
     if (draggedFilePaths.count > 0)
     {
         NSString* path = draggedFilePaths[0];
-        if ([path hasSuffix:@".obj"])
+        if ([path hasSuffix:@".obj"] || [path hasSuffix:@".jpg"] || [path hasSuffix:@".png"])
         {
             return NSDragOperationCopy;
         }
@@ -698,18 +712,25 @@ MouseDragMode;
     NSArray *draggedFilePaths = [paste propertyListForType:NSFilenamesPboardType];
     NSString* path = draggedFilePaths[0];
     
-    NSFileManager* manager = [NSFileManager defaultManager];
-    BOOL isDir = false;
-    
-    [manager fileExistsAtPath:path isDirectory:&isDir];
-    if (isDir)
+    if ([path hasSuffix:@".jpg"] || [path hasSuffix:@".png"])
     {
-        NSString* name = [path lastPathComponent];
-        name = [name stringByAppendingString:@".obj"];
-        path = [path stringByAppendingPathComponent:name];
+        [self loadBackDropWithPath:path];
     }
-    
-    [self loadMesh:path];
+    else
+    {
+        NSFileManager* manager = [NSFileManager defaultManager];
+        BOOL isDir = false;
+        
+        [manager fileExistsAtPath:path isDirectory:&isDir];
+        if (isDir)
+        {
+            NSString* name = [path lastPathComponent];
+            name = [name stringByAppendingString:@".obj"];
+            path = [path stringByAppendingPathComponent:name];
+        }
+        
+        [self loadMesh:path];
+    }
     [self render];
     return YES;
 }
@@ -773,6 +794,21 @@ MouseDragMode;
 
 
 
+- (void)loadBackDropWithPath:(NSString*)path
+{
+    id<MTLDevice> device = self.metalLayer.device;
+    
+    NuoTexture* tex = [[NuoTextureBase getInstance:device] texture2DWithImageNamed:path
+                                                                         mipmapped:NO
+                                                                 checkTransparency:NO
+                                                                      commandQueue:nil];
+    NuoBackdropMesh* backdrop = [[NuoBackdropMesh alloc] initWithDevice:device withBackdrop:tex.texture];
+    [backdrop makePipelineAndSampler];
+    [_modelRender setBackdropMesh:backdrop];
+}
+
+
+
 - (IBAction)openFile:(id)sender
 {
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
@@ -819,6 +855,25 @@ MouseDragMode;
                      [cubeMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
                  
                      [_modelRender setCubeMesh:cubeMesh];
+                     [self render];
+                 }
+             }];
+}
+
+
+
+- (IBAction)loadBackdrop:(id)sender
+{
+    NSOpenPanel* openPanel = [NSOpenPanel openPanel];
+    openPanel.allowedFileTypes = @[@"jpg", @"png"];
+    
+    [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
+             {
+                 if (result == NSFileHandlingPanelOKButton)
+                 {
+                     NSString* path = openPanel.URL.path;
+                     
+                     [self loadBackDropWithPath:path];
                      [self render];
                  }
              }];
@@ -873,13 +928,6 @@ MouseDragMode;
              CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
                                         _modelRender.renderTarget.drawableSize.width);
              
-             NuoDeferredRenderUniforms params = _modelRender.deferredParameters;
-             NuoDeferredRenderUniforms oldParams = params;
-             
-             vector_float4 clearColor = { 0.0, 0.0, 0.0, 0.0 };
-             params.clearColor = clearColor;
-             _modelRender.deferredParameters = params;
-             
              NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:device withTarget:previewSize
                                                                           withClearColor:[NSColor colorWithRed:0.0
                                                                                                          green:0.0
@@ -891,8 +939,6 @@ MouseDragMode;
              [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
                                 withCompletion:^(id<MTLTexture> result)
                                     {
-                                        _modelRender.deferredParameters = oldParams;
-                                        
                                         NuoTextureBase* textureBase = [NuoTextureBase getInstance:device];
                                         [textureBase saveTexture:result toImage:path];
                                     }];

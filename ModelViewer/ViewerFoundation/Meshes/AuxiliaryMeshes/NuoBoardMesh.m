@@ -94,8 +94,13 @@
 
 - (void)makePipelineScreenSpaceState
 {
+    MTLFunctionConstantValues* constants = [MTLFunctionConstantValues new];
+    BOOL shadowOverlay = YES;
+    [constants setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
+    
     [super makePipelineScreenSpaceStateWithVertexShader:@"vertex_project_screen_space"
-                                     withFragemtnShader:@"fragement_screen_space"];
+                                     withFragemtnShader:@"fragement_screen_space"
+                                          withConstants:constants];
 }
 
 

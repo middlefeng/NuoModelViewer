@@ -73,6 +73,8 @@ fragment FragementScreenSpace fragement_screen_space_textured(VertexScreenSpace 
     float alpha = diffuseTexel.a * vert.opacity;
     result.ambientColorFactor = float4(saturate(vert.diffuseColorFactor * diffuseColor * lightUniform.ambientDensity) * alpha, alpha);
     
+    result.shadowOverlay = kShadowOverlay ? 1.0 : 0.0;
+    
     return result;
 }
 

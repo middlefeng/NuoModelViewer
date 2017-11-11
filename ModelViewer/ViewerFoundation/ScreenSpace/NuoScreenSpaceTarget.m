@@ -16,6 +16,7 @@
     id<MTLTexture> _positionBufferSample;
     id<MTLTexture> _normalBufferSample;
     id<MTLTexture> _ambientBufferSample;
+    id<MTLTexture> _shadowOverlayBufferSample;
 }
 
 
@@ -63,10 +64,27 @@
         _ambientBuffer = [self.device newTextureWithDescriptor:texDesc];
     }
     
+    MTLTextureDescriptor *texDescR = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatR8Unorm
+                                                                                        width:[self drawableSize].width
+                                                                                       height:[self drawableSize].height
+                                                                                    mipmapped:NO];
+    texDescR.sampleCount = 1;
+    texDescR.textureType = MTLTextureType2D;
+    texDescR.resourceOptions = MTLResourceStorageModePrivate;
+    texDescR.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
+    if ([_shadowOverlayBuffer width] != [self drawableSize].width ||
+        [_shadowOverlayBuffer height] != [self drawableSize].height)
+    {
+        _shadowOverlayBuffer = [self.device newTextureWithDescriptor:texDescR];
+    }
+    
     if (self.sampleCount > 1)
     {
         texDesc.sampleCount = self.sampleCount;
         texDesc.textureType = MTLTextureType2DMultisample;
+        
+        texDescR.sampleCount = self.sampleCount;
+        texDescR.textureType = MTLTextureType2DMultisample;
         
         if ([_normalBufferSample width] != [self drawableSize].width ||
             [_normalBufferSample height] != [self drawableSize].height)
@@ -84,6 +102,12 @@
             [_ambientBufferSample height] != [self drawableSize].height)
         {
             _ambientBufferSample = [self.device newTextureWithDescriptor:texDesc];
+        }
+        
+        if ([_shadowOverlayBufferSample width] != [self drawableSize].width ||
+            [_shadowOverlayBufferSample height] != [self drawableSize].height)
+        {
+            _shadowOverlayBufferSample = [self.device newTextureWithDescriptor:texDescR];
         }
     }
     
@@ -111,11 +135,17 @@
     passDescriptor.colorAttachments[2].loadAction = MTLLoadActionClear;
     passDescriptor.colorAttachments[2].storeAction = storeAction;
     
+    passDescriptor.colorAttachments[3].texture = (self.sampleCount == 1) ? _shadowOverlayBuffer : _shadowOverlayBufferSample;
+    passDescriptor.colorAttachments[3].clearColor = self.clearColor;
+    passDescriptor.colorAttachments[3].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[3].storeAction = storeAction;
+    
     if (self.sampleCount > 1)
     {
         passDescriptor.colorAttachments[0].resolveTexture = _positionBuffer;
         passDescriptor.colorAttachments[1].resolveTexture = _normalBuffer;
         passDescriptor.colorAttachments[2].resolveTexture = _ambientBuffer;
+        passDescriptor.colorAttachments[3].resolveTexture = _shadowOverlayBuffer;
     }
     
     passDescriptor.depthAttachment.texture = self.depthTexture;

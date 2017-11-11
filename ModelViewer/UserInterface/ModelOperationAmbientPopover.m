@@ -185,7 +185,7 @@
     newParams.ambientOcclusionParams.sampleRadius = _sliderRadius.floatValue;
     newParams.ambientOcclusionParams.scale = _sliderScale.floatValue;
     
-    vector_float4 clearColor = { 0.95, 0.95, 0.95, 1 };
+    vector_float4 clearColor = { 0.0, 0.0, 0.0, 0.0 };
     newParams.clearColor = clearColor;
     
     [_sourcePanel setDeferredRenderParameters:newParams];
