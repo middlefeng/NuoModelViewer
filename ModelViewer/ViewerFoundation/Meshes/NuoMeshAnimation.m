@@ -37,9 +37,9 @@
         for (size_t i = 0; i < size; ++i)
         {
             NSString* name = [lua getArrayItemAsString:i + 1 fromTable:-1];
-            NuoMesh* item = [self findMeshIn:mesh byName:name];
-            if (item)
-                [((NSMutableArray*)_mesh) addObject:item];
+            NSArray<NuoMesh*>* items = [self findMeshIn:mesh byName:name];
+            if (items.count > 0)
+                [((NSMutableArray*)_mesh) addObjectsFromArray:items];
         }
     }
     [lua removeField];
@@ -67,15 +67,17 @@
 
 
 
-- (NuoMesh*)findMeshIn:(NSArray<NuoMesh*>*)mesh byName:(NSString*)name
+- (NSArray<NuoMesh*>*)findMeshIn:(NSArray<NuoMesh*>*)mesh byName:(NSString*)name
 {
+    NSMutableArray* result = [NSMutableArray new];
+    
     for (NuoMesh* item in mesh)
     {
         if ([item.modelName isEqualToString:name])
-            return item;
+            [result addObject:item];
     }
     
-    return nil;
+    return result;
 }
 
 
