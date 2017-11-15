@@ -14,6 +14,8 @@
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
+- (void)makePipelineAndSampler;
 - (void)appendTexture:(id<MTLTexture>)texture;
+- (void)accumulateTexture:(id<MTLTexture>)texture withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
 
 @end

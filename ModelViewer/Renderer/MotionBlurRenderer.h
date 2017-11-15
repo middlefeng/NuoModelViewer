@@ -12,6 +12,8 @@
 
 @interface MotionBlurRenderer : NuoRenderPipelinePass
 
+- (instancetype)initWithDevice:(id<MTLDevice>)device;
+
 - (void)setSourceTexture:(id<MTLTexture>)sourceTexture;
 - (id<MTLTexture>)sourceTexture;
 
