@@ -447,7 +447,7 @@ MouseDragMode;
     // motion blur renderer
     //
     
-    if (_modelPanel.motionBlurRecordStatus != kMotionBlurRecord_Stop)
+    if (_modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Start)
     {
         [renders addObject:_motionBlurRenderer];
         
@@ -462,7 +462,7 @@ MouseDragMode;
         
         lastTarget = motionBlurTarget;
     }
-    else
+    else if (_modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Stop)
     {
         [_motionBlurRenderer resetResources];
     }
@@ -485,6 +485,8 @@ MouseDragMode;
         lastTarget = nil;
     }
     
+    // the last target is framebuffer
+    //
     lastTarget.manageTargetTexture = NO;
 
     [_lightPanel setHidden:!_modelPanel.showLightSettings];
@@ -943,12 +945,16 @@ MouseDragMode;
              CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
                                         _modelRender.renderTarget.drawableSize.width);
              
+             NSArray* renders = (_modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Start) ?
+                                    @[_modelRender, _motionBlurRenderer] :
+                                    @[_modelRender];
+             
              NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:device withTarget:previewSize
                                                                           withClearColor:[NSColor colorWithRed:0.0
                                                                                                          green:0.0
                                                                                                           blue:0.0
                                                                                                          alpha:0.0]
-                                                                          withScene:@[_modelRender]];
+                                                                          withScene:renders];
              NSString* path = savePanel.URL.path;
              
              [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
