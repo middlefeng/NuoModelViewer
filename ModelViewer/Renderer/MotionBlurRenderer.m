@@ -25,14 +25,14 @@
                      withPixelFormat:MTLPixelFormatBGRA8Unorm
                      withSampleCount:1])
     {
-        [self makeResources];
+        [self resetResources];
     }
     
     return self;
 }
 
 
-- (void)makeResources
+- (void)resetResources
 {
     _averageMesh = [[NuoTextureAverageMesh alloc] initWithDevice:self.device];
     [_averageMesh makePipelineAndSampler];

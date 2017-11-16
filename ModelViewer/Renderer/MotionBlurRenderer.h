@@ -16,5 +16,6 @@
 
 - (void)setSourceTexture:(id<MTLTexture>)sourceTexture;
 - (id<MTLTexture>)sourceTexture;
+- (void)resetResources;
 
 @end

@@ -40,7 +40,7 @@
  *  Note that the pipeline does the sequential rendering for all the passes but does not
  *  own the passes (i.e. weak). The passes are constructed and owned by application
  */
-@property (nonatomic, weak) NSArray<NuoRenderPass*>* renderPasses;
+@property (nonatomic) NSArray<NuoRenderPass*>* renderPasses;
 
 @property (nonatomic, weak) id<NuoRenderPipelineDelegate> renderPipelineDelegate;
 

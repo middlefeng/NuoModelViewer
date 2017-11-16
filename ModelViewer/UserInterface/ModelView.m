@@ -17,6 +17,7 @@
 #import "ModelViewerRenderer.h"
 #import "ModelDissectRenderer.h"
 #import "NotationRenderer.h"
+#import "MotionBlurRenderer.h"
 
 #import "NuoLua.h"
 #import "NuoMeshOptions.h"
@@ -55,8 +56,10 @@ MouseDragMode;
     NuoLua* _lua;
     ModelRenderer* _modelRender;
     ModelDissectRenderer* _modelDissectRenderer;
-    NotationRenderer* _notationRender;
-    NSArray<NuoRenderPass*>* _renders;
+    NotationRenderer* _notationRenderer;
+    MotionBlurRenderer* _motionBlurRenderer;
+    
+    //NSArray<NuoRenderPass*>* _renders;
     
     NSMutableArray<NuoMeshAnimation*>* _animations;
     
@@ -305,11 +308,11 @@ MouseDragMode;
 
 - (void)lightOptionUpdate:(LightOperationPanel*)panel;
 {
-    _notationRender.density = [panel lightDensity];
-    _notationRender.spacular = [panel lightSpacular];
-    _notationRender.shadowSoften = [panel shadowSoften];
-    _notationRender.shadowOccluderRadius = [panel shadowOccluderRadius];
-    _notationRender.shadowBias = [panel shadowBias];
+    _notationRenderer.density = [panel lightDensity];
+    _notationRenderer.spacular = [panel lightSpacular];
+    _notationRenderer.shadowSoften = [panel shadowSoften];
+    _notationRenderer.shadowOccluderRadius = [panel shadowOccluderRadius];
+    _notationRenderer.shadowBias = [panel shadowBias];
     [self render];
 }
 
@@ -365,8 +368,9 @@ MouseDragMode;
     _modelDissectRenderer = [[ModelDissectRenderer alloc] initWithDevice:self.metalLayer.device];
     _modelDissectRenderer.paramsProvider = _modelRender;
     _modelDissectRenderer.splitViewProportion = 0.5;
-    _notationRender = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
-    _notationRender.notationWidthCap = [self operationPanelLocation].size.width + 30;
+    _notationRenderer = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
+    _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithDevice:self.metalLayer.device];
+    _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
     // sync the model renderer with the initial settings in the model panel
     //
@@ -376,7 +380,7 @@ MouseDragMode;
     // sync the light panel with the current initial light vector in the
     // notation renderer
     //
-    [_lightPanel updateControls:_notationRender.selectedLightSource];
+    [_lightPanel updateControls:_notationRenderer.selectedLightSource];
     
     [self setupPipelineSettings];
     [self registerForDraggedTypes:@[@"public.data"]];
@@ -387,7 +391,7 @@ MouseDragMode;
 {
     const CGFloat margin = 10;
     
-    CGRect area = [_notationRender notationArea];
+    CGRect area = [_notationRenderer notationArea];
     NSRect result = area;
     CGFloat width = area.size.width;
     width = width * 0.8;
@@ -402,35 +406,73 @@ MouseDragMode;
 
 - (void)setupPipelineSettings
 {
+    NSMutableArray* renders = [NSMutableArray new];
+    
+    NuoRenderPassTarget* lastTarget = nil;
+    
+    // model renderer
+    //
+    
+    [renders addObject:_modelRender];
+    
+    NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
+    modelRenderTarget.device = self.metalLayer.device;
+    modelRenderTarget.sampleCount = 1;
+    modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+    modelRenderTarget.manageTargetTexture = YES;
+    modelRenderTarget.name = @"Model";
+    
+    [_modelRender setRenderTarget:modelRenderTarget];
+    lastTarget = modelRenderTarget;
+    
+    // dissect renderer
+    //
+    
+    if (_modelPanel.meshMode != kMeshMode_Normal)
+    {
+        [renders addObject:_modelDissectRenderer];
+        _modelDissectRenderer.dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
+        
+        NuoRenderPassTarget* modelDissectTarget = [NuoRenderPassTarget new];
+        modelDissectTarget.device = self.metalLayer.device;
+        modelDissectTarget.sampleCount = kSampleCount;
+        modelDissectTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+        modelDissectTarget.manageTargetTexture = YES;
+        modelDissectTarget.name = @"Model-Dissect";
+        
+        [_modelDissectRenderer setRenderTarget:modelDissectTarget];
+        lastTarget = modelDissectTarget;
+    }
+    
+    // motion blur renderer
+    //
+    
+    if (_modelPanel.motionBlurRecordStatus != kMotionBlurRecord_Stop)
+    {
+        [renders addObject:_motionBlurRenderer];
+        
+        NuoRenderPassTarget* motionBlurTarget = [NuoRenderPassTarget new];
+        motionBlurTarget.device = self.metalLayer.device;
+        motionBlurTarget.sampleCount = 1;
+        motionBlurTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
+        motionBlurTarget.manageTargetTexture = YES;
+        motionBlurTarget.name = @"Motion Blur";
+        
+        [_motionBlurRenderer setRenderTarget:motionBlurTarget];
+        
+        lastTarget = motionBlurTarget;
+    }
+    else
+    {
+        [_motionBlurRenderer resetResources];
+    }
+    
+    // notation renderer
+    //
+    
     if (_modelPanel.showLightSettings)
     {
-        if (_modelPanel.meshMode == kMeshMode_Normal)
-        {
-            _renders = [[NSArray alloc] initWithObjects:_modelRender, _notationRender, nil];
-        }
-        else
-        {
-            _renders = [[NSArray alloc] initWithObjects:_modelRender, _modelDissectRenderer, _notationRender, nil];
-            _modelDissectRenderer.dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
-            
-            NuoRenderPassTarget* modelDissectTarget = [NuoRenderPassTarget new];
-            modelDissectTarget.device = self.metalLayer.device;
-            modelDissectTarget.sampleCount = kSampleCount;
-            modelDissectTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
-            modelDissectTarget.manageTargetTexture = YES;
-            modelDissectTarget.name = @"Model-Dissect";
-            
-            [_modelDissectRenderer setRenderTarget:modelDissectTarget];
-        }
-        
-        NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
-        modelRenderTarget.device = self.metalLayer.device;
-        modelRenderTarget.sampleCount = 1;
-        modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
-        modelRenderTarget.manageTargetTexture = YES;
-        modelRenderTarget.name = @"Model";
-        
-        [_modelRender setRenderTarget:modelRenderTarget];
+        [renders addObject:_notationRenderer];
         
         NuoRenderPassTarget* notationRenderTarget = [NuoRenderPassTarget new];
         notationRenderTarget.device = self.metalLayer.device;
@@ -439,42 +481,15 @@ MouseDragMode;
         notationRenderTarget.manageTargetTexture = NO;
         notationRenderTarget.name = @"Notation";
         
-        [_notationRender setRenderTarget:notationRenderTarget];
+        [_notationRenderer setRenderTarget:notationRenderTarget];
+        lastTarget = nil;
     }
-    else
-    {
-        if (_modelPanel.meshMode == kMeshMode_Normal)
-        {
-            _renders = [[NSArray alloc] initWithObjects:_modelRender, nil];
-        }
-        else
-        {
-            _renders = [[NSArray alloc] initWithObjects:_modelRender, _modelDissectRenderer, nil];
-            _modelDissectRenderer.dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
-            
-            NuoRenderPassTarget* modelDissectTarget = [NuoRenderPassTarget new];
-            modelDissectTarget.device = self.metalLayer.device;
-            modelDissectTarget.sampleCount = kSampleCount;
-            modelDissectTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
-            modelDissectTarget.manageTargetTexture = NO;
-            modelDissectTarget.name = @"Model-Dissect";
-            
-            [_modelDissectRenderer setRenderTarget:modelDissectTarget];
-        }
-        
-        NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
-        modelRenderTarget.device = self.metalLayer.device;
-        modelRenderTarget.sampleCount = 1;
-        modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
-        modelRenderTarget.manageTargetTexture = (_modelPanel.meshMode != kMeshMode_Normal);
-        modelRenderTarget.name = @"Model";
-        
-        [_modelRender setRenderTarget:modelRenderTarget];
-    }
+    
+    lastTarget.manageTargetTexture = NO;
 
     [_lightPanel setHidden:!_modelPanel.showLightSettings];
     
-    [self setRenderPasses:_renders];
+    [self setRenderPasses:renders];
     [self viewResizing];
 }
 
@@ -526,13 +541,13 @@ MouseDragMode;
         NSPoint location = event.locationInWindow;
         location = [self convertPoint:location fromView:nil];
         
-        CGRect lightSettingArea = _notationRender.notationArea;
+        CGRect lightSettingArea = _notationRenderer.notationArea;
         _trackingLighting = CGRectContainsPoint(lightSettingArea, location);
         
         if (_trackingLighting)
         {
-            [_notationRender selectCurrentLightVector:location];
-            NuoLightSource* source = _notationRender.selectedLightSource;
+            [_notationRenderer selectCurrentLightVector:location];
+            NuoLightSource* source = _notationRenderer.selectedLightSource;
             
             [_lightPanel updateControls:source];
         }
@@ -606,9 +621,9 @@ MouseDragMode;
     }
     else if (_trackingLighting)
     {
-        NuoLightSource* lightSource = _notationRender.selectedLightSource;
-        [_notationRender setRotateX:lightSource.lightingRotationX + deltaX];
-        [_notationRender setRotateY:lightSource.lightingRotationY + deltaY];
+        NuoLightSource* lightSource = _notationRenderer.selectedLightSource;
+        [_notationRenderer setRotateX:lightSource.lightingRotationX + deltaX];
+        [_notationRenderer setRotateY:lightSource.lightingRotationY + deltaY];
     }
     else
     {
@@ -739,7 +754,7 @@ MouseDragMode;
 
 - (void)render
 {
-    _modelRender.lights = _notationRender.lightSources;
+    _modelRender.lights = _notationRenderer.lightSources;
     
     if (!_modelRender.viewTransformReset)
     {
@@ -783,8 +798,8 @@ MouseDragMode;
     [window setContentSize:drawableSize];
     
     [_modelRender importScene:lua];
-    [_notationRender importScene:lua];
-    [_lightPanel updateControls:_notationRender.selectedLightSource];
+    [_notationRenderer importScene:lua];
+    [_lightPanel updateControls:_notationRenderer.selectedLightSource];
     
     [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
     [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];
