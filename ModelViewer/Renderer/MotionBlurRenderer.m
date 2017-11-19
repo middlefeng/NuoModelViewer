@@ -59,15 +59,8 @@
             withInFlightIndex:(unsigned int)inFlight
 {
     self.renderTarget.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 0.0);
-    [_averageMesh appendTexture:_latestSource];
-    
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
-    renderPass.label = @"Motion Blur Pass";
-    
-    [_averageMesh drawMesh:renderPass indexBuffer:inFlight];
-    [self releaseDefaultEncoder];
-    
-    [_averageMesh accumulateTexture:self.renderTarget.targetTexture withCommandBuffer:commandBuffer];
+    [_averageMesh accumulateTexture:_latestSource onTarget:self.renderTarget
+                       withInFlight:inFlight withCommandBuffer:commandBuffer];
 }
     
 

@@ -10,12 +10,16 @@
 #import <Metal/Metal.h>
 
 
+@class NuoRenderPassTarget;
+
+
 @interface NuoTextureAverageMesh : NuoScreenSpaceMesh
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
 - (void)makePipelineAndSampler;
-- (void)appendTexture:(id<MTLTexture>)texture;
-- (void)accumulateTexture:(id<MTLTexture>)texture withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
+
+- (void)accumulateTexture:(id<MTLTexture>)texture onTarget:(NuoRenderPassTarget*)target
+             withInFlight:(NSUInteger)inFlight withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
 
 @end

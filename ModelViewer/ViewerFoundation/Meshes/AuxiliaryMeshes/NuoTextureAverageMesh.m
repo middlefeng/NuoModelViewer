@@ -73,7 +73,29 @@
 }
 
 
-- (void)accumulateTexture:(id<MTLTexture>)texture withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+
+- (void)accumulateTexture:(id<MTLTexture>)texture
+                 onTarget:(NuoRenderPassTarget*)target
+             withInFlight:(NSUInteger)inFlight
+        withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+{
+    [self appendTexture:texture];
+    
+    // accumulate the texture onto the target
+    
+    id<MTLRenderCommandEncoder> renderPass = [target retainRenderPassEndcoder:commandBuffer];
+    renderPass.label = @"Motion Blur Pass";
+    
+    [self drawMesh:renderPass indexBuffer:inFlight];
+    [target releaseRenderPassEndcoder];
+    
+    // copy pixels from the render target to the accumulation texture
+    
+    [self setAccumulateTexture:target.targetTexture withCommandBuffer:commandBuffer];
+}
+
+
+- (void)setAccumulateTexture:(id<MTLTexture>)texture withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
     [_texturesAccumulated setDrawableSize:CGSizeMake(texture.width, texture.height)];
     
