@@ -59,8 +59,6 @@ MouseDragMode;
     NotationRenderer* _notationRenderer;
     MotionBlurRenderer* _motionBlurRenderer;
     
-    //NSArray<NuoRenderPass*>* _renders;
-    
     NSMutableArray<NuoMeshAnimation*>* _animations;
     
     FrameRateView* _frameRateView;
