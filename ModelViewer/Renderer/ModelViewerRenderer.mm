@@ -817,11 +817,15 @@
     [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
     
     for (NuoMesh* mesh in _meshes)
-        [mesh drawMesh:renderPass indexBuffer:inFlight];
+    {
+        if (mesh.enabled)
+            [mesh drawMesh:renderPass indexBuffer:inFlight];
+    }
     
     [_immediateTarget releaseRenderPassEndcoder];
     
-    if (_backdropMesh)
+    BOOL drawBackdrop = _backdropMesh && _backdropMesh.enabled;
+    if (drawBackdrop)
     {
         id<MTLRenderCommandEncoder> deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
         [_backdropMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
@@ -831,7 +835,7 @@
     [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
     [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
-    if (_backdropMesh)
+    if (drawBackdrop)
     {
         [self releaseDefaultEncoder];
     }
