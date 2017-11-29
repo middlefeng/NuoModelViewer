@@ -935,34 +935,34 @@ MouseDragMode;
     [savePanel setAllowedFileTypes:@[@"png"]];
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
-     {
-         if (result == NSFileHandlingPanelOKButton)
          {
-             __block __weak id<MTLDevice> device = self.metalLayer.device;
-             
-             CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
-                                        _modelRender.renderTarget.drawableSize.width);
-             
-             NSArray* renders = (_modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Start) ?
-                                    @[_modelRender, _motionBlurRenderer] :
-                                    @[_modelRender];
-             
-             NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:device withTarget:previewSize
-                                                                          withClearColor:[NSColor colorWithRed:0.0
-                                                                                                         green:0.0
-                                                                                                          blue:0.0
-                                                                                                         alpha:0.0]
-                                                                          withScene:renders];
-             NSString* path = savePanel.URL.path;
-             
-             [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
-                                withCompletion:^(id<MTLTexture> result)
-                                    {
-                                        NuoTextureBase* textureBase = [NuoTextureBase getInstance:device];
-                                        [textureBase saveTexture:result toImage:path];
-                                    }];
-         }
-     }];
+             if (result == NSFileHandlingPanelOKButton)
+             {
+                 __block __weak id<MTLDevice> device = self.metalLayer.device;
+                 
+                 CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
+                                            _modelRender.renderTarget.drawableSize.width);
+                 
+                 NSArray* renders = (_modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Start) ?
+                                        @[_modelRender, _motionBlurRenderer] :
+                                        @[_modelRender];
+                 
+                 NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:device withTarget:previewSize
+                                                                              withClearColor:[NSColor colorWithRed:0.0
+                                                                                                             green:0.0
+                                                                                                              blue:0.0
+                                                                                                             alpha:0.0]
+                                                                              withScene:renders];
+                 NSString* path = savePanel.URL.path;
+                 
+                 [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
+                                    withCompletion:^(id<MTLTexture> result)
+                                        {
+                                            NuoTextureBase* textureBase = [NuoTextureBase getInstance:device];
+                                            [textureBase saveTexture:result toImage:path];
+                                        }];
+             }
+         }];
 }
 
 
