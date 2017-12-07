@@ -10,6 +10,14 @@
 
 
 
+typedef enum
+{
+    kBlend_Alpha,
+    kBlend_Accumulate,
+    kBlend_None
+}
+ScreenSpaceBlendMode;
+
 
 @interface NuoScreenSpaceMesh : NuoMesh
 
@@ -23,7 +31,7 @@
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
            withFragementShader:(NSString*)shaderName
                withSampleCount:(NSUInteger)sampleCount
-                     withAlpha:(BOOL)alpha;
+                 withBlendMode:(ScreenSpaceBlendMode)mode;
 
 
 @end

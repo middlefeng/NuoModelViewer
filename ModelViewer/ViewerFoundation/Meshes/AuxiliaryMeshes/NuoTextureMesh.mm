@@ -44,7 +44,7 @@ struct TextureMixFragment
                                                @"fragment_texutre";
      
     [self makePipelineAndSampler:pixelFormat withFragementShader:shaderName
-                 withSampleCount:sampleCount withAlpha:NO];
+                 withSampleCount:sampleCount withBlendMode:kBlend_None];
 }
 
 

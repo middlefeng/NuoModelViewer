@@ -20,6 +20,16 @@
 
 
 
+typedef enum
+{
+    kMotionBlurRecord_Start,
+    kMotionBlurRecord_Stop,
+    kMotionBlurRecord_Pause
+}
+MotionBlurRecordStatus;
+
+
+
 
 @interface ModelOperationPanel : NuoRoundedView
 
@@ -46,6 +56,8 @@
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 
 @property (nonatomic, assign) float animationProgress;
+
+@property (nonatomic, assign) MotionBlurRecordStatus motionBlurRecordStatus;
 
 
 - (void)addSubviews;

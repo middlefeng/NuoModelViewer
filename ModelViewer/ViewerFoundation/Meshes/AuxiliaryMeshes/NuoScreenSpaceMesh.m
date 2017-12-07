@@ -42,7 +42,7 @@
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
            withFragementShader:(NSString*)shaderName
                withSampleCount:(NSUInteger)sampleCount
-                     withAlpha:(BOOL)alpha
+                 withBlendMode:(ScreenSpaceBlendMode)mode
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
@@ -52,14 +52,23 @@
     pipelineDescriptor.sampleCount = sampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = pixelFormat;
     
-    if (alpha)
+    if (mode != kBlend_None)
     {
         pipelineDescriptor.colorAttachments[0].blendingEnabled = YES;
         pipelineDescriptor.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
         pipelineDescriptor.colorAttachments[0].alphaBlendOperation = MTLBlendOperationAdd;
         pipelineDescriptor.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorOne;    // the shader returns pre-multiplied color
-        pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
-        pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+        
+        if (mode == kBlend_Alpha)
+        {
+            pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+            pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+        }
+        else
+        {
+            pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOne;
+            pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+        }
     }
     
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;

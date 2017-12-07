@@ -40,6 +40,9 @@
 
 @property (nonatomic, strong) NSSlider* animationSlider;
 
+@property (nonatomic, strong) NSButton* motionBlurRecord;
+@property (nonatomic, strong) NSButton* motionBlurPause;
+
 @end
 
 
@@ -75,6 +78,8 @@
         _fieldOfViewRadian = (2 * M_PI) / 8;
         _showLightSettings = NO;
         _ambientDensity = 0.28;
+        
+        _motionBlurRecordStatus = kMotionBlurRecord_Stop;
     }
     
     return self;
@@ -100,7 +105,7 @@
     
     CGRect docViewFrame = CGRectMake(0, 0, 0, 0);
     docViewFrame.size = rootViewFrame.size;
-    docViewFrame.size.height += 165.0;
+    docViewFrame.size.height += 200.0;
     
     rootScroll.frame = rootViewFrame;
     scrollDocumentView.frame = docViewFrame;
@@ -402,6 +407,55 @@
     [scrollDocumentView addSubview:animationProgressSlider];
     _animationSlider = animationProgressSlider;
     
+    rowCoord += 5.4;
+    
+    // motion blur recording
+    
+    NSTextField* labelMotionBlurLabel = [NSTextField new];
+    [labelMotionBlurLabel setEditable:NO];
+    [labelMotionBlurLabel setSelectable:NO];
+    [labelMotionBlurLabel setBordered:NO];
+    [labelMotionBlurLabel setStringValue:@"Motion Blur:"];
+    [labelMotionBlurLabel setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
+    [scrollDocumentView addSubview:labelMotionBlurLabel];
+    
+    NSRect recordRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    recordRect.origin.x += 120;
+    recordRect.origin.y -=10;
+    recordRect.size.width = 40;
+    recordRect.size.height = 35;
+    
+    NSButton* recordButton = [[NSButton alloc] init];
+    [recordButton setTitle:@""];
+    [recordButton setFrame:recordRect];
+    [recordButton setBezelStyle:NSRoundedBezelStyle];
+    [recordButton setButtonType:NSToggleButton];
+    [recordButton setControlSize:NSControlSizeSmall];
+    [recordButton setTarget:self];
+    [recordButton setAction:@selector(motionBlurUpdate:)];
+    [recordButton setImage:[NSImage imageNamed:@"MotionBlurRecord"]];
+    [recordButton setAlternateImage:[NSImage imageNamed:@"MotionBlurStop"]];
+    [recordButton setState:NSOffState];
+    [recordButton setAllowsMixedState:NO];
+    [scrollDocumentView addSubview:recordButton];
+    _motionBlurRecord = recordButton;
+    
+    recordRect.origin.x += 35;
+    
+    NSButton* pauseButton = [[NSButton alloc] init];
+    [pauseButton setTitle:@""];
+    [pauseButton setFrame:recordRect];
+    [pauseButton setBezelStyle:NSRoundedBezelStyle];
+    [pauseButton setButtonType:NSToggleButton];
+    [pauseButton setControlSize:NSControlSizeSmall];
+    [pauseButton setTarget:self];
+    [pauseButton setAction:@selector(motionBlurUpdate:)];
+    [pauseButton setImage:[NSImage imageNamed:@"MotionBlurPause"]];
+    [pauseButton setAlternateImage:[NSImage imageNamed:@"MotionBlurPaused"]];
+    [recordButton setState:NSOffState];
+    [scrollDocumentView addSubview:pauseButton];
+    _motionBlurPause = pauseButton;
+    
     [self updateControls];
 }
 
@@ -542,6 +596,21 @@
     
     [_optionUpdateDelegate modelOptionUpdate:self];
 }
+
+
+- (void)motionBlurUpdate:(id)sender
+{
+    [self updateControls];
+    
+    if (_motionBlurRecord.state == NSOnState && _motionBlurPause.state == NSOffState)
+        _motionBlurRecordStatus = kMotionBlurRecord_Start;
+    else if (_motionBlurRecord.state == NSOnState)
+        _motionBlurRecordStatus = kMotionBlurRecord_Pause;
+    else
+        _motionBlurRecordStatus = kMotionBlurRecord_Stop;
+    
+    [_optionUpdateDelegate modelOptionUpdate:self];
+}
                                                  
 
 
@@ -555,6 +624,16 @@
     [_combine setState:_meshOptions.combineShapes ? NSOnState : NSOffState];
     [_fieldOfView setFloatValue:_fieldOfViewRadian];
     [_ambientDensitySlider setFloatValue:_ambientDensity];
+    
+    if ([_motionBlurRecord state] == NSOnState)
+    {
+        [_motionBlurPause setEnabled:YES];
+    }
+    else
+    {
+        [_motionBlurPause setEnabled:NO];
+        [_motionBlurPause setState:NSOffState];
+    }
 }
 
 
