@@ -209,6 +209,12 @@
             [_boardMeshes removeObject:boardMesh];
         }
         
+        if (mesh == _mainModelMesh)
+        {
+            _mainModelMesh = nil;
+            _modelLoader = nil;
+        }
+        
         if (_meshes.count > 0 && mesh == _selectedMesh)
             _selectedMesh = _meshes[0];
         else
