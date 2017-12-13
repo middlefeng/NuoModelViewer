@@ -2,6 +2,7 @@
 #import "ModelView.h"
 
 #import "NuoUniforms.h"
+#import "NuoTypes.h"
 #import "NuoMeshSceneRenderPass.h"
 
 
@@ -30,9 +31,6 @@ typedef enum
     kTransformMode_View,
 }
 TransformMode;
-
-
-typedef void (^ProgressFunction)(float);
 
 
 
@@ -72,7 +70,7 @@ typedef void (^ProgressFunction)(float);
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
 - (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
-                                    withProgress:(ProgressFunction)progress;
+                                    withProgress:(NuoProgressFunction)progress;
 - (NuoMeshCompound*)mainModelMesh;
 
 - (NSString*)exportSceneAsString:(CGSize)canvasSize;
@@ -80,7 +78,7 @@ typedef void (^ProgressFunction)(float);
 
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
        withCommandQueue:(id<MTLCommandQueue>)commandQueue
-           withProgress:(ProgressFunction)progress;
+           withProgress:(NuoProgressFunction)progress;
 
 - (NuoBoardMesh*)createBoard:(CGSize)size;
 - (void)resetViewTransform;

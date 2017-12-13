@@ -55,4 +55,36 @@
 }
 
 
+
+- (void)performInBackground:(NuoProgressIndicatedFunction)backgroundFunc
+                 withWindow:(NSWindow*)rootWindow
+             withCompletion:(NuoSimpleFunction)completion
+{
+    __weak NuoProgressSheetPanel* panel = self;
+    __weak NSWindow* window = rootWindow;
+    
+    [rootWindow beginSheet:panel completionHandler:^(NSModalResponse returnCode) {}];
+    
+    NuoProgressFunction progressFunc = ^(float progress)
+    {
+        dispatch_async(dispatch_get_main_queue(), ^
+                       { [panel setProgress:progress * 100.0]; });
+    };
+    
+    NuoSimpleFunction backgroundBlock = ^()
+    {
+        backgroundFunc(progressFunc);
+        
+        dispatch_sync(dispatch_get_main_queue(), ^
+                      {
+                          completion();
+                          [window endSheet:panel];
+                      });
+    };
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), backgroundBlock);
+}
+
+
+
 @end

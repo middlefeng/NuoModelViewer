@@ -16,6 +16,11 @@ extern "C" {
 
 extern const unsigned int kSampleCount;
 extern const unsigned int kInFlightBufferCount;
+
+
+typedef void (^NuoProgressFunction)(float);
+typedef void (^NuoProgressIndicatedFunction)(NuoProgressFunction);
+typedef void (^NuoSimpleFunction)(void);
     
 #if __cplusplus
 }

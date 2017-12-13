@@ -52,11 +52,6 @@ MouseDragMode;
 
 
 
-typedef void (^ProgressIndicatedFunction)(ProgressFunction);
-typedef void (^SimpleFunction)(void);
-
-
-
 
 @implementation ModelView
 {
@@ -179,35 +174,6 @@ typedef void (^SimpleFunction)(void);
 }
 
 
-- (void)performInBackground:(ProgressIndicatedFunction)backgroundFunc
-             withCompletion:(SimpleFunction)completion
-{
-    NuoProgressSheetPanel* panel = [NuoProgressSheetPanel new];
-    __weak NSWindow* window = self.window;
-    
-    [self.window beginSheet:panel completionHandler:^(NSModalResponse returnCode) {}];
-    
-    ProgressFunction progressFunc = ^(float progress)
-    {
-        dispatch_async(dispatch_get_main_queue(), ^
-                       { [panel setProgress:progress * 100.0]; });
-    };
-    
-    SimpleFunction backgroundBlock = ^()
-    {
-        backgroundFunc(progressFunc);
-        
-        dispatch_sync(dispatch_get_main_queue(), ^
-                      {
-                          completion();
-                          [window endSheet:panel];
-                      });
-    };
-    
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), backgroundBlock);
-}
-
-
 - (void)modelMeshInvalid
 {
     // clear all table and data structures that depends on the mesh
@@ -232,17 +198,23 @@ typedef void (^SimpleFunction)(void);
 {
     if (meshOptions)
     {
-        [self performInBackground:^(ProgressFunction progress)
-                        {
-                            [_modelRender setModelOptions:meshOptions
-                                         withCommandQueue:[self commandQueue]
-                                             withProgress:progress];
-                        }
-                   withCompletion:^
-                        {
-                            [self modelMeshInvalid];
-                            [self render];
-                        }];
+        __weak ModelView* selfWeak = self;
+        __weak ModelRenderer* render = _modelRender;
+        
+        NuoProgressSheetPanel* progressPanel = [NuoProgressSheetPanel new];
+        
+        [progressPanel performInBackground:^(NuoProgressFunction progress)
+                                    {
+                                        [render setModelOptions:meshOptions
+                                               withCommandQueue:[selfWeak commandQueue]
+                                                   withProgress:progress];
+                                    }
+                                withWindow:self.window
+                            withCompletion:^()
+                                    {
+                                        [selfWeak modelMeshInvalid];
+                                        [selfWeak render];
+                                    }];
     }
 }
 
@@ -812,17 +784,20 @@ typedef void (^SimpleFunction)(void);
 
 
 
-- (void)loadMesh:(NSString*)path withCompletion:(SimpleFunction)completion
+- (void)loadMesh:(NSString*)path withCompletion:(NuoSimpleFunction)completion
 {
     __weak ModelRenderer* modelRender = _modelRender;
     __weak ModelView* selfWeak = self;
     
-    [self performInBackground:^(ProgressFunction progressFunc)
-                        {
-                            [modelRender loadMesh:path withCommandQueue:[selfWeak commandQueue]
-                                     withProgress:progressFunc];
-                        }
-               withCompletion:completion];
+    NuoProgressSheetPanel* progressPanel = [NuoProgressSheetPanel new];
+    
+    [progressPanel performInBackground:^(NuoProgressFunction progressFunc)
+                                    {
+                                        [modelRender loadMesh:path withCommandQueue:[selfWeak commandQueue]
+                                                 withProgress:progressFunc];
+                                    }
+                            withWindow:self.window
+                        withCompletion:completion];
     
     [_removeObjectMenu setTarget:self];
     [_removeObjectMenu setAction:@selector(removeObject:)];
