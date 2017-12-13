@@ -797,7 +797,12 @@ MouseDragMode;
                                                  withProgress:progressFunc];
                                     }
                             withWindow:self.window
-                        withCompletion:completion];
+                        withCompletion:^
+                                    {
+                                        [selfWeak modelMeshInvalid];
+                                        completion();
+                                    }];
+    
     
     [_removeObjectMenu setTarget:self];
     [_removeObjectMenu setAction:@selector(removeObject:)];
