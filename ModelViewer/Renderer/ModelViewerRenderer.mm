@@ -114,7 +114,7 @@
 
 
 - (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
-                                    withProgress:(void(^)(float))progress
+                                    withProgress:(ProgressFunction)progress
 {
     _modelLoader = [NuoModelLoader new];
     [_modelLoader loadModel:path];
@@ -147,7 +147,7 @@
 }
 
 
-- (void)createMeshs:(id<MTLCommandQueue>)commandQueue withProgress:(void (^)(float))progress
+- (void)createMeshs:(id<MTLCommandQueue>)commandQueue withProgress:(ProgressFunction)progress
 {
     NuoMeshCompound* mesh = [_modelLoader createMeshsWithOptions:_modelOptions
                                                       withDevice:self.device
@@ -586,7 +586,7 @@
 
 - (void)setModelOptions:(NuoMeshOption *)modelOptions
        withCommandQueue:(id<MTLCommandQueue>)commandQueue
-           withProgress:(void(^)(float))progress
+           withProgress:(ProgressFunction)progress
 {
     _modelOptions = modelOptions;
     

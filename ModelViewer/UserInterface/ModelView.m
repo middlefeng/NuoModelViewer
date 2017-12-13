@@ -52,6 +52,11 @@ MouseDragMode;
 
 
 
+typedef void (^ProgressIndicatedFunction)(ProgressFunction);
+typedef void (^SimpleFunction)(void);
+
+
+
 
 @implementation ModelView
 {
@@ -174,6 +179,35 @@ MouseDragMode;
 }
 
 
+- (void)performInBackground:(ProgressIndicatedFunction)backgroundFunc
+             withCompletion:(SimpleFunction)completion
+{
+    NuoProgressSheetPanel* panel = [NuoProgressSheetPanel new];
+    __weak NSWindow* window = self.window;
+    
+    [self.window beginSheet:panel completionHandler:^(NSModalResponse returnCode) {}];
+    
+    ProgressFunction progressFunc = ^(float progress)
+    {
+        dispatch_async(dispatch_get_main_queue(), ^
+                       { [panel setProgress:progress * 100.0]; });
+    };
+    
+    SimpleFunction backgroundBlock = ^()
+    {
+        backgroundFunc(progressFunc);
+        
+        dispatch_sync(dispatch_get_main_queue(), ^
+                      {
+                          completion();
+                          [window endSheet:panel];
+                      });
+    };
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), backgroundBlock);
+}
+
+
 - (void)modelMeshInvalid
 {
     // clear all table and data structures that depends on the mesh
@@ -198,7 +232,7 @@ MouseDragMode;
 {
     if (meshOptions)
     {
-        [self performInBackground:^(void (^progress)(float))
+        [self performInBackground:^(ProgressFunction progress)
                         {
                             [_modelRender setModelOptions:meshOptions
                                          withCommandQueue:[self commandQueue]
@@ -777,42 +811,13 @@ MouseDragMode;
 }
 
 
-- (void)performInBackground:(void(^)(void(^)(float)))backgroundFunc
-             withCompletion:(void(^)(void))completion
-{
-    NuoProgressSheetPanel* panel = [NuoProgressSheetPanel new];
-    __weak NSWindow* window = self.window;
-    
-    [self.window beginSheet:panel completionHandler:^(NSModalResponse returnCode) {}];
-    
-    void (^progressFunc)(float) = ^(float progress)
-    {
-        dispatch_async(dispatch_get_main_queue(), ^
-                      { [panel setProgress:progress * 100.0]; });
-    };
-    
-    void (^backgroundBlock)(void) = ^
-    {
-        backgroundFunc(progressFunc);
-        
-        dispatch_sync(dispatch_get_main_queue(), ^
-                       {
-                           completion();
-                           [window endSheet:panel];
-                       });
-    };
-    
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), backgroundBlock);
-}
 
-
-
-- (void)loadMesh:(NSString*)path withCompletion:(void(^)(void))completion
+- (void)loadMesh:(NSString*)path withCompletion:(SimpleFunction)completion
 {
     __weak ModelRenderer* modelRender = _modelRender;
     __weak ModelView* selfWeak = self;
     
-    [self performInBackground:^(void (^progressFunc)(float))
+    [self performInBackground:^(ProgressFunction progressFunc)
                         {
                             [modelRender loadMesh:path withCommandQueue:[selfWeak commandQueue]
                                      withProgress:progressFunc];

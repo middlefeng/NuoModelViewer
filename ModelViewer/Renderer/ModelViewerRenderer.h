@@ -32,6 +32,9 @@ typedef enum
 TransformMode;
 
 
+typedef void (^ProgressFunction)(float);
+
+
 
 @interface ModelRenderer : NuoMeshSceneRenderPass <NuoMeshSceneParametersProvider> 
 
@@ -69,7 +72,7 @@ TransformMode;
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
 - (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
-                                    withProgress:(void(^)(float progress))progress;
+                                    withProgress:(ProgressFunction)progress;
 - (NuoMeshCompound*)mainModelMesh;
 
 - (NSString*)exportSceneAsString:(CGSize)canvasSize;
@@ -77,7 +80,7 @@ TransformMode;
 
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
        withCommandQueue:(id<MTLCommandQueue>)commandQueue
-           withProgress:(void(^)(float))progress;
+           withProgress:(ProgressFunction)progress;
 
 - (NuoBoardMesh*)createBoard:(CGSize)size;
 - (void)resetViewTransform;
