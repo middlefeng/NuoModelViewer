@@ -20,7 +20,11 @@
 {
     self = [super init];
     if (self)
+    {
         [self initControls];
+        [self setProgress:0.0];
+    }
+    
     return self;
 }
 
@@ -29,6 +33,7 @@
 {
     _indicator = [NSProgressIndicator new];
     _indicator.indeterminate = NO;
+    
     [self.contentView addSubview:_indicator];
     
     CGRect panelSize = NSMakeRect(0, 0, 340, 120);

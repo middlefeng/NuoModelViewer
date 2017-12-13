@@ -68,14 +68,16 @@ TransformMode;
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
-- (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue;
+- (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
+                                    withProgress:(void(^)(float progress))progress;
 - (NuoMeshCompound*)mainModelMesh;
 
 - (NSString*)exportSceneAsString:(CGSize)canvasSize;
 - (void)importScene:(NuoLua*)lua;
 
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
-       withCommandQueue:(id<MTLCommandQueue>)commandQueue;
+       withCommandQueue:(id<MTLCommandQueue>)commandQueue
+           withProgress:(void(^)(float))progress;
 
 - (NuoBoardMesh*)createBoard:(CGSize)size;
 - (void)resetViewTransform;

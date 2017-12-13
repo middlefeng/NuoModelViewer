@@ -200,16 +200,25 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
 
 
 - (NuoMeshCompound*)createMeshsWithOptions:(NuoMeshOption*)loadOption
-                                  withDevice:(id<MTLDevice>)device
-                            withCommandQueue:(id<MTLCommandQueue>)commandQueue
+                                withDevice:(id<MTLDevice>)device
+                          withCommandQueue:(id<MTLCommandQueue>)commandQueue
+                              withProgress:(void (^)(float))progress
 {
     typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
+    
+    static const float kLoadingPortionModelBuffer = 0.85;
+    static const float kLoadingPortionModelGPU = (1 - kLoadingPortionModelBuffer);
     
     PShapeMapByMaterial shapeMap = GetShapeVectorByMaterial(_shapes, _materials, loadOption.combineShapes);
     
     std::vector<PNuoModelBase> models;
     std::map<PNuoModelBase, NuoModelOption> modelOptions;
     std::vector<uint32> indices;
+    
+    unsigned long vertexNumTotal = 0;
+    unsigned long vertexNumLoaded = 0;
+    for (tinyobj::shape_t shape : _shapes)
+         vertexNumTotal += shape.mesh.indices.size();
     
     for (const auto& shapeItr : (*shapeMap))
     {
@@ -274,10 +283,16 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         
         models.push_back(modelBase);
         modelOptions.insert(std::make_pair(modelBase, options));
+        
+        vertexNumLoaded += shape.mesh.indices.size();
+        
+        if (progress)
+            progress(vertexNumLoaded / (float)vertexNumTotal * kLoadingPortionModelBuffer);
     }
     
     NSMutableArray<NuoMesh*>* result = [[NSMutableArray<NuoMesh*> alloc] init];
     
+    size_t index = 0;
     for (auto& model : models)
     {
         NuoBox boundingBox = model->GetBoundingBox();
@@ -295,6 +310,9 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         
         mesh.boundingBoxLocal = meshBounding;
         [result addObject:mesh];
+        
+        if (progress)
+            progress(++index / (float)models.size() * kLoadingPortionModelGPU + kLoadingPortionModelBuffer);
     }
     
     NuoMeshCompound* resultObj = [NuoMeshCompound new];
