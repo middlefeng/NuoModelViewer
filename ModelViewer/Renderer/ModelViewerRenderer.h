@@ -2,6 +2,7 @@
 #import "ModelView.h"
 
 #import "NuoUniforms.h"
+#import "NuoTypes.h"
 #import "NuoMeshSceneRenderPass.h"
 
 
@@ -68,14 +69,16 @@ TransformMode;
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
-- (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue;
+- (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
+                                    withProgress:(NuoProgressFunction)progress;
 - (NuoMeshCompound*)mainModelMesh;
 
 - (NSString*)exportSceneAsString:(CGSize)canvasSize;
 - (void)importScene:(NuoLua*)lua;
 
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
-       withCommandQueue:(id<MTLCommandQueue>)commandQueue;
+       withCommandQueue:(id<MTLCommandQueue>)commandQueue
+           withProgress:(NuoProgressFunction)progress;
 
 - (NuoBoardMesh*)createBoard:(CGSize)size;
 - (void)resetViewTransform;

@@ -23,6 +23,8 @@
 #import "NuoMeshOptions.h"
 #import "NuoLightSource.h"
 
+#import "NuoProgressSheetPanel.h"
+
 #import "NuoMeshCompound.h"
 #import "NuoCubeMesh.h"
 #import "NuoBackdropMesh.h"
@@ -196,11 +198,24 @@ MouseDragMode;
 {
     if (meshOptions)
     {
-        [_modelRender setModelOptions:meshOptions withCommandQueue:[self commandQueue]];
-        [self modelMeshInvalid];
+        __weak ModelView* selfWeak = self;
+        __weak ModelRenderer* render = _modelRender;
+        
+        NuoProgressSheetPanel* progressPanel = [NuoProgressSheetPanel new];
+        
+        [progressPanel performInBackground:^(NuoProgressFunction progress)
+                                    {
+                                        [render setModelOptions:meshOptions
+                                               withCommandQueue:[selfWeak commandQueue]
+                                                   withProgress:progress];
+                                    }
+                                withWindow:self.window
+                            withCompletion:^()
+                                    {
+                                        [selfWeak modelMeshInvalid];
+                                        [selfWeak render];
+                                    }];
     }
-    
-    [self render];
 }
 
 
@@ -730,6 +745,7 @@ MouseDragMode;
     if ([path hasSuffix:@".jpg"] || [path hasSuffix:@".png"])
     {
         [self loadBackDropWithPath:path];
+        [self render];
     }
     else
     {
@@ -744,9 +760,10 @@ MouseDragMode;
             path = [path stringByAppendingPathComponent:name];
         }
         
-        [self loadMesh:path];
+        __weak ModelView* selfWeak = self;
+        [self loadMesh:path withCompletion:^{ [selfWeak render]; }];
     }
-    [self render];
+
     return YES;
 }
 
@@ -767,10 +784,25 @@ MouseDragMode;
 
 
 
-- (void)loadMesh:(NSString*)path
+- (void)loadMesh:(NSString*)path withCompletion:(NuoSimpleFunction)completion
 {
-    [_modelRender loadMesh:path withCommandQueue:[self commandQueue]];
-    [self modelMeshInvalid];
+    __weak ModelRenderer* modelRender = _modelRender;
+    __weak ModelView* selfWeak = self;
+    
+    NuoProgressSheetPanel* progressPanel = [NuoProgressSheetPanel new];
+    
+    [progressPanel performInBackground:^(NuoProgressFunction progressFunc)
+                                    {
+                                        [modelRender loadMesh:path withCommandQueue:[selfWeak commandQueue]
+                                                 withProgress:progressFunc];
+                                    }
+                            withWindow:self.window
+                        withCompletion:^
+                                    {
+                                        [selfWeak modelMeshInvalid];
+                                        completion();
+                                    }];
+    
     
     [_removeObjectMenu setTarget:self];
     [_removeObjectMenu setAction:@selector(removeObject:)];
@@ -837,12 +869,16 @@ MouseDragMode;
                     NSString* ext = path.pathExtension;
                     
                     if ([ext isEqualToString:@"obj"])
-                        [self loadMesh:path];
+                    {
+                        __weak ModelView* selfWeak = self;
+                        [self loadMesh:path withCompletion:^{ [selfWeak render]; }];
+                    }
                     
                     if ([ext isEqualToString:@"scn"])
+                    {
                         [self loadScene:path];
-                    
-                    [self render];
+                        [self render];
+                    }
                 }
             }];
 }

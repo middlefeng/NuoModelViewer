@@ -114,11 +114,15 @@
 
 
 - (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
+                                     withProgress:(NuoProgressFunction)progress
 {
     _modelLoader = [NuoModelLoader new];
     [_modelLoader loadModel:path];
     
-    [self createMeshs:commandQueue];
+    [self createMeshs:commandQueue withProgress:^(float progressPercent)
+         {
+             progress(progressPercent * (1 - 0.3) + 0.3);
+         }];
 
     [_mainModelMesh centerMesh];
     
@@ -143,11 +147,12 @@
 }
 
 
-- (void)createMeshs:(id<MTLCommandQueue>)commandQueue
+- (void)createMeshs:(id<MTLCommandQueue>)commandQueue withProgress:(NuoProgressFunction)progress
 {
     NuoMeshCompound* mesh = [_modelLoader createMeshsWithOptions:_modelOptions
                                                       withDevice:self.device
-                                                withCommandQueue:commandQueue];
+                                                withCommandQueue:commandQueue
+                                                    withProgress:progress];
 
     // put the main model at the end of the draw queue,
     // for now it is the only one has transparency
@@ -581,6 +586,7 @@
 
 - (void)setModelOptions:(NuoMeshOption *)modelOptions
        withCommandQueue:(id<MTLCommandQueue>)commandQueue
+           withProgress:(NuoProgressFunction)progress
 {
     _modelOptions = modelOptions;
     
@@ -589,7 +595,7 @@
         matrix_float4x4 originalPoise = _mainModelMesh.transformPoise;
         matrix_float4x4 originalTrans = _mainModelMesh.transformTranslate;
         
-        [self createMeshs:commandQueue];
+        [self createMeshs:commandQueue withProgress:progress];
         
         _mainModelMesh.transformPoise = originalPoise;
         _mainModelMesh.transformTranslate = originalTrans;
