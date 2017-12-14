@@ -27,7 +27,7 @@
 - (NuoMeshCompound*)createMeshsWithOptions:(NuoMeshOption*)loadOption
                                 withDevice:(id<MTLDevice>)device
                           withCommandQueue:(id<MTLCommandQueue>)commandQueue
-                              withProgress:(void (^)(float))progress;
+                              withProgress:(NuoProgressFunction)progress;
 
 
 @end

@@ -202,12 +202,12 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
 - (NuoMeshCompound*)createMeshsWithOptions:(NuoMeshOption*)loadOption
                                 withDevice:(id<MTLDevice>)device
                           withCommandQueue:(id<MTLCommandQueue>)commandQueue
-                              withProgress:(void (^)(float))progress
+                              withProgress:(NuoProgressFunction)progress
 {
     typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
     
-    static const float kLoadingPortionModelBuffer = 0.85;
-    static const float kLoadingPortionModelGPU = (1 - kLoadingPortionModelBuffer);
+    const float loadingPortionModelBuffer = loadOption.textured ? 0.70 : 0.85;
+    const float loadingPortionModelGPU = (1 - loadingPortionModelBuffer);
     
     PShapeMapByMaterial shapeMap = GetShapeVectorByMaterial(_shapes, _materials, loadOption.combineShapes);
     
@@ -287,7 +287,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         vertexNumLoaded += shape.mesh.indices.size();
         
         if (progress)
-            progress(vertexNumLoaded / (float)vertexNumTotal * kLoadingPortionModelBuffer);
+            progress(vertexNumLoaded / (float)vertexNumTotal * loadingPortionModelBuffer);
     }
     
     NSMutableArray<NuoMesh*>* result = [[NSMutableArray<NuoMesh*> alloc] init];
@@ -312,7 +312,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         [result addObject:mesh];
         
         if (progress)
-            progress(++index / (float)models.size() * kLoadingPortionModelGPU + kLoadingPortionModelBuffer);
+            progress(++index / (float)models.size() * loadingPortionModelGPU + loadingPortionModelBuffer);
     }
     
     NuoMeshCompound* resultObj = [NuoMeshCompound new];
