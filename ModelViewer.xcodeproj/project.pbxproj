@@ -460,8 +460,6 @@
 		2C5DDAD71D6591B800A9DC9A /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				2C1B28071D95FF17009F5912 /* NuoTextureBase.h */,
-				2C1B28061D95FF17009F5912 /* NuoTextureBase.m */,
 				2CDCDAF21DC185A800ECFE39 /* NuoModelArrow.h */,
 				2CDCDAF11DC185A800ECFE39 /* NuoModelArrow.cpp */,
 				2C5A584F1ED3F2FD00121A82 /* NuoModelBoard.h */,
@@ -470,14 +468,16 @@
 				2C5DDAD41D6591B000A9DC9A /* NuoMathUtilities.cpp */,
 				2C9E397A1DF7D8BC00286EA0 /* NuoTableExporter.h */,
 				2C9E39791DF7D8BC00286EA0 /* NuoTableExporter.cpp */,
+				2C9072E21FE306A800359F12 /* NuoPackage.h */,
+				2C9072DD1FE306A800359F12 /* NuoPackage.cpp */,
+				2C1B28071D95FF17009F5912 /* NuoTextureBase.h */,
+				2C1B28061D95FF17009F5912 /* NuoTextureBase.m */,
 				2C156CCE1EE9B357000C52D4 /* NuoSheetPanel.h */,
 				2C156CCF1EE9B357000C52D4 /* NuoSheetPanel.m */,
 				987469FD1F8565F900DD058F /* NuoPopoverSheet.h */,
 				987469FE1F8565F900DD058F /* NuoPopoverSheet.m */,
 				2CC110731FDD233100D09716 /* NuoProgressSheetPanel.h */,
 				2CC110741FDD233100D09716 /* NuoProgressSheetPanel.m */,
-				2C9072E21FE306A800359F12 /* NuoPackage.h */,
-				2C9072DD1FE306A800359F12 /* NuoPackage.cpp */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
