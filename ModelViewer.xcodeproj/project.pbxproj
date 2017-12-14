@@ -52,6 +52,8 @@
 		2C8974931D8BBAEF00460648 /* NuoMeshOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8974921D8BBAEF00460648 /* NuoMeshOptions.m */; };
 		2C8B80ED1E2D6654001746FE /* NuoShadowMapTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8B80EB1E2D6654001746FE /* NuoShadowMapTarget.m */; };
 		2C8B80FD1E2EDB01001746FE /* NuoRenderPipelinePass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.m */; };
+		2C9072E31FE306A800359F12 /* NuoPackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C9072DD1FE306A800359F12 /* NuoPackage.cpp */; };
+		2C9072E61FE306E000359F12 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 2C9072E51FE306D600359F12 /* libz.tbd */; };
 		2C97774B1F7E07B80031F188 /* NuoScreenSpaceTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C97774A1F7E07B80031F188 /* NuoScreenSpaceTarget.m */; };
 		2C9777521F7E1AB60031F188 /* NuoScreenSpaceRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9777511F7E1AB60031F188 /* NuoScreenSpaceRenderer.m */; };
 		2C97775A1F7EC8B60031F188 /* NuoMeshSceneRenderPass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9777591F7EC8B60031F188 /* NuoMeshSceneRenderPass.m */; };
@@ -231,6 +233,9 @@
 		2C8B80EC1E2D6654001746FE /* NuoShadowMapTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoShadowMapTarget.h; sourceTree = "<group>"; };
 		2C8B80FB1E2EDB01001746FE /* NuoRenderPipelinePass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRenderPipelinePass.h; sourceTree = "<group>"; };
 		2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoRenderPipelinePass.m; sourceTree = "<group>"; };
+		2C9072DD1FE306A800359F12 /* NuoPackage.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoPackage.cpp; sourceTree = "<group>"; };
+		2C9072E21FE306A800359F12 /* NuoPackage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoPackage.h; sourceTree = "<group>"; };
+		2C9072E51FE306D600359F12 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		2C9777491F7E07B80031F188 /* NuoScreenSpaceTarget.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoScreenSpaceTarget.h; sourceTree = "<group>"; };
 		2C97774A1F7E07B80031F188 /* NuoScreenSpaceTarget.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoScreenSpaceTarget.m; sourceTree = "<group>"; };
 		2C9777501F7E1AB60031F188 /* NuoScreenSpaceRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoScreenSpaceRenderer.h; sourceTree = "<group>"; };
@@ -300,6 +305,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C9072E61FE306E000359F12 /* libz.tbd in Frameworks */,
 				2C4DE7881DFB565900199F1D /* libluad.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -470,6 +476,8 @@
 				987469FE1F8565F900DD058F /* NuoPopoverSheet.m */,
 				2CC110731FDD233100D09716 /* NuoProgressSheetPanel.h */,
 				2CC110741FDD233100D09716 /* NuoProgressSheetPanel.m */,
+				2C9072E21FE306A800359F12 /* NuoPackage.h */,
+				2C9072DD1FE306A800359F12 /* NuoPackage.cpp */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -533,6 +541,14 @@
 			path = ShadowMap;
 			sourceTree = "<group>";
 		};
+		2C9072E41FE306D600359F12 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2C9072E51FE306D600359F12 /* libz.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		2C9777441F7E076D0031F188 /* ScreenSpace */ = {
 			isa = PBXGroup;
 			children = (
@@ -551,6 +567,7 @@
 			children = (
 				2C9D9AA71D658F0800283E46 /* ModelViewer */,
 				2C9D9AA61D658F0800283E46 /* Products */,
+				2C9072E41FE306D600359F12 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -720,6 +737,7 @@
 				98E05A601E6A17A600D4068F /* NuoCubeMesh.m in Sources */,
 				2C5B92B71D7157EA00722936 /* ModelView.m in Sources */,
 				2C6A8E7B1F8134440007551F /* NuoDeferredRenderer.m in Sources */,
+				2C9072E31FE306A800359F12 /* NuoPackage.cpp in Sources */,
 				2CEE8CF71F71BC3F00C4D4F6 /* LightShadowPopoverController.m in Sources */,
 				2CA55FA91DD21D2A0000AD21 /* NuoRenderPass.m in Sources */,
 				2C4042BE1E065B2700AAC06E /* NuoLua.m in Sources */,
