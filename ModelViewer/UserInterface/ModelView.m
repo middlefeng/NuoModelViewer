@@ -705,7 +705,7 @@ MouseDragMode;
     if (draggedFilePaths.count > 0)
     {
         NSString* path = draggedFilePaths[0];
-        if ([path hasSuffix:@".obj"] || [path hasSuffix:@".jpg"] || [path hasSuffix:@".png"])
+        if ([path hasSuffix:@".obj"] || [path hasSuffix:@".jpg"] || [path hasSuffix:@".png"] || [path hasSuffix:@".zip"])
         {
             return NSDragOperationCopy;
         }
@@ -758,10 +758,15 @@ MouseDragMode;
             NSString* name = [path lastPathComponent];
             name = [name stringByAppendingString:@".obj"];
             path = [path stringByAppendingPathComponent:name];
+            
+            __weak ModelView* selfWeak = self;
+            [self loadMesh:path asPackage:NO withCompletion:^{ [selfWeak render]; }];
         }
-        
-        __weak ModelView* selfWeak = self;
-        [self loadMesh:path withCompletion:^{ [selfWeak render]; }];
+        else if ([path hasSuffix:@".zip"])
+        {
+            __weak ModelView* selfWeak = self;
+            [self loadMesh:path asPackage:YES withCompletion:^{ [selfWeak render]; }];
+        }
     }
 
     return YES;
@@ -784,7 +789,7 @@ MouseDragMode;
 
 
 
-- (void)loadMesh:(NSString*)path withCompletion:(NuoSimpleFunction)completion
+- (void)loadMesh:(NSString*)path asPackage:(BOOL)isPackage withCompletion:(NuoSimpleFunction)completion
 {
     __weak ModelRenderer* modelRender = _modelRender;
     __weak ModelView* selfWeak = self;
@@ -793,8 +798,12 @@ MouseDragMode;
     
     [progressPanel performInBackground:^(NuoProgressFunction progressFunc)
                                     {
-                                        [modelRender loadMesh:path withCommandQueue:[selfWeak commandQueue]
-                                                 withProgress:progressFunc];
+                                        if (isPackage)
+                                            [_modelRender loadPackage:path withCommandQueue:self.commandQueue
+                                                         withProgress:progressFunc];
+                                        else
+                                            [modelRender loadMesh:path withCommandQueue:[selfWeak commandQueue]
+                                                     withProgress:progressFunc];
                                     }
                             withWindow:self.window
                         withCompletion:^
@@ -859,7 +868,7 @@ MouseDragMode;
 - (IBAction)openFile:(id)sender
 {
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
-    openPanel.allowedFileTypes = @[@"obj", @"scn"];
+    openPanel.allowedFileTypes = @[@"obj", @"scn", @"zip"];
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
             {
@@ -871,7 +880,13 @@ MouseDragMode;
                     if ([ext isEqualToString:@"obj"])
                     {
                         __weak ModelView* selfWeak = self;
-                        [self loadMesh:path withCompletion:^{ [selfWeak render]; }];
+                        [self loadMesh:path asPackage:NO withCompletion:^{ [selfWeak render]; }];
+                    }
+                    
+                    if ([ext isEqualToString:@"zip"])
+                    {
+                        __weak ModelView* selfWeak = self;
+                        [self loadMesh:path asPackage:YES withCompletion:^{ [selfWeak render]; }];
                     }
                     
                     if ([ext isEqualToString:@"scn"])

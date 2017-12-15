@@ -33,10 +33,11 @@ public:
     
     void open(const std::string& path);
     void unpackFile(NuoUnpackCallback callback);
+    void testFile(NuoUnpackCallback callback);
 
 private:
     
-    void readCentralDirectory(NuoUnpackCallback callback);
+    void readCentralDirectory(NuoUnpackCallback callback, bool decompressData);
     void readLocalFile(const PackageGlobalFileHeader& fileHeader, const std::string fileName, NuoUnpackCallback callback);
     void readFileData(const PackageGlobalFileHeader& fileHeader, void* buffer);
     

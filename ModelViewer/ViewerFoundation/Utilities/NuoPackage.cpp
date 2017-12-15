@@ -110,12 +110,19 @@ void NuoPackage::open(const std::string& path)
 void NuoPackage::unpackFile(NuoUnpackCallback callback)
 {
     if (_endRecord)
-        readCentralDirectory(callback);
+        readCentralDirectory(callback, true);
+}
+
+
+void NuoPackage::testFile(NuoUnpackCallback callback)
+{
+    if (_endRecord)
+        readCentralDirectory(callback, false);
 }
 
 
 
-void NuoPackage::readCentralDirectory(NuoUnpackCallback callback)
+void NuoPackage::readCentralDirectory(NuoUnpackCallback callback, bool decompressData)
 {
     PackageGlobalFileHeader fileHeader;
     
@@ -132,7 +139,10 @@ void NuoPackage::readCentralDirectory(NuoUnpackCallback callback)
         _packageBuffer[fileHeader.fileNameLength] = '\0';
         std::string fileName = (char*)_packageBuffer;
         
-        readLocalFile(fileHeader, fileName, callback);
+        if (decompressData)
+            readLocalFile(fileHeader, fileName, callback);
+        else
+            callback(fileName, nullptr, fileHeader.uncompressedSize);
         
         // skip unused fields.
         //
