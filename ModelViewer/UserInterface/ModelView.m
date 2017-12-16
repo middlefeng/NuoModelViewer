@@ -705,7 +705,12 @@ MouseDragMode;
     if (draggedFilePaths.count > 0)
     {
         NSString* path = draggedFilePaths[0];
-        if ([path hasSuffix:@".obj"] || [path hasSuffix:@".jpg"] || [path hasSuffix:@".png"] || [path hasSuffix:@".zip"])
+        if ([path hasSuffix:@".obj"] || [path hasSuffix:@".jpg"] || [path hasSuffix:@".png"])
+        {
+            NSLog(@"Enterred.");
+            return NSDragOperationCopy;
+        }
+        else if ([path hasSuffix:@".zip"] && [self isValidPack:path])
         {
             return NSDragOperationCopy;
         }
@@ -759,6 +764,11 @@ MouseDragMode;
             name = [name stringByAppendingString:@".obj"];
             path = [path stringByAppendingPathComponent:name];
             
+            __weak ModelView* selfWeak = self;
+            [self loadMesh:path asPackage:NO withCompletion:^{ [selfWeak render]; }];
+        }
+        else if ([path hasSuffix:@".obj"])
+        {
             __weak ModelView* selfWeak = self;
             [self loadMesh:path asPackage:NO withCompletion:^{ [selfWeak render]; }];
         }
@@ -820,6 +830,13 @@ MouseDragMode;
     _documentName = [documentName stringByDeletingPathExtension];
     NSString* title = [[NSString alloc] initWithFormat:@"ModelView - %@", documentName];
     [self.window setTitle:title];
+}
+
+
+
+- (BOOL)isValidPack:(NSString*)path
+{
+    return [_modelRender isValidPack:path];
 }
 
 

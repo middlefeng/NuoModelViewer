@@ -73,6 +73,8 @@ TransformMode;
                                     withProgress:(NuoProgressFunction)progress;
 - (BOOL)loadPackage:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
                                     withProgress:(NuoProgressFunction)progress;
+- (BOOL)isValidPack:(NSString*)path;
+
 - (NuoMeshCompound*)mainModelMesh;
 
 - (NSString*)exportSceneAsString:(CGSize)canvasSize;

@@ -200,6 +200,39 @@
 }
 
 
+- (BOOL)isValidPack:(NSString*)path
+{
+    bool valid = false;
+    
+    NuoUnpackCallback callback = [&valid](std::string filename, void* buffer, size_t length)
+    {
+        if (valid)
+            return;
+        
+        size_t extPos = filename.find(".obj");
+        
+        if (extPos == std::string::npos)
+            return;
+        
+        size_t fileNameLength = filename.length();
+        if (fileNameLength - extPos == 4)
+        {
+            size_t firstPos = filename.find("/");
+            size_t lastPos = filename.find_last_of("/");
+            
+            if (firstPos != std::string::npos && firstPos == lastPos)
+                valid = true;
+        }
+    };
+    
+    NuoPackage package;
+    package.open(path.UTF8String);
+    package.testFile(callback);
+    
+    return valid;
+}
+
+
 - (BOOL)hasMeshes
 {
     return [_meshes count] != 0;
