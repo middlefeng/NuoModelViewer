@@ -4,6 +4,14 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Background loading.
+* Motion blur.
+* Blending with real-scene background.
+
+<p align="left">
+  <img width="450" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/UH60.png"/>
+</p>
+
 * Ambient occlusion.
 
 <p align="left">
@@ -90,7 +98,7 @@ A simple Wavefront OBJ viewer.
 * Surrounding.
   * <del>Cubmap skybox.</del>
   * Water (for ship model).
-* Motion blur (especially for rotating parts like rotor).
+* <del>Motion blur (especially for rotating parts like rotor).</del>
 * Detailed properties panel for indiviudal model parts.
   * <del>Smooth options (everywhere, texture discontinuiation only, etc).</del>
   * <del>Material opacity adjustment.
