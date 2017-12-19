@@ -34,3 +34,14 @@ const char* pathForDocument(void)
     return pathForDocumentBuffer;
 }
 
+
+
+void clearCategoryInDocument(const char* category)
+{
+    const char* pathCh = pathForDocument();
+    
+    NSString* path = [NSString stringWithFormat:@"%s/%s", pathCh, category];
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    
+    [fileManager removeItemAtPath:path error:nil];
+}
