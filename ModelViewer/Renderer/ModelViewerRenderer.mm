@@ -16,12 +16,14 @@
 #include "NuoModelBase.h"
 #include "NuoModelLoader.h"
 #include "NuoTableExporter.h"
+#include "NuoPackage.h"
 
 #include "NuoLua.h"
 
 #import "NuoLightSource.h"
 #import "NuoShadowMapRenderer.h"
 #import "NuoDeferredRenderer.h"
+#import "NuoDirectoryUtils.h"
 
 
 @interface ModelRenderer ()
@@ -132,6 +134,102 @@
     const float defaultDistance = - 3.0 * radius;
     const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
     [_mainModelMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
+}
+
+
+- (BOOL)loadPackage:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
+                                        withProgress:(NuoProgressFunction)progress
+{
+    const char* documentPath = pathForDocument();
+    NSString* packageFolder = [NSString stringWithUTF8String:documentPath];
+    packageFolder = [packageFolder stringByAppendingPathComponent:@"packaged_load"];
+    
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    BOOL isDir = NO;
+    BOOL exist = [fileManager fileExistsAtPath:packageFolder isDirectory:&isDir];
+    if (exist)
+        [fileManager removeItemAtPath:packageFolder error:nil];
+    
+    NuoPackage package;
+    std::string objFile;
+    size_t totalUncompressed = 0;
+    size_t uncompressed = 0;
+    
+    NuoUnpackCallback checkCallback = [&totalUncompressed](std::string filename, void* buffer, size_t length)
+    {
+        totalUncompressed += length;
+    };
+    
+    NuoUnpackCallback callback =
+    [&objFile, &uncompressed, &totalUncompressed, progress, fileManager, packageFolder]
+    (std::string filename, void* buffer, size_t length)
+    {
+        NSString* path = [NSString stringWithFormat:@"%@/%s", packageFolder, filename.c_str()];
+        
+        NSString* pathFolder = [path stringByDeletingLastPathComponent];
+        if (![fileManager fileExistsAtPath:pathFolder])
+            [fileManager createDirectoryAtPath:pathFolder withIntermediateDirectories:YES attributes:nil error:nil];
+        
+        NSData* data = [[NSData alloc] initWithBytesNoCopy:buffer length:length freeWhenDone:NO];
+        [data writeToFile:path atomically:NO];
+        
+        if ([path hasSuffix:@".obj"])
+            objFile = path.UTF8String;
+        
+        uncompressed += length;
+        
+        progress(uncompressed / (float)totalUncompressed * 0.3);
+    };
+    
+    package.open(path.UTF8String);
+    package.testFile(checkCallback);
+    package.unpackFile(callback);
+    
+    if (objFile.empty())
+    {
+        return NO;
+    }
+    
+    [self loadMesh:[NSString stringWithUTF8String:objFile.c_str()] withCommandQueue:commandQueue
+                        withProgress:^(float progressPercent)
+                             {
+                                 progress(progressPercent * 0.5 + 0.5);
+                             }];
+    
+    return YES;
+}
+
+
+- (BOOL)isValidPack:(NSString*)path
+{
+    bool valid = false;
+    
+    NuoUnpackCallback callback = [&valid](std::string filename, void* buffer, size_t length)
+    {
+        if (valid)
+            return;
+        
+        size_t extPos = filename.find(".obj");
+        
+        if (extPos == std::string::npos)
+            return;
+        
+        size_t fileNameLength = filename.length();
+        if (fileNameLength - extPos == 4)
+        {
+            size_t firstPos = filename.find("/");
+            size_t lastPos = filename.find_last_of("/");
+            
+            if (firstPos != std::string::npos && firstPos == lastPos)
+                valid = true;
+        }
+    };
+    
+    NuoPackage package;
+    package.open(path.UTF8String);
+    package.testFile(callback);
+    
+    return valid;
 }
 
 
