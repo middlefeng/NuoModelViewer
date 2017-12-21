@@ -52,6 +52,7 @@ extern const BOOL kShadowPCF;
 @interface NuoMesh : NSObject
 
 
+@property (nonatomic, readonly) id<MTLDevice> device;
 @property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
 @property (nonatomic, strong) id<MTLRenderPipelineState> renderPipelineState;
 @property (nonatomic, strong) id<MTLRenderPipelineState> screenSpacePipelineState;

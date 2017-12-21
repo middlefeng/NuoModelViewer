@@ -277,17 +277,13 @@ const BOOL kShadowPCF = YES;
 {
     @autoreleasepool
     {
-        id<MTLBuffer> vertexBuffer = [self.commandQueue.device newBufferWithBytes:buffer
-                                                                           length:length
-                                                                          options:MTLResourceStorageModeManaged];
-        memcpy(vertexBuffer.contents, buffer, length);
-        [vertexBuffer didModifyRange:NSMakeRange(0, length)];
-        
-        id<MTLBuffer> indexBuffer = [self.commandQueue.device newBufferWithBytes:indices
-                                                                          length:indicesLength
-                                                                         options:MTLResourceStorageModeManaged];
-        memcpy(indexBuffer.contents, indices, indicesLength);
-        [indexBuffer didModifyRange:NSMakeRange(0, indicesLength)];
+        id<MTLBuffer> vertexBuffer = [self.device newBufferWithBytes:buffer
+                                                              length:length
+                                                             options:MTLResourceStorageModeManaged];
+
+        id<MTLBuffer> indexBuffer = [self.device newBufferWithBytes:indices
+                                                             length:indicesLength
+                                                            options:MTLResourceStorageModeManaged];
         
         id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
         id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
@@ -387,6 +383,12 @@ const BOOL kShadowPCF = YES;
 }
 
 
+- (id<MTLDevice>)device
+{
+    return _commandQueue.device;
+}
+
+
 
 - (void)setUnifiedOpacity:(float)unifiedOpacity
 {
@@ -437,7 +439,7 @@ const BOOL kShadowPCF = YES;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.commandQueue.device newDefaultLibrary];
+    id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     NSString* vertexFunc = _shadowPipelineState ? @"vertex_project_shadow" : @"vertex_project";
     NSString* fragmnFunc = _shadowPipelineState ? @"fragment_light_shadow" : @"fragment_light";
@@ -475,7 +477,7 @@ const BOOL kShadowPCF = YES;
 - (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor
 {
     NSError *error = nil;
-    _renderPipelineState = [self.commandQueue.device newRenderPipelineStateWithDescriptor:pipelineDescriptor
+    _renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineDescriptor
                                                                        error:&error];
 }
 
@@ -512,8 +514,8 @@ const BOOL kShadowPCF = YES;
     screenSpacePipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     NSError *error = nil;
-    _screenSpacePipelineState = [self.commandQueue.device newRenderPipelineStateWithDescriptor:screenSpacePipelineDescriptor
-                                                                                         error:&error];
+    _screenSpacePipelineState = [self.device newRenderPipelineStateWithDescriptor:screenSpacePipelineDescriptor
+                                                                            error:&error];
 }
 
 - (void)makePipelineScreenSpaceState
@@ -524,7 +526,7 @@ const BOOL kShadowPCF = YES;
     
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader
 {
-    id<MTLLibrary> library = [self.commandQueue.device newDefaultLibrary];
+    id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
     shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShadowShader];
@@ -534,8 +536,8 @@ const BOOL kShadowPCF = YES;
     shadowPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     NSError *error = nil;
-    _shadowPipelineState = [self.commandQueue.device newRenderPipelineStateWithDescriptor:shadowPipelineDescriptor
-                                                                                    error:&error];
+    _shadowPipelineState = [self.device newRenderPipelineStateWithDescriptor:shadowPipelineDescriptor
+                                                                       error:&error];
 }
 
 - (void)makePipelineShadowState
@@ -553,7 +555,7 @@ const BOOL kShadowPCF = YES;
     else
         depthStencilDescriptor.depthWriteEnabled = YES;
     
-    _depthStencilState = [self.commandQueue.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
+    _depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
 }
 
 
@@ -732,10 +734,10 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
     else if (!options._textured && options._basicMaterialized)
     {
         NuoMeshMatieraled* mesh = [[NuoMeshMatieraled alloc] initWithCommandQueue:commandQueue
-                                                         withVerticesBuffer:model->Ptr()
-                                                                 withLength:model->Length()
-                                                                withIndices:model->IndicesPtr()
-                                                                 withLength:model->IndicesLength()];
+                                                               withVerticesBuffer:model->Ptr()
+                                                                       withLength:model->Length()
+                                                                      withIndices:model->IndicesPtr()
+                                                                       withLength:model->IndicesLength()];
         
         [mesh setTransparency:model->HasTransparent()];
         [mesh setPhysicallyReflection:options._physicallyReflection];
