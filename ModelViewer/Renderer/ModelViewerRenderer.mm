@@ -136,8 +136,7 @@
 }
 
 
-- (BOOL)loadPackage:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
-                                        withProgress:(NuoProgressFunction)progress
+- (BOOL)loadPackage:(NSString*)path withProgress:(NuoProgressFunction)progress
 {
     const char* documentPath = pathForDocument();
     NSString* packageFolder = [NSString stringWithUTF8String:documentPath];

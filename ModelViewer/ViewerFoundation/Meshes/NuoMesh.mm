@@ -279,11 +279,11 @@ const BOOL kShadowPCF = YES;
     {
         id<MTLBuffer> vertexBuffer = [self.device newBufferWithBytes:buffer
                                                               length:length
-                                                             options:MTLResourceStorageModeManaged];
+                                                             options:MTLResourceStorageModeShared];
 
         id<MTLBuffer> indexBuffer = [self.device newBufferWithBytes:indices
                                                              length:indicesLength
-                                                            options:MTLResourceStorageModeManaged];
+                                                            options:MTLResourceStorageModeShared];
         
         id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
         id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
