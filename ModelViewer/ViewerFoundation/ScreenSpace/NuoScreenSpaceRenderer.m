@@ -14,14 +14,14 @@
 @implementation NuoScreenSpaceRenderer
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device withName:(NSString*)name
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withName:(NSString*)name
 {
-    self = [super initWithDevice:device];
+    self = [super initWithCommandQueue:commandQueue];
     
     if (self)
     {
         self.renderTarget = [[NuoScreenSpaceTarget alloc] initWithSampleCount:kSampleCount];
-        self.renderTarget.device = device;
+        self.renderTarget.device = commandQueue.device;
         ((NuoScreenSpaceTarget*)self.renderTarget).name = name;
     }
     

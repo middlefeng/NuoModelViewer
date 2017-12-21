@@ -200,7 +200,6 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
 
 
 - (NuoMeshCompound*)createMeshsWithOptions:(NuoMeshOption*)loadOption
-                                withDevice:(id<MTLDevice>)device
                           withCommandQueue:(id<MTLCommandQueue>)commandQueue
                               withProgress:(NuoProgressFunction)progress
 {
@@ -298,7 +297,7 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         NuoBox boundingBox = model->GetBoundingBox();
         
         NuoModelOption options = modelOptions[model];
-        NuoMesh* mesh = CreateMesh(options, device, commandQueue, model);
+        NuoMesh* mesh = CreateMesh(options, commandQueue, model);
         
         NuoMeshBox* meshBounding = [[NuoMeshBox alloc] init];
         meshBounding.span.x = boundingBox._spanX;

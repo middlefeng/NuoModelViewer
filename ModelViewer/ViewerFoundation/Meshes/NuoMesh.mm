@@ -225,21 +225,22 @@ const BOOL kShadowPCF = YES;
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-            withVerticesBuffer:(void*)buffer withLength:(size_t)length
-                   withIndices:(void*)indices withLength:(size_t)indicesLength
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                  withVerticesBuffer:(void*)buffer withLength:(size_t)length
+                         withIndices:(void*)indices withLength:(size_t)indicesLength
 {
     if ((self = [super init]))
     {
-        _vertexBuffer = [device newBufferWithBytes:buffer
-                                            length:length
-                                           options:MTLResourceOptionCPUCacheModeDefault];
-        
-        _indexBuffer = [device newBufferWithBytes:indices
-                                           length:indicesLength
-                                          options:MTLResourceOptionCPUCacheModeDefault];
-        _device = device;
+        id<MTLDevice> device = commandQueue.device;
+        _vertexBuffer = [device newBufferWithLength:length
+                                            options:MTLResourceStorageModePrivate];
+        _indexBuffer = [device newBufferWithLength:indicesLength
+                                            options:MTLResourceStorageModePrivate];
+            
+        _commandQueue = commandQueue;
         _enabled = true;
+        
+        [self updateVerticesBuffer:buffer withLength:length withIndices:indices withLength:indicesLength];
         
         _smoothTolerance = 0.0f;
         _smoothConservative = YES;
@@ -271,9 +272,36 @@ const BOOL kShadowPCF = YES;
 }
 
 
+- (void)updateVerticesBuffer:(void*)buffer withLength:(size_t)length
+                 withIndices:(void*)indices withLength:(size_t)indicesLength
+{
+    @autoreleasepool
+    {
+        id<MTLBuffer> vertexBuffer = [self.commandQueue.device newBufferWithBytes:buffer
+                                                                           length:length
+                                                                          options:MTLResourceStorageModeManaged];
+        memcpy(vertexBuffer.contents, buffer, length);
+        [vertexBuffer didModifyRange:NSMakeRange(0, length)];
+        
+        id<MTLBuffer> indexBuffer = [self.commandQueue.device newBufferWithBytes:indices
+                                                                          length:indicesLength
+                                                                         options:MTLResourceStorageModeManaged];
+        memcpy(indexBuffer.contents, indices, indicesLength);
+        [indexBuffer didModifyRange:NSMakeRange(0, indicesLength)];
+        
+        id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
+        id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
+        [encoder copyFromBuffer:vertexBuffer sourceOffset:0 toBuffer:_vertexBuffer destinationOffset:0 size:length];
+        [encoder copyFromBuffer:indexBuffer sourceOffset:0 toBuffer:_indexBuffer destinationOffset:0 size:indicesLength];
+        [encoder endEncoding];
+        [commandBuffer commit];
+    }
+}
+
+
 - (void)shareResourcesFrom:(NuoMesh*)mesh
 {
-    _device = mesh.device;
+    _commandQueue = mesh.commandQueue;
     _vertexBuffer = mesh.vertexBuffer;
     _indexBuffer = mesh.indexBuffer;
     _transformBuffers = mesh.transformBuffers;
@@ -339,13 +367,8 @@ const BOOL kShadowPCF = YES;
         clonedModel->SmoothSurface(tolerance, _smoothConservative);
     }
     
-    _vertexBuffer = [_device newBufferWithBytes:clonedModel->Ptr()
-                                         length:clonedModel->Length()
-                                        options:MTLResourceOptionCPUCacheModeDefault];
-    
-    _indexBuffer = [_device newBufferWithBytes:clonedModel->IndicesPtr()
-                                        length:clonedModel->IndicesLength()
-                                       options:MTLResourceOptionCPUCacheModeDefault];
+    [self updateVerticesBuffer:clonedModel->Ptr() withLength:clonedModel->Length()
+                   withIndices:clonedModel->IndicesPtr() withLength:clonedModel->IndicesLength()];
 }
 
 
@@ -374,13 +397,8 @@ const BOOL kShadowPCF = YES;
     material.get()->dissolve = unifiedOpacity;
     
     _rawModel->UpdateBufferWithUnifiedMaterial();
-    _vertexBuffer = [_device newBufferWithBytes:_rawModel->Ptr()
-                                         length:_rawModel->Length()
-                                        options:MTLResourceOptionCPUCacheModeDefault];
-    
-    _indexBuffer = [_device newBufferWithBytes:_rawModel->IndicesPtr()
-                                        length:_rawModel->IndicesLength()
-                                       options:MTLResourceOptionCPUCacheModeDefault];
+    [self updateVerticesBuffer:_rawModel->Ptr() withLength:_rawModel->Length()
+                   withIndices:_rawModel->IndicesPtr() withLength:_rawModel->IndicesLength()];
 
     BOOL wasTrans = _hasTransparency;
     _hasTransparency = (unifiedOpacity < 0.99999);
@@ -419,7 +437,7 @@ const BOOL kShadowPCF = YES;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self.commandQueue.device newDefaultLibrary];
     
     NSString* vertexFunc = _shadowPipelineState ? @"vertex_project_shadow" : @"vertex_project";
     NSString* fragmnFunc = _shadowPipelineState ? @"fragment_light_shadow" : @"fragment_light";
@@ -457,7 +475,7 @@ const BOOL kShadowPCF = YES;
 - (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor
 {
     NSError *error = nil;
-    _renderPipelineState = [self.device newRenderPipelineStateWithDescriptor:pipelineDescriptor
+    _renderPipelineState = [self.commandQueue.device newRenderPipelineStateWithDescriptor:pipelineDescriptor
                                                                        error:&error];
 }
 
@@ -477,7 +495,7 @@ const BOOL kShadowPCF = YES;
                                   withFragemtnShader:(NSString*)fragmentShader
                                        withConstants:(MTLFunctionConstantValues*)constants
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self.commandQueue.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
     screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShader];
@@ -494,8 +512,8 @@ const BOOL kShadowPCF = YES;
     screenSpacePipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     NSError *error = nil;
-    _screenSpacePipelineState = [self.device newRenderPipelineStateWithDescriptor:screenSpacePipelineDescriptor
-                                                                            error:&error];
+    _screenSpacePipelineState = [self.commandQueue.device newRenderPipelineStateWithDescriptor:screenSpacePipelineDescriptor
+                                                                                         error:&error];
 }
 
 - (void)makePipelineScreenSpaceState
@@ -506,7 +524,7 @@ const BOOL kShadowPCF = YES;
     
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self.commandQueue.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
     shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShadowShader];
@@ -516,8 +534,8 @@ const BOOL kShadowPCF = YES;
     shadowPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     NSError *error = nil;
-    _shadowPipelineState = [self.device newRenderPipelineStateWithDescriptor:shadowPipelineDescriptor
-                                                                       error:&error];
+    _shadowPipelineState = [self.commandQueue.device newRenderPipelineStateWithDescriptor:shadowPipelineDescriptor
+                                                                                    error:&error];
 }
 
 - (void)makePipelineShadowState
@@ -535,7 +553,7 @@ const BOOL kShadowPCF = YES;
     else
         depthStencilDescriptor.depthWriteEnabled = YES;
     
-    _depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
+    _depthStencilState = [self.commandQueue.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
 }
 
 
@@ -646,18 +664,18 @@ const BOOL kShadowPCF = YES;
 
 
 NuoMesh* CreateMesh(const NuoModelOption& options,
-                    id<MTLDevice> device, id<MTLCommandQueue> commandQueue,
+                    id<MTLCommandQueue> commandQueue,
                     const std::shared_ptr<NuoModelBase> model)
 {
     NuoMesh* resultMesh = nil;
     
     if (!options._textured && !options._basicMaterialized)
     {
-        NuoMesh* mesh = [[NuoMesh alloc] initWithDevice:device
-                                     withVerticesBuffer:model->Ptr()
-                                             withLength:model->Length()
-                                            withIndices:model->IndicesPtr()
-                                             withLength:model->IndicesLength()];
+        NuoMesh* mesh = [[NuoMesh alloc] initWithCommandQueue:commandQueue
+                                           withVerticesBuffer:model->Ptr()
+                                                   withLength:model->Length()
+                                                withIndices:model->IndicesPtr()
+                                                   withLength:model->IndicesLength()];
         
         resultMesh = mesh;
     }
@@ -666,13 +684,13 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
         BOOL checkTransparency = options._textureEmbedMaterialTransparency;
         
-        NuoMeshTextured* mesh = [[NuoMeshTextured alloc] initWithDevice:device
+        NuoMeshTextured* mesh = [[NuoMeshTextured alloc] initWithCommandQueue:commandQueue
                                                      withVerticesBuffer:model->Ptr()
                                                              withLength:model->Length()
                                                             withIndices:model->IndicesPtr()
                                                              withLength:model->IndicesLength()];
         
-        [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency withCommandQueue:commandQueue];
+        [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency];
         
         resultMesh = mesh;
     }
@@ -681,13 +699,13 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
         BOOL embeddedAlpha = options._textureEmbedMaterialTransparency;
         
-        NuoMeshTexMatieraled* mesh = [[NuoMeshTexMatieraled alloc] initWithDevice:device
-                                         withVerticesBuffer:model->Ptr()
-                                                 withLength:model->Length()
-                                                withIndices:model->IndicesPtr()
-                                                 withLength:model->IndicesLength()];
+        NuoMeshTexMatieraled* mesh = [[NuoMeshTexMatieraled alloc] initWithCommandQueue:commandQueue
+                                                                     withVerticesBuffer:model->Ptr()
+                                                                             withLength:model->Length()
+                                                                            withIndices:model->IndicesPtr()
+                                                                             withLength:model->IndicesLength()];
         
-        [mesh makeTexture:modelTexturePath checkTransparency:embeddedAlpha withCommandQueue:commandQueue];
+        [mesh makeTexture:modelTexturePath checkTransparency:embeddedAlpha];
         
         NSString* modelTexturePathOpacity = [NSString stringWithUTF8String:model->GetTexturePathOpacity().c_str()];
         if ([modelTexturePathOpacity isEqualToString:@""])
@@ -713,7 +731,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
     }
     else if (!options._textured && options._basicMaterialized)
     {
-        NuoMeshMatieraled* mesh = [[NuoMeshMatieraled alloc] initWithDevice:device
+        NuoMeshMatieraled* mesh = [[NuoMeshMatieraled alloc] initWithCommandQueue:commandQueue
                                                          withVerticesBuffer:model->Ptr()
                                                                  withLength:model->Length()
                                                                 withIndices:model->IndicesPtr()

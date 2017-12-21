@@ -25,7 +25,7 @@ ScreenSpaceBlendMode;
 @property (nonatomic, weak) id<MTLSamplerState> samplerState;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat

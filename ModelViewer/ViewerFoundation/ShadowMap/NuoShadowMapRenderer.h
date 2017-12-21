@@ -37,7 +37,7 @@
 @property (nonatomic, strong) NuoShadowMapTarget* shadowMap;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device withName:(NSString*)name;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withName:(NSString*)name;
 
 
 /**

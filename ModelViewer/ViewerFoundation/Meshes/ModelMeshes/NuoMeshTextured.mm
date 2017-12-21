@@ -22,11 +22,12 @@ static CIContext* sCIContext = nil;
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-            withVerticesBuffer:(void*)buffer withLength:(size_t)length
-                   withIndices:(void*)indices withLength:(size_t)indicesLength
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                  withVerticesBuffer:(void*)buffer withLength:(size_t)length
+                         withIndices:(void*)indices withLength:(size_t)indicesLength
 {
-    if ((self = [super initWithDevice:device withVerticesBuffer:buffer withLength:length
+    if ((self = [super initWithCommandQueue:commandQueue
+                         withVerticesBuffer:buffer withLength:length
                           withIndices:indices withLength:indicesLength]))
     {
     }
@@ -74,11 +75,11 @@ static CIContext* sCIContext = nil;
 
 
 
-- (void)makeTexture:(NSString*)texPath checkTransparency:(BOOL)check withCommandQueue:(id<MTLCommandQueue>)queue
+- (void)makeTexture:(NSString*)texPath checkTransparency:(BOOL)check
 {
-    NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.device];
+    NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.commandQueue];
     NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:YES
-                                             checkTransparency:check commandQueue:queue];
+                                             checkTransparency:check];
     
     assert(texture.texture != nil);
     
@@ -86,13 +87,13 @@ static CIContext* sCIContext = nil;
     _hasTextureTransparency = texture.hasTransparency;
     [self setTransparency:texture.hasTransparency];
     
-    _samplerState = [[NuoTextureBase getInstance:self.device] textureSamplerState:YES];
+    _samplerState = [[NuoTextureBase getInstance:self.commandQueue] textureSamplerState:YES];
 }
 
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self.commandQueue.device newDefaultLibrary];
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     NuoMeshModeShaderParameter meshMode = kMeshMode_Normal;

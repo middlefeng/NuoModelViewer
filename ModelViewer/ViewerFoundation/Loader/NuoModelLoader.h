@@ -25,7 +25,6 @@
  *  is stored, the associated textures, and the associated pipeline state used for rendering.
  */
 - (NuoMeshCompound*)createMeshsWithOptions:(NuoMeshOption*)loadOption
-                                withDevice:(id<MTLDevice>)device
                           withCommandQueue:(id<MTLCommandQueue>)commandQueue
                               withProgress:(NuoProgressFunction)progress;
 

@@ -206,7 +206,6 @@ MouseDragMode;
         [progressPanel performInBackground:^(NuoProgressFunction progress)
                                     {
                                         [render setModelOptions:meshOptions
-                                               withCommandQueue:[selfWeak commandQueue]
                                                    withProgress:progress];
                                     }
                                 withWindow:self.window
@@ -377,12 +376,12 @@ MouseDragMode;
 {
     [super commonInit];
     
-    _modelRender = [[ModelRenderer alloc] initWithDevice:self.metalLayer.device];
-    _modelDissectRenderer = [[ModelDissectRenderer alloc] initWithDevice:self.metalLayer.device];
+    _modelRender = [[ModelRenderer alloc] initWithCommandQueue:self.commandQueue];
+    _modelDissectRenderer = [[ModelDissectRenderer alloc] initWithCommandQueue:self.commandQueue];
     _modelDissectRenderer.paramsProvider = _modelRender;
     _modelDissectRenderer.splitViewProportion = 0.5;
-    _notationRenderer = [[NotationRenderer alloc] initWithDevice:self.metalLayer.device];
-    _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithDevice:self.metalLayer.device];
+    _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
+    _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
     // sync the model renderer with the initial settings in the model panel
@@ -809,11 +808,9 @@ MouseDragMode;
     [progressPanel performInBackground:^(NuoProgressFunction progressFunc)
                                     {
                                         if (isPackage)
-                                            [_modelRender loadPackage:path withCommandQueue:self.commandQueue
-                                                         withProgress:progressFunc];
+                                            [modelRender loadPackage:path withProgress:progressFunc];
                                         else
-                                            [modelRender loadMesh:path withCommandQueue:[selfWeak commandQueue]
-                                                     withProgress:progressFunc];
+                                            [modelRender loadMesh:path withProgress:progressFunc];
                                     }
                             withWindow:self.window
                         withCompletion:^
@@ -869,13 +866,11 @@ MouseDragMode;
 
 - (void)loadBackDropWithPath:(NSString*)path
 {
-    id<MTLDevice> device = self.metalLayer.device;
-    
-    NuoTexture* tex = [[NuoTextureBase getInstance:device] texture2DWithImageNamed:path
-                                                                         mipmapped:NO
-                                                                 checkTransparency:NO
-                                                                      commandQueue:nil];
-    NuoBackdropMesh* backdrop = [[NuoBackdropMesh alloc] initWithDevice:device withBackdrop:tex.texture];
+    NuoTexture* tex = [[NuoTextureBase getInstance:self.commandQueue] texture2DWithImageNamed:path
+                                                                                    mipmapped:NO
+                                                                            checkTransparency:NO];
+    NuoBackdropMesh* backdrop = [[NuoBackdropMesh alloc] initWithCommandQueue:self.commandQueue
+                                                                 withBackdrop:tex.texture];
     [backdrop makePipelineAndSampler];
     [_modelRender setBackdropMesh:backdrop];
 }
@@ -922,7 +917,7 @@ MouseDragMode;
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
     openPanel.allowedFileTypes = @[@"jpg", @"png"];
     
-    __weak __block id<MTLDevice> device = self.metalLayer.device;
+    __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
@@ -930,8 +925,8 @@ MouseDragMode;
                  {
                      NSString* path = openPanel.URL.path;
                      
-                     NuoCubeMesh* cubeMesh = [[NuoCubeMesh alloc] initWithDevice:device];
-                     NuoTextureBase* base = [NuoTextureBase getInstance:device];
+                     NuoCubeMesh* cubeMesh = [[NuoCubeMesh alloc] initWithCommandQueue:commandQueue];
+                     NuoTextureBase* base = [NuoTextureBase getInstance:commandQueue];
                      cubeMesh.cubeTexture = [base textureCubeWithImageNamed:path];
                          
                      [cubeMesh makeDepthStencilState];
@@ -1002,12 +997,12 @@ MouseDragMode;
     [savePanel setCanSelectHiddenExtension:YES];
     [savePanel setAllowedFileTypes:@[@"png"]];
     
+    __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
+    
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
              if (result == NSFileHandlingPanelOKButton)
              {
-                 __block __weak id<MTLDevice> device = self.metalLayer.device;
-                 
                  CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
                                             _modelRender.renderTarget.drawableSize.width);
                  
@@ -1015,7 +1010,7 @@ MouseDragMode;
                                         @[_modelRender, _motionBlurRenderer] :
                                         @[_modelRender];
                  
-                 NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:device withTarget:previewSize
+                 NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:commandQueue.device withTarget:previewSize
                                                                               withClearColor:[NSColor colorWithRed:0.0
                                                                                                              green:0.0
                                                                                                               blue:0.0
@@ -1026,7 +1021,7 @@ MouseDragMode;
                  [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
                                     withCompletion:^(id<MTLTexture> result)
                                         {
-                                            NuoTextureBase* textureBase = [NuoTextureBase getInstance:device];
+                                            NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
                                             [textureBase saveTexture:result toImage:path];
                                         }];
              }
@@ -1045,12 +1040,12 @@ MouseDragMode;
     [savePanel setCanSelectHiddenExtension:YES];
     [savePanel setAllowedFileTypes:@[@"png"]];
     
+    __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
+    
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
              if (result == NSFileHandlingPanelOKButton)
              {
-                 __block __weak id<MTLDevice> device = self.metalLayer.device;
-                 
                  CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
                                             _modelRender.renderTarget.drawableSize.width);
                  
@@ -1058,7 +1053,7 @@ MouseDragMode;
                                            @[_modelRender, _motionBlurRenderer] :
                                            @[_modelRender];
                  
-                 NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:device withTarget:previewSize
+                 NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:commandQueue.device withTarget:previewSize
                                                                          withClearColor:[NSColor colorWithRed:0.0
                                                                                                         green:0.0
                                                                                                          blue:0.0
@@ -1073,7 +1068,7 @@ MouseDragMode;
                  [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
                                     withCompletion:^(id<MTLTexture> result)
                                       {
-                                          NuoTextureBase* textureBase = [NuoTextureBase getInstance:device];
+                                          NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
                                           [textureBase saveTexture:result toImage:pathBackground];
                                       }];
                  
@@ -1083,7 +1078,7 @@ MouseDragMode;
                  [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
                                     withCompletion:^(id<MTLTexture> result)
                                       {
-                                          NuoTextureBase* textureBase = [NuoTextureBase getInstance:device];
+                                          NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
                                           [textureBase saveTexture:result toImage:path];
                                       }];
                  

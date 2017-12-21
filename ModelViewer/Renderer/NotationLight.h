@@ -23,7 +23,7 @@
 @property (nonatomic, assign) BOOL selected;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device isBold:(BOOL)bold;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue isBold:(BOOL)bold;
 
 - (void)drawWithRenderPass:(id<MTLRenderCommandEncoder>)renderPass
               withInFlight:(unsigned int)inFlight;

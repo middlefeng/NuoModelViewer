@@ -14,11 +14,11 @@
 @implementation NuoMeshSceneRenderPass
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
     if ((self = [super init]))
     {
-        self.device = device;
+        self.commandQueue = commandQueue;
         
         // create sampler state for shadow map sampling
         MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
@@ -28,7 +28,7 @@
         samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
         samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
         samplerDesc.compareFunction = MTLCompareFunctionGreater;
-        _shadowMapSamplerState = [device newSamplerStateWithDescriptor:samplerDesc];
+        _shadowMapSamplerState = [commandQueue.device newSamplerStateWithDescriptor:samplerDesc];
     }
     
     return self;

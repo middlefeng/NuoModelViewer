@@ -18,14 +18,14 @@
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
             withVerticesBuffer:(void *)buffer withLength:(size_t)length
                    withIndices:(void *)indices withLength:(size_t)indicesLength
                  withDimension:(NuoCoord*)dimensions
 {
-    self = [super initWithDevice:device withVerticesBuffer:buffer
-                      withLength:length withIndices:indices
-                      withLength:indicesLength];
+    self = [super initWithCommandQueue:commandQueue
+                    withVerticesBuffer:buffer withLength:length
+                           withIndices:indices withLength:indicesLength];
     
     if (self)
     {
@@ -56,7 +56,7 @@
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self.commandQueue.device newDefaultLibrary];
     
     NSString* vertexFunc = @"vertex_project_shadow";
     NSString* fragmnFunc = @"fragment_light_shadow";

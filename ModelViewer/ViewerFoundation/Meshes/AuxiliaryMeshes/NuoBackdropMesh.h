@@ -17,7 +17,7 @@
 @property (nonatomic, assign) CGFloat scale;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device withBackdrop:(id<MTLTexture>)backdrop;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withBackdrop:(id<MTLTexture>)backdrop;
 
 - (void)makePipelineAndSampler;
 - (void)updateUniform:(NSInteger)bufferIndex withDrawableSize:(CGSize)drawableSize;

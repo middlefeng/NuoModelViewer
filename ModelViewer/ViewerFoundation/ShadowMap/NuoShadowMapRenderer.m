@@ -32,15 +32,15 @@
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device withName:(NSString*)name
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withName:(NSString *)name
 {
     self = [super init];
     
     if (self)
     {
         self.renderTarget = [[NuoShadowMapTarget alloc] init];
-        self.renderTarget.device = device;
-        self.device = device;
+        self.renderTarget.device = commandQueue.device;
+        self.commandQueue = commandQueue;
         
         ((NuoShadowMapTarget*)self.renderTarget).name = name;
         
@@ -57,8 +57,8 @@
     
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
-        transBuffers[i] = [self.device newBufferWithLength:sizeof(NuoUniforms)
-                                                   options:MTLResourceOptionCPUCacheModeDefault];
+        transBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoUniforms)
+                                                                options:MTLResourceOptionCPUCacheModeDefault];
     }
     
     _transUniformBuffers = [[NSArray alloc] initWithObjects:transBuffers count:kInFlightBufferCount];

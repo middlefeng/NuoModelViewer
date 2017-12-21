@@ -23,8 +23,8 @@
 @property (nonatomic, weak) id<MTLTexture> immediateResult;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-            withSceneParameter:(id<NuoMeshSceneParametersProvider>)sceneParameter;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                  withSceneParameter:(id<NuoMeshSceneParametersProvider>)sceneParameter;
 
 - (void)setMeshes:(NSArray<NuoMesh*>*)meshes;
 
