@@ -21,10 +21,9 @@
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    if (self = [super initWithCommandQueue:commandQueue
-                           withPixelFormat:MTLPixelFormatBGRA8Unorm
-                           withSampleCount:1])
+    if (self = [super init])
     {
+        self.commandQueue = commandQueue;
         [self resetResources];
     }
     

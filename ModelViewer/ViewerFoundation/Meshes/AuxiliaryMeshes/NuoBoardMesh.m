@@ -19,9 +19,9 @@
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
-            withVerticesBuffer:(void *)buffer withLength:(size_t)length
-                   withIndices:(void *)indices withLength:(size_t)indicesLength
-                 withDimension:(NuoCoord*)dimensions
+                  withVerticesBuffer:(void *)buffer withLength:(size_t)length
+                         withIndices:(void *)indices withLength:(size_t)indicesLength
+                       withDimension:(NuoCoord*)dimensions
 {
     self = [super initWithCommandQueue:commandQueue
                     withVerticesBuffer:buffer withLength:length
