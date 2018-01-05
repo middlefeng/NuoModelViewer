@@ -1,0 +1,335 @@
+return
+{
+    canvas = 
+    {
+        width = 1369.000000,
+        height = 740.000000,
+    },
+
+    rotationMatrix = 
+    {
+        [0] = 
+        {
+            [0] = 1.000000,
+            [1] = 0.000000,
+            [2] = 0.000000,
+            [3] = 0.000000,
+        },
+        [1] = 
+        {
+            [0] = 0.000000,
+            [1] = 1.000000,
+            [2] = 0.000000,
+            [3] = 0.000000,
+        },
+        [2] = 
+        {
+            [0] = 0.000000,
+            [1] = 0.000000,
+            [2] = 1.000000,
+            [3] = 0.000000,
+        },
+        [3] = 
+        {
+            [0] = 0.001451,
+            [1] = -1.293047,
+            [2] = -0.399486,
+            [3] = 1.000000,
+        },
+    },
+
+    translationMatrix = 
+    {
+        [0] = 
+        {
+            [0] = 1.000000,
+            [1] = 0.000000,
+            [2] = 0.000000,
+            [3] = 0.000000,
+        },
+        [1] = 
+        {
+            [0] = 0.000000,
+            [1] = 1.000000,
+            [2] = 0.000000,
+            [3] = 0.000000,
+        },
+        [2] = 
+        {
+            [0] = 0.000000,
+            [1] = 0.000000,
+            [2] = 1.000000,
+            [3] = 0.000000,
+        },
+        [3] = 
+        {
+            [0] = 0.000000,
+            [1] = 0.000000,
+            [2] = -19.133156,
+            [3] = 1.000000,
+        },
+    },
+
+    boards = 
+    {
+        [1] = 
+        {
+            dimensions = 
+            {
+                width = 12.000000,
+                height = 12.000000,
+                thickness = 0.001000,
+            },
+
+            translationMatrix = 
+            {
+                [0] = 
+                {
+                    [0] = 1.000000,
+                    [1] = 0.000000,
+                    [2] = 0.000000,
+                    [3] = 0.000000,
+                },
+                [1] = 
+                {
+                    [0] = 0.000000,
+                    [1] = 1.000000,
+                    [2] = 0.000000,
+                    [3] = 0.000000,
+                },
+                [2] = 
+                {
+                    [0] = 0.000000,
+                    [1] = 0.000000,
+                    [2] = 1.000000,
+                    [3] = 0.000000,
+                },
+                [3] = 
+                {
+                    [0] = 0.000000,
+                    [1] = 0.000000,
+                    [2] = -20.126982,
+                    [3] = 1.000000,
+                },
+            },
+
+            rotationMatrix = 
+            {
+                [0] = 
+                {
+                    [0] = 1.000000,
+                    [1] = 0.000000,
+                    [2] = 0.000000,
+                    [3] = 0.000000,
+                },
+                [1] = 
+                {
+                    [0] = 0.000000,
+                    [1] = 1.000000,
+                    [2] = 0.000000,
+                    [3] = 0.000000,
+                },
+                [2] = 
+                {
+                    [0] = 0.000000,
+                    [1] = 0.000000,
+                    [2] = 1.000000,
+                    [3] = 0.000000,
+                },
+                [3] = 
+                {
+                    [0] = 0.000000,
+                    [1] = 0.000000,
+                    [2] = 0.000000,
+                    [3] = 1.000000,
+                },
+            },
+
+        },
+
+    },
+
+    view = 
+    {
+        FOV = 0.323013,
+    },
+
+    models = 
+    {
+        [1] = 
+        {
+            name = "CONTROL_Circle",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [2] = 
+        {
+            name = "WINGS_Circle.004",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [3] = 
+        {
+            name = "FAN_Sphere",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [4] = 
+        {
+            name = "doorgclose_Circle.002",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [5] = 
+        {
+            name = "doorpclose_Circle.017",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [6] = 
+        {
+            name = "GLASS_Circle.007",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 0.419428,
+        },
+
+        [7] = 
+        {
+            name = "doorpopen_Circle.003",
+            enabled = false,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [8] = 
+        {
+            name = "flapsUP_Circle.006",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [9] = 
+        {
+            name = "flapsDW_Circle.015",
+            enabled = false,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [10] = 
+        {
+            name = "gearAUX_Cube.003",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [11] = 
+        {
+            name = "doorgopen_Circle.001",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+        [12] = 
+        {
+            name = "gearDW_Circle.013",
+            enabled = true,
+            smooth = 0.800000,
+            smoothConservative = false,
+            cullModeReverse = false,
+            opacity = 1.000000,
+        },
+
+    },
+
+    lights = 
+    {
+        [0] = 
+        {
+            rotateX = -0.314159,
+            rotateY = -1.068141,
+            density = 2.115234,
+            spacular = 0.814564,
+            enableShadow = true,
+            shadowSoften = 1.237859,
+            shadowBias = 0.004453,
+        },
+
+        [1] = 
+        {
+            rotateX = -2.010619,
+            rotateY = -0.031416,
+            density = 0.000000,
+            spacular = 0.000000,
+            enableShadow = true,
+            shadowSoften = 0.000000,
+            shadowBias = 0.000000,
+        },
+
+        [2] = 
+        {
+            rotateX = 1.005309,
+            rotateY = 0.596902,
+            density = 0.000000,
+            spacular = 0.000000,
+            enableShadow = false,
+        },
+
+        [3] = 
+        {
+            rotateX = 0.000000,
+            rotateY = 0.000000,
+            density = 0.000000,
+            spacular = 0.000000,
+            enableShadow = false,
+        },
+
+        ambient = 0.696033,
+
+        ambientParams = 
+        {
+            bias = 0.116323,
+            intensity = 2.243201,
+            range = 0.450501,
+            scale = 0.311307,
+        },
+
+    },
+
+}
