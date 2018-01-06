@@ -241,7 +241,7 @@
 
 - (CGSize)popoverSheetcontentSize:(NuoPopoverSheet *)sheet
 {
-    return CGSizeMake(300, 50);
+    return CGSizeMake(300, 70);
 }
 
 - (NSViewController *)popoverSheetcontentViewController:(NuoPopoverSheet *)sheet

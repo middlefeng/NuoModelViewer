@@ -44,8 +44,12 @@
     _occulderSlider.floatValue = _occluderSearchRadius;
     
     CGSize viewSize = self.view.bounds.size;
-    CGRect labelFrame = CGRectMake(0, 0, 158, 18);
-    labelFrame.origin.y = 12;
+    const CGFloat kLineHeight = 18;
+    const CGFloat kLineSpace = 8;
+    CGFloat baseVertical = viewSize.height - kLineHeight - 12;
+    
+    CGRect labelFrame = CGRectMake(0, 0, 158, kLineHeight);
+    labelFrame.origin.y = baseVertical;
     label.frame = labelFrame;
     
     static float kFieldSpace = 8;
@@ -54,6 +58,29 @@
     sliderFrame.origin.x += label.frame.size.width + kFieldSpace;
     sliderFrame.size.width = viewSize.width - label.frame.size.width - kFieldSpace * 2;
     _occulderSlider.frame = sliderFrame;
+    
+    // sample count
+    
+    baseVertical -= (kLineHeight + kLineSpace);
+    
+    NSTextField* labelDensity = [self createLabel:@"Occluder Samples:"];
+    labelFrame.origin.y = baseVertical;
+    labelDensity.frame = labelFrame;
+    
+    NSPopUpButton* samplePopup = [NSPopUpButton new];
+    [samplePopup addItemWithTitle:@"36"];
+    [samplePopup addItemWithTitle:@"16"];
+    [samplePopup setFont:[NSFont fontWithName:samplePopup.font.fontName size:11]];
+    [samplePopup setControlSize:NSControlSizeSmall];
+    
+    CGRect samplePopupFrame = labelFrame;
+    samplePopupFrame.size.height = 30.0;
+    samplePopupFrame.size.width = 80;
+    samplePopupFrame.origin.x += labelFrame.size.width + kFieldSpace;
+    samplePopupFrame.origin.y -= (samplePopupFrame.size.height - labelFrame.size.height) / 2.0 + 2.0;
+    samplePopup.frame = samplePopupFrame;
+    
+    [self.view addSubview:samplePopup];
 }
 
 
