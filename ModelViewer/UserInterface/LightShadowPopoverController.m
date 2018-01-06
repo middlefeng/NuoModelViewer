@@ -19,6 +19,7 @@
 @implementation LightShadowPopoverController
 {
     NSSlider* _occulderSlider;
+    NSPopUpButton* _occluderSamplePopup;
 }
 
 - (instancetype)initWithPopover:(NSPopover*)popover
@@ -67,20 +68,25 @@
     labelFrame.origin.y = baseVertical;
     labelDensity.frame = labelFrame;
     
-    NSPopUpButton* samplePopup = [NSPopUpButton new];
-    [samplePopup addItemWithTitle:@"36"];
-    [samplePopup addItemWithTitle:@"16"];
-    [samplePopup setFont:[NSFont fontWithName:samplePopup.font.fontName size:11]];
-    [samplePopup setControlSize:NSControlSizeSmall];
+    NSPopUpButton* _occluderSamplePopup = [NSPopUpButton new];
+    [_occluderSamplePopup addItemWithTitle:@"36"];
+    [_occluderSamplePopup addItemWithTitle:@"16"];
+    [_occluderSamplePopup setFont:[NSFont fontWithName:_occluderSamplePopup.font.fontName size:11]];
+    [_occluderSamplePopup setControlSize:NSControlSizeSmall];
+    
+    if (_occluderSearchSampleCount == 3)
+        [_occluderSamplePopup selectItemWithTitle:@"36"];
+    else
+        [_occluderSamplePopup selectItemWithTitle:@"16"];
     
     CGRect samplePopupFrame = labelFrame;
     samplePopupFrame.size.height = 30.0;
     samplePopupFrame.size.width = 80;
     samplePopupFrame.origin.x += labelFrame.size.width + kFieldSpace;
     samplePopupFrame.origin.y -= (samplePopupFrame.size.height - labelFrame.size.height) / 2.0 + 2.0;
-    samplePopup.frame = samplePopupFrame;
+    _occluderSamplePopup.frame = samplePopupFrame;
     
-    [self.view addSubview:samplePopup];
+    [self.view addSubview:_occluderSamplePopup];
 }
 
 
@@ -118,6 +124,11 @@
 
 - (void)lightShadowSettingsChange:(id)sender
 {
+    if ([_occluderSamplePopup indexOfSelectedItem] == 0)
+        [_sourcePanel setShadowOccluderSampleCount:3];
+    else
+        [_sourcePanel setShadowOccluderSampleCount:2];
+    
     [_sourcePanel setShadowOccluderRadius:_occulderSlider.floatValue];
     [_sourcePanel lightSettingsChange:self];
 }

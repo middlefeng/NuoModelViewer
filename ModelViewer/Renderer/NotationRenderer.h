@@ -44,6 +44,7 @@
 - (void)setSpacular:(float)spacular;
 - (void)setShadowSoften:(float)shadowSoften;
 - (void)setShadowOccluderRadius:(float)shadowOccluderRadius;
+- (void)setShaowOccluderSampleCount:(size_t)sampleCount;
 - (void)setShadowBias:(float)shadowBias;
 
 

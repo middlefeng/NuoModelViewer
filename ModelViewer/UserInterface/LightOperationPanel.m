@@ -232,6 +232,7 @@
     {
         [self setShadowSoften:lightSource.shadowSoften];
         [self setShadowOccluderRadius:lightSource.shadowOccluderRadius];
+        [self setShadowOccluderSampleCount:lightSource.shadowOccluderSampleCount];
         [self setShadowBias:lightSource.shadowBias];
     }
 }

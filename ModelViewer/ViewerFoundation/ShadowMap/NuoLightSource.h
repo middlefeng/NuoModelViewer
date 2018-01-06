@@ -19,6 +19,7 @@
 @property (nonatomic, assign) bool enableShadow;
 @property (nonatomic, assign) float shadowSoften;
 @property (nonatomic, assign) float shadowOccluderRadius;
+@property (nonatomic, assign) size_t shadowOccluderSampleCount;
 @property (nonatomic, assign) float shadowBias;
 
 @end

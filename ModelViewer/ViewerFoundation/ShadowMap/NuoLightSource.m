@@ -8,6 +8,20 @@
 
 #import "NuoLightSource.h"
 
+
 @implementation NuoLightSource
+
+- (instancetype)init
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _shadowOccluderRadius = 5.0f;
+        _shadowOccluderSampleCount = 3;
+    }
+    
+    return self;
+}
 
 @end

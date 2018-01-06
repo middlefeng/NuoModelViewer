@@ -348,7 +348,7 @@ float3 specular_common(float3 materialSpecularColor, float materialSpecularPower
 
 
 
-float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius, float occluderRadius,
+float shadow_penumbra_factor(const float2 texelSize, size_t occluderSampleCount, float occluderRadius,
                              float shadowMapBias, float modelDepth, float2 shadowCoord,
                              metal::depth2d<float> shadowMap, metal::sampler samplr)
 {
@@ -360,8 +360,8 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
     const float sampleEnlargeFactor = occluderRadius;
     
     const float2 searchSampleSize = texelSize * sampleEnlargeFactor;
-    const float2 searchRegion = shadowMapSampleRadius * 2 * searchSampleSize;
-    const float searchDiameter = shadowMapSampleRadius * 2 * 2;
+    const float2 searchRegion = occluderSampleCount * 2 * searchSampleSize;
+    const float searchDiameter = occluderSampleCount * 2 * 2;
     const float sampleDiameter = length(texelSize);
     
     float xCurrentSearch = shadowCoord.x - searchRegion.x;
@@ -436,7 +436,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
         float penumbraFactor = 1.0;
         if (kShadowPCSS)
         {
-            penumbraFactor = shadow_penumbra_factor(kSampleSizeBase, shadowMapSampleRadius, shadowParams.occluderRadius,
+            penumbraFactor = shadow_penumbra_factor(kSampleSizeBase, shadowParams.occluderSampleCount, shadowParams.occluderRadius,
                                                     shadowMapBias, modelDepth, shadowCoord,
                                                     shadowMap, samplr);
             

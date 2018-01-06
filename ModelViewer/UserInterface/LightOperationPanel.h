@@ -25,6 +25,7 @@
 @property (nonatomic) BOOL shadowEnabled;
 @property (nonatomic) float shadowSoften;
 @property (nonatomic) float shadowOccluderRadius;
+@property (nonatomic) size_t shadowOccluderSampleCount;
 @property (nonatomic) float shadowBias;
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;

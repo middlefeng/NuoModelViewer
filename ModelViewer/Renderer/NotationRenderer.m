@@ -231,6 +231,12 @@
 }
 
 
+- (void)setShaowOccluderSampleCount:(size_t)sampleCount
+{
+    _currentLightVector.lightSourceDesc.shadowOccluderSampleCount = sampleCount;
+}
+
+
 - (void)setShadowBias:(float)bias
 {
     _currentLightVector.lightSourceDesc.shadowBias = bias;
