@@ -212,8 +212,14 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
     PShapeMapByMaterial shapeMap = GetShapeVectorByMaterial(_shapes, _materials, loadOption.combineShapes);
     
     std::vector<PNuoModelBase> models;
-    std::map<PNuoModelBase, NuoModelOption> modelOptions;
     std::vector<uint32> indices;
+    
+    NuoModelOption options;
+    options._textured = loadOption.textured;
+    options._textureEmbedMaterialTransparency = loadOption.textureEmbeddingMaterialTransparency;
+    options._texturedBump = loadOption.texturedBump;
+    options._basicMaterialized = loadOption.basicMaterialized;
+    options._physicallyReflection = loadOption.physicallyReflection;
     
     unsigned long vertexNumTotal = 0;
     unsigned long vertexNumLoaded = 0;
@@ -224,13 +230,6 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
     {
         const NuoMaterial material(shapeItr.first);
         const tinyobj::shape_t& shape = shapeItr.second;
-        
-        NuoModelOption options;
-        options._textured = loadOption.textured;
-        options._textureEmbedMaterialTransparency = loadOption.textureEmbeddingMaterialTransparency;
-        options._texturedBump = loadOption.texturedBump;
-        options._basicMaterialized = loadOption.basicMaterialized;
-        options._physicallyReflection = loadOption.physicallyReflection;
         
         PNuoModelBase modelBase = CreateModel(options, material, shape.name);
         
@@ -282,7 +281,6 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         }
         
         models.push_back(modelBase);
-        modelOptions.insert(std::make_pair(modelBase, options));
         
         vertexNumLoaded += shape.mesh.indices.size();
         
@@ -297,7 +295,6 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
     {
         NuoBox boundingBox = model->GetBoundingBox();
         
-        NuoModelOption options = modelOptions[model];
         NuoMesh* mesh = CreateMesh(options, device, commandQueue, model);
         
         NuoMeshBox* meshBounding = [[NuoMeshBox alloc] init];
