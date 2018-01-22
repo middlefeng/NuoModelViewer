@@ -14,7 +14,6 @@
 #include <map>
 
 #include <simd/simd.h>
-#include "NuoTypes.h"
 
 
 
