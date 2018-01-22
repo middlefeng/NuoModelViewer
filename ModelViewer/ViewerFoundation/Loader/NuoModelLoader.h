@@ -6,28 +6,46 @@
 //  Copyright © 2016 middleware. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import <Metal/Metal.h>
-#import "NuoTypes.h"
 
 
-@class NuoMeshCompound;
-@class NuoMeshOption;
+#ifndef __NUO_MODEL_LOADER__
+#define __NUO_MODEL_LOADER__
 
 
-@interface NuoModelLoader : NSObject
-
-- (void)loadModel:(NSString*)path;
-
-
-/**
- *  Create a renderable GPU mesh. A GPU mesh consists of the continuous buffer where the vertex data
- *  is stored, the associated textures, and the associated pipeline state used for rendering.
- */
-- (NuoMeshCompound*)createMeshsWithOptions:(NuoMeshOption*)loadOption
-                                withDevice:(id<MTLDevice>)device
-                          withCommandQueue:(id<MTLCommandQueue>)commandQueue
-                              withProgress:(NuoProgressFunction)progress;
+#include "NuoModelBase.h"
+#include <functional>
 
 
-@end
+typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
+typedef std::function<void(float)> NuoModelLoaderProgress;
+
+
+class NuoModelLoader_Internal;
+
+
+class NuoModelLoader
+{
+
+public:
+    
+    NuoModelLoader();
+    ~NuoModelLoader();
+    
+    void LoadModel(const std::string& path);
+
+    /**
+     *  Create a renderable GPU mesh. A GPU mesh consists of the continuous buffer where the vertex data
+     *  is stored, the associated textures, and the associated pipeline state used for rendering.
+     */
+    std::vector<PNuoModelBase> CreateMeshWithOptions(const NuoModelOption& options, bool combineMaterial,
+                                                     NuoModelLoaderProgress progressFunc);
+    
+    
+private:
+    
+    NuoModelLoader_Internal* _internal;
+    
+};
+
+
+#endif

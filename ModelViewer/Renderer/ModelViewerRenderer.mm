@@ -24,6 +24,7 @@
 #import "NuoShadowMapRenderer.h"
 #import "NuoDeferredRenderer.h"
 #import "NuoDirectoryUtils.h"
+#import "NuoModelLoaderGPU.h"
 
 
 @interface ModelRenderer ()
@@ -40,7 +41,7 @@
 @property (assign) matrix_float4x4 viewTrans;
 @property (assign) matrix_float4x4 projection;
 
-@property (strong) NuoModelLoader* modelLoader;
+@property (strong) NuoModelLoaderGPU* modelLoader;
 
 
 @end
@@ -118,8 +119,10 @@
 - (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
                                      withProgress:(NuoProgressFunction)progress
 {
-    _modelLoader = [NuoModelLoader new];
-    [_modelLoader loadModel:path];
+    std::shared_ptr<NuoModelLoader> loader = std::make_shared<NuoModelLoader>();
+    loader->LoadModel(path.UTF8String);
+    
+    _modelLoader = [[NuoModelLoaderGPU alloc] initWithLoader:loader];
     
     [self createMeshs:commandQueue withProgress:^(float progressPercent)
          {
