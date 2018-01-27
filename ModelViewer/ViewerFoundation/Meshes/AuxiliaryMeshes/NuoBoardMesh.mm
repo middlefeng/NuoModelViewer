@@ -7,6 +7,8 @@
 //
 
 #import "NuoBoardMesh.h"
+#import "NuoMeshBounds.h"
+
 #include "NuoModelBoard.h"
 
 
@@ -16,7 +18,7 @@
 - (instancetype)initWithDevice:(id<MTLDevice>)device
             withVerticesBuffer:(void *)buffer withLength:(size_t)length
                    withIndices:(void *)indices withLength:(size_t)indicesLength
-                 withDimension:(NuoCoord*)coord;
+                 withDimension:(vector_float3)dimension;
 
 @end
 
@@ -25,10 +27,7 @@
 NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoModelBoard> model, bool shadowCastOnly)
 {
     NuoBoardMesh* resultMesh = nil;
-    NuoCoord* dimensions = [NuoCoord new];
-    dimensions.x = model->_width;
-    dimensions.y = model->_height;
-    dimensions.z = model->_thickness;
+    vector_float3 dimensions = { model->_width, model->_height, model->_thickness };
     
     resultMesh = [[NuoBoardMesh alloc] initWithDevice:device
                                    withVerticesBuffer:model->Ptr()
@@ -37,17 +36,10 @@ NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoMod
                                            withLength:model->IndicesLength()
                                         withDimension:dimensions];
     
-    NuoBox boundingBox = model->GetBoundingBox();
+    NuoMeshBounds* bounds = [NuoMeshBounds new];
+    *((NuoBounds*)[bounds boundingBox]) = model->GetBoundingBox();
     
-    NuoMeshBox* meshBounding = [[NuoMeshBox alloc] init];
-    meshBounding.span.x = boundingBox._spanX;
-    meshBounding.span.y = boundingBox._spanY;
-    meshBounding.span.z = boundingBox._spanZ;
-    meshBounding.center.x = boundingBox._centerX;
-    meshBounding.center.y = boundingBox._centerY;
-    meshBounding.center.z = boundingBox._centerZ;
-    
-    resultMesh.boundingBoxLocal = meshBounding;
+    resultMesh.boundsLocal = bounds;
     
     [resultMesh setShadowOverlayOnly:shadowCastOnly];
     [resultMesh makePipelineShadowState];

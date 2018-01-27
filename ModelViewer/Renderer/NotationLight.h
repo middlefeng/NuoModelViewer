@@ -12,7 +12,7 @@
 
 
 @class NuoLightSource;
-@class NuoMeshBox;
+@class NuoMeshBounds;
 
 
 @interface NotationLight : NSObject
@@ -29,7 +29,7 @@
               withInFlight:(unsigned int)inFlight;
 
 
-- (NuoMeshBox*)boundingBox;
+- (NuoMeshBounds*)bounds;
 - (CGPoint)headPointProjected;
 
 

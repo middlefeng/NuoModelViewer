@@ -13,7 +13,7 @@
 @implementation NuoBoardMesh
 {
     NuoMeshModeShaderParameter _meshMode;
-    NuoCoord* _dimensions;
+    vector_float3 _dimensions;
 }
 
 
@@ -21,7 +21,7 @@
 - (instancetype)initWithDevice:(id<MTLDevice>)device
             withVerticesBuffer:(void *)buffer withLength:(size_t)length
                    withIndices:(void *)indices withLength:(size_t)indicesLength
-                 withDimension:(NuoCoord*)dimensions
+                 withDimension:(vector_float3)dimensions
 {
     self = [super initWithDevice:device withVerticesBuffer:buffer
                       withLength:length withIndices:indices
@@ -111,7 +111,7 @@
 }
 
 
-- (NuoCoord*)dimensions
+- (vector_float3)dimensions
 {
     return _dimensions;
 }

@@ -10,6 +10,14 @@
 
 
 
+NuoBounds::NuoBounds()
+{
+    _center.x = _center.y = _center.z = 0.;
+    _span.x = _span.y = _span.z = 0.;
+}
+
+
+
 NuoBounds NuoBounds::Transform(const matrix_float4x4& matrix)
 {
     vector_float3 min = _center - _span / 2.0;

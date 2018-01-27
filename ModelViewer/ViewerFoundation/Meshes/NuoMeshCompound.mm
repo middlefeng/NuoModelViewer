@@ -7,6 +7,7 @@
 //
 
 #import "NuoMeshCompound.h"
+#import "NuoMeshBounds.h"
 
 
 @implementation NuoMeshCompound
@@ -47,11 +48,14 @@
 {
     _meshes = meshes;
     
-    NuoMeshBox* bounding = meshes[0].boundingBoxLocal;
+    NuoBounds bounds = *((NuoBounds*)[meshes[0].bounds boundingBox]);
     for (size_t i = 1; i < meshes.count; ++i)
-        bounding = [bounding unionWith:meshes[i].boundingBoxLocal];
+        bounds = bounds.Union(*((NuoBounds*)[meshes[i].bounds boundingBox]));
     
-    self.boundingBoxLocal = bounding;
+    NuoMeshBounds* meshBounds = [NuoMeshBounds new];
+    *((NuoBounds*)[meshBounds boundingBox]) = bounds;
+    
+    self.boundsLocal = meshBounds;
 }
 
 

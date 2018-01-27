@@ -84,7 +84,7 @@ size_t NuoModelBase::IndicesLength()
 
 
 
-NuoBox NuoModelBase::GetBoundingBox()
+NuoBounds NuoModelBase::GetBoundingBox()
 {
     float xMin = 1e9f, xMax = -1e9f;
     float yMin = 1e9f, yMax = -1e9f;
@@ -102,8 +102,14 @@ NuoBox NuoModelBase::GetBoundingBox()
         zMax = std::max(zMax, position.z);
     }
     
-    return NuoBox { (xMax + xMin) / 2.0f, (yMax + yMin) / 2.0f, (zMax + zMin) / 2.0f,
-                    xMax - xMin, yMax - yMin, zMax - zMin };
+    vector_float3 center = { (xMax + xMin) / 2.0f, (yMax + yMin) / 2.0f, (zMax + zMin) / 2.0f };
+    vector_float3 span = { xMax - xMin, yMax - yMin, zMax - zMin };
+    
+    NuoBounds result;
+    result._center = center;
+    result._span = span;
+    
+    return result;
 }
 
 

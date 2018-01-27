@@ -7,11 +7,12 @@
 //
 
 #import "NuoMesh.h"
+#include <simd/simd.h>
 
 
 @interface NuoBoardMesh : NuoMesh
 
-@property (strong, readonly) NuoCoord* dimensions;
+@property (assign, readonly) vector_float3 dimensions;
 @property (assign, nonatomic) BOOL shadowOverlayOnly;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;

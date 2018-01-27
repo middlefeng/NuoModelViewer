@@ -20,6 +20,8 @@
 #import <math.h>
 #import <AppKit/AppKit.h>
 
+#import "NuoMeshBounds.h"
+
 
 @interface NotationRenderer()
 
@@ -101,11 +103,11 @@
 
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
-    NuoMeshBox* bounding = _lightVectors[0].boundingBox;
+    NuoMeshBounds* meshBounds = _lightVectors[0].bounds;
+    struct NuoBoundsBase* bounds = [meshBounds boundingBox];
+    float modelSpan = fmax(bounds->_span.x, fmax(bounds->_span.y, bounds->_span.z));
     
     float zoom = -200.0;
-    
-    float modelSpan = [bounding.span maxDimension];
     
     const float modelNearest = - modelSpan;
     const float cameraDefaultDistance = (modelNearest - modelSpan);

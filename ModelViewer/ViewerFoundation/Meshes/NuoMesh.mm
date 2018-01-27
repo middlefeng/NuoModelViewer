@@ -1,5 +1,6 @@
 
 #import "NuoMesh.h"
+#import "NuoMeshBounds.h"
 
 #include "tiny_obj_loader.h"
 
@@ -20,180 +21,6 @@ const BOOL kShadowPCF = YES;
 
 
 
-@interface NuoCoord ()
-
-
-@property (assign, nonatomic) vector_float3 coord;
-
-
-@end
-
-
-
-@implementation NuoCoord
-
-
-- (void)setX:(float)x
-{
-    _coord.x = x;
-}
-
-
-
-- (float)x
-{
-    return _coord.x;
-}
-
-
-- (void)setY:(float)y
-{
-    _coord.y = y;
-}
-
-
-
-- (float)y
-{
-    return _coord.y;
-}
-
-
-- (void)setZ:(float)z
-{
-    _coord.z = z;
-}
-
-
-
-- (float)z
-{
-    return _coord.z;
-}
-
-
-- (float)maxDimension
-{
-    float max = std::max(_coord.x, _coord.y);
-    return std::max(max, _coord.z);
-}
-
-
-- (float)distanceTo:(NuoCoord*)other
-{
-    return vector_distance(_coord, other->_coord);
-}
-
-
-- (NuoCoord*)interpolateTo:(NuoCoord*)other byFactor:(float)factor
-{
-    NuoCoord* result = [NuoCoord new];
-    result->_coord = _coord + (other->_coord - _coord) * factor;
-    return result;
-}
-
-
-@end
-
-
-
-@implementation NuoBoundingSphere
-
-- (NuoBoundingSphere*)unionWith:(NuoBoundingSphere*)other
-{
-    float distance = [_center distanceTo:other.center];
-    NuoBoundingSphere *smaller, *larger;
-    if (_radius > other.radius)
-    {
-        smaller = other;
-        larger = self;
-    }
-    else
-    {
-        smaller = self;
-        larger = other;
-    }
-    
-    float futhestOtherReach = distance + smaller.radius;
-    float largerRadius = larger.radius;
-    
-    if (futhestOtherReach < largerRadius)
-    {
-        return larger;
-    }
-    else
-    {
-        NuoBoundingSphere* result = [NuoBoundingSphere new];
-        result.radius = (distance + other.radius + _radius) / 2.0;
-        
-        float newCenterDistance = result.radius - _radius;
-        float factor = newCenterDistance / distance;
-        result.center = [_center interpolateTo:other.center byFactor:factor];
-        
-        return result;
-    }
-}
-
-@end
-
-
-
-@implementation NuoMeshBox
-{
-    NuoBoundingSphere* _sphere;
-}
-
-
-
-- (instancetype)init
-{
-    self = [super init];
-    if (self)
-    {
-        _center = [NuoCoord new];
-        _span = [NuoCoord new];
-    }
-    return self;
-}
-
-
-
-- (NuoMeshBox*)unionWith:(NuoMeshBox*)other
-{
-    NuoMeshBox* newBox = [NuoMeshBox new];
-    vector_float3 vMin, vMax;
-    
-    vMin.x = std::min(_center.x - _span.x / 2.0, other.center.x - other.span.x / 2.0);
-    vMax.x = std::max(_center.x + _span.x / 2.0, other.center.x + other.span.x / 2.0);
-    vMin.y = std::min(_center.y - _span.y / 2.0, other.center.y - other.span.y / 2.0);
-    vMax.y = std::max(_center.y + _span.y / 2.0, other.center.y + other.span.y / 2.0);
-    vMin.z = std::min(_center.z - _span.z / 2.0, other.center.z - other.span.z / 2.0);
-    vMax.z = std::max(_center.z + _span.z / 2.0, other.center.z + other.span.z / 2.0);
-    
-    newBox.center.coord = (vMin + vMax) / 2.0f;
-    newBox.span.coord = vMax - vMin;
-    
-    return newBox;
-}
-
-
-- (NuoBoundingSphere*)boundingSphere
-{
-    if (!_sphere)
-    {
-        _sphere = [NuoBoundingSphere new];
-        _sphere.center = _center;
-        _sphere.radius = [_span maxDimension] * 1.414 / 2.0;
-    }
-    
-    return _sphere;
-}
-
-
-@end
-
-
-
 
 @implementation NuoMesh
 {
@@ -206,7 +33,6 @@ const BOOL kShadowPCF = YES;
 
 @synthesize indexBuffer = _indexBuffer;
 @synthesize vertexBuffer = _vertexBuffer;
-@synthesize boundingBoxLocal = _boundingBoxLocal;
 
 
 
@@ -279,42 +105,33 @@ const BOOL kShadowPCF = YES;
     _transformBuffers = mesh.transformBuffers;
     _enabled = mesh.enabled;
     
-    [self setBoundingBoxLocal:mesh.boundingBoxLocal];
+    [self setBoundsLocal:mesh.boundsLocal];
 }
 
 
 
-- (void)updateBoundingSphere
+- (void)updateBounds
 {
-    vector_float4 localCenter =
-    {
-        _boundingSphereLocal.center.x,
-        _boundingSphereLocal.center.y,
-        _boundingSphereLocal.center.z,
-        1,
-    };
-    localCenter = matrix_multiply(_transformPoise, localCenter);
-    localCenter = matrix_multiply(_transformTranslate, localCenter);
+    matrix_float4x4 transform = matrix_multiply(_transformTranslate, _transformPoise);
     
-    NuoCoord* center = [NuoCoord new];
-    center.x = localCenter.x;
-    center.y = localCenter.y;
-    center.z = localCenter.z;
+    if (!_boundsLocal)
+        return;
     
-    if (!_boundingSphere)
-        _boundingSphere = [NuoBoundingSphere new];
-    _boundingSphere.center = center;
-    _boundingSphere.radius = _boundingSphereLocal.radius;
+    NuoBounds localBounds = *((NuoBounds*)[_boundsLocal boundingBox]);
+    
+    if (!_bounds)
+        _bounds = [NuoMeshBounds new];
+    
+    NuoBounds* boundsProperty = (NuoBounds*)[_bounds boundingBox];
+    *boundsProperty = localBounds.Transform(transform);
 }
 
 
 
-- (void)setBoundingBoxLocal:(NuoMeshBox *)boundingBox
+- (void)setBoundsLocal:(NuoMeshBounds *)boundsLocal
 {
-    _boundingBoxLocal = boundingBox;
-    _boundingSphereLocal = [_boundingBoxLocal boundingSphere];
-    
-    [self updateBoundingSphere];
+    _boundsLocal = boundsLocal;
+    [self updateBounds];
 }
 
 
@@ -322,7 +139,7 @@ const BOOL kShadowPCF = YES;
 - (void)setTransformTranslate:(matrix_float4x4)transformTranslate
 {
     _transformTranslate = transformTranslate;
-    [self updateBoundingSphere];
+    [self updateBounds];
 }
 
 
@@ -625,17 +442,17 @@ const BOOL kShadowPCF = YES;
 
 - (void)centerMesh
 {
-    NuoMeshBox* bounding = _boundingBoxLocal;
+    NuoBoundsBase* bounds = [_boundsLocal boundingBox];
     const vector_float3 translationToCenter =
     {
-        - bounding.center.x,
-        - bounding.center.y,
-        - bounding.center.z
+        - bounds->_center.x,
+        - bounds->_center.y,
+        - bounds->_center.z
     };
     const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
     _transformPoise = modelCenteringMatrix;
     
-    [self updateBoundingSphere];
+    [self updateBounds];
 }
 
 

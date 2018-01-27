@@ -1,6 +1,7 @@
 #import "ModelViewerRenderer.h"
 
 #import "NuoUniforms.h"
+#import "NuoMeshBounds.h"
 
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
@@ -133,7 +134,8 @@
     
     // move model from camera for a default distance (3 times of r)
     //
-    float radius = _mainModelMesh.boundingSphere.radius;
+    vector_float3 span = [_mainModelMesh.bounds boundingBox]->_span;
+    float radius = std::max(span.x, std::max(span.y, span.z)) / 2.0;
     const float defaultDistance = - 3.0 * radius;
     const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
     [_mainModelMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
@@ -289,7 +291,8 @@
     modelBoard->CreateBuffer();
     NuoBoardMesh* boardMesh = CreateBoardMesh(self.device, modelBoard, [_modelOptions basicMaterialized]);
     
-    float radius = boardMesh.boundingSphere.radius;
+    NuoBoundsBase* bounds = [boardMesh.bounds boundingBox];
+    float radius = std::max(bounds->_span.x, bounds->_span.y);
     const float defaultDistance = - 3.0 * radius;
     const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
     [boardMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
@@ -402,7 +405,7 @@
                 exporter.StartEntry("dimensions");
                 exporter.StartTable();
                 {
-                    NuoCoord* dimension = boardMesh.dimensions;
+                    vector_float3 dimension = boardMesh.dimensions;
                     exporter.StartEntry("width");
                     exporter.SetEntryValueFloat(dimension.x);
                     exporter.EndEntry(false);
@@ -747,11 +750,14 @@
 
 - (void)handleDeltaPosition
 {
-    float radius = _selectedMesh.boundingSphere.radius;
+    NuoBounds bounds;
+    if (_selectedMesh)
+        bounds = *((NuoBounds*)[_selectedMesh.bounds boundingBox]);
+    float radius = std::max(bounds._span.x, std::max(bounds._span.y, bounds._span.z));
     
     // simply using "z" works until the view matrix is no longer an identitiy
     //
-    float distance = _selectedMesh.boundingSphere.center.z;
+    float distance = bounds._center.z;
     
     const float distanceDelta = _zoomDelta * radius / 10.0f;
     const float cameraDistance = distanceDelta + distance;
@@ -800,30 +806,36 @@
     //
     [self handleDeltaPosition];
     
-    float sceneRadius = 0;
     float sceneCenter = 0;
-    NuoBoundingSphere* sceneSphere = nil;
+    NuoBounds bounds;
+    NuoMeshBounds* meshBounds;
     for (NuoMesh* mesh in _meshes)
     {
-        if (!sceneSphere)
-            sceneSphere = mesh.boundingSphere;
+        if (!meshBounds)
+        {
+            meshBounds = mesh.bounds;
+            bounds = *((NuoBounds*)[meshBounds boundingBox]);
+        }
         else
-            sceneSphere = [sceneSphere unionWith:mesh.boundingSphere];
+        {
+            bounds = bounds.Union(*(NuoBounds*)[mesh.bounds boundingBox]);
+        }
     }
-    sceneRadius = sceneSphere.radius;
-    sceneCenter = sceneSphere.center.z;
+
+    sceneCenter = bounds._center.z;
     
     vector_float3 center = { 0.0, 0.0, sceneCenter };
-    vector_float4 center4 = { sceneSphere.center.x, sceneSphere.center.y, sceneSphere.center.z, 1.0 };
+    vector_float4 center4 = { bounds._center.x, bounds._center.y, bounds._center.z, 1.0 };
     matrix_float4x4 viewTrans = matrix_rotation_around(_viewTrans, center);
     
     vector_float4 transferedCenter = matrix_multiply(viewTrans, center4);
     sceneCenter = transferedCenter.z;
 
-    float maxSpan = sceneRadius * 2.0;
+    bounds = bounds.Transform(viewTrans);
+    float maxSpan = bounds._span.z;
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
-    float near = -sceneCenter - sceneRadius + 0.01;
+    float near = -sceneCenter - maxSpan / 2.0 + 0.01;
     float far = near + maxSpan + 0.02;
     near = std::max<float>(0.001, near);
     far = std::max<float>(near + 0.001, far);
@@ -961,7 +973,7 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        NuoCoord* center = mesh.boundingSphere.center;
+        vector_float3 center = [mesh.bounds boundingBox]->_center;
         vector_float4 centerVec = { center.x, center.y, center.z, 1.0 };
         vector_float4 centerProjected = matrix_multiply(_projection, centerVec);
         vector_float2 centerOnScreen = centerProjected.xy / centerProjected.w;
