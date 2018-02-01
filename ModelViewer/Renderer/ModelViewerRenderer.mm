@@ -391,6 +391,12 @@
     }
     
     {
+        exporter.StartEntry("viewMatrix");
+        exporter.SetMatrix(_viewTrans);
+        exporter.EndEntry(true);
+    }
+    
+    {
         exporter.StartEntry("boards");
         exporter.StartTable();
         
@@ -592,6 +598,11 @@
     [lua getField:@"translationMatrix" fromTable:-1];
     if (![lua isNil:-1])
         [_mainModelMesh setTransformTranslate:[lua getMatrixFromTable:-1]];
+    [lua removeField];
+    
+    [lua getField:@"viewMatrix" fromTable:-1];
+    if (![lua isNil:-1])
+        _viewTrans = [lua getMatrixFromTable:-1];
     [lua removeField];
     
     [lua getField:@"view" fromTable:-1];
