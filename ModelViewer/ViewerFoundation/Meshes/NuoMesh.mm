@@ -118,19 +118,33 @@ const BOOL kShadowPCF = YES;
         return;
     
     NuoBounds localBounds = *((NuoBounds*)[_boundsLocal boundingBox]);
+    NuoSphere localSphere = *((NuoSphere*)[_boundsLocal boundingSphere]);
     
     if (!_bounds)
         _bounds = [NuoMeshBounds new];
     
     NuoBounds* boundsProperty = (NuoBounds*)[_bounds boundingBox];
+    NuoSphere* sphereProperty = (NuoSphere*)[_bounds boundingSphere];
     *boundsProperty = localBounds.Transform(transform);
+    *sphereProperty = localSphere.Transform(transform);
 }
 
 
 
-- (void)setBoundsLocal:(NuoMeshBounds *)boundsLocal
+- (void)setBoundsLocal:(NuoMeshBounds*)boundsLocal
 {
     _boundsLocal = boundsLocal;
+    
+    // calculate the sphere from box if the former is not calculated.
+    // some subclass might do this by itself (such as compound mesh)
+    //
+    if (_boundsLocal.boundingSphere->_radius == 0.)
+    {
+        NuoBounds* localBounds = ((NuoBounds*)[_boundsLocal boundingBox]);
+        NuoSphere* localSphere = ((NuoSphere*)[_boundsLocal boundingSphere]);
+        *localSphere = localBounds->Sphere();
+    }
+    
     [self updateBounds];
 }
 

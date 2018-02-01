@@ -11,8 +11,13 @@
 #include "NuoBounds.h"
 
 
+/**
+ *  A wrapper that minimizes the spread of C++.
+ */
+
 @interface NuoMeshBounds : NSObject
 
 - (struct NuoBoundsBase*)boundingBox;
+- (struct NuoSphereBase*)boundingSphere;
 
 @end

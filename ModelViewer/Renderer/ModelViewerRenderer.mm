@@ -819,6 +819,7 @@
     
     float sceneCenter = 0;
     NuoBounds bounds;
+    NuoSphere sphere;
     NuoMeshBounds* meshBounds;
     for (NuoMesh* mesh in _meshes)
     {
@@ -826,17 +827,22 @@
         {
             meshBounds = mesh.bounds;
             bounds = *((NuoBounds*)[meshBounds boundingBox]);
+            sphere = *((NuoSphere*)[meshBounds boundingBox]);
         }
         else
         {
             bounds = bounds.Union(*(NuoBounds*)[mesh.bounds boundingBox]);
+            sphere = sphere.Union(*(NuoSphere*)[mesh.bounds boundingSphere]);
         }
     }
 
-    sceneCenter = bounds._center.z;
+    // still use the bounding sphere center for the scene rotation,
+    // as this is in line with the previous behavior
+    
+    sceneCenter = sphere._center.z;
     
     vector_float3 center = { 0.0, 0.0, sceneCenter };
-    vector_float4 center4 = { bounds._center.x, bounds._center.y, bounds._center.z, 1.0 };
+    vector_float4 center4 = { sphere._center.x, sphere._center.y, sphere._center.z, 1.0 };
     matrix_float4x4 viewTrans = matrix_rotation_around(_viewTrans, center);
     
     vector_float4 transferedCenter = matrix_multiply(viewTrans, center4);

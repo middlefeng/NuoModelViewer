@@ -49,11 +49,16 @@
     _meshes = meshes;
     
     NuoBounds bounds = *((NuoBounds*)[meshes[0].bounds boundingBox]);
+    NuoSphere sphere = *((NuoSphere*)[meshes[0].bounds boundingSphere]);
     for (size_t i = 1; i < meshes.count; ++i)
+    {
         bounds = bounds.Union(*((NuoBounds*)[meshes[i].bounds boundingBox]));
+        sphere = sphere.Union(*((NuoSphere*)[meshes[i].bounds boundingSphere]));
+    }
     
     NuoMeshBounds* meshBounds = [NuoMeshBounds new];
     *((NuoBounds*)[meshBounds boundingBox]) = bounds;
+    *((NuoSphere*)[meshBounds boundingSphere]) = sphere;
     
     self.boundsLocal = meshBounds;
 }
