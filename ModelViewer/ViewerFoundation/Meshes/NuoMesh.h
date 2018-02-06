@@ -28,6 +28,10 @@ extern const BOOL kShadowPCF;
 
 
 
+@property (nonatomic, assign) NSUInteger sampleCount;
+
+
+
 // mesh rotation in model coordinate, around given axis.
 // better for script-based rotation
 //
@@ -90,6 +94,8 @@ extern const BOOL kShadowPCF;
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader;
 - (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor;
 - (void)makeDepthStencilState;
+
+- (void)makeGPUStates;
 
 
 - (void)setRawModel:(void*)model;

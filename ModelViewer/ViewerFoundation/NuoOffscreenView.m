@@ -55,7 +55,7 @@
         NSUInteger lastRender = [renderPasses count] - 1;
         NuoRenderPassTarget* lastTarget = renderPasses[lastRender].renderTarget;
         MTLPixelFormat scenePixelFormat = lastTarget.targetPixelFormat;
-        uint sceneSampleCount = lastTarget.sampleCount;
+        NSUInteger sceneSampleCount = lastTarget.sampleCount;
         MTLClearColor mtlClearColor = lastTarget.clearColor;
         if (clearColor)
             mtlClearColor = MTLClearColorMake(clearColor.redComponent, clearColor.greenComponent,

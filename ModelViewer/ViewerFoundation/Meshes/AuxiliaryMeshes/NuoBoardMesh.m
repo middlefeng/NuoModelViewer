@@ -71,7 +71,7 @@
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmnFunc
                                                         constantValues:funcConstant error:nil];
-    pipelineDescriptor.sampleCount = kSampleCount;
+    pipelineDescriptor.sampleCount = self.sampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     

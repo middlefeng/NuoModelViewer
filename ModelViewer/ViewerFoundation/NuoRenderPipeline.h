@@ -49,6 +49,7 @@
                        inFlight:(uint)inFlight;
 
 - (void)setDrawableSize:(CGSize)size;
+- (void)setSampleCount:(NSUInteger)sampleCount;
 
 
 @end

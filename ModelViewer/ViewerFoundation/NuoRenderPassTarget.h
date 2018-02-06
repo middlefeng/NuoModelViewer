@@ -20,7 +20,7 @@
 
 @property (nonatomic, weak) id<MTLDevice> device;
 
-@property (nonatomic, assign) uint sampleCount;
+@property (nonatomic, assign) NSUInteger sampleCount;
 @property (nonatomic, assign) CGSize drawableSize;
 
 /**

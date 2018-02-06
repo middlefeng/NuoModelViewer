@@ -24,6 +24,12 @@
 }
 
 
+- (void)setSampleCount:(NSUInteger)sampleCount
+{
+    [_renderTarget setSampleCount:sampleCount];
+}
+
+
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                withInFlightIndex:(unsigned int)inFlight
 {

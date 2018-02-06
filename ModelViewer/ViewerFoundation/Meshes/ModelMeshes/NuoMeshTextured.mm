@@ -105,7 +105,7 @@ static CIContext* sCIContext = nil;
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_textured"
                                                         constantValues:funcConstant error:nil];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
-    pipelineDescriptor.sampleCount = kSampleCount;
+    pipelineDescriptor.sampleCount = self.sampleCount;
     
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];

@@ -44,6 +44,7 @@ const BOOL kShadowPCF = YES;
     {
         _transformPoise = matrix_identity_float4x4;
         _transformTranslate = matrix_identity_float4x4;
+        _sampleCount = kSampleCount;
     }
     
     return self;
@@ -84,6 +85,7 @@ const BOOL kShadowPCF = YES;
         
         _transformPoise = matrix_identity_float4x4;
         _transformTranslate = matrix_identity_float4x4;
+        _sampleCount = kSampleCount;
     }
     
     return self;
@@ -248,6 +250,16 @@ const BOOL kShadowPCF = YES;
 }
 
 
+- (void)setSampleCount:(NSUInteger)sampleCount
+{
+    if (_sampleCount != sampleCount)
+    {
+        _sampleCount = sampleCount;
+        [self makeGPUStates];
+    }
+}
+
+
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
@@ -270,7 +282,7 @@ const BOOL kShadowPCF = YES;
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmnFunc
                                                         constantValues:funcConstant
                                                                  error:nil];
-    pipelineDescriptor.sampleCount = kSampleCount;
+    pipelineDescriptor.sampleCount = _sampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
@@ -313,7 +325,7 @@ const BOOL kShadowPCF = YES;
     MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
     screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShader];
     screenSpacePipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmentShader constantValues:constants error:nil];
-    screenSpacePipelineDescriptor.sampleCount = kSampleCount;
+    screenSpacePipelineDescriptor.sampleCount = _sampleCount;
     
     // blending is turned OFF for all attachments, see comments to "FragementScreenSpace"
     //
@@ -367,6 +379,14 @@ const BOOL kShadowPCF = YES;
         depthStencilDescriptor.depthWriteEnabled = YES;
     
     _depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
+}
+
+- (void)makeGPUStates
+{
+    [self makePipelineScreenSpaceState];
+    [self makePipelineShadowState];
+    [self makePipelineState:[self makePipelineStateDescriptor]];
+    [self makeDepthStencilState];
 }
 
 
@@ -558,10 +578,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
     }
     
     [resultMesh setRawModel:model.get()];
-    [resultMesh makePipelineScreenSpaceState];
-    [resultMesh makePipelineShadowState];
-    [resultMesh makePipelineState:[resultMesh makePipelineStateDescriptor]];
-    [resultMesh makeDepthStencilState];
+    [resultMesh makeGPUStates];
     return resultMesh;
 }
 

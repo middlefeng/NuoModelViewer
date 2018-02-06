@@ -60,6 +60,12 @@
 }
 
 
+- (void)setSampleCount:(NSUInteger)sampleCount
+{
+    [_screenSpaceRenderer setSampleCount:sampleCount];
+}
+
+
 - (void)setMeshes:(NSArray<NuoMesh*>*)meshes
 {
     [_screenSpaceRenderer setMeshes:meshes];
@@ -90,12 +96,16 @@
 
 - (void)drawWithRenderPass:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight
 {
+    NSLog(@"Sample Count %u.", (unsigned int)self.renderTarget.sampleCount);
+    
     [renderPass setFragmentTexture:_screenSpaceRenderer.positionBuffer atIndex:0];
     [renderPass setFragmentTexture:_screenSpaceRenderer.normalBuffer atIndex:1];
     [renderPass setFragmentTexture:_screenSpaceRenderer.ambientBuffer atIndex:2];
     [renderPass setFragmentTexture:_screenSpaceRenderer.shdowOverlayBuffer atIndex:3];
     [renderPass setFragmentTexture:_immediateResult atIndex:4];
     [renderPass setFragmentBuffer:_deferredRenderParamBuffer offset:0 atIndex:0];
+    
+    int a = self.renderTarget.sampleCount;
     
     [_screenMesh drawMesh:renderPass indexBuffer:inFlight];
 }

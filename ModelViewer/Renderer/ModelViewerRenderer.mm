@@ -109,6 +109,21 @@
 }
 
 
+- (void)setSampleCount:(NSUInteger)sampleCount
+{
+    // no calling to super. because of the deferred pass, the sample
+    // count of the final target is always 1
+    
+    // no calling to shadow map render. they are not MSAA-ed
+    
+    [_immediateTarget setSampleCount:sampleCount];
+    [_deferredRenderer setSampleCount:sampleCount];
+    
+    for (NuoMesh* mesh in _meshes)
+        [mesh setSampleCount:sampleCount];
+}
+
+
 - (void)setRenderTarget:(NuoRenderPassTarget *)renderTarget
 {
     [super setRenderTarget:renderTarget];

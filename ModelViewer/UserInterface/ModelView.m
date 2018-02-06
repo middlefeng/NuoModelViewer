@@ -547,6 +547,8 @@ MouseDragMode;
 
 - (void)mouseDown:(NSEvent *)event
 {
+    [_modelRender setSampleCount:1];
+    
     if ([self isDissectSplitViewHandler:event])
     {
         _trackingSplitView = YES;
@@ -578,6 +580,8 @@ MouseDragMode;
 
 - (void)mouseUp:(NSEvent *)event
 {
+    [_modelRender setSampleCount:kSampleCount];
+    
     _trackingLighting = NO;
     _trackingSplitView = NO;
     [self render];

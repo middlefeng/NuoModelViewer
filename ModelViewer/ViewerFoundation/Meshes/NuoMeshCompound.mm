@@ -11,6 +11,9 @@
 
 
 @implementation NuoMeshCompound
+{
+    NSUInteger _sampleCount;
+}
 
 
 
@@ -61,6 +64,21 @@
     *((NuoSphere*)[meshBounds boundingSphere]) = sphere;
     
     self.boundsLocal = meshBounds;
+}
+
+
+- (void)setSampleCount:(NSUInteger)sampleCount
+{
+    _sampleCount = sampleCount;
+    
+    for (NuoMesh* mesh in _meshes)
+        mesh.sampleCount = sampleCount;
+}
+
+
+- (NSUInteger)sampleCount
+{
+    return _sampleCount;
 }
 
 

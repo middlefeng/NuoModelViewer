@@ -71,4 +71,15 @@
 }
 
 
+- (void)setSampleCount:(NSUInteger)sampleCount
+{
+    for (size_t i = 0; i < [_renderPasses count]; ++i)
+    {
+        NuoRenderPass* render = _renderPasses[i];
+        [render setSampleCount:sampleCount];
+    }
+}
+
+
+
 @end

@@ -17,6 +17,7 @@
 {
     NuoRenderPassTarget* _dissectRenderTarget;
     NuoTextureMesh* _textureMesh;
+    NSUInteger _sampleCount;
 }
 
 
@@ -25,6 +26,7 @@
 {
     if (self = [super initWithDevice:device])
     {
+        _sampleCount = kSampleCount;
         [self makeResources];
     }
 
@@ -36,10 +38,10 @@
 {
     _dissectRenderTarget = [NuoRenderPassTarget new];
     _dissectRenderTarget.device = self.device;
-    _dissectRenderTarget.sampleCount = kSampleCount;
+    _dissectRenderTarget.name = @"Dissect";
+    _dissectRenderTarget.sampleCount = _sampleCount;
     _dissectRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
     _dissectRenderTarget.manageTargetTexture = YES;
-    _dissectRenderTarget.name = @"Dissect";
     
     _textureMesh = [[NuoTextureMesh alloc] initWithDevice:self.device];
 }
@@ -51,7 +53,21 @@
     [_dissectRenderTarget setDrawableSize:drawableSize];
     
     [_textureMesh setAuxiliaryTexture:_dissectRenderTarget.targetTexture];
-    [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withSampleCount:kSampleCount];
+    [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withSampleCount:_sampleCount];
+}
+
+
+- (void)setSampleCount:(NSUInteger)sampleCount
+{
+    if (_sampleCount == sampleCount)
+        return;
+    
+    _sampleCount = sampleCount;
+    [super setSampleCount:sampleCount];
+    [_dissectRenderTarget setSampleCount:sampleCount];
+    
+    [_textureMesh setAuxiliaryTexture:_dissectRenderTarget.targetTexture];
+    [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withSampleCount:_sampleCount];
 }
 
 

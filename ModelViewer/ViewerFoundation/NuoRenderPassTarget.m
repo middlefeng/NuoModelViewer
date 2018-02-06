@@ -46,6 +46,21 @@
 }
 
 
+- (void)setSampleCount:(NSUInteger)sampleCount
+{
+    if (_sampleCount == sampleCount)
+        return;
+    
+    _sampleCount = sampleCount;
+    
+    if (_drawableSize.width > 0 && _drawableSize.height > 0)
+    {
+        _depthTexture = nil;    // enforce recreation of all textures
+        [self makeTextures];
+    }
+}
+
+
 - (void)makeTextures
 {
     assert(_name);

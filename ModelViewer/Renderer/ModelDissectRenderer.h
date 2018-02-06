@@ -15,6 +15,7 @@
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
+- (void)setSampleCount:(NSUInteger)sampleCount;
 
 
 @end
