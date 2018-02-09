@@ -90,6 +90,7 @@
                                                            lightSource.lightingRotationY);
     lightAsEye = matrix_multiply(lightAsEyeMatrix, lightAsEye);
     lightAsEye = lightAsEye + center;
+    lightAsEye.w = 1.0;
     
     const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye.xyz, center.xyz, up);
     

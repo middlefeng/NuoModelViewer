@@ -857,20 +857,21 @@
     sceneCenter = sphere._center.z;
     
     vector_float3 center = { 0.0, 0.0, sceneCenter };
-    vector_float4 center4 = { sphere._center.x, sphere._center.y, sphere._center.z, 1.0 };
     matrix_float4x4 viewTrans = matrix_rotation_around(_viewTrans, center);
     
-    vector_float4 transferedCenter = matrix_multiply(viewTrans, center4);
-    sceneCenter = transferedCenter.z;
-
-    bounds = bounds.Transform(viewTrans);
-    float maxSpan = bounds._span.z;
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
-    float near = -sceneCenter - maxSpan / 2.0 + 0.01;
-    float far = near + maxSpan + 0.02;
+    
+    // bounding box transform and determining the near/far
+    //
+    bounds = bounds.Transform(viewTrans);
+    float boundsSpan = bounds._span.z;
+    float boundsCenter = bounds._center.z;
+    float near = -boundsCenter - boundsSpan / 2.0 + 0.01;
+    float far = near + boundsSpan + 0.02;
     near = std::max<float>(0.001, near);
     far = std::max<float>(near + 0.001, far);
+    
     _projection = matrix_perspective(aspect, _fieldOfView, near, far);
 
     NuoUniforms uniforms;
