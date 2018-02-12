@@ -72,14 +72,22 @@
     static const float kCameraDistance = 1.0;
     
     vector_float4 center = {0, 0, 0, 1};
-    NuoBounds meshBounds;
+    float meshRadius = 0.0;
+    
+    NuoSphere sphere;
+    NuoBounds bounds;
     if (_meshes && _meshes.count > 0)
     {
-        meshBounds = *((NuoBounds*)[[_meshes[0] bounds] boundingBox]);
+        sphere = *((NuoSphere*)[[_meshes[0] bounds] boundingSphere]);
+        bounds = *((NuoBounds*)[[_meshes[0] bounds] boundingBox]);
         for (NSUInteger i = 1; i < _meshes.count; ++i)
-            meshBounds = meshBounds.Union(*((NuoBounds*)[_meshes[i] bounds].boundingBox));
+        {
+            sphere = sphere.Union(*((NuoSphere*)[_meshes[i] bounds].boundingSphere));
+            bounds = bounds.Union(*((NuoBounds*)[_meshes[i] bounds].boundingBox));
+        }
         
-        center.xyz = meshBounds._center.xyz;
+        center.xyz = sphere._center.xyz;
+        meshRadius = sphere._radius;
     }
     
     vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
@@ -94,13 +102,18 @@
     
     const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye.xyz, center.xyz, up);
     
-    meshBounds = meshBounds.Transform(viewMatrix);
-    float viewPortHeight = meshBounds._span.y / 2.0;
-    float viewPortWidth = meshBounds._span.x / 2.0;
-    float depthRadius = meshBounds._span.z / 2.0;
+    CGSize drawableSize = self.renderTarget.drawableSize;
+    float aspectRatio = drawableSize.width / drawableSize.height;
+    bounds = bounds.Transform(viewMatrix);
+    
+    float viewPortHeight = meshRadius;
+    float viewPortWidth = aspectRatio * viewPortHeight;
+    float near = -bounds._span.z / 2.0 - bounds._center.z;
+    float far =   bounds._span.z / 2.0 - bounds._center.z;
+    
     const matrix_float4x4 projectionMatrix = matrix_orthor(-viewPortWidth, viewPortWidth,
                                                            viewPortHeight, -viewPortHeight,
-                                                           -depthRadius + kCameraDistance, depthRadius + kCameraDistance);
+                                                           near, far);
     
     NuoUniforms uniforms;
     uniforms.viewMatrix = viewMatrix;
