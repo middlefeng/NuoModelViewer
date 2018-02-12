@@ -62,8 +62,11 @@
     if (_sampleCount == sampleCount)
         return;
     
-    _sampleCount = sampleCount;
+    // super method handles the default render target
+    //
     [super setSampleCount:sampleCount];
+    
+    _sampleCount = sampleCount;
     [_dissectRenderTarget setSampleCount:sampleCount];
     
     [_textureMesh setAuxiliaryTexture:_dissectRenderTarget.targetTexture];
