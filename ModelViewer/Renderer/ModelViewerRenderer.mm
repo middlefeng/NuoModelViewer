@@ -779,7 +779,7 @@
     NuoBounds bounds;
     if (_selectedMesh)
         bounds = *((NuoBounds*)[_selectedMesh.bounds boundingBox]);
-    float radius = std::max(bounds._span.x, std::max(bounds._span.y, bounds._span.z));
+    float radius = bounds.MaxDimension();
     
     // simply using "z" works until the view matrix is no longer an identitiy
     //
