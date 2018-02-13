@@ -123,6 +123,20 @@ MouseDragMode;
 }
 
 
+- (void)handleDraggingQuality
+{
+    NSEvent *event = [[NSApplication sharedApplication] currentEvent];
+    BOOL startingDrag = event.type == NSLeftMouseDown;
+    BOOL endingDrag = event.type == NSLeftMouseUp;
+    BOOL dragging = event.type == NSLeftMouseDragged;
+    
+    if (startingDrag || dragging)
+        [_modelRender setSampleCount:1];
+    if (endingDrag)
+        [_modelRender setSampleCount:kSampleCount];
+}
+
+
 - (void)addFrameRatePanel
 {
     NSRect panelRect = [self frameRatePanelLocation];
@@ -223,6 +237,8 @@ MouseDragMode;
 {
     if (panel)
     {
+        [self handleDraggingQuality];
+        
         [_modelComponentPanels setHidden:![panel showModelParts]];
         [self showHideFrameRate:[panel showFrameRate]];
         
@@ -321,6 +337,8 @@ MouseDragMode;
 
 - (void)lightOptionUpdate:(LightOperationPanel*)panel;
 {
+    [self handleDraggingQuality];
+    
     _notationRenderer.density = [panel lightDensity];
     _notationRenderer.spacular = [panel lightSpacular];
     _notationRenderer.shadowSoften = [panel shadowSoften];

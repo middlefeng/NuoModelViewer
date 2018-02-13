@@ -865,10 +865,8 @@
     // bounding box transform and determining the near/far
     //
     bounds = bounds.Transform(viewTrans);
-    float boundsSpan = bounds._span.z;
-    float boundsCenter = bounds._center.z;
-    float near = -boundsCenter - boundsSpan / 2.0 + 0.01;
-    float far = near + boundsSpan + 0.02;
+    float near = -bounds._center.z - bounds._span.z / 2.0 + 0.01;
+    float far = near + bounds._span.z + 0.02;
     near = std::max<float>(0.001, near);
     far = std::max<float>(near + 0.001, far);
     

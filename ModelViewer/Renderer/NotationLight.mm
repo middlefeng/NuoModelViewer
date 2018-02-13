@@ -65,7 +65,7 @@
         
         MTLRenderPipelineDescriptor* pipelineDesc = [_lightVector makePipelineStateDescriptor];
         
-        // if no MSAA, shoud uncomment the floowing line
+        // if no MSAA, shoud uncomment the following line
         // pipelineDesc.sampleCount = 1;
         
         [_lightVector setBoundsLocal:meshBounds];
