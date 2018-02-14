@@ -46,24 +46,6 @@
     texDesc.resourceOptions = MTLResourceStorageModePrivate;
     texDesc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
     
-    if ([_normalBuffer width] != [self drawableSize].width ||
-        [_normalBuffer height] != [self drawableSize].height)
-    {
-        _normalBuffer = [self.device newTextureWithDescriptor:texDesc];
-    }
-    
-    if ([_positionBuffer width] != [self drawableSize].width ||
-        [_positionBuffer height] != [self drawableSize].height)
-    {
-        _positionBuffer = [self.device newTextureWithDescriptor:texDesc];
-    }
-    
-    if ([_ambientBuffer width] != [self drawableSize].width ||
-        [_ambientBuffer height] != [self drawableSize].height)
-    {
-        _ambientBuffer = [self.device newTextureWithDescriptor:texDesc];
-    }
-    
     MTLTextureDescriptor *texDescR = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatR8Unorm
                                                                                         width:[self drawableSize].width
                                                                                        height:[self drawableSize].height
@@ -72,13 +54,17 @@
     texDescR.textureType = MTLTextureType2D;
     texDescR.resourceOptions = MTLResourceStorageModePrivate;
     texDescR.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
-    if ([_shadowOverlayBuffer width] != [self drawableSize].width ||
-        [_shadowOverlayBuffer height] != [self drawableSize].height)
+    
+    if (![self isTextMatchDrawableSize:_normalBuffer])
     {
+        _normalBuffer = [self.device newTextureWithDescriptor:texDesc];
+        _positionBuffer = [self.device newTextureWithDescriptor:texDesc];
+        _ambientBuffer = [self.device newTextureWithDescriptor:texDesc];
         _shadowOverlayBuffer = [self.device newTextureWithDescriptor:texDescR];
     }
     
-    if (self.sampleCount > 1)
+    if (self.sampleCount > 1 && (![self isTextMatchDrawableSize:_normalBufferSample] ||
+                                 self.sampleCount != _normalBufferSample.sampleCount))
     {
         texDesc.sampleCount = self.sampleCount;
         texDesc.textureType = MTLTextureType2DMultisample;
@@ -86,29 +72,10 @@
         texDescR.sampleCount = self.sampleCount;
         texDescR.textureType = MTLTextureType2DMultisample;
         
-        if ([_normalBufferSample width] != [self drawableSize].width ||
-            [_normalBufferSample height] != [self drawableSize].height)
-        {
-            _normalBufferSample = [self.device newTextureWithDescriptor:texDesc];
-        }
-        
-        if ([_positionBufferSample width] != [self drawableSize].width ||
-            [_positionBufferSample height] != [self drawableSize].height)
-        {
-            _positionBufferSample = [self.device newTextureWithDescriptor:texDesc];
-        }
-        
-        if ([_ambientBufferSample width] != [self drawableSize].width ||
-            [_ambientBufferSample height] != [self drawableSize].height)
-        {
-            _ambientBufferSample = [self.device newTextureWithDescriptor:texDesc];
-        }
-        
-        if ([_shadowOverlayBufferSample width] != [self drawableSize].width ||
-            [_shadowOverlayBufferSample height] != [self drawableSize].height)
-        {
-            _shadowOverlayBufferSample = [self.device newTextureWithDescriptor:texDescR];
-        }
+        _normalBufferSample = [self.device newTextureWithDescriptor:texDesc];
+        _positionBufferSample = [self.device newTextureWithDescriptor:texDesc];
+        _ambientBufferSample = [self.device newTextureWithDescriptor:texDesc];
+        _shadowOverlayBufferSample = [self.device newTextureWithDescriptor:texDescR];
     }
     
     [super makeTextures];

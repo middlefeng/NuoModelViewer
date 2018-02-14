@@ -38,6 +38,13 @@
 }
 
 
+- (BOOL)isTextMatchDrawableSize:(id<MTLTexture>)texture
+{
+    return texture.width == self.drawableSize.width &&
+           texture.height == self.drawableSize.height;
+}
+
+
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     _drawableSize = drawableSize;
@@ -54,10 +61,7 @@
     _sampleCount = sampleCount;
     
     if (_drawableSize.width > 0 && _drawableSize.height > 0)
-    {
-        _depthTexture = nil;    // enforce recreation of all textures
         [self makeTextures];
-    }
 }
 
 
@@ -65,8 +69,8 @@
 {
     assert(_name);
     
-    if ([_depthTexture width] != [self drawableSize].width ||
-        [_depthTexture height] != [self drawableSize].height)
+    if (![self isTextMatchDrawableSize:_depthTexture] ||
+        _depthTexture.sampleCount != _sampleCount)
     {
         MTLTextureDescriptor *desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float
                                                                                         width:[self drawableSize].width
@@ -87,19 +91,6 @@
                                                                                              height:[self drawableSize].height
                                                                                           mipmapped:NO];
         
-        if (_sampleCount > 1)
-        {
-            sampleDesc.sampleCount = _sampleCount;
-            sampleDesc.textureType = MTLTextureType2DMultisample;
-            sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
-            sampleDesc.usage = MTLTextureUsageRenderTarget;
-            
-            self.sampleTexture = [_device newTextureWithDescriptor:sampleDesc];
-            
-            NSString* sampleName = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"sample"];
-            [self.sampleTexture setLabel:sampleName];
-        }
-        
         if (_manageTargetTexture)
         {
             sampleDesc.sampleCount = 1;
@@ -112,6 +103,26 @@
             NSString* name = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"target"];
             [_targetTexture setLabel:name];
         }
+    }
+    
+    if (_sampleCount > 1 && (![self isTextMatchDrawableSize:_sampleTexture] ||
+                             _sampleTexture.sampleCount != _sampleCount))
+        
+    {
+        MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:_targetPixelFormat
+                                                                                              width:[self drawableSize].width
+                                                                                             height:[self drawableSize].height
+                                                                                          mipmapped:NO];
+        
+        sampleDesc.sampleCount = _sampleCount;
+        sampleDesc.textureType = MTLTextureType2DMultisample;
+        sampleDesc.resourceOptions = MTLResourceStorageModePrivate;
+        sampleDesc.usage = MTLTextureUsageRenderTarget;
+        
+        self.sampleTexture = [_device newTextureWithDescriptor:sampleDesc];
+        
+        NSString* sampleName = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"sample"];
+        [self.sampleTexture setLabel:sampleName];
     }
 }
 
