@@ -109,6 +109,16 @@
 }
 
 
+- (void)setAdvancedShaowEnabled:(BOOL)enabled
+{
+    for (NuoMesh* mesh in _meshes)
+    {
+        [mesh setShadowOptionPCSS:enabled];
+        [mesh setShadowOptionPCF:enabled];
+    }
+}
+
+
 - (void)setSampleCount:(NSUInteger)sampleCount
 {
     // no calling to super. because of the deferred pass, the sample

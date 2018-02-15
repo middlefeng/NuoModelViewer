@@ -76,6 +76,20 @@
 }
 
 
+- (void)setShadowOptionPCSS:(BOOL)shadowOptionPCSS
+{
+    for (NuoMesh* mesh in _meshes)
+        mesh.shadowOptionPCSS = shadowOptionPCSS;
+}
+
+
+- (void)setShadowOptionPCF:(BOOL)shadowOptionPCF
+{
+    for (NuoMesh* mesh in _meshes)
+        mesh.shadowOptionPCF = shadowOptionPCF;
+}
+
+
 - (NSUInteger)sampleCount
 {
     return _sampleCount;

@@ -76,6 +76,7 @@ TransformMode;
 - (BOOL)isValidPack:(NSString*)path;
 
 - (NuoMeshCompound*)mainModelMesh;
+- (void)setAdvancedShaowEnabled:(BOOL)enabled;
 
 - (NSString*)exportSceneAsString:(CGSize)canvasSize;
 - (void)importScene:(NuoLua*)lua;

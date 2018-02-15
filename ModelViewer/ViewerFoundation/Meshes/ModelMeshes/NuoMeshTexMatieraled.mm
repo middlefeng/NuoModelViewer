@@ -124,11 +124,14 @@
     bool hasTexOpacity = !(!_textureOpacity);
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     
+    BOOL pcss = self.shadowOptionPCSS;
+    BOOL pcf = self.shadowOptionPCF;
+    
     [funcConstant setConstantValue:&alphaInbedded type:MTLDataTypeBool atIndex:0];
     [funcConstant setConstantValue:&hasTexOpacity type:MTLDataTypeBool atIndex:1];
     [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];
-    [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
-    [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
+    [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
     [funcConstant setConstantValue:&_meshMode type:MTLDataTypeInt atIndex:6];
     
     if (!_textureBump)
@@ -327,10 +330,13 @@
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
+    BOOL pcss = self.shadowOptionPCSS;
+    BOOL pcf = self.shadowOptionPCF;
+    
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];
-    [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
-    [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
+    [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
     [funcConstant setConstantValue:&_meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];

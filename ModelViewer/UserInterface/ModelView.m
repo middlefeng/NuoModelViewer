@@ -565,8 +565,6 @@ MouseDragMode;
 
 - (void)mouseDown:(NSEvent *)event
 {
-    [_modelRender setSampleCount:1];
-    
     if ([self isDissectSplitViewHandler:event])
     {
         _trackingSplitView = YES;
@@ -586,18 +584,24 @@ MouseDragMode;
             
             [_lightPanel updateControls:source];
         }
+        else
+        {
+            [_modelRender setAdvancedShaowEnabled:NO];
+        }
     }
     else
     {
         _trackingLighting = NO;
     }
     
+    [_modelRender setSampleCount:1];
     _mouseMoved = NO;
 }
 
 
 - (void)mouseUp:(NSEvent *)event
 {
+    [_modelRender setAdvancedShaowEnabled:YES];
     [_modelRender setSampleCount:kSampleCount];
     
     _trackingLighting = NO;

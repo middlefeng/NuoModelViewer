@@ -16,9 +16,6 @@
 
 
 
-const BOOL kShadowPCSS = YES;
-const BOOL kShadowPCF = YES;
-
 
 
 
@@ -70,6 +67,9 @@ const BOOL kShadowPCF = YES;
         
         _smoothTolerance = 0.0f;
         _smoothConservative = YES;
+        
+        _shadowOptionPCSS = YES;
+        _shadowOptionPCF = YES;
         
         _rotation = [[NuoMeshRotation alloc] init];
         
@@ -271,10 +271,14 @@ const BOOL kShadowPCF = YES;
     //
     BOOL shadowOverlay = NO;
     int meshMode = kMeshMode_Normal;
+    
+    BOOL pcss = self.shadowOptionPCSS;
+    BOOL pcf = self.shadowOptionPCF;
+    
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
-    [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
-    [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
+    [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
     [funcConstant setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];

@@ -94,10 +94,13 @@ static CIContext* sCIContext = nil;
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
+    BOOL pcss = self.shadowOptionPCSS;
+    BOOL pcf = self.shadowOptionPCF;
+    
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     NuoMeshModeShaderParameter meshMode = kMeshMode_Normal;
-    [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
-    [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
+    [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
     [funcConstant setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];

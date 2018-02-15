@@ -7,9 +7,6 @@
 
 
 
-extern const BOOL kShadowPCSS;
-extern const BOOL kShadowPCF;
-
 
 @class NuoMeshBounds;
 
@@ -29,6 +26,8 @@ extern const BOOL kShadowPCF;
 
 
 @property (nonatomic, assign) NSUInteger sampleCount;
+@property (nonatomic, assign) BOOL shadowOptionPCSS;
+@property (nonatomic, assign) BOOL shadowOptionPCF;
 
 
 
