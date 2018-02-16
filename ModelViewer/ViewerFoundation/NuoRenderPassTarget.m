@@ -38,7 +38,7 @@
 }
 
 
-- (BOOL)isTextMatchDrawableSize:(id<MTLTexture>)texture
+- (BOOL)isTextureMatchDrawableSize:(id<MTLTexture>)texture
 {
     return texture.width == self.drawableSize.width &&
            texture.height == self.drawableSize.height;
@@ -69,7 +69,7 @@
 {
     assert(_name);
     
-    if (![self isTextMatchDrawableSize:_depthTexture] ||
+    if (![self isTextureMatchDrawableSize:_depthTexture] ||
         _depthTexture.sampleCount != _sampleCount)
     {
         MTLTextureDescriptor *desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float
@@ -105,7 +105,7 @@
         }
     }
     
-    if (_sampleCount > 1 && (![self isTextMatchDrawableSize:_sampleTexture] ||
+    if (_sampleCount > 1 && (![self isTextureMatchDrawableSize:_sampleTexture] ||
                              _sampleTexture.sampleCount != _sampleCount))
         
     {

@@ -131,6 +131,8 @@
     
     for (NuoMesh* mesh in _meshes)
         [mesh setSampleCount:sampleCount];
+    
+    [_cubeMesh setSampleCount:sampleCount];
 }
 
 

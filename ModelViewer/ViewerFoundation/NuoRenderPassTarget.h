@@ -55,7 +55,7 @@
 /**
  *  used to determine if a texture match the drawable size
  */
-- (BOOL)isTextMatchDrawableSize:(id<MTLTexture>)texture;
+- (BOOL)isTextureMatchDrawableSize:(id<MTLTexture>)texture;
 
 - (id<MTLRenderCommandEncoder>)retainRenderPassEndcoder:(id<MTLCommandBuffer>)commandBuffer;
 - (void)releaseRenderPassEndcoder;

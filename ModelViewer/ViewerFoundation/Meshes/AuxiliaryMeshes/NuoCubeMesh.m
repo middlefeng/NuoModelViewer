@@ -68,7 +68,6 @@ static uint16_t kIndices[] =
     __weak id<MTLSamplerState> _samplerState;
     NSArray<id<MTLBuffer>>* _cubeMatrixBuffer;
     MTLPixelFormat _format;
-    NSUInteger _sampleCount;
     
     matrix_float4x4 _cubeMatrix;
     matrix_float4x4 _projectMatrix;
@@ -95,7 +94,7 @@ static uint16_t kIndices[] =
             }
             _cubeMatrixBuffer = [[NSArray alloc] initWithObjects:matrix count:kInFlightBufferCount];
             
-            _sampleCount = kSampleCount;
+            self.sampleCount = kSampleCount;
         }
     }
     
@@ -124,13 +123,10 @@ static uint16_t kIndices[] =
 }
 
 
-- (void)setSampleCount:(NSUInteger)sampleCount
+
+- (void)makeGPUStates
 {
-    if (_sampleCount != sampleCount)
-    {
-        _sampleCount = sampleCount;
-        [self makePipelineAndSampler:_format];
-    }
+    [self makePipelineAndSampler:_format];
 }
 
 
@@ -143,7 +139,7 @@ static uint16_t kIndices[] =
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_cube"];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_cube"];
-    pipelineDescriptor.sampleCount = _sampleCount;
+    pipelineDescriptor.sampleCount = self.sampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = pixelFormat;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     

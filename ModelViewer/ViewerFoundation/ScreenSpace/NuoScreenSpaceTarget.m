@@ -55,7 +55,10 @@
     texDescR.resourceOptions = MTLResourceStorageModePrivate;
     texDescR.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
     
-    if (![self isTextMatchDrawableSize:_normalBuffer])
+    // all the render target texture's configuration should be in sync.
+    // use _normalBuffer/_normalBufferSample as the predicuate of whether refresh the resources
+    
+    if (![self isTextureMatchDrawableSize:_normalBuffer])
     {
         _normalBuffer = [self.device newTextureWithDescriptor:texDesc];
         _positionBuffer = [self.device newTextureWithDescriptor:texDesc];
@@ -63,7 +66,7 @@
         _shadowOverlayBuffer = [self.device newTextureWithDescriptor:texDescR];
     }
     
-    if (self.sampleCount > 1 && (![self isTextMatchDrawableSize:_normalBufferSample] ||
+    if (self.sampleCount > 1 && (![self isTextureMatchDrawableSize:_normalBufferSample] ||
                                  self.sampleCount != _normalBufferSample.sampleCount))
     {
         texDesc.sampleCount = self.sampleCount;
