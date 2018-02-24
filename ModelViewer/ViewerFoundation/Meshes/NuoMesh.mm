@@ -670,8 +670,9 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
                     const std::shared_ptr<NuoModelBase> model)
 {
     NuoMesh* resultMesh = nil;
+    bool textured = options._textured && !model->GetTexturePathDiffuse().empty();
     
-    if (!options._textured && !options._basicMaterialized)
+    if (!textured && !options._basicMaterialized)
     {
         NuoMesh* mesh = [[NuoMesh alloc] initWithCommandQueue:commandQueue
                                            withVerticesBuffer:model->Ptr()
@@ -681,7 +682,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         
         resultMesh = mesh;
     }
-    else if (options._textured && !options._basicMaterialized)
+    else if (textured && !options._basicMaterialized)
     {
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
         BOOL checkTransparency = options._textureEmbedMaterialTransparency;
@@ -696,7 +697,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         
         resultMesh = mesh;
     }
-    else if (options._textured && options._basicMaterialized)
+    else if (textured && options._basicMaterialized)
     {
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
         BOOL embeddedAlpha = options._textureEmbedMaterialTransparency;
@@ -731,7 +732,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         
         resultMesh = mesh;
     }
-    else if (!options._textured && options._basicMaterialized)
+    else if (!textured && options._basicMaterialized)
     {
         NuoMeshMatieraled* mesh = [[NuoMeshMatieraled alloc] initWithCommandQueue:commandQueue
                                                                withVerticesBuffer:model->Ptr()

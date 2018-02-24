@@ -20,26 +20,25 @@ bool ItemTexCoordEequal<NuoItemSimple>(const NuoItemSimple& i1, const NuoItemSim
 }
 
 
-std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMaterial& material,
+std::shared_ptr<NuoModelBase> CreateModel(const NuoModelOption& options, const NuoMaterial& material,
                                           const std::string& modelItemName)
 {
-    if (!material.HasTextureDiffuse())
-        options._textured = false;
+    bool textured = options._textured && material.HasTextureDiffuse();
     
-    if (!options._textured && !options._basicMaterialized)
+    if (!textured && !options._basicMaterialized)
     {
         auto model = std::make_shared<NuoModelSimple>();
         model->SetName(modelItemName);
         return model;
     }
-    else if (options._textured && !options._basicMaterialized)
+    else if (textured && !options._basicMaterialized)
     {
         auto model = std::make_shared<NuoModelTextured>();
         model->SetName(modelItemName);
         model->SetCheckTransparency(options._textureEmbedMaterialTransparency);
         return model;
     }
-    else if (options._textured && options._basicMaterialized)
+    else if (textured && options._basicMaterialized)
     {
         if (material.HasTextureBump() && options._texturedBump)
         {

@@ -7,7 +7,6 @@
 //
 
 #include "NuoModelMaterialedBasic.h"
-#include "NuoTypes.h"
 
 
 

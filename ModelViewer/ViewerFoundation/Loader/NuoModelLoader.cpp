@@ -10,9 +10,9 @@
 
 #include "NuoModelBase.h"
 #include "NuoMaterial.h"
-#include "NuoMeshCompound.h"
 
 #include "tiny_obj_loader.h"
+#include <cassert>
 
 
 
@@ -173,50 +173,63 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
 
 
 
-@implementation NuoModelLoader
+class NuoModelLoader_Internal
 {
-    NSString* _basePath;
+public:
+    std::string _basePath;
     
     tinyobj::attrib_t _attrib;
     std::vector<tinyobj::shape_t> _shapes;
     std::vector<tinyobj::material_t> _materials;
+};
+
+
+
+NuoModelLoader::NuoModelLoader()
+{
+    _internal = new NuoModelLoader_Internal;
 }
 
 
 
-- (void)loadModel:(NSString*)path
+NuoModelLoader::~NuoModelLoader()
+{
+    delete _internal;
+}
+
+
+
+
+void NuoModelLoader::LoadModel(const std::string& path)
 {
     std::string err;
     
-    _basePath = [path stringByDeletingLastPathComponent];
-    _basePath = [_basePath stringByAppendingString:@"/"];
+    size_t pos = path.find_last_of("/");
     
-    _shapes.clear();
-    _materials.clear();
+    _internal->_basePath = path.substr(0, pos + 1);
     
-    tinyobj::LoadObj(&_attrib, &_shapes, &_materials, &err, path.UTF8String, _basePath.UTF8String);
+    _internal->_shapes.clear();
+    _internal->_materials.clear();
+    
+    tinyobj::LoadObj(&_internal->_attrib, &_internal->_shapes, &_internal->_materials,
+                     &err, path.c_str(), _internal->_basePath.c_str());
 }
 
 
 
-- (NuoMeshCompound*)createMeshsWithOptions:(NuoMeshOption*)loadOption
-                          withCommandQueue:(id<MTLCommandQueue>)commandQueue
-                              withProgress:(NuoProgressFunction)progress
+std::vector<PNuoModelBase> NuoModelLoader::CreateMeshWithOptions(const NuoModelOption& options, bool combineMaterial,
+                                                                 NuoModelLoaderProgress progressFunc)
 {
     typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
     
-    const float loadingPortionModelBuffer = loadOption.textured ? 0.70 : 0.85;
-    const float loadingPortionModelGPU = (1 - loadingPortionModelBuffer);
-    
-    PShapeMapByMaterial shapeMap = GetShapeVectorByMaterial(_shapes, _materials, loadOption.combineShapes);
+    PShapeMapByMaterial shapeMap = GetShapeVectorByMaterial(_internal->_shapes, _internal->_materials, combineMaterial);
     
     std::vector<PNuoModelBase> models;
-    std::map<PNuoModelBase, NuoModelOption> modelOptions;
-    std::vector<uint32> indices;
+    std::vector<uint32_t> indices;
     
     unsigned long vertexNumTotal = 0;
     unsigned long vertexNumLoaded = 0;
-    for (tinyobj::shape_t shape : _shapes)
+    for (tinyobj::shape_t shape : _internal->_shapes)
          vertexNumTotal += shape.mesh.indices.size();
     
     for (const auto& shapeItr : (*shapeMap))
@@ -224,100 +237,64 @@ static PShapeMapByMaterial GetShapeVectorByMaterial(ShapeVector& shapes,
         const NuoMaterial material(shapeItr.first);
         const tinyobj::shape_t& shape = shapeItr.second;
         
-        NuoModelOption options;
-        options._textured = loadOption.textured;
-        options._textureEmbedMaterialTransparency = loadOption.textureEmbeddingMaterialTransparency;
-        options._texturedBump = loadOption.texturedBump;
-        options._basicMaterialized = loadOption.basicMaterialized;
-        options._physicallyReflection = loadOption.physicallyReflection;
-        
         PNuoModelBase modelBase = CreateModel(options, material, shape.name);
         
         for (size_t i = 0; i < shape.mesh.indices.size(); ++i)
         {
             tinyobj::index_t index = shape.mesh.indices[i];
             
-            modelBase->AddPosition(index.vertex_index, _attrib.vertices);
-            if (_attrib.normals.size())
-                modelBase->AddNormal(index.normal_index, _attrib.normals);
+            modelBase->AddPosition(index.vertex_index, _internal->_attrib.vertices);
+            if (_internal->_attrib.normals.size())
+                modelBase->AddNormal(index.normal_index, _internal->_attrib.normals);
             if (material.HasTextureDiffuse())
-                modelBase->AddTexCoord(index.texcoord_index, _attrib.texcoords);
+                modelBase->AddTexCoord(index.texcoord_index, _internal->_attrib.texcoords);
             
             int materialID = shape.mesh.material_ids[i / 3];
             if (materialID >= 0)
             {
-                NuoMaterial vertexMaterial(_materials[materialID], false /* ignored */);
+                NuoMaterial vertexMaterial(_internal->_materials[materialID], false /* ignored */);
                 modelBase->AddMaterial(vertexMaterial);
             }
         }
         
         modelBase->GenerateIndices();
-        if (!_attrib.normals.size())
+        if (!_internal->_attrib.normals.size())
             modelBase->GenerateNormals();
         
         if (material.HasTextureDiffuse())
         {
-            NSString* diffuseTexName = [NSString stringWithUTF8String:material.diffuse_texname.c_str()];
-            NSString* diffuseTexPath = [_basePath stringByAppendingPathComponent:diffuseTexName];
+            const char* diffuseTexName = material.diffuse_texname.c_str();
+            std::string diffuseTexPath = _internal->_basePath + diffuseTexName;
             
-            modelBase->SetTexturePathDiffuse(diffuseTexPath.UTF8String);
+            modelBase->SetTexturePathDiffuse(diffuseTexPath);
         }
         
         if (material.HasTextureOpacity())
         {
-            NSString* opacityTexName = [NSString stringWithUTF8String:material.alpha_texname.c_str()];
-            NSString* opacityTexPath = [_basePath stringByAppendingPathComponent:opacityTexName];
+            const char* opacityTexName = material.alpha_texname.c_str();
+            std::string opacityTexPath = _internal->_basePath + opacityTexName;
             
-            modelBase->SetTexturePathOpacity(opacityTexPath.UTF8String);
+            modelBase->SetTexturePathOpacity(opacityTexPath);
         }
         
         if (material.HasTextureBump())
         {
-            NSString* bumpTexName = [NSString stringWithUTF8String:material.bump_texname.c_str()];
-            NSString* bumpTexPath = [_basePath stringByAppendingPathComponent:bumpTexName];
+            const char* bumpTexName = material.bump_texname.c_str();
+            std::string bumpTexPath = _internal->_basePath + bumpTexName;
             
             modelBase->GenerateTangents();
-            modelBase->SetTexturePathBump(bumpTexPath.UTF8String);
+            modelBase->SetTexturePathBump(bumpTexPath);
         }
         
         models.push_back(modelBase);
-        modelOptions.insert(std::make_pair(modelBase, options));
         
         vertexNumLoaded += shape.mesh.indices.size();
         
-        if (progress)
-            progress(vertexNumLoaded / (float)vertexNumTotal * loadingPortionModelBuffer);
+        if (progressFunc)
+            progressFunc(vertexNumLoaded / (float)vertexNumTotal);
     }
     
-    NSMutableArray<NuoMesh*>* result = [[NSMutableArray<NuoMesh*> alloc] init];
-    
-    size_t index = 0;
-    for (auto& model : models)
-    {
-        NuoBox boundingBox = model->GetBoundingBox();
-        
-        NuoModelOption options = modelOptions[model];
-        NuoMesh* mesh = CreateMesh(options, commandQueue, model);
-        
-        NuoMeshBox* meshBounding = [[NuoMeshBox alloc] init];
-        meshBounding.span.x = boundingBox._spanX;
-        meshBounding.span.y = boundingBox._spanY;
-        meshBounding.span.z = boundingBox._spanZ;
-        meshBounding.center.x = boundingBox._centerX;
-        meshBounding.center.y = boundingBox._centerY;
-        meshBounding.center.z = boundingBox._centerZ;
-        
-        mesh.boundingBoxLocal = meshBounding;
-        [result addObject:mesh];
-        
-        if (progress)
-            progress(++index / (float)models.size() * loadingPortionModelGPU + loadingPortionModelBuffer);
-    }
-    
-    NuoMeshCompound* resultObj = [NuoMeshCompound new];
-    [resultObj setMeshes:result];
-    
-    return resultObj;
+    return models;
 }
 
-@end
+

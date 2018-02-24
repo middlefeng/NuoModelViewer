@@ -14,7 +14,6 @@
 #include <map>
 
 #include <simd/simd.h>
-#include "NuoTypes.h"
 
 
 
@@ -50,7 +49,7 @@ public:
 
 
 
-std::shared_ptr<NuoModelBase> CreateModel(NuoModelOption& options, const NuoMaterial& material,
+std::shared_ptr<NuoModelBase> CreateModel(const NuoModelOption& options, const NuoMaterial& material,
                                           const std::string& modelItemName);
 
 template <class ItemBase>

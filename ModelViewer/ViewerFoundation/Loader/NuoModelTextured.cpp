@@ -7,7 +7,6 @@
 //
 
 #include "NuoModelTextured.h"
-#include "NuoTypes.h"
 
 
 

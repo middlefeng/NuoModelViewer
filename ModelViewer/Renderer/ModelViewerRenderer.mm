@@ -24,6 +24,7 @@
 #import "NuoShadowMapRenderer.h"
 #import "NuoDeferredRenderer.h"
 #import "NuoDirectoryUtils.h"
+#import "NuoModelLoaderGPU.h"
 
 
 @interface ModelRenderer ()
@@ -40,7 +41,7 @@
 @property (assign) matrix_float4x4 viewTrans;
 @property (assign) matrix_float4x4 projection;
 
-@property (strong) NuoModelLoader* modelLoader;
+@property (strong) NuoModelLoaderGPU* modelLoader;
 
 
 @end
@@ -117,8 +118,10 @@
 
 - (void)loadMesh:(NSString*)path withProgress:(NuoProgressFunction)progress
 {
-    _modelLoader = [NuoModelLoader new];
-    [_modelLoader loadModel:path];
+    std::shared_ptr<NuoModelLoader> loader = std::make_shared<NuoModelLoader>();
+    loader->LoadModel(path.UTF8String);
+    
+    _modelLoader = [[NuoModelLoaderGPU alloc] initWithLoader:loader];
     
     [self createMeshsWithProgress:^(float progressPercent)
          {
@@ -382,6 +385,12 @@
     }
     
     {
+        exporter.StartEntry("viewMatrix");
+        exporter.SetMatrix(_viewTrans);
+        exporter.EndEntry(true);
+    }
+    
+    {
         exporter.StartEntry("boards");
         exporter.StartTable();
         
@@ -583,6 +592,11 @@
     [lua getField:@"translationMatrix" fromTable:-1];
     if (![lua isNil:-1])
         [_mainModelMesh setTransformTranslate:[lua getMatrixFromTable:-1]];
+    [lua removeField];
+    
+    [lua getField:@"viewMatrix" fromTable:-1];
+    if (![lua isNil:-1])
+        _viewTrans = [lua getMatrixFromTable:-1];
     [lua removeField];
     
     [lua getField:@"view" fromTable:-1];
