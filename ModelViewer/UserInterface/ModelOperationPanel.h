@@ -36,6 +36,7 @@ MotionBlurRecordStatus;
 
 @property (nonatomic, readonly) BOOL showModelParts;
 @property (nonatomic, readonly) BOOL showFrameRate;
+@property (nonatomic, strong) NSArray<NSString*>* deviceNames;
 
 @property (nonatomic, assign) TransformMode transformMode;
 

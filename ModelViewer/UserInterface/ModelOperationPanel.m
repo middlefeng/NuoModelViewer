@@ -105,7 +105,7 @@
     
     CGRect docViewFrame = CGRectMake(0, 0, 0, 0);
     docViewFrame.size = rootViewFrame.size;
-    docViewFrame.size.height += 200.0;
+    docViewFrame.size.height += 230.0;
     
     rootScroll.frame = rootViewFrame;
     scrollDocumentView.frame = docViewFrame;
@@ -455,6 +455,39 @@
     [recordButton setState:NSOffState];
     [scrollDocumentView addSubview:pauseButton];
     _motionBlurPause = pauseButton;
+    
+    // device select
+    
+    rowCoord += 1.4;
+    
+    NSTextField* labelDevices = [NSTextField new];
+    NSRect labelDevicesRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    const float kDeviceListHead = 60;
+    NSRect deviceListRect = labelDevicesRect;
+    deviceListRect.size.height = 20.0;
+    deviceListRect.origin.x += kDeviceListHead;
+    deviceListRect.size.width -= kDeviceListHead;
+    labelDevicesRect.origin.y += 2;
+    
+    [labelDevices setEditable:NO];
+    [labelDevices setSelectable:NO];
+    [labelDevices setBordered:NO];
+    [labelDevices setStringValue:@"Devices:"];
+    [labelDevices setFrame:labelDevicesRect];
+    [scrollDocumentView addSubview:labelDevices];
+    
+    NSPopUpButton* deviceList = [NSPopUpButton new];
+    
+    [deviceList setFrame:deviceListRect];
+    [deviceList setTarget:self];
+    [deviceList setFont:[NSFont fontWithName:dissectMode.font.fontName size:11]];
+    [deviceList setControlSize:NSControlSizeSmall];
+    
+    for (NSString* name in _deviceNames)
+        [deviceList addItemWithTitle:name];
+    
+    [deviceList setAction:@selector(dissectModeChanged:)];
+    [scrollDocumentView addSubview:deviceList];
     
     [self updateControls];
 }
