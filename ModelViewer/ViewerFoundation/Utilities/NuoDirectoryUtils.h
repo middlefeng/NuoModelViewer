@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 const char* pathForDocument(void);
-const char* pathFonfigureFile(void);
+const char* pathForConfigureFile(void);
 void clearCategoryInDocument(const char* category);
 
 #if __cplusplus

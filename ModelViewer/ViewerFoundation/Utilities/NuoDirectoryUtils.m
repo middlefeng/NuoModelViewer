@@ -12,7 +12,7 @@
 
 
 static char* pathForDocumentBuffer = 0;
-static char* pathForConfigureFile = 0;
+static char* pathForConfigureFileBuffer = 0;
 
 
 const char* pathForDocument(void)
@@ -37,21 +37,21 @@ const char* pathForDocument(void)
 
 
 
-const char* pathFonfigureFile(void)
+const char* pathForConfigureFile(void)
 {
-    if (pathForConfigureFile)
-        return pathForConfigureFile;
+    if (pathForConfigureFileBuffer)
+        return pathForConfigureFileBuffer;
     
     const char* pathCh = pathForDocument();
     NSString* path = [NSString stringWithFormat:@"%s/%s", pathCh, "configuration.cfg"];
     
     size_t size = path.length;
-    pathForConfigureFile = malloc(size + 1);
-    pathForConfigureFile[size] = 0;
+    pathForConfigureFileBuffer = malloc(size + 1);
+    pathForConfigureFileBuffer[size] = 0;
     
-    strcpy(pathForConfigureFile, path.UTF8String);
+    strcpy(pathForConfigureFileBuffer, path.UTF8String);
     
-    return pathForConfigureFile;
+    return pathForConfigureFileBuffer;
 }
 
 

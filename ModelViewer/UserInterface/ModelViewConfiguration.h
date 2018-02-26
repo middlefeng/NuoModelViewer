@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import <Metal/Metal.h>
+
 
 
 @interface ModelViewConfiguration : NSObject
@@ -17,5 +19,7 @@
 
 - (instancetype)initWithFile:(NSString*)path;
 - (void)save;
+
+- (id<MTLDevice>)device;
 
 @end

@@ -8,6 +8,7 @@
 
 #import "ModelView.h"
 
+#import "ModelViewConfiguration.h"
 #import "ModelComponentPanels.h"
 #import "ModelOperationPanel.h"
 #import "LightOperationPanel.h"
@@ -20,6 +21,7 @@
 #import "MotionBlurRenderer.h"
 
 #import "NuoLua.h"
+#import "NuoDirectoryUtils.h"
 #import "NuoMeshOptions.h"
 #import "NuoLightSource.h"
 
@@ -56,6 +58,7 @@ MouseDragMode;
 @implementation ModelView
 {
     NuoLua* _lua;
+    ModelViewConfiguration* _configuration;
     ModelRenderer* _modelRender;
     ModelDissectRenderer* _modelDissectRenderer;
     NotationRenderer* _notationRenderer;
@@ -336,6 +339,14 @@ MouseDragMode;
 
 
 
+- (void)awakeFromNib
+{
+    self.metalLayer.device = [_configuration device];
+    [super awakeFromNib];
+}
+
+
+
 - (void)viewResizing
 {
     [super viewResizing];
@@ -349,6 +360,15 @@ MouseDragMode;
     NSRect popupRect;
     popupRect.origin = popupOrigin;
     popupRect.size = popupSize;
+    
+    if (!_configuration)
+    {
+        const char* path = pathForConfigureFile();
+        _configuration = [[ModelViewConfiguration alloc] initWithFile:[NSString stringWithUTF8String:path]];
+    }
+    
+    [_configuration setWindowFrame:self.window.frame];
+    [_configuration save];
     
     if (!_frameRateView)
     {
