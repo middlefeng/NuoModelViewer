@@ -32,10 +32,19 @@
         if (!self.deviceName)
             [self initDeviceName];
         
+        bool validDevice = false;
+        
         _devices = [NSMutableDictionary new];
         NSArray* devices = MTLCopyAllDevices();
         for (id<MTLDevice> device in devices)
+        {
             [_devices setObject:device forKey:device.name];
+            if ([device.name isEqualToString:self.deviceName])
+                validDevice = true;
+        }
+        
+        if (!validDevice)
+            [self initDeviceName];
     }
     
     return self;
@@ -70,8 +79,8 @@
     
     _windowFrame.origin.x = [lua getFieldAsNumber:@"x" fromTable:-1];
     _windowFrame.origin.y = [lua getFieldAsNumber:@"y" fromTable:-1];
-    _windowFrame.size.width = [lua getFieldAsNumber:@"width" fromTable:-1];
-    _windowFrame.size.height = [lua getFieldAsNumber:@"height" fromTable:-1];
+    _windowFrame.size.width = [lua getFieldAsNumber:@"w" fromTable:-1];
+    _windowFrame.size.height = [lua getFieldAsNumber:@"h" fromTable:-1];
     
     [lua removeField];
     

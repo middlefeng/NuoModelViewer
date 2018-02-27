@@ -48,7 +48,7 @@ MouseDragMode;
 
 
 
-@interface ModelView() <ModelOptionUpdate>
+@interface ModelView() < ModelOptionUpdate, NSWindowDelegate >
 
 @end
 
@@ -164,6 +164,7 @@ MouseDragMode;
     for (id<MTLDevice> device in devices)
         [deviceNames addObject:device.name];
     
+    [_modelPanel setDeviceSelected:_configuration.device.name];
     [_modelPanel setDeviceNames:deviceNames];
     [_modelPanel addSubviews];
     [_modelPanel setOptionUpdateDelegate:self];
@@ -229,6 +230,15 @@ MouseDragMode;
 
 - (void)modelOptionUpdate:(ModelOperationPanel *)panel
 {
+    NSString* currentDevice = _configuration.deviceName;
+    NSString* deviceSelected = panel.deviceSelected;
+    
+    if (![currentDevice isEqualToString:deviceSelected])
+    {
+        [_configuration setDeviceName:deviceSelected];
+        [_configuration save];
+    }
+    
     if (panel)
     {
         [_modelComponentPanels setHidden:![panel showModelParts]];
@@ -342,7 +352,22 @@ MouseDragMode;
 - (void)awakeFromNib
 {
     self.metalLayer.device = [_configuration device];
+    
+    CGRect frame = [_configuration windowFrame];
+    
     [super awakeFromNib];
+    [self.window setDelegate:self];
+    
+    if (frame.size.width != 0.0 && frame.size.height != 0.0)
+        [self.window setFrame:frame display:YES];
+}
+
+
+
+- (void)windowWillClose:(NSNotification *)notification
+{
+    [_configuration setWindowFrame:self.window.frame];
+    [_configuration save];
 }
 
 
@@ -366,9 +391,6 @@ MouseDragMode;
         const char* path = pathForConfigureFile();
         _configuration = [[ModelViewConfiguration alloc] initWithFile:[NSString stringWithUTF8String:path]];
     }
-    
-    [_configuration setWindowFrame:self.window.frame];
-    [_configuration save];
     
     if (!_frameRateView)
     {
@@ -944,6 +966,7 @@ MouseDragMode;
     openPanel.allowedFileTypes = @[@"jpg", @"png"];
     
     __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
+    __weak ModelView* selfWeak = self;
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
@@ -959,7 +982,7 @@ MouseDragMode;
                      [cubeMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
                  
                      [_modelRender setCubeMesh:cubeMesh];
-                     [self render];
+                     [selfWeak render];
                  }
              }];
 }

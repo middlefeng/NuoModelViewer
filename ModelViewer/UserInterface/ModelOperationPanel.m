@@ -43,6 +43,8 @@
 @property (nonatomic, strong) NSButton* motionBlurRecord;
 @property (nonatomic, strong) NSButton* motionBlurPause;
 
+@property (nonatomic, strong) NSPopUpButton* deviceList;
+
 @end
 
 
@@ -105,7 +107,7 @@
     
     CGRect docViewFrame = CGRectMake(0, 0, 0, 0);
     docViewFrame.size = rootViewFrame.size;
-    docViewFrame.size.height += 230.0;
+    docViewFrame.size.height += 265.0;
     
     rootScroll.frame = rootViewFrame;
     scrollDocumentView.frame = docViewFrame;
@@ -458,36 +460,52 @@
     
     // device select
     
-    rowCoord += 1.4;
+    rowCoord += 1.8;
     
     NSTextField* labelDevices = [NSTextField new];
     NSRect labelDevicesRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
-    const float kDeviceListHead = 60;
-    NSRect deviceListRect = labelDevicesRect;
-    deviceListRect.size.height = 20.0;
-    deviceListRect.origin.x += kDeviceListHead;
-    deviceListRect.size.width -= kDeviceListHead;
-    labelDevicesRect.origin.y += 2;
     
     [labelDevices setEditable:NO];
     [labelDevices setSelectable:NO];
     [labelDevices setBordered:NO];
-    [labelDevices setStringValue:@"Devices:"];
+    [labelDevices setStringValue:@"Devices (Need Restart):"];
     [labelDevices setFrame:labelDevicesRect];
     [scrollDocumentView addSubview:labelDevices];
     
-    NSPopUpButton* deviceList = [NSPopUpButton new];
+    rowCoord += 1.0;
+    NSRect deviceListRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];;
+    deviceListRect.size.height = 20.0;
+    deviceListRect.origin.x -= 2.0;
     
+    NSPopUpButton* deviceList = [NSPopUpButton new];
     [deviceList setFrame:deviceListRect];
     [deviceList setTarget:self];
     [deviceList setFont:[NSFont fontWithName:dissectMode.font.fontName size:11]];
     [deviceList setControlSize:NSControlSizeSmall];
     
     for (NSString* name in _deviceNames)
+    {
         [deviceList addItemWithTitle:name];
+        
+        NSMenuItem* item = [deviceList lastItem];
+        if (![name isEqualToString:_deviceSelected])
+        {
+            NSAttributedString* string =
+                [[NSAttributedString alloc] initWithString:name
+                                                attributes:
+                                                    @{
+                                                        NSForegroundColorAttributeName :
+                                                        [NSColor grayColor]
+                                                    }];
+            item.attributedTitle = string;
+        }
+    }
     
-    [deviceList setAction:@selector(dissectModeChanged:)];
+    [deviceList selectItemWithTitle:_deviceSelected];
+    [deviceList setAction:@selector(deviceChanged:)];
     [scrollDocumentView addSubview:deviceList];
+    
+    _deviceList = deviceList;
     
     [self updateControls];
 }
@@ -613,6 +631,14 @@
             break;
     }
     
+    [_optionUpdateDelegate modelOptionUpdate:self];
+}
+
+
+- (void)deviceChanged:(id)sender
+{
+    _deviceSelected = _deviceList.selectedItem.title;
+
     [_optionUpdateDelegate modelOptionUpdate:self];
 }
 
