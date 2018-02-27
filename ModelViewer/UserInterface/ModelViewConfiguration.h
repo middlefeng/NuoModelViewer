@@ -21,5 +21,6 @@
 - (void)save;
 
 - (id<MTLDevice>)device;
+- (NSArray<NSString*>*)deviceNames;
 
 @end

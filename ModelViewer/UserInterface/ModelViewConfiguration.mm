@@ -33,6 +33,7 @@
             [self initDeviceName];
         
         bool validDevice = false;
+        NSString* highEndDevice = nil;
         
         _devices = [NSMutableDictionary new];
         NSArray* devices = MTLCopyAllDevices();
@@ -41,10 +42,33 @@
             [_devices setObject:device forKey:device.name];
             if ([device.name isEqualToString:self.deviceName])
                 validDevice = true;
+            
+            if (![device isLowPower] && !highEndDevice)
+                highEndDevice = device.name;
         }
+        
+        // eGPU may be removed
         
         if (!validDevice)
             [self initDeviceName];
+        
+        // ignore low-end GPU if some high-end available
+        
+        if (self.device.isLowPower)
+            _deviceName = highEndDevice;
+        
+        if (highEndDevice)
+        {
+            NSMutableArray* toDelete = [NSMutableArray new];
+            for (NSString* deviceName in _devices.keyEnumerator)
+            {
+                if (((id<MTLDevice>)_devices[deviceName]).isLowPower)
+                    [toDelete addObject:deviceName];
+            }
+            
+            for (NSString* toDeleteOne in toDelete)
+                [_devices removeObjectForKey:toDeleteOne];
+        }
     }
     
     return self;
@@ -54,6 +78,12 @@
 - (void)initDeviceName
 {
     _deviceName = MTLCreateSystemDefaultDevice().name;
+}
+
+
+- (NSArray<NSString*>*)deviceNames
+{
+    return _devices.allKeys;
 }
 
 

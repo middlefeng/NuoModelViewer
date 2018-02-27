@@ -159,10 +159,7 @@ MouseDragMode;
     _modelPanel.layer.opacity = 0.8f;
     _modelPanel.layer.backgroundColor = [NSColor colorWithWhite:1.0 alpha:1.0].CGColor;
     
-    NSArray<id<MTLDevice>>* devices = MTLCopyAllDevices();
-    NSMutableArray<NSString*>* deviceNames = [NSMutableArray new];
-    for (id<MTLDevice> device in devices)
-        [deviceNames addObject:device.name];
+    NSArray* deviceNames = _configuration.deviceNames;
     
     [_modelPanel setDeviceSelected:_configuration.device.name];
     [_modelPanel setDeviceNames:deviceNames];
