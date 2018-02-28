@@ -32,6 +32,9 @@ const char* pathForDocument(void)
     
     strcpy(pathForDocumentBuffer, path.UTF8String);
     
+    if (![fileManager fileExistsAtPath:path])
+        [fileManager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
+    
     return pathForDocumentBuffer;
 }
 
