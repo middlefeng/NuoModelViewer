@@ -346,6 +346,9 @@ MouseDragMode;
 
 
 
+// awakeFromNib should be the last step of initialization. here set some properties
+// to the objects which are created in viewResizing
+//
 - (void)awakeFromNib
 {
     self.metalLayer.device = [_configuration device];
@@ -369,6 +372,9 @@ MouseDragMode;
 
 
 
+// viewResizing is called before awakeFromNib so here becomes the place to create
+// member objects programmatically
+//
 - (void)viewResizing
 {
     [super viewResizing];
