@@ -56,7 +56,7 @@
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.commandQueue.device newDefaultLibrary];
+    id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     NSString* vertexFunc = @"vertex_project_shadow";
     NSString* fragmnFunc = @"fragment_light_shadow";

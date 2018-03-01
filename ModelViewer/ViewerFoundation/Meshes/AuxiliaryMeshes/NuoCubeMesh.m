@@ -124,7 +124,7 @@ static uint16_t kIndices[] =
 
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
 {
-    id<MTLLibrary> library = [self.commandQueue.device newDefaultLibrary];
+    id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_cube"];
@@ -152,7 +152,7 @@ static uint16_t kIndices[] =
     depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionAlways;
     depthStencilDescriptor.depthWriteEnabled = NO;
     
-    self.depthStencilState = [self.commandQueue.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
+    self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
     
     _samplerState = [[NuoTextureBase getInstance:self.commandQueue] textureSamplerState:NO];
 }

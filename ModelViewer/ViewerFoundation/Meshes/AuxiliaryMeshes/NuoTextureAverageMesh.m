@@ -51,7 +51,7 @@
     NSString* shaderName = @"fragment_texutre_average";
     
     _texturesAccumulated = [NuoRenderPassTarget new];
-    _texturesAccumulated.device = self.commandQueue.device;
+    _texturesAccumulated.device = self.device;
     _texturesAccumulated.sampleCount = 1;
     _texturesAccumulated.clearColor = MTLClearColorMake(0, 0, 0, 0);
     _texturesAccumulated.manageTargetTexture = YES;

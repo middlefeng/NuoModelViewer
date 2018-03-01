@@ -44,7 +44,7 @@
                withSampleCount:(NSUInteger)sampleCount
                  withBlendMode:(ScreenSpaceBlendMode)mode
 {
-    id<MTLLibrary> library = [self.commandQueue.device newDefaultLibrary];
+    id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"texture_project"];
@@ -92,7 +92,7 @@
     depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLess;
     depthStencilDescriptor.depthWriteEnabled = NO;
     
-    self.depthStencilState = [self.commandQueue.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
+    self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
     
     _samplerState = [[NuoTextureBase getInstance:self.commandQueue] textureSamplerState:YES];
 }
