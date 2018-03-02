@@ -27,16 +27,16 @@
 }
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    self = [super initWithDevice:device];
+    self = [super initWithCommandQueue:commandQueue];
     
     if (self)
     {
         id<MTLBuffer> buffers[kInFlightBufferCount];
         for (size_t i = 0; i < kInFlightBufferCount; ++i)
-            buffers[i] = [device newBufferWithLength:sizeof(int)
-                                             options:MTLResourceStorageModeManaged];
+            buffers[i] = [commandQueue.device newBufferWithLength:sizeof(int)
+                                                          options:MTLResourceStorageModeManaged];
         _texCountBuffer = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
         
         _textureCount = 0;
@@ -57,7 +57,7 @@
     _texturesAccumulated.manageTargetTexture = YES;
     _texturesAccumulated.name = @"Average Texture";
     
-    _accumulatedMesh = [[NuoTextureMesh alloc] initWithDevice:self.device];
+    _accumulatedMesh = [[NuoTextureMesh alloc] initWithCommandQueue:self.commandQueue];
     [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withSampleCount:1];
     
     [self makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withFragementShader:shaderName

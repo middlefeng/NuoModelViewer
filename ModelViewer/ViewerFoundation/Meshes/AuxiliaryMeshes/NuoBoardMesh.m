@@ -18,14 +18,14 @@
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-            withVerticesBuffer:(void *)buffer withLength:(size_t)length
-                   withIndices:(void *)indices withLength:(size_t)indicesLength
-                 withDimension:(vector_float3)dimensions
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                  withVerticesBuffer:(void *)buffer withLength:(size_t)length
+                         withIndices:(void *)indices withLength:(size_t)indicesLength
+                       withDimension:(vector_float3)dimensions
 {
-    self = [super initWithDevice:device withVerticesBuffer:buffer
-                      withLength:length withIndices:indices
-                      withLength:indicesLength];
+    self = [super initWithCommandQueue:commandQueue
+                    withVerticesBuffer:buffer withLength:length
+                           withIndices:indices withLength:indicesLength];
     
     if (self)
     {

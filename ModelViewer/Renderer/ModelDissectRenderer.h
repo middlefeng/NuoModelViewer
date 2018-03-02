@@ -14,7 +14,7 @@
 @property (nonatomic, assign) float splitViewProportion;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 - (void)setSampleCount:(NSUInteger)sampleCount;
 
 

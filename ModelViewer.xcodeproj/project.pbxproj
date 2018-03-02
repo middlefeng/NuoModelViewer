@@ -68,6 +68,7 @@
 		2CA75EB2201A75CB000E9A05 /* NuoBounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CA75EB0201A75CB000E9A05 /* NuoBounds.cpp */; };
 		2CA75EBF201AAFE0000E9A05 /* NuoMeshBounds.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CA75EBE201AAFE0000E9A05 /* NuoMeshBounds.mm */; };
 		2CAF2E851D691AC90074E402 /* tiny_obj_loader.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */; };
+		2CB053D02043A24700EF8279 /* ModelViewConfiguration.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CB053CF2043A24700EF8279 /* ModelViewConfiguration.mm */; };
 		2CC110751FDD233100D09716 /* NuoProgressSheetPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CC110741FDD233100D09716 /* NuoProgressSheetPanel.m */; };
 		2CC5EDEE1D8A62B100419168 /* NuoRoundedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CC5EDED1D8A62B100419168 /* NuoRoundedView.m */; };
 		2CCF9C771E5B4F77006EF8C4 /* NuoOffscreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CCF9C761E5B4F77006EF8C4 /* NuoOffscreenView.m */; };
@@ -268,6 +269,8 @@
 		2CA75EBE201AAFE0000E9A05 /* NuoMeshBounds.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoMeshBounds.mm; sourceTree = "<group>"; };
 		2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_obj_loader.cc; sourceTree = "<group>"; };
 		2CAF2E841D691AC90074E402 /* tiny_obj_loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tiny_obj_loader.h; sourceTree = "<group>"; };
+		2CB053CE2043A24700EF8279 /* ModelViewConfiguration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelViewConfiguration.h; sourceTree = "<group>"; };
+		2CB053CF2043A24700EF8279 /* ModelViewConfiguration.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ModelViewConfiguration.mm; sourceTree = "<group>"; };
 		2CC110731FDD233100D09716 /* NuoProgressSheetPanel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoProgressSheetPanel.h; sourceTree = "<group>"; };
 		2CC110741FDD233100D09716 /* NuoProgressSheetPanel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoProgressSheetPanel.m; sourceTree = "<group>"; };
 		2CC5EDEC1D8A62B100419168 /* NuoRoundedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRoundedView.h; sourceTree = "<group>"; };
@@ -411,6 +414,8 @@
 				2CF62A461EE9B4E7003E23EF /* BoardSettingsPanel.m */,
 				2C2ACEBE1FA1B1AE0055D52D /* FrameRateView.h */,
 				2C2ACEBF1FA1B1AE0055D52D /* FrameRateView.m */,
+				2CB053CE2043A24700EF8279 /* ModelViewConfiguration.h */,
+				2CB053CF2043A24700EF8279 /* ModelViewConfiguration.mm */,
 			);
 			name = Interface;
 			path = UserInterface;
@@ -767,6 +772,7 @@
 				2C1585BC1FB9652F00BDF282 /* ShaderAverage.metal in Sources */,
 				2CDCDAF31DC185A800ECFE39 /* NuoModelArrow.cpp in Sources */,
 				2C235FD01DD6CBD700E68295 /* ShadersTexturedMaterialed.metal in Sources */,
+				2CB053D02043A24700EF8279 /* ModelViewConfiguration.mm in Sources */,
 				2C99908F1F5F350400AEF181 /* ModelDissectRenderer.mm in Sources */,
 				2C156CBA1EE845A8000C52D4 /* NuoBoardMesh.mm in Sources */,
 				2C5B92BD1D7160EC00722936 /* NuoModelLoader.cpp in Sources */,

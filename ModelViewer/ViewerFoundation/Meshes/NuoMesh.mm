@@ -49,21 +49,22 @@
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-            withVerticesBuffer:(void*)buffer withLength:(size_t)length
-                   withIndices:(void*)indices withLength:(size_t)indicesLength
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                  withVerticesBuffer:(void*)buffer withLength:(size_t)length
+                         withIndices:(void*)indices withLength:(size_t)indicesLength
 {
     if ((self = [super init]))
     {
-        _vertexBuffer = [device newBufferWithBytes:buffer
-                                            length:length
-                                           options:MTLResourceOptionCPUCacheModeDefault];
-        
-        _indexBuffer = [device newBufferWithBytes:indices
-                                           length:indicesLength
-                                          options:MTLResourceOptionCPUCacheModeDefault];
-        _device = device;
+        id<MTLDevice> device = commandQueue.device;
+        _vertexBuffer = [device newBufferWithLength:length
+                                            options:MTLResourceStorageModePrivate];
+        _indexBuffer = [device newBufferWithLength:indicesLength
+                                            options:MTLResourceStorageModePrivate];
+            
+        _commandQueue = commandQueue;
         _enabled = true;
+        
+        [self updateVerticesBuffer:buffer withLength:length withIndices:indices withLength:indicesLength];
         
         _smoothTolerance = 0.0f;
         _smoothConservative = YES;
@@ -99,9 +100,32 @@
 }
 
 
+- (void)updateVerticesBuffer:(void*)buffer withLength:(size_t)length
+                 withIndices:(void*)indices withLength:(size_t)indicesLength
+{
+    @autoreleasepool
+    {
+        id<MTLBuffer> vertexBuffer = [self.device newBufferWithBytes:buffer
+                                                              length:length
+                                                             options:MTLResourceStorageModeShared];
+
+        id<MTLBuffer> indexBuffer = [self.device newBufferWithBytes:indices
+                                                             length:indicesLength
+                                                            options:MTLResourceStorageModeShared];
+        
+        id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
+        id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
+        [encoder copyFromBuffer:vertexBuffer sourceOffset:0 toBuffer:_vertexBuffer destinationOffset:0 size:length];
+        [encoder copyFromBuffer:indexBuffer sourceOffset:0 toBuffer:_indexBuffer destinationOffset:0 size:indicesLength];
+        [encoder endEncoding];
+        [commandBuffer commit];
+    }
+}
+
+
 - (void)shareResourcesFrom:(NuoMesh*)mesh
 {
-    _device = mesh.device;
+    _commandQueue = mesh.commandQueue;
     _vertexBuffer = mesh.vertexBuffer;
     _indexBuffer = mesh.indexBuffer;
     _transformBuffers = mesh.transformBuffers;
@@ -172,13 +196,8 @@
         clonedModel->SmoothSurface(tolerance, _smoothConservative);
     }
     
-    _vertexBuffer = [_device newBufferWithBytes:clonedModel->Ptr()
-                                         length:clonedModel->Length()
-                                        options:MTLResourceOptionCPUCacheModeDefault];
-    
-    _indexBuffer = [_device newBufferWithBytes:clonedModel->IndicesPtr()
-                                        length:clonedModel->IndicesLength()
-                                       options:MTLResourceOptionCPUCacheModeDefault];
+    [self updateVerticesBuffer:clonedModel->Ptr() withLength:clonedModel->Length()
+                   withIndices:clonedModel->IndicesPtr() withLength:clonedModel->IndicesLength()];
 }
 
 
@@ -197,6 +216,12 @@
 }
 
 
+- (id<MTLDevice>)device
+{
+    return _commandQueue.device;
+}
+
+
 
 - (void)setUnifiedOpacity:(float)unifiedOpacity
 {
@@ -207,13 +232,8 @@
     material.get()->dissolve = unifiedOpacity;
     
     _rawModel->UpdateBufferWithUnifiedMaterial();
-    _vertexBuffer = [_device newBufferWithBytes:_rawModel->Ptr()
-                                         length:_rawModel->Length()
-                                        options:MTLResourceOptionCPUCacheModeDefault];
-    
-    _indexBuffer = [_device newBufferWithBytes:_rawModel->IndicesPtr()
-                                        length:_rawModel->IndicesLength()
-                                       options:MTLResourceOptionCPUCacheModeDefault];
+    [self updateVerticesBuffer:_rawModel->Ptr() withLength:_rawModel->Length()
+                   withIndices:_rawModel->IndicesPtr() withLength:_rawModel->IndicesLength()];
 
     BOOL wasTrans = _hasTransparency;
     _hasTransparency = (unifiedOpacity < 0.99999);
@@ -501,7 +521,7 @@
 
 
 NuoMesh* CreateMesh(const NuoModelOption& options,
-                    id<MTLDevice> device, id<MTLCommandQueue> commandQueue,
+                    id<MTLCommandQueue> commandQueue,
                     const std::shared_ptr<NuoModelBase> model)
 {
     NuoMesh* resultMesh = nil;
@@ -509,11 +529,11 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
     
     if (!textured && !options._basicMaterialized)
     {
-        NuoMesh* mesh = [[NuoMesh alloc] initWithDevice:device
-                                     withVerticesBuffer:model->Ptr()
-                                             withLength:model->Length()
-                                            withIndices:model->IndicesPtr()
-                                             withLength:model->IndicesLength()];
+        NuoMesh* mesh = [[NuoMesh alloc] initWithCommandQueue:commandQueue
+                                           withVerticesBuffer:model->Ptr()
+                                                   withLength:model->Length()
+                                                withIndices:model->IndicesPtr()
+                                                   withLength:model->IndicesLength()];
         
         resultMesh = mesh;
     }
@@ -522,13 +542,13 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
         BOOL checkTransparency = options._textureEmbedMaterialTransparency;
         
-        NuoMeshTextured* mesh = [[NuoMeshTextured alloc] initWithDevice:device
+        NuoMeshTextured* mesh = [[NuoMeshTextured alloc] initWithCommandQueue:commandQueue
                                                      withVerticesBuffer:model->Ptr()
                                                              withLength:model->Length()
                                                             withIndices:model->IndicesPtr()
                                                              withLength:model->IndicesLength()];
         
-        [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency withCommandQueue:commandQueue];
+        [mesh makeTexture:modelTexturePath checkTransparency:checkTransparency];
         
         resultMesh = mesh;
     }
@@ -537,13 +557,13 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         NSString* modelTexturePath = [NSString stringWithUTF8String:model->GetTexturePathDiffuse().c_str()];
         BOOL embeddedAlpha = options._textureEmbedMaterialTransparency;
         
-        NuoMeshTexMatieraled* mesh = [[NuoMeshTexMatieraled alloc] initWithDevice:device
-                                         withVerticesBuffer:model->Ptr()
-                                                 withLength:model->Length()
-                                                withIndices:model->IndicesPtr()
-                                                 withLength:model->IndicesLength()];
+        NuoMeshTexMatieraled* mesh = [[NuoMeshTexMatieraled alloc] initWithCommandQueue:commandQueue
+                                                                     withVerticesBuffer:model->Ptr()
+                                                                             withLength:model->Length()
+                                                                            withIndices:model->IndicesPtr()
+                                                                             withLength:model->IndicesLength()];
         
-        [mesh makeTexture:modelTexturePath checkTransparency:embeddedAlpha withCommandQueue:commandQueue];
+        [mesh makeTexture:modelTexturePath checkTransparency:embeddedAlpha];
         
         NSString* modelTexturePathOpacity = [NSString stringWithUTF8String:model->GetTexturePathOpacity().c_str()];
         if ([modelTexturePathOpacity isEqualToString:@""])
@@ -569,11 +589,11 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
     }
     else if (!textured && options._basicMaterialized)
     {
-        NuoMeshMatieraled* mesh = [[NuoMeshMatieraled alloc] initWithDevice:device
-                                                         withVerticesBuffer:model->Ptr()
-                                                                 withLength:model->Length()
-                                                                withIndices:model->IndicesPtr()
-                                                                 withLength:model->IndicesLength()];
+        NuoMeshMatieraled* mesh = [[NuoMeshMatieraled alloc] initWithCommandQueue:commandQueue
+                                                               withVerticesBuffer:model->Ptr()
+                                                                       withLength:model->Length()
+                                                                      withIndices:model->IndicesPtr()
+                                                                       withLength:model->IndicesLength()];
         
         [mesh setTransparency:model->HasTransparent()];
         [mesh setPhysicallyReflection:options._physicallyReflection];

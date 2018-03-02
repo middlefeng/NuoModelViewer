@@ -67,12 +67,10 @@ TransformMode;
 @property (nonatomic, assign) NuoDeferredRenderUniforms deferredParameters;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
-- (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
-                                    withProgress:(NuoProgressFunction)progress;
-- (BOOL)loadPackage:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
-                                    withProgress:(NuoProgressFunction)progress;
+- (void)loadMesh:(NSString*)path withProgress:(NuoProgressFunction)progress;
+- (BOOL)loadPackage:(NSString*)path withProgress:(NuoProgressFunction)progress;
 - (BOOL)isValidPack:(NSString*)path;
 
 - (NuoMeshCompound*)mainModelMesh;
@@ -82,7 +80,6 @@ TransformMode;
 - (void)importScene:(NuoLua*)lua;
 
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
-       withCommandQueue:(id<MTLCommandQueue>)commandQueue
            withProgress:(NuoProgressFunction)progress;
 
 - (NuoBoardMesh*)createBoard:(CGSize)size;

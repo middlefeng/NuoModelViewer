@@ -21,7 +21,7 @@
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat;
 - (void)setProjectionMatrix:(matrix_float4x4)projection;

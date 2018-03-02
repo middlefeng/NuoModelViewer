@@ -15,7 +15,7 @@
 
 @interface NuoTextureAverageMesh : NuoScreenSpaceMesh
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (void)makePipelineAndSampler;
 

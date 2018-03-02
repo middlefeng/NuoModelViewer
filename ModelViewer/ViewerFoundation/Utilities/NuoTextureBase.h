@@ -39,13 +39,12 @@ enum NuoTextureCubeFace
 @interface NuoTextureBase : NSObject
 
 
-+ (NuoTextureBase*)getInstance:(id<MTLDevice>)device;
++ (NuoTextureBase*)getInstance:(id<MTLCommandQueue>)commandQueue;
 
 
 - (NuoTexture*)texture2DWithImageNamed:(NSString *)imagePath
                              mipmapped:(BOOL)mipmapped
-                     checkTransparency:(BOOL)checkTransparency
-                          commandQueue:(id<MTLCommandQueue>)commandQueue;
+                     checkTransparency:(BOOL)checkTransparency;
 
 - (id<MTLTexture>)textureCubeWithImageNamed:(NSString *)imagePath;
 

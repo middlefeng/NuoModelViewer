@@ -15,7 +15,7 @@
 @implementation NuoScreenSpaceMesh
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
     float vertices[] =
     {
@@ -31,9 +31,9 @@
         2, 3, 0
     };
     
-    self = [super initWithDevice:device
-              withVerticesBuffer:(void*)vertices withLength:(size_t)sizeof(vertices)
-                     withIndices:(void*)indices withLength:(size_t)sizeof(indices)];
+    self = [super initWithCommandQueue:commandQueue
+                    withVerticesBuffer:(void*)vertices withLength:(size_t)sizeof(vertices)
+                           withIndices:(void*)indices withLength:(size_t)sizeof(indices)];
     
     return self;
 }
@@ -94,7 +94,7 @@
     
     self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
     
-    _samplerState = [[NuoTextureBase getInstance:self.device] textureSamplerState:YES];
+    _samplerState = [[NuoTextureBase getInstance:self.commandQueue] textureSamplerState:YES];
 }
 
 

@@ -75,11 +75,11 @@ static uint16_t kIndices[] =
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    self = [super initWithDevice:device
-              withVerticesBuffer:(void*)kVertices withLength:(size_t)sizeof(kVertices)
-                     withIndices:(void*)kIndices withLength:(size_t)sizeof(kIndices)];
+    self = [super initWithCommandQueue:commandQueue
+                    withVerticesBuffer:(void*)kVertices withLength:(size_t)sizeof(kVertices)
+                           withIndices:(void*)kIndices withLength:(size_t)sizeof(kIndices)];
     
     if (self)
     {
@@ -87,6 +87,8 @@ static uint16_t kIndices[] =
         
         {
             id<MTLBuffer> matrix[kInFlightBufferCount];
+            id<MTLDevice> device = commandQueue.device;
+            
             for (uint i = 0; i < kInFlightBufferCount; ++i)
             {
                 matrix[i] = [device newBufferWithLength:sizeof(NuoUniforms)
@@ -164,7 +166,7 @@ static uint16_t kIndices[] =
     
     self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
     
-    _samplerState = [[NuoTextureBase getInstance:self.device] textureSamplerState:NO];
+    _samplerState = [[NuoTextureBase getInstance:self.commandQueue] textureSamplerState:NO];
 }
 
 

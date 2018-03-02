@@ -12,6 +12,7 @@
 
 
 static char* pathForDocumentBuffer = 0;
+static char* pathForConfigureFileBuffer = 0;
 
 
 const char* pathForDocument(void)
@@ -31,7 +32,29 @@ const char* pathForDocument(void)
     
     strcpy(pathForDocumentBuffer, path.UTF8String);
     
+    if (![fileManager fileExistsAtPath:path])
+        [fileManager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
+    
     return pathForDocumentBuffer;
+}
+
+
+
+const char* pathForConfigureFile(void)
+{
+    if (pathForConfigureFileBuffer)
+        return pathForConfigureFileBuffer;
+    
+    const char* pathCh = pathForDocument();
+    NSString* path = [NSString stringWithFormat:@"%s/%s", pathCh, "configuration.cfg"];
+    
+    size_t size = path.length;
+    pathForConfigureFileBuffer = malloc(size + 1);
+    pathForConfigureFileBuffer[size] = 0;
+    
+    strcpy(pathForConfigureFileBuffer, path.UTF8String);
+    
+    return pathForConfigureFileBuffer;
 }
 
 
@@ -45,3 +68,4 @@ void clearCategoryInDocument(const char* category)
     
     [fileManager removeItemAtPath:path error:nil];
 }
+

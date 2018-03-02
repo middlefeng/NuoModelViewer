@@ -19,12 +19,11 @@
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    if (self = [super initWithDevice:device
-                     withPixelFormat:MTLPixelFormatBGRA8Unorm
-                     withSampleCount:1])
+    if (self = [super init])
     {
+        self.commandQueue = commandQueue;
         [self resetResources];
     }
     
@@ -34,7 +33,7 @@
 
 - (void)resetResources
 {
-    _averageMesh = [[NuoTextureAverageMesh alloc] initWithDevice:self.device];
+    _averageMesh = [[NuoTextureAverageMesh alloc] initWithCommandQueue:self.commandQueue];
     [_averageMesh makePipelineAndSampler];
 }
 

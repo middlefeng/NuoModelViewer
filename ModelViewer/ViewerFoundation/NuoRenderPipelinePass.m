@@ -20,15 +20,15 @@
 @implementation NuoRenderPipelinePass
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-               withPixelFormat:(MTLPixelFormat)pixelFormat
-               withSampleCount:(uint)sampleCount
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                     withPixelFormat:(MTLPixelFormat)pixelFormat
+                     withSampleCount:(uint)sampleCount
 {
     self = [super init];
     if (self)
     {
-        self.device = device;
-        _textureMesh = [[NuoTextureMesh alloc] initWithDevice:device];
+        self.commandQueue = commandQueue;
+        _textureMesh = [[NuoTextureMesh alloc] initWithCommandQueue:commandQueue];
         [_textureMesh makePipelineAndSampler:pixelFormat withSampleCount:sampleCount];
     }
     

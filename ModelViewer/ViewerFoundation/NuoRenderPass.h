@@ -16,7 +16,7 @@
 
 @interface NuoRenderPass : NSObject
 
-@property (nonatomic, weak) id<MTLDevice> device;
+@property (nonatomic, weak) id<MTLCommandQueue> commandQueue;
 
 @property (nonatomic, strong) NuoRenderPassTarget* renderTarget;
 

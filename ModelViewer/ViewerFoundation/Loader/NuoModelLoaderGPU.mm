@@ -31,7 +31,6 @@
 
 
 - (NuoMeshCompound*)createMeshsWithOptions:(NuoMeshOption*)loadOption
-                                withDevice:(id<MTLDevice>)device
                           withCommandQueue:(id<MTLCommandQueue>)commandQueue
                               withProgress:(NuoProgressFunction)progress
 {
@@ -58,7 +57,7 @@
     size_t index = 0;
     for (auto& model : models)
     {
-        NuoMesh* mesh = CreateMesh(options, device, commandQueue, model);
+        NuoMesh* mesh = CreateMesh(options, commandQueue, model);
         
         NuoMeshBounds* bounds = [NuoMeshBounds new];
         *((NuoBounds*)[bounds boundingBox]) = model->GetBoundingBox();

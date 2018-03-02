@@ -41,10 +41,11 @@
 @implementation NotationRenderer
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    self = [super initWithDevice:device withPixelFormat:MTLPixelFormatBGRA8Unorm
-                 withSampleCount:kSampleCount];
+    self = [super initWithCommandQueue:commandQueue
+                       withPixelFormat:MTLPixelFormatBGRA8Unorm
+                       withSampleCount:kSampleCount];
     
     if (self)
     {
@@ -53,8 +54,8 @@
         
         for (unsigned int index = 0; index < 4; ++index)
         {
-            NotationLight* lightNotation = [[NotationLight alloc] initWithDevice:device
-                                                                          isBold:index < 2 /* the first two with shadow casting */];
+            NotationLight* lightNotation = [[NotationLight alloc] initWithCommandQueue:commandQueue
+                                                                                isBold:index < 2 /* the first two with shadow casting */];
             [lightVectors addObject:lightNotation];
             
             NuoLightSource* lightSource = [[NuoLightSource alloc] init];
@@ -83,14 +84,14 @@
         lightUniform.lightParams[0].density = 1.0f;
         lightUniform.lightParams[0].spacular = 0.6f;
         
-        _lightBuffer = [self.device newBufferWithLength:sizeof(NuoLightUniforms)
-                                                options:MTLResourceOptionCPUCacheModeDefault];
+        _lightBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoLightUniforms)
+                                                        options:MTLResourceOptionCPUCacheModeDefault];
         
         memcpy([_lightBuffer contents], &lightUniform, sizeof(NuoLightUniforms));
         
         id<MTLBuffer> transformBuffer[kInFlightBufferCount];
         for (unsigned int i = 0; i < kInFlightBufferCount; ++i)
-            transformBuffer[i] = [device newBufferWithLength:sizeof(NuoUniforms) options:MTLResourceOptionCPUCacheModeDefault];
+            transformBuffer[i] = [commandQueue.device newBufferWithLength:sizeof(NuoUniforms) options:MTLResourceOptionCPUCacheModeDefault];
         
         _transforms = [[NSArray alloc] initWithObjects:transformBuffer count:kInFlightBufferCount];
     }

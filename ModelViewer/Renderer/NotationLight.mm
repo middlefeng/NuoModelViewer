@@ -26,7 +26,6 @@
 
 
 @property (nonatomic, strong) NSArray<id<MTLBuffer>>* characterUniformBuffers;
-@property (nonatomic, weak) id<MTLDevice> device;
 
 @property (nonatomic, strong) NuoMesh* lightVector;
 
@@ -38,15 +37,13 @@
 @implementation NotationLight
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device isBold:(BOOL)bold
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue isBold:(BOOL)bold
 {
     self = [super init];
     
     if (self)
     {
-        _device = device;
-        
-        [self makeResources];
+        [self makeResources:commandQueue];
         
         float bodyLength = bold ? 1.2 : 1.0;
         float bodyRadius = bold ? 0.24 : 0.2;
@@ -59,7 +56,7 @@
         NuoMeshBounds* meshBounds = [NuoMeshBounds new];
         *((NuoBounds*)[meshBounds boundingBox]) = arrow->GetBoundingBox();
         
-        _lightVector = [[NuoMesh alloc] initWithDevice:self.device
+        _lightVector = [[NuoMesh alloc] initWithCommandQueue:commandQueue
                                     withVerticesBuffer:arrow->Ptr() withLength:arrow->Length()
                                            withIndices:arrow->IndicesPtr() withLength:arrow->IndicesLength()];
         
@@ -83,12 +80,12 @@
 }
 
 
-- (void)makeResources
+- (void)makeResources:(id<MTLCommandQueue>)commandQueue
 {
     id<MTLBuffer> characters[kInFlightBufferCount];
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
-        id<MTLBuffer> characterUniformBuffers = [self.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
+        id<MTLBuffer> characterUniformBuffers = [commandQueue.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
                                                                          options:MTLResourceOptionCPUCacheModeDefault];
         characters[i] = characterUniformBuffers;
     }
