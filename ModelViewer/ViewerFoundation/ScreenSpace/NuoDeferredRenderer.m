@@ -21,32 +21,32 @@
 }
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-            withSceneParameter:(id<NuoMeshSceneParametersProvider>)sceneParameter
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                  withSceneParameter:(id<NuoMeshSceneParametersProvider>)sceneParameter
 {
     self = [super init];
     
     if (self)
     {
-        self.device = device;
-        _screenSpaceRenderer = [[NuoScreenSpaceRenderer alloc] initWithDevice:device withName:@"Screen"];
+        self.commandQueue = commandQueue;
+        _screenSpaceRenderer = [[NuoScreenSpaceRenderer alloc] initWithCommandQueue:commandQueue withName:@"Screen"];
         _screenSpaceRenderer.paramsProvider = sceneParameter;
         
         self.renderTarget = [[NuoRenderPassTarget alloc] init];
         self.renderTarget.name = @"deferred";
-        self.renderTarget.device = device;
+        self.renderTarget.device = commandQueue.device;
         self.renderTarget.manageTargetTexture = YES;
         self.renderTarget.sharedTargetTexture = YES;
         self.renderTarget.sampleCount = 1;
         
-        _screenMesh = [[NuoScreenSpaceMesh alloc] initWithDevice:device];
+        _screenMesh = [[NuoScreenSpaceMesh alloc] initWithCommandQueue:commandQueue];
         [_screenMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm
                         withFragementShader:@"fragement_deferred"
                             withSampleCount:1
                               withBlendMode:kBlend_Alpha];
         
-        _deferredRenderParamBuffer = [self.device newBufferWithLength:sizeof(NuoDeferredRenderUniforms)
-                                                              options:MTLResourceOptionCPUCacheModeDefault];
+        _deferredRenderParamBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoDeferredRenderUniforms)
+                                                                      options:MTLResourceOptionCPUCacheModeDefault];
     }
     
     return self;

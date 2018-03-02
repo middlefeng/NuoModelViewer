@@ -22,7 +22,7 @@
 @property (nonatomic, assign) float auxiliaryProportion;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 /**
  *  the pixelFormat is used for the target color attachement and

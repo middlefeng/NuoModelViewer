@@ -33,7 +33,7 @@ static void NuoDataProviderReleaseDataCallback(void * info, const void *  data, 
 
 
 @property (strong) CIContext* CIContext;
-@property (weak) id<MTLDevice> device;
+@property (weak) id<MTLCommandQueue> commandQueue;
 
 @property (strong) NSMutableDictionary<NSString*, NuoTexture*>* texturePool;
 
@@ -54,12 +54,12 @@ static NuoTextureBase* sInstance;
 
 
 
-+ (NuoTextureBase*)getInstance:(id<MTLDevice>)device
++ (NuoTextureBase*)getInstance:(id<MTLCommandQueue>)commandQueue
 {
     if (!sInstance)
     {
         sInstance = [NuoTextureBase new];
-        sInstance.device = device;
+        sInstance.commandQueue = commandQueue;
         sInstance.texturePool = [NSMutableDictionary new];
     }
     
@@ -71,7 +71,6 @@ static NuoTextureBase* sInstance;
 - (NuoTexture*)texture2DWithImageNamed:(NSString *)imagePath
                              mipmapped:(BOOL)mipmapped
                      checkTransparency:(BOOL)checkTransparency
-                          commandQueue:(id<MTLCommandQueue>)commandQueue
 {
     NuoTexture* result = [_texturePool objectForKey:imagePath];
     if (result)
@@ -98,7 +97,7 @@ static NuoTextureBase* sInstance;
                                                                                                      width:imageSize.width
                                                                                                     height:imageSize.height
                                                                                                  mipmapped:mipmapped];
-        id<MTLTexture> texture = [self.device newTextureWithDescriptor:textureDescriptor];
+        id<MTLTexture> texture = [_commandQueue.device newTextureWithDescriptor:textureDescriptor];
         
         MTLRegion region = MTLRegionMake2D(0, 0, imageSize.width, imageSize.height);
         [texture replaceRegion:region mipmapLevel:0 withBytes:imageData bytesPerRow:bytesPerRow];
@@ -111,7 +110,7 @@ static NuoTextureBase* sInstance;
         
         if (mipmapped)
         {
-            id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
+            id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
             id<MTLBlitCommandEncoder> commandEncoder = [commandBuffer blitCommandEncoder];
             [commandEncoder generateMipmapsForTexture:texture];
             [commandEncoder endEncoding];
@@ -151,7 +150,7 @@ handleTransparency:
         samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
         samplerDesc.mipFilter = MTLSamplerMipFilterLinear;
         
-        _samplerStateMipMap = [self.device newSamplerStateWithDescriptor:samplerDesc];
+        _samplerStateMipMap = [_commandQueue.device newSamplerStateWithDescriptor:samplerDesc];
         return _samplerStateMipMap;
     }
     else
@@ -166,7 +165,7 @@ handleTransparency:
         samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
         samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
         
-        _samplerStateNoMipMap = [self.device newSamplerStateWithDescriptor:samplerDesc];
+        _samplerStateNoMipMap = [_commandQueue.device newSamplerStateWithDescriptor:samplerDesc];
         return _samplerStateNoMipMap;
     }
 }
@@ -186,7 +185,7 @@ handleTransparency:
             [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm
                                                                   size:cubeSize mipmapped:NO];
     
-    id<MTLTexture> texture = [self.device newTextureWithDescriptor:textureDescriptor];
+    id<MTLTexture> texture = [_commandQueue.device newTextureWithDescriptor:textureDescriptor];
     MTLRegion region = MTLRegionMake2D(0, 0, cubeSize, cubeSize);
     for (uint index = 0; index < 6; ++index)
     {

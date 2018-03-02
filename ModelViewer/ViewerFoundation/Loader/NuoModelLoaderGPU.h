@@ -30,7 +30,6 @@
 - (instancetype)initWithLoader:(std::shared_ptr<NuoModelLoader>)loader;
 
 - (NuoMeshCompound*)createMeshsWithOptions:(NuoMeshOption*)loadOption
-                                withDevice:(id<MTLDevice>)device
                           withCommandQueue:(id<MTLCommandQueue>)commandQueue
                               withProgress:(NuoProgressFunction)progress;
 

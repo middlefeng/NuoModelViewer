@@ -64,9 +64,9 @@
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    if ((self = [super initWithDevice:device]))
+    if ((self = [super initWithCommandQueue:commandQueue]))
     {
         [self makeResources];
         
@@ -74,17 +74,17 @@
         _cullEnabled = YES;
         _fieldOfView = (2 * M_PI) / 8;
         
-        _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 0"];
-        _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithDevice:device withName:@"Shadow 1"];
+        _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 0"];
+        _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 1"];
         
         _immediateTarget = [[NuoRenderPassTarget alloc] init];
         _immediateTarget.name = @"immediate";
         _immediateTarget.sampleCount = kSampleCount;
-        _immediateTarget.device = device;
+        _immediateTarget.device = commandQueue.device;
         _immediateTarget.manageTargetTexture = YES;
         _immediateTarget.sharedTargetTexture = NO;
         
-        _deferredRenderer = [[NuoDeferredRenderer alloc] initWithDevice:device withSceneParameter:self];
+        _deferredRenderer = [[NuoDeferredRenderer alloc] initWithCommandQueue:commandQueue withSceneParameter:self];
         
         _meshes = [NSMutableArray new];
         _boardMeshes = [NSMutableArray new];
@@ -116,15 +116,14 @@
 }
 
 
-- (void)loadMesh:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
-                                     withProgress:(NuoProgressFunction)progress
+- (void)loadMesh:(NSString*)path withProgress:(NuoProgressFunction)progress
 {
     std::shared_ptr<NuoModelLoader> loader = std::make_shared<NuoModelLoader>();
     loader->LoadModel(path.UTF8String);
     
     _modelLoader = [[NuoModelLoaderGPU alloc] initWithLoader:loader];
     
-    [self createMeshs:commandQueue withProgress:^(float progressPercent)
+    [self createMeshsWithProgress:^(float progressPercent)
          {
              progress(progressPercent * (1 - 0.3) + 0.3);
          }];
@@ -140,8 +139,7 @@
 }
 
 
-- (BOOL)loadPackage:(NSString*)path withCommandQueue:(id<MTLCommandQueue>)commandQueue
-                                        withProgress:(NuoProgressFunction)progress
+- (BOOL)loadPackage:(NSString*)path withProgress:(NuoProgressFunction)progress
 {
     const char* documentPath = pathForDocument();
     NSString* packageFolder = [NSString stringWithUTF8String:documentPath];
@@ -193,7 +191,7 @@
         return NO;
     }
     
-    [self loadMesh:[NSString stringWithUTF8String:objFile.c_str()] withCommandQueue:commandQueue
+    [self loadMesh:[NSString stringWithUTF8String:objFile.c_str()]
                         withProgress:^(float progressPercent)
                              {
                                  progress(progressPercent * 0.5 + 0.5);
@@ -248,11 +246,10 @@
 }
 
 
-- (void)createMeshs:(id<MTLCommandQueue>)commandQueue withProgress:(NuoProgressFunction)progress
+- (void)createMeshsWithProgress:(NuoProgressFunction)progress
 {
     NuoMeshCompound* mesh = [_modelLoader createMeshsWithOptions:_modelOptions
-                                                      withDevice:self.device
-                                                withCommandQueue:commandQueue
+                                                withCommandQueue:self.commandQueue
                                                     withProgress:progress];
 
     // put the main model at the end of the draw queue,
@@ -287,7 +284,7 @@
 {
     std::shared_ptr<NuoModelBoard> modelBoard(new NuoModelBoard(size.width, size.height, 0.001));
     modelBoard->CreateBuffer();
-    NuoBoardMesh* boardMesh = CreateBoardMesh(self.device, modelBoard, [_modelOptions basicMaterialized]);
+    NuoBoardMesh* boardMesh = CreateBoardMesh(self.commandQueue, modelBoard, [_modelOptions basicMaterialized]);
     
     float radius = boardMesh.boundingSphere.radius;
     const float defaultDistance = - 3.0 * radius;
@@ -697,7 +694,6 @@
 
 
 - (void)setModelOptions:(NuoMeshOption *)modelOptions
-       withCommandQueue:(id<MTLCommandQueue>)commandQueue
            withProgress:(NuoProgressFunction)progress
 {
     _modelOptions = modelOptions;
@@ -707,7 +703,7 @@
         matrix_float4x4 originalPoise = _mainModelMesh.transformPoise;
         matrix_float4x4 originalTrans = _mainModelMesh.transformTranslate;
         
-        [self createMeshs:commandQueue withProgress:progress];
+        [self createMeshsWithProgress:progress];
         
         _mainModelMesh.transformPoise = originalPoise;
         _mainModelMesh.transformTranslate = originalTrans;
@@ -736,11 +732,11 @@
     
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
-        modelBuffers[i] = [self.device newBufferWithLength:sizeof(NuoUniforms)
+        modelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoUniforms)
                                                    options:MTLResourceOptionCPUCacheModeDefault];
-        lightingBuffers[i] = [self.device newBufferWithLength:sizeof(NuoLightUniforms)
+        lightingBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightUniforms)
                                                       options:MTLResourceOptionCPUCacheModeDefault];
-        lightCastModelBuffers[i] = [self.device newBufferWithLength:sizeof(NuoLightVertexUniforms)
+        lightCastModelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightVertexUniforms)
                                                         options:MTLResourceOptionCPUCacheModeDefault];
         
     }
@@ -751,8 +747,8 @@
     
     NuoModelCharacterUniforms modelCharacter;
     modelCharacter.opacity = 1.0f;
-    _modelCharacterUnfiromBuffer = [self.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
-                                                            options:MTLResourceOptionCPUCacheModeDefault];
+    _modelCharacterUnfiromBuffer = [self.commandQueue.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
+                                                                         options:MTLResourceOptionCPUCacheModeDefault];
     memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(NuoModelCharacterUniforms));
 }
 

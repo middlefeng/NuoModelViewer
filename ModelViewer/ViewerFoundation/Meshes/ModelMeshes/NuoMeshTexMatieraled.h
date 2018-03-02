@@ -15,9 +15,9 @@
 @interface NuoMeshTexMatieraled : NuoMeshTextured
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-            withVerticesBuffer:(void*)buffer withLength:(size_t)length
-                   withIndices:(void*)indices withLength:(size_t)indicesLength;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                  withVerticesBuffer:(void*)buffer withLength:(size_t)length
+                         withIndices:(void*)indices withLength:(size_t)indicesLength;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 
@@ -33,9 +33,9 @@
 @interface NuoMeshMatieraled : NuoMesh
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-            withVerticesBuffer:(void*)buffer withLength:(size_t)length
-                   withIndices:(void*)indices withLength:(size_t)indicesLength;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                  withVerticesBuffer:(void*)buffer withLength:(size_t)length
+                         withIndices:(void*)indices withLength:(size_t)indicesLength;
 
 - (void)setPhysicallyReflection:(BOOL)physically;
 

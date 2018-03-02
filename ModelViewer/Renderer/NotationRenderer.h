@@ -29,7 +29,7 @@
 @property (nonatomic, readonly) NuoLightSource* selectedLightSource;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 
 - (void)selectCurrentLightVector:(CGPoint)point;

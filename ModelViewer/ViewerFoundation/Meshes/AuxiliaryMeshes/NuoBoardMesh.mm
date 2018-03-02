@@ -13,16 +13,16 @@
 
 @interface NuoBoardMesh()
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-            withVerticesBuffer:(void *)buffer withLength:(size_t)length
-                   withIndices:(void *)indices withLength:(size_t)indicesLength
-                 withDimension:(NuoCoord*)coord;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                  withVerticesBuffer:(void *)buffer withLength:(size_t)length
+                         withIndices:(void *)indices withLength:(size_t)indicesLength
+                       withDimension:(NuoCoord*)coord;
 
 @end
 
 
 
-NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoModelBoard> model, bool shadowCastOnly)
+NuoBoardMesh* CreateBoardMesh(id<MTLCommandQueue> commandQueue, const std::shared_ptr<NuoModelBoard> model, bool shadowCastOnly)
 {
     NuoBoardMesh* resultMesh = nil;
     NuoCoord* dimensions = [NuoCoord new];
@@ -30,12 +30,12 @@ NuoBoardMesh* CreateBoardMesh(id<MTLDevice> device, const std::shared_ptr<NuoMod
     dimensions.y = model->_height;
     dimensions.z = model->_thickness;
     
-    resultMesh = [[NuoBoardMesh alloc] initWithDevice:device
-                                   withVerticesBuffer:model->Ptr()
-                                           withLength:model->Length()
-                                          withIndices:model->IndicesPtr()
-                                           withLength:model->IndicesLength()
-                                        withDimension:dimensions];
+    resultMesh = [[NuoBoardMesh alloc] initWithCommandQueue:commandQueue
+                                         withVerticesBuffer:model->Ptr()
+                                                 withLength:model->Length()
+                                                withIndices:model->IndicesPtr()
+                                                 withLength:model->IndicesLength()
+                                              withDimension:dimensions];
     
     NuoBox boundingBox = model->GetBoundingBox();
     

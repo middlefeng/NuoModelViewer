@@ -21,15 +21,15 @@
 }
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-            withVerticesBuffer:(void*)buffer withLength:(size_t)length
-                   withIndices:(void*)indices withLength:(size_t)indicesLength
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                  withVerticesBuffer:(void*)buffer withLength:(size_t)length
+                         withIndices:(void*)indices withLength:(size_t)indicesLength
 {
-    self = [super initWithDevice:device
-              withVerticesBuffer:buffer
-                      withLength:length
-                     withIndices:indices
-                      withLength:indicesLength];
+    self = [super initWithCommandQueue:commandQueue
+                    withVerticesBuffer:buffer
+                            withLength:length
+                           withIndices:indices
+                            withLength:indicesLength];
     
     _meshMode = kMeshMode_Normal;
     
@@ -65,9 +65,9 @@
 
 - (void)makeTextureOpacity:(NSString*)texPath withCommandQueue:(id<MTLCommandQueue>)queue
 {
-    NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.device];
+    NuoTextureBase* textureBase = [NuoTextureBase getInstance:queue];
     NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:YES
-                                             checkTransparency:NO commandQueue:queue];
+                                             checkTransparency:NO];
     _textureOpacity = texture.texture;
 }
 
@@ -75,9 +75,9 @@
 
 - (void)makeTextureBump:(NSString*)texPath withCommandQueue:(id<MTLCommandQueue>)queue
 {
-    NuoTextureBase* textureBase = [NuoTextureBase getInstance:self.device];
+    NuoTextureBase* textureBase = [NuoTextureBase getInstance:queue];
     NuoTexture* texture = [textureBase texture2DWithImageNamed:texPath mipmapped:YES
-                                             checkTransparency:NO commandQueue:queue];
+                                             checkTransparency:NO];
     _textureBump = texture.texture;
 }
 
@@ -270,14 +270,14 @@
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-            withVerticesBuffer:(void*)buffer withLength:(size_t)length
-                   withIndices:(void*)indices withLength:(size_t)indicesLength
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                  withVerticesBuffer:(void*)buffer withLength:(size_t)length
+                         withIndices:(void*)indices withLength:(size_t)indicesLength
 {
-    self = [super initWithDevice:device
-              withVerticesBuffer:buffer
-                      withLength:length
-                     withIndices:indices
+    self = [super initWithCommandQueue:commandQueue
+                    withVerticesBuffer:buffer
+                            withLength:length
+                           withIndices:indices
                       withLength:indicesLength];
     
     if (self)

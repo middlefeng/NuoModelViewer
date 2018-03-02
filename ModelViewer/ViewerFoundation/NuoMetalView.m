@@ -59,7 +59,8 @@ static const size_t kFrameDurationMeasureCount = 20;
 {
     [self setWantsLayer:YES];
 
-    self.metalLayer.device = MTLCreateSystemDefaultDevice();
+    if (!self.metalLayer.device)
+        self.metalLayer.device = MTLCreateSystemDefaultDevice();
     
     [self commonInit];
     [self updateDrawableSize];

@@ -21,7 +21,7 @@
 }
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device withBackdrop:(id<MTLTexture>)backdrop
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withBackdrop:(id<MTLTexture>)backdrop
 {
     NSUInteger backDropW = [backdrop width];
     NSUInteger backDropH = [backdrop height];
@@ -49,9 +49,9 @@
         2, 3, 0
     };
     
-    self = [super initWithDevice:device
-              withVerticesBuffer:(void*)vertices withLength:(size_t)sizeof(vertices)
-                     withIndices:(void*)indices withLength:(size_t)sizeof(indices)];
+    self = [super initWithCommandQueue:commandQueue
+                    withVerticesBuffer:(void*)vertices withLength:(size_t)sizeof(vertices)
+                           withIndices:(void*)indices withLength:(size_t)sizeof(indices)];
     
     if (self)
     {
@@ -60,8 +60,8 @@
         id<MTLBuffer> matrix[kInFlightBufferCount];
         for (uint i = 0; i < kInFlightBufferCount; ++i)
         {
-            matrix[i] = [device newBufferWithLength:sizeof(NuoUniforms)
-                                            options:MTLResourceStorageModeManaged];
+            matrix[i] = [commandQueue.device newBufferWithLength:sizeof(NuoUniforms)
+                                                         options:MTLResourceStorageModeManaged];
         }
         _backdropTransformBuffers = [[NSArray alloc] initWithObjects:matrix count:kInFlightBufferCount];
         
@@ -130,7 +130,7 @@
     
     self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
     
-    _samplerState = [[NuoTextureBase getInstance:self.device] textureSamplerState:YES];
+    _samplerState = [[NuoTextureBase getInstance:self.commandQueue] textureSamplerState:YES];
 }
 
 

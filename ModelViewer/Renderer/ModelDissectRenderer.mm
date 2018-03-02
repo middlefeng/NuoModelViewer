@@ -21,9 +21,9 @@
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    if (self = [super initWithDevice:device])
+    if (self = [super initWithCommandQueue:commandQueue])
     {
         [self makeResources];
     }
@@ -35,13 +35,13 @@
 - (void)makeResources
 {
     _dissectRenderTarget = [NuoRenderPassTarget new];
-    _dissectRenderTarget.device = self.device;
+    _dissectRenderTarget.device = self.commandQueue.device;
     _dissectRenderTarget.sampleCount = kSampleCount;
     _dissectRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
     _dissectRenderTarget.manageTargetTexture = YES;
     _dissectRenderTarget.name = @"Dissect";
     
-    _textureMesh = [[NuoTextureMesh alloc] initWithDevice:self.device];
+    _textureMesh = [[NuoTextureMesh alloc] initWithCommandQueue:self.commandQueue];
 }
 
 

@@ -52,7 +52,8 @@ extern const BOOL kShadowPCF;
 @interface NuoMesh : NSObject
 
 
-@property (nonatomic, strong) id<MTLDevice> device;
+@property (nonatomic, readonly) id<MTLDevice> device;
+@property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
 @property (nonatomic, strong) id<MTLRenderPipelineState> renderPipelineState;
 @property (nonatomic, strong) id<MTLRenderPipelineState> screenSpacePipelineState;
 @property (nonatomic, strong) id<MTLRenderPipelineState> shadowPipelineState;
@@ -102,9 +103,9 @@ extern const BOOL kShadowPCF;
 @property (nonatomic, assign) BOOL cullEnabled;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-            withVerticesBuffer:(void*)buffer withLength:(size_t)length
-                   withIndices:(void*)indices withLength:(size_t)indicesLength;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                  withVerticesBuffer:(void*)buffer withLength:(size_t)length
+                         withIndices:(void*)indices withLength:(size_t)indicesLength;
 
 // get a clone of the current mesh for debugging purpose.
 // the cloned version shall share most of GPU resources.
@@ -156,7 +157,7 @@ class NuoModelBase;
 class NuoModelOption;
 
 NuoMesh* CreateMesh(const NuoModelOption& options,
-                    id<MTLDevice> device, id<MTLCommandQueue> commandQueue,
+                    id<MTLCommandQueue> commandQueue,
                     const std::shared_ptr<NuoModelBase> model);
 
 #endif

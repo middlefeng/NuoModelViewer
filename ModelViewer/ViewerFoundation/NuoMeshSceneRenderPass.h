@@ -40,7 +40,7 @@
 @property (nonatomic, readonly) id<MTLSamplerState> shadowMapSamplerState;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 /**
  *  the function sets up all common uniforms that are shared by all meshes.

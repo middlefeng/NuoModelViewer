@@ -31,8 +31,8 @@
 @property (nonatomic, weak) id<MTLTexture> sourceTexture;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-               withPixelFormat:(MTLPixelFormat)pixelFormat
-               withSampleCount:(uint)sampleCount;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                     withPixelFormat:(MTLPixelFormat)pixelFormat
+                     withSampleCount:(uint)sampleCount;
 
 @end

@@ -21,16 +21,16 @@ struct TextureMixFragment
 }
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    self = [super initWithDevice:device];
+    self = [super initWithCommandQueue:commandQueue];
     
     if (self)
     {
         id<MTLBuffer> buffers[kInFlightBufferCount];
         for (size_t i = 0; i < kInFlightBufferCount; ++i)
-            buffers[i] = [device newBufferWithLength:sizeof(TextureMixFragment)
-                                            options:MTLResourceOptionCPUCacheModeDefault];
+            buffers[i] = [commandQueue.device newBufferWithLength:sizeof(TextureMixFragment)
+                                                          options:MTLResourceOptionCPUCacheModeDefault];
         _textureMixBuffer = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
     }
     
