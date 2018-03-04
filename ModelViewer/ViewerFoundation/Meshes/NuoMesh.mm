@@ -131,6 +131,9 @@
     _transformBuffers = mesh.transformBuffers;
     _enabled = mesh.enabled;
     
+    _shadowOptionPCSS = mesh.shadowOptionPCSS;
+    _shadowOptionPCF = mesh.shadowOptionPCF;
+    
     [self setBoundsLocal:mesh.boundsLocal];
 }
 
