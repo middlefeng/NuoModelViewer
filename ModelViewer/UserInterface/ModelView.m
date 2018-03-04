@@ -230,7 +230,7 @@ MouseDragMode;
     NSString* currentDevice = _configuration.deviceName;
     NSString* deviceSelected = panel.deviceSelected;
     
-    if (![currentDevice isEqualToString:deviceSelected])
+    if (deviceSelected && currentDevice && ![currentDevice isEqualToString:deviceSelected])
     {
         [_configuration setDeviceName:deviceSelected];
         [_configuration save];
