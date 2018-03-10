@@ -69,9 +69,9 @@ struct ClearFragment
     [self makePipelineAndSampler:pixelFormat withFragementShader:shaderName
                  withSampleCount:sampleCount withBlendMode:kBlend_None];
     
-    //[self makePipelineScreenSpaceStateWithVertexShader:@"texture_project"
-    //                                withFragemtnShader:@"fragement_clear_screen_space"];
-    {
+    [self makePipelineScreenSpaceStateWithVertexShader:@"texture_project"
+                                    withFragemtnShader:@"fragement_clear_screen_space"];
+    /*{
         id<MTLLibrary> library = [self.device newDefaultLibrary];
         
         MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
@@ -107,7 +107,7 @@ struct ClearFragment
         NSError *error = nil;
         self.screenSpacePipelineState = [self.device newRenderPipelineStateWithDescriptor:screenSpacePipelineDescriptor
                                                                                 error:&error];
-    }
+    }*/
 }
 
 /*

@@ -8,6 +8,16 @@
 
 #import "NuoScreenSpaceMesh.h"
 
+
+
 @interface NuoClearMesh : NuoScreenSpaceMesh
+
+
+@property (nonatomic, assign) MTLClearColor clearColor;
+
+
+- (void)makeDepthStencilState:(MTLPixelFormat)pixelFormat sampleCount:(NSUInteger)sampleCount;
+- (void)makePipelineScreenSpaceState;
+
 
 @end
