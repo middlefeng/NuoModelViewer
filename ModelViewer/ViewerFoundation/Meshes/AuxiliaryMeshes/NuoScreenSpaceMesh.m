@@ -72,7 +72,7 @@
     }
     
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
-    
+    /*
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];
     vertexDescriptor.attributes[0].format = MTLVertexFormatFloat4;
     vertexDescriptor.attributes[0].offset = 0;
@@ -84,7 +84,7 @@
     vertexDescriptor.layouts[0].stepRate = 1;
     vertexDescriptor.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
     
-    pipelineDescriptor.vertexDescriptor = vertexDescriptor;
+    pipelineDescriptor.vertexDescriptor = vertexDescriptor;*/
     
     [self makePipelineState:pipelineDescriptor];
     

@@ -69,8 +69,45 @@ struct ClearFragment
     [self makePipelineAndSampler:pixelFormat withFragementShader:shaderName
                  withSampleCount:sampleCount withBlendMode:kBlend_None];
     
-    [self makePipelineScreenSpaceStateWithVertexShader:@"texture_project"
-                                    withFragemtnShader:@"fragement_clear_screen_space"];
+    //[self makePipelineScreenSpaceStateWithVertexShader:@"texture_project"
+    //                                withFragemtnShader:@"fragement_clear_screen_space"];
+    {
+        id<MTLLibrary> library = [self.device newDefaultLibrary];
+        
+        MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
+        screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:@"texture_project"];
+        screenSpacePipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragement_clear_screen_space"];
+        screenSpacePipelineDescriptor.sampleCount = kSampleCount;
+        
+        MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];
+        vertexDescriptor.attributes[0].format = MTLVertexFormatFloat4;
+        vertexDescriptor.attributes[0].offset = 0;
+        vertexDescriptor.attributes[0].bufferIndex = 0;
+        vertexDescriptor.attributes[1].format = MTLVertexFormatFloat2;
+        vertexDescriptor.attributes[1].offset = 16;
+        vertexDescriptor.attributes[1].bufferIndex = 0;
+        vertexDescriptor.layouts[0].stride = 32;
+        vertexDescriptor.layouts[0].stepRate = 1;
+        vertexDescriptor.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
+        
+        screenSpacePipelineDescriptor.vertexDescriptor = vertexDescriptor;
+        
+        // blending is turned OFF for all attachments, see comments to "FragementScreenSpace"
+        //
+        screenSpacePipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
+        screenSpacePipelineDescriptor.colorAttachments[1].pixelFormat = MTLPixelFormatRGBA16Float;
+        screenSpacePipelineDescriptor.colorAttachments[2].pixelFormat = MTLPixelFormatRGBA16Float;
+        screenSpacePipelineDescriptor.colorAttachments[3].pixelFormat = MTLPixelFormatR8Unorm;
+        
+        for (int i = 0; i < 3; ++i)
+            screenSpacePipelineDescriptor.colorAttachments[i].blendingEnabled = NO;
+        
+        screenSpacePipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
+        
+        NSError *error = nil;
+        self.screenSpacePipelineState = [self.device newRenderPipelineStateWithDescriptor:screenSpacePipelineDescriptor
+                                                                                error:&error];
+    }
 }
 
 /*
@@ -126,6 +163,7 @@ struct ClearFragment
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
+    [renderPass setFragmentBuffer:_clearColorBuffer offset:0 atIndex:0];
     [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
                            indexCount:[self.indexBuffer length] / sizeof(uint32_t)
                             indexType:MTLIndexTypeUInt32

@@ -70,8 +70,8 @@ fragment float4 fragment_clear(PositionTextureSimple vert [[stage_in]],
 }
 
 
-FragementScreenSpace fragement_clear_screen_space(PositionTextureSimple vert [[stage_in]],
-                                                  constant ClearFragment& clearFragment [[buffer(0)]])
+fragment FragementScreenSpace fragement_clear_screen_space(PositionTextureSimple vert [[stage_in]],
+                                                           constant ClearFragment& clearFragment [[buffer(0)]])
 {
     FragementScreenSpace result;
     result.position = clearFragment.clearColor;
