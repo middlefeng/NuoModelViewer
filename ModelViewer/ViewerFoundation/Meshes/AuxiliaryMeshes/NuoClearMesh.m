@@ -47,7 +47,7 @@ struct ClearFragment
 }
 
 
-- (void)makeDepthStencilState:(MTLPixelFormat)pixelFormat sampleCount:(NSUInteger)sampleCount
+- (void)makePipelineState:(MTLPixelFormat)pixelFormat sampleCount:(NSUInteger)sampleCount
 {
     [self makePipelineAndSampler:pixelFormat withFragementShader:@"fragment_clear"
                  withSampleCount:sampleCount withBlendMode:kBlend_None];
@@ -56,7 +56,32 @@ struct ClearFragment
 
 - (void)makePipelineScreenSpaceState
 {
+    [self makePipelineScreenSpaceStateWithVertexShader:@"texture_project"
+                                    withFragemtnShader:@"fragement_clear_screen_space"];
+}
+
+
+
+- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+{
+    [renderPass setFragmentBuffer:_clearColorBuffer offset:0 atIndex:0];
+    [super drawMesh:renderPass indexBuffer:index];
+}
+
+
+- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+{
+    [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
+    [renderPass setRenderPipelineState:self.screenSpacePipelineState];
+    [renderPass setDepthStencilState:self.depthStencilState];
     
+    [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
+    [renderPass setFragmentBuffer:_clearColorBuffer offset:0 atIndex:0];
+    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                           indexCount:[self.indexBuffer length] / sizeof(uint32_t)
+                            indexType:MTLIndexTypeUInt32
+                          indexBuffer:self.indexBuffer
+                    indexBufferOffset:0];
 }
 
 

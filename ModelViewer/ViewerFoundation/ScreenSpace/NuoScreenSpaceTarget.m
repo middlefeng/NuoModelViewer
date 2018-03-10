@@ -7,7 +7,7 @@
 //
 
 #import "NuoScreenSpaceTarget.h"
-#import "NuoTextureMesh.h"
+#import "NuoClearMesh.h"
 
 
 
@@ -117,6 +117,7 @@
 
 - (void)clearAction:(id<MTLRenderCommandEncoder>)encoder
 {
+    [self.textureMesh makePipelineScreenSpaceState];
     [self.textureMesh drawScreenSpace:encoder indexBuffer:0];
 }
 

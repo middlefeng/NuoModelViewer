@@ -7,7 +7,7 @@
 //
 
 #import "NuoRenderPassTarget.h"
-#import "NuoTextureMesh.h"
+#import "NuoClearMesh.h"
 
 
 
@@ -43,9 +43,8 @@
 {
     _drawableSize = drawableSize;
     
-    _textureMesh = [[NuoTextureMesh alloc] initWithCommandQueue:_device.newCommandQueue];
-    [_textureMesh setClearWithColor:YES];
-    [_textureMesh makePipelineAndSampler:_targetPixelFormat withSampleCount:_sampleCount];
+    _textureMesh = [[NuoClearMesh alloc] initWithCommandQueue:_device.newCommandQueue];
+    [_textureMesh makePipelineState:_targetPixelFormat sampleCount:_sampleCount];
     //[_textureMesh setClearColor:MTLClearColorMake(1.0, 0.0, 0.0, 1.0)];
     [_textureMesh setClearColor:_clearColor];
     

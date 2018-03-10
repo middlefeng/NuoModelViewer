@@ -11,7 +11,7 @@
 #import <Metal/Metal.h>
 
 
-@class NuoTextureMesh;
+@class NuoClearMesh;
 
 
 @interface NuoRenderPassTarget : NSObject
@@ -48,7 +48,7 @@
 @property (nonatomic, assign) MTLPixelFormat targetPixelFormat;
 
 @property (nonatomic, assign) MTLClearColor clearColor;
-@property (nonatomic, strong) NuoTextureMesh* textureMesh;
+@property (nonatomic, strong) NuoClearMesh* textureMesh;
 
 /**
  *  overriden by subclass, called on the drawable-size setting
