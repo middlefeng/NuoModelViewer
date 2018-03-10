@@ -33,7 +33,5 @@ ScreenSpaceBlendMode;
                withSampleCount:(NSUInteger)sampleCount
                  withBlendMode:(ScreenSpaceBlendMode)mode;
 
-//- (void)makePipelineScreenSpaceStateWithFragemtnShader:(NSString*)fragmentShader;
-
 
 @end

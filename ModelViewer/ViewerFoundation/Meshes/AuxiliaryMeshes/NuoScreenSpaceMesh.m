@@ -72,7 +72,7 @@
     }
     
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
-    /*
+    
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];
     vertexDescriptor.attributes[0].format = MTLVertexFormatFloat4;
     vertexDescriptor.attributes[0].offset = 0;
@@ -84,43 +84,18 @@
     vertexDescriptor.layouts[0].stepRate = 1;
     vertexDescriptor.layouts[0].stepFunction = MTLVertexStepFunctionPerVertex;
     
-    pipelineDescriptor.vertexDescriptor = vertexDescriptor;*/
+    pipelineDescriptor.vertexDescriptor = vertexDescriptor;
     
     [self makePipelineState:pipelineDescriptor];
     
     MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
     depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionAlways;
-    depthStencilDescriptor.depthWriteEnabled = YES;
+    depthStencilDescriptor.depthWriteEnabled = NO;
     
     self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
     
     _samplerState = [[NuoTextureBase getInstance:self.commandQueue] textureSamplerState:YES];
 }
-
-
-/*
-- (void)makePipelineScreenSpaceStateWithFragemtnShader:(NSString*)fragmentShader
-{
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
-    
-    MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
-    screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:@"texture_project"];
-    screenSpacePipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmentShader];
-    screenSpacePipelineDescriptor.sampleCount = kSampleCount;
-    
-    // blending is turned OFF for all attachments, see comments to "FragementScreenSpace"
-    //
-    screenSpacePipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
-    screenSpacePipelineDescriptor.colorAttachments[1].pixelFormat = MTLPixelFormatRGBA16Float;
-    screenSpacePipelineDescriptor.colorAttachments[2].pixelFormat = MTLPixelFormatRGBA16Float;
-    screenSpacePipelineDescriptor.colorAttachments[3].pixelFormat = MTLPixelFormatR8Unorm;
-    
-    screenSpacePipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
-    
-    NSError *error = nil;
-    self.screenSpacePipelineState = [self.device newRenderPipelineStateWithDescriptor:screenSpacePipelineDescriptor
-                                                                                error:&error];
-}*/
 
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
