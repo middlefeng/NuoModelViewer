@@ -7,7 +7,7 @@
 //
 
 #import "NuoScreenSpaceTarget.h"
-
+#import "NuoTextureMesh.h"
 
 
 
@@ -112,6 +112,12 @@
     }
     
     [super makeTextures];
+}
+
+
+- (void)clearAction:(id<MTLRenderCommandEncoder>)encoder
+{
+    [self.textureMesh drawScreenSpace:encoder indexBuffer:0];
 }
 
 

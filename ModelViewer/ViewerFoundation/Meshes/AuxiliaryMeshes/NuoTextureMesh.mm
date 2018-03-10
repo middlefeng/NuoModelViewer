@@ -15,9 +15,16 @@ struct TextureMixFragment
 };
 
 
+struct ClearFragment
+{
+    vector_float4 clearColor;
+};
+
+
 @implementation NuoTextureMesh
 {
     NSArray<id<MTLBuffer>>* _textureMixBuffer;
+    id<MTLBuffer> _clearColorBuffer;
 }
 
 
@@ -32,20 +39,46 @@ struct TextureMixFragment
             buffers[i] = [commandQueue.device newBufferWithLength:sizeof(TextureMixFragment)
                                                           options:MTLResourceOptionCPUCacheModeDefault];
         _textureMixBuffer = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
+        
+        _clearColorBuffer = [commandQueue.device newBufferWithLength:sizeof(ClearFragment)
+                                                             options:MTLResourceOptionCPUCacheModeDefault];
     }
     
     return self;
 }
 
 
+- (void)setClearColor:(MTLClearColor)clearColor
+{
+    _clearColor = clearColor;
+    vector_float4 color4 = { (float)clearColor.red, (float)clearColor.green, (float)clearColor.blue, (float)clearColor.alpha };
+    ClearFragment clearParam;
+    clearParam.clearColor = color4;
+    memcpy(_clearColorBuffer.contents, &clearParam, sizeof(ClearFragment));
+}
+
+
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat withSampleCount:(NSUInteger)sampleCount
 {
-    NSString* shaderName = _auxiliaryTexture ? @"fragment_texutre_mix" :
-                                               @"fragment_texutre";
+    NSString* shaderName = _auxiliaryTexture ? @"fragment_texture_mix" :
+                                               @"fragment_texture";
+    
+    if (_clearWithColor)
+        shaderName = @"fragment_clear";
      
     [self makePipelineAndSampler:pixelFormat withFragementShader:shaderName
                  withSampleCount:sampleCount withBlendMode:kBlend_None];
+    
+    [self makePipelineScreenSpaceStateWithVertexShader:@"texture_project"
+                                    withFragemtnShader:@"fragement_clear_screen_space"];
 }
+
+/*
+- (void)makePipelineScreenSpaceState
+{
+    [self makePipelineScreenSpaceStateWithVertexShader:@"texture_project"
+                                    withFragemtnShader:@"fragement_clear_screen_space"];
+}*/
 
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
@@ -65,7 +98,17 @@ struct TextureMixFragment
 {
     [self updateUniform:index withTransform:matrix_identity_float4x4];
     
-    [renderPass setFragmentTexture:_modelTexture atIndex:0];
+    assert((!_modelTexture) == _clearWithColor);
+    
+    if (_modelTexture)
+    {
+        [renderPass setFragmentTexture:_modelTexture atIndex:0];
+    }
+    else
+    {
+        [renderPass setFragmentBuffer:_clearColorBuffer offset:0 atIndex:0];
+    }
+    
     if (_auxiliaryTexture)
     {
         [renderPass setFragmentTexture:_auxiliaryTexture atIndex:1];
@@ -73,6 +116,21 @@ struct TextureMixFragment
     }
     
     [super drawMesh:renderPass indexBuffer:index];
+}
+
+
+- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+{
+    [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
+    [renderPass setRenderPipelineState:self.screenSpacePipelineState];
+    [renderPass setDepthStencilState:self.depthStencilState];
+    
+    [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
+    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                           indexCount:[self.indexBuffer length] / sizeof(uint32_t)
+                            indexType:MTLIndexTypeUInt32
+                          indexBuffer:self.indexBuffer
+                    indexBufferOffset:0];
 }
 
 

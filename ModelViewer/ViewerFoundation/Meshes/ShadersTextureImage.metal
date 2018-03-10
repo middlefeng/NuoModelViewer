@@ -19,6 +19,12 @@ struct TextureMixFragment
 };
 
 
+struct ClearFragment
+{
+    float4 clearColor;
+};
+
+
 vertex PositionTextureSimple backdrop_project(device Vertex *vertices [[buffer(0)]],
                                               constant NuoUniforms& uniforms [[buffer(3)]],
                                               uint vid [[vertex_id]])
@@ -48,14 +54,36 @@ vertex PositionTextureSimple texture_project(device Vertex *vertices [[buffer(0)
 {
     PositionTextureSimple outVert;
     outVert.position = vertices[vid].position;
-    outVert.position.z = 0.5;
+    outVert.position.z = 1.0;
     outVert.position.w = 1.0;
     outVert.texCoord = vertices[vid].texCoord;
     
     return outVert;
 }
 
-fragment float4 fragment_texutre(PositionTextureSimple vert [[stage_in]],
+
+
+fragment float4 fragment_clear(PositionTextureSimple vert [[stage_in]],
+                               constant ClearFragment& clearFragment [[buffer(0)]])
+{
+    return clearFragment.clearColor;
+}
+
+
+FragementScreenSpace fragement_clear_screen_space(PositionTextureSimple vert [[stage_in]],
+                                                  constant ClearFragment& clearFragment [[buffer(0)]])
+{
+    FragementScreenSpace result;
+    result.position = clearFragment.clearColor;
+    result.normal = clearFragment.clearColor;;
+    result.ambientColorFactor = clearFragment.clearColor;
+    result.shadowOverlay = 0.0;
+    
+    return result;
+}
+
+
+fragment float4 fragment_texture(PositionTextureSimple vert [[stage_in]],
                                  texture2d<float> texture [[texture(0)]],
                                  sampler samplr [[sampler(0)]])
 {
@@ -64,7 +92,7 @@ fragment float4 fragment_texutre(PositionTextureSimple vert [[stage_in]],
 }
 
 
-fragment float4 fragment_texutre_mix(PositionTextureSimple vert [[stage_in]],
+fragment float4 fragment_texture_mix(PositionTextureSimple vert [[stage_in]],
                                      texture2d<float> texture1 [[texture(0)]],
                                      texture2d<float> texture2 [[texture(1)]],
                                      constant TextureMixFragment& mixFragment [[buffer(0)]],

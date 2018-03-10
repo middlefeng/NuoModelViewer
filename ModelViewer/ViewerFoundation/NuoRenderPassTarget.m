@@ -7,6 +7,7 @@
 //
 
 #import "NuoRenderPassTarget.h"
+#import "NuoTextureMesh.h"
 
 
 
@@ -41,6 +42,12 @@
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     _drawableSize = drawableSize;
+    
+    _textureMesh = [[NuoTextureMesh alloc] initWithCommandQueue:_device.newCommandQueue];
+    [_textureMesh setClearWithColor:YES];
+    [_textureMesh makePipelineAndSampler:_targetPixelFormat withSampleCount:_sampleCount];
+    //[_textureMesh setClearColor:MTLClearColorMake(1.0, 0.0, 0.0, 1.0)];
+    [_textureMesh setClearColor:_clearColor];
     
     [self makeTextures];
 }
@@ -114,7 +121,16 @@
     _renderPassEncoder = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     _renderPassEncoderCount = 1;
     
+    [self clearAction:_renderPassEncoder];
+    
     return _renderPassEncoder;
+}
+
+
+
+- (void)clearAction:(id<MTLRenderCommandEncoder>)encoder
+{
+    [_textureMesh drawMesh:encoder indexBuffer:0];
 }
 
 
