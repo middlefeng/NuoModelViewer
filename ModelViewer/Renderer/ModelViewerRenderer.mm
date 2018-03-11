@@ -733,7 +733,7 @@
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
         modelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoUniforms)
-                                                   options:MTLResourceOptionCPUCacheModeDefault];
+                                                   options:MTLResourceStorageModeManaged];
         lightingBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightUniforms)
                                                       options:MTLResourceOptionCPUCacheModeDefault];
         lightCastModelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightVertexUniforms)
@@ -841,6 +841,7 @@
     uniforms.viewProjectionMatrix = matrix_multiply(_projection, uniforms.viewMatrix);
 
     memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
+    [self.transUniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(uniforms))];
     
     NuoLightUniforms lighting;
     lighting.ambientDensity = _ambientDensity;
