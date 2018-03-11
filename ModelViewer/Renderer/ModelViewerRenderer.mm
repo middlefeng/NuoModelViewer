@@ -735,9 +735,9 @@
         modelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoUniforms)
                                                    options:MTLResourceStorageModeManaged];
         lightingBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightUniforms)
-                                                      options:MTLResourceOptionCPUCacheModeDefault];
+                                                      options:MTLResourceStorageModeManaged];
         lightCastModelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightVertexUniforms)
-                                                        options:MTLResourceOptionCPUCacheModeDefault];
+                                                        options:MTLResourceStorageModeManaged];
         
     }
     
@@ -865,6 +865,7 @@
     }
     
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(NuoLightUniforms));
+    [self.lightingUniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(NuoLightUniforms))];
     
     for (NuoMesh* mesh in _meshes)
     {
@@ -916,6 +917,7 @@
     lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix;
     lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix;
     memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
+    [_lightCastBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(lightUniforms))];
     
     [_deferredRenderer setMeshes:_meshes];
     [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
