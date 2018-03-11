@@ -139,22 +139,26 @@
     normalized.y = (point.y - _notationArea.origin.y) / _notationArea.size.height * 2.0 - 1.0;
     
     float minDistance = 2.0f;
+    NotationLight* deselected = nil;
     
     for (size_t i = 0; i < _lightVectors.count; ++i)
     {
-        _lightVectors[i].selected = NO;
-        
         CGPoint headProjected = _lightVectors[i].headPointProjected;
         float distance = sqrt((headProjected.x - normalized.x) * (headProjected.x - normalized.x) +
                               (headProjected.y - normalized.y) * (headProjected.y - normalized.y));
         if (distance < minDistance)
         {
             minDistance = distance;
+            deselected = _currentLightVector;
             _currentLightVector = _lightVectors[i];
         }
     }
     
-    _currentLightVector.selected = YES;
+    if (deselected != _currentLightVector)
+    {
+        _currentLightVector.selected = YES;
+        deselected.selected = NO;
+    }
 }
 
 
