@@ -29,7 +29,7 @@ struct ClearFragment
     if (self)
     {
         _clearColorBuffer = [commandQueue.device newBufferWithLength:sizeof(struct ClearFragment)
-                                                             options:MTLResourceOptionCPUCacheModeDefault];
+                                                             options:MTLResourceStorageModePrivate];
     }
     
     return self;
@@ -43,7 +43,20 @@ struct ClearFragment
                              (float)clearColor.blue, (float)clearColor.alpha };
     struct ClearFragment clearParam;
     clearParam.clearColor = color4;
-    memcpy(_clearColorBuffer.contents, &clearParam, sizeof(struct ClearFragment));
+    
+    id<MTLBuffer> buffer = [self.commandQueue.device newBufferWithLength:sizeof(struct ClearFragment)
+                                                                 options:MTLResourceStorageModeShared];
+    memcpy(buffer.contents, &clearParam, sizeof(struct ClearFragment));
+    
+    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
+    id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
+    
+    [encoder copyFromBuffer:buffer sourceOffset:0
+                   toBuffer:_clearColorBuffer destinationOffset:0
+                       size:sizeof(struct ClearFragment)];
+    
+    [encoder endEncoding];
+    [commandBuffer commit];
 }
 
 
