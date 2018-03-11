@@ -24,29 +24,40 @@
 {
     id<MTLRenderCommandEncoder> _renderPassEncoder;
     size_t _renderPassEncoderCount;
+    
+    NuoClearMesh* _clearMesh;
 }
 
 
-- (instancetype)init
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withSampleCount:(uint)sampleCount
 {
     self = [super init];
     if (self)
     {
         _targetPixelFormat = MTLPixelFormatBGRA8Unorm;
         _renderPassEncoderCount = 0;
+        _device = commandQueue.device;
+        _sampleCount = sampleCount;
+        
+        _clearMesh = [[NuoClearMesh alloc] initWithCommandQueue:commandQueue];
+        [_clearMesh makePipelineState:_targetPixelFormat sampleCount:_sampleCount];
+        [_clearMesh setClearColor:_clearColor];
     }
+    
     return self;
+}
+
+
+- (void)setClearColor:(MTLClearColor)clearColor
+{
+    _clearColor = clearColor;
+    [_clearMesh setClearColor:_clearColor];
 }
 
 
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     _drawableSize = drawableSize;
-    
-    _textureMesh = [[NuoClearMesh alloc] initWithCommandQueue:_device.newCommandQueue];
-    [_textureMesh makePipelineState:_targetPixelFormat sampleCount:_sampleCount];
-    //[_textureMesh setClearColor:MTLClearColorMake(1.0, 0.0, 0.0, 1.0)];
-    [_textureMesh setClearColor:_clearColor];
     
     [self makeTextures];
 }
@@ -129,7 +140,7 @@
 
 - (void)clearAction:(id<MTLRenderCommandEncoder>)encoder
 {
-    [_textureMesh drawMesh:encoder indexBuffer:0];
+    [_clearMesh drawMesh:encoder indexBuffer:0];
 }
 
 

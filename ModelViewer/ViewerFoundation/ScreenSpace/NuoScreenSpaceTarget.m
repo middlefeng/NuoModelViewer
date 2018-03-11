@@ -17,19 +17,24 @@
     id<MTLTexture> _normalBufferSample;
     id<MTLTexture> _ambientBufferSample;
     id<MTLTexture> _shadowOverlayBufferSample;
+    
+    NuoClearMesh* _clearMesh;
 }
 
 
 
 
-- (instancetype)initWithSampleCount:(unsigned int)sampleCount
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withSampleCount:(uint)sampleCount
 {
-    self = [super init];
+    self = [super initWithCommandQueue:commandQueue withSampleCount:sampleCount];
     if (self)
     {
-        self.sampleCount = sampleCount;
         self.manageTargetTexture = NO;  // not use the default color target
         self.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 0.0);
+        
+        _clearMesh = [[NuoClearMesh alloc] initWithCommandQueue:commandQueue];
+        [_clearMesh makePipelineScreenSpaceState];
+        [_clearMesh setClearColor:self.clearColor];
     }
     return self;
 }
@@ -117,8 +122,7 @@
 
 - (void)clearAction:(id<MTLRenderCommandEncoder>)encoder
 {
-    [self.textureMesh makePipelineScreenSpaceState];
-    [self.textureMesh drawScreenSpace:encoder indexBuffer:0];
+    [_clearMesh drawScreenSpace:encoder indexBuffer:0];
 }
 
 

@@ -478,9 +478,8 @@ MouseDragMode;
     
     [renders addObject:_modelRender];
     
-    NuoRenderPassTarget* modelRenderTarget = [NuoRenderPassTarget new];
-    modelRenderTarget.device = self.metalLayer.device;
-    modelRenderTarget.sampleCount = 1;
+    NuoRenderPassTarget* modelRenderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                                               withSampleCount:1];
     modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
     modelRenderTarget.manageTargetTexture = YES;
     modelRenderTarget.name = @"Model";
@@ -496,9 +495,8 @@ MouseDragMode;
         [renders addObject:_modelDissectRenderer];
         _modelDissectRenderer.dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
         
-        NuoRenderPassTarget* modelDissectTarget = [NuoRenderPassTarget new];
-        modelDissectTarget.device = self.metalLayer.device;
-        modelDissectTarget.sampleCount = kSampleCount;
+        NuoRenderPassTarget* modelDissectTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                                                    withSampleCount:kSampleCount];
         modelDissectTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         modelDissectTarget.manageTargetTexture = YES;
         modelDissectTarget.name = @"Model-Dissect";
@@ -514,9 +512,8 @@ MouseDragMode;
     {
         [renders addObject:_motionBlurRenderer];
         
-        NuoRenderPassTarget* motionBlurTarget = [NuoRenderPassTarget new];
-        motionBlurTarget.device = self.metalLayer.device;
-        motionBlurTarget.sampleCount = 1;
+        NuoRenderPassTarget* motionBlurTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                                                  withSampleCount:1];
         motionBlurTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
         motionBlurTarget.manageTargetTexture = YES;
         motionBlurTarget.name = @"Motion Blur";
@@ -537,9 +534,8 @@ MouseDragMode;
     {
         [renders addObject:_notationRenderer];
         
-        NuoRenderPassTarget* notationRenderTarget = [NuoRenderPassTarget new];
-        notationRenderTarget.device = self.metalLayer.device;
-        notationRenderTarget.sampleCount = kSampleCount;
+        NuoRenderPassTarget* notationRenderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                                                      withSampleCount:kSampleCount];
         notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         notationRenderTarget.manageTargetTexture = NO;
         notationRenderTarget.name = @"Notation";

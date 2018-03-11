@@ -77,10 +77,9 @@
         _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 0"];
         _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 1"];
         
-        _immediateTarget = [[NuoRenderPassTarget alloc] init];
+        _immediateTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
+                                                             withSampleCount:kSampleCount];
         _immediateTarget.name = @"immediate";
-        _immediateTarget.sampleCount = kSampleCount;
-        _immediateTarget.device = commandQueue.device;
         _immediateTarget.manageTargetTexture = YES;
         _immediateTarget.sharedTargetTexture = NO;
         

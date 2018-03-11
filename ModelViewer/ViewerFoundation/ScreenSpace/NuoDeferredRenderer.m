@@ -32,12 +32,10 @@
         _screenSpaceRenderer = [[NuoScreenSpaceRenderer alloc] initWithCommandQueue:commandQueue withName:@"Screen"];
         _screenSpaceRenderer.paramsProvider = sceneParameter;
         
-        self.renderTarget = [[NuoRenderPassTarget alloc] init];
+        self.renderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue withSampleCount:1];
         self.renderTarget.name = @"deferred";
-        self.renderTarget.device = commandQueue.device;
         self.renderTarget.manageTargetTexture = YES;
         self.renderTarget.sharedTargetTexture = YES;
-        self.renderTarget.sampleCount = 1;
         
         _screenMesh = [[NuoScreenSpaceMesh alloc] initWithCommandQueue:commandQueue];
         [_screenMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm

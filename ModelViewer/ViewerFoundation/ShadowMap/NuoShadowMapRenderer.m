@@ -38,8 +38,7 @@
     
     if (self)
     {
-        self.renderTarget = [[NuoShadowMapTarget alloc] init];
-        self.renderTarget.device = commandQueue.device;
+        self.renderTarget = [[NuoShadowMapTarget alloc] initWithCommandQueue:commandQueue withSampleCount:1];
         self.commandQueue = commandQueue;
         
         ((NuoShadowMapTarget*)self.renderTarget).name = name;

@@ -58,6 +58,12 @@ struct ClearFragment
 {
     [self makePipelineScreenSpaceStateWithVertexShader:@"texture_project"
                                     withFragemtnShader:@"fragement_clear_screen_space"];
+    
+    MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
+    depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionAlways;
+    depthStencilDescriptor.depthWriteEnabled = NO;
+    
+    self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];
 }
 
 
