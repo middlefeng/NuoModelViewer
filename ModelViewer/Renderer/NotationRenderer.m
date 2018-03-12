@@ -139,7 +139,7 @@
     normalized.y = (point.y - _notationArea.origin.y) / _notationArea.size.height * 2.0 - 1.0;
     
     float minDistance = 2.0f;
-    NotationLight* deselected = nil;
+    NotationLight* deselected = _currentLightVector;
     
     for (size_t i = 0; i < _lightVectors.count; ++i)
     {
@@ -149,7 +149,6 @@
         if (distance < minDistance)
         {
             minDistance = distance;
-            deselected = _currentLightVector;
             _currentLightVector = _lightVectors[i];
         }
     }
