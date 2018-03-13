@@ -24,7 +24,8 @@
 @interface NotationLight()
 
 
-@property (nonatomic, strong) NSArray<id<MTLBuffer>>* characterUniformBuffers;
+@property (nonatomic, strong) id<MTLBuffer> characterUniformBuffer;
+@property (nonatomic, weak) id<MTLCommandQueue> commandQueue;
 
 @property (nonatomic, strong) NuoMesh* lightVector;
 
@@ -42,7 +43,9 @@
     
     if (self)
     {
-        [self makeResources:commandQueue];
+        _commandQueue = commandQueue;
+        
+        [self makeResources];
         
         float bodyLength = bold ? 1.2 : 1.0;
         float bodyRadius = bold ? 0.24 : 0.2;
@@ -86,17 +89,11 @@
 }
 
 
-- (void)makeResources:(id<MTLCommandQueue>)commandQueue
+- (void)makeResources
 {
-    id<MTLBuffer> characters[kInFlightBufferCount];
-    for (size_t i = 0; i < kInFlightBufferCount; ++i)
-    {
-        id<MTLBuffer> characterUniformBuffers = [commandQueue.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
-                                                                         options:MTLResourceOptionCPUCacheModeDefault];
-        characters[i] = characterUniformBuffers;
-    }
-    
-    _characterUniformBuffers = [[NSArray alloc] initWithObjects:characters count:kInFlightBufferCount];
+    _characterUniformBuffer = [self.commandQueue.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
+                                                                    options:MTLResourceStorageModePrivate];
+    [self updatePrivateUniform];
 }
 
 
@@ -118,14 +115,38 @@
     
     NuoModelCharacterUniforms characters;
     characters.opacity = _selected ? 1.0f : 0.1f;
+}
+
+
+- (void)updatePrivateUniform
+{
+    NuoModelCharacterUniforms uniforms;
+    uniforms.opacity = _selected ? 1.0f : 0.1f;
     
-    memcpy([self.characterUniformBuffers[inFlight] contents], &characters, sizeof(characters));
+    id<MTLBuffer> buffer = [self.commandQueue.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
+                                                                 options:MTLResourceOptionCPUCacheModeDefault];
+    memcpy([buffer contents], &uniforms, sizeof(NuoModelCharacterUniforms));
+    
+    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
+    id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
+    
+    [encoder copyFromBuffer:buffer sourceOffset:0
+                   toBuffer:_characterUniformBuffer destinationOffset:0
+                       size:sizeof(NuoModelCharacterUniforms)];
+    
+    [encoder endEncoding];
+    [commandBuffer commit];
 }
 
 
 - (void)setSelected:(BOOL)selected
 {
+    BOOL changed = (_selected != selected);
+    
     _selected = selected;
+    
+    if (changed)
+        [self updatePrivateUniform];
     
     [_lightVector setTransparency:!_selected];
     [_lightVector makeDepthStencilState];
@@ -151,7 +172,7 @@
               withInFlight:(unsigned int)inFlight
 {
     [self updateUniformsForView:inFlight];
-    [renderPass setFragmentBuffer:self.characterUniformBuffers[inFlight] offset:0 atIndex:1];
+    [renderPass setFragmentBuffer:self.characterUniformBuffer offset:0 atIndex:1];
     
     // the light vector notation does not have varying uniform,
     // use only the 0th buffer

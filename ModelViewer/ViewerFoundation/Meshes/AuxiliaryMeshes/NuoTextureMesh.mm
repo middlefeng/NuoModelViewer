@@ -17,7 +17,7 @@ struct TextureMixFragment
 
 @implementation NuoTextureMesh
 {
-    NSArray<id<MTLBuffer>>* _textureMixBuffer;
+    id<MTLBuffer> _textureMixBuffer;
 }
 
 
@@ -27,11 +27,8 @@ struct TextureMixFragment
     
     if (self)
     {
-        id<MTLBuffer> buffers[kInFlightBufferCount];
-        for (size_t i = 0; i < kInFlightBufferCount; ++i)
-            buffers[i] = [commandQueue.device newBufferWithLength:sizeof(TextureMixFragment)
-                                                          options:MTLResourceOptionCPUCacheModeDefault];
-        _textureMixBuffer = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
+        _textureMixBuffer = [commandQueue.device newBufferWithLength:sizeof(TextureMixFragment)
+                                                             options:MTLResourceStorageModePrivate];
     }
     
     return self;
@@ -48,28 +45,34 @@ struct TextureMixFragment
 }
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
+- (void)setAuxiliaryProportion:(float)auxiliaryProportion
 {
-    [super updateUniform:bufferIndex withTransform:transform];
+    _auxiliaryProportion = auxiliaryProportion;
     
-    if (_auxiliaryTexture)
-    {
-        TextureMixFragment mixFragment;
-        mixFragment.mixProportion = _auxiliaryProportion;
-        memcpy(_textureMixBuffer[bufferIndex].contents, &mixFragment, sizeof(TextureMixFragment));
-    }
+    id<MTLBuffer> buffer = [self.commandQueue.device newBufferWithLength:sizeof(TextureMixFragment)
+                                                                 options:MTLResourceOptionCPUCacheModeDefault];
+    TextureMixFragment mixFragment;
+    mixFragment.mixProportion = _auxiliaryProportion;
+    memcpy(buffer.contents, &mixFragment, sizeof(TextureMixFragment));
+    
+    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
+    id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
+    
+    [encoder copyFromBuffer:buffer sourceOffset:0
+                   toBuffer:_textureMixBuffer destinationOffset:0
+                       size:sizeof(TextureMixFragment)];
+    [encoder endEncoding];
+    [commandBuffer commit];
 }
 
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
-    [self updateUniform:index withTransform:matrix_identity_float4x4];
-    
     [renderPass setFragmentTexture:_modelTexture atIndex:0];
     if (_auxiliaryTexture)
     {
         [renderPass setFragmentTexture:_auxiliaryTexture atIndex:1];
-        [renderPass setFragmentBuffer:_textureMixBuffer[index] offset:0 atIndex:0];
+        [renderPass setFragmentBuffer:_textureMixBuffer offset:0 atIndex:0];
     }
     
     [super drawMesh:renderPass indexBuffer:index];
