@@ -49,20 +49,11 @@ struct TextureMixFragment
 {
     _auxiliaryProportion = auxiliaryProportion;
     
-    id<MTLBuffer> buffer = [self.commandQueue.device newBufferWithLength:sizeof(TextureMixFragment)
-                                                                 options:MTLResourceOptionCPUCacheModeDefault];
     TextureMixFragment mixFragment;
     mixFragment.mixProportion = _auxiliaryProportion;
-    memcpy(buffer.contents, &mixFragment, sizeof(TextureMixFragment));
     
-    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
-    id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
-    
-    [encoder copyFromBuffer:buffer sourceOffset:0
-                   toBuffer:_textureMixBuffer destinationOffset:0
-                       size:sizeof(TextureMixFragment)];
-    [encoder endEncoding];
-    [commandBuffer commit];
+    [NuoMesh updatePrivateBuffer:_textureMixBuffer withCommandQueue:self.commandQueue
+                        withData:&mixFragment withSize:sizeof(TextureMixFragment)];
 }
 
 

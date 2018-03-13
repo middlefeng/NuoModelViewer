@@ -123,19 +123,8 @@
     NuoModelCharacterUniforms uniforms;
     uniforms.opacity = _selected ? 1.0f : 0.1f;
     
-    id<MTLBuffer> buffer = [self.commandQueue.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
-                                                                 options:MTLResourceOptionCPUCacheModeDefault];
-    memcpy([buffer contents], &uniforms, sizeof(NuoModelCharacterUniforms));
-    
-    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
-    id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
-    
-    [encoder copyFromBuffer:buffer sourceOffset:0
-                   toBuffer:_characterUniformBuffer destinationOffset:0
-                       size:sizeof(NuoModelCharacterUniforms)];
-    
-    [encoder endEncoding];
-    [commandBuffer commit];
+    [NuoMesh updatePrivateBuffer:_characterUniformBuffer withCommandQueue:self.commandQueue
+                        withData:&uniforms withSize:sizeof(NuoModelCharacterUniforms)];
 }
 
 

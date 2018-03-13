@@ -145,6 +145,11 @@ extern const BOOL kShadowPCF;
 - (void)centerMesh;
 
 
++ (void)updatePrivateBuffer:(id<MTLBuffer>)buffer
+           withCommandQueue:(id<MTLCommandQueue>)commandQueue
+                   withData:(void*)data withSize:(size_t)size;
+
+
 @end
 
 

@@ -659,6 +659,26 @@ const BOOL kShadowPCF = YES;
 }
 
 
++ (void)updatePrivateBuffer:(id<MTLBuffer>)buffer
+           withCommandQueue:(id<MTLCommandQueue>)commandQueue
+                   withData:(void*)data withSize:(size_t)size
+{
+    id<MTLBuffer> sharedBuffer = [commandQueue.device newBufferWithLength:size
+                                                            options:MTLResourceStorageModeShared];
+    memcpy(sharedBuffer.contents, data, size);
+    
+    id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
+    id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
+    
+    [encoder copyFromBuffer:sharedBuffer sourceOffset:0
+                   toBuffer:buffer destinationOffset:0
+                       size:size];
+    
+    [encoder endEncoding];
+    [commandBuffer commit];
+}
+
+
 @end
 
 
