@@ -144,6 +144,13 @@ extern const BOOL kShadowPCF;
 
 - (void)centerMesh;
 
+/**
+ *  this is expensive operation as private buffers are supposed not to be updated frequently
+ */
++ (void)updatePrivateBuffer:(id<MTLBuffer>)buffer
+           withCommandQueue:(id<MTLCommandQueue>)commandQueue
+                   withData:(void*)data withSize:(size_t)size;
+
 
 @end
 
