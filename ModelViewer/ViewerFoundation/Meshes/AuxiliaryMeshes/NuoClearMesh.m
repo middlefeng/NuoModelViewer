@@ -44,19 +44,8 @@ struct ClearFragment
     struct ClearFragment clearParam;
     clearParam.clearColor = color4;
     
-    id<MTLBuffer> buffer = [self.commandQueue.device newBufferWithLength:sizeof(struct ClearFragment)
-                                                                 options:MTLResourceStorageModeShared];
-    memcpy(buffer.contents, &clearParam, sizeof(struct ClearFragment));
-    
-    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
-    id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
-    
-    [encoder copyFromBuffer:buffer sourceOffset:0
-                   toBuffer:_clearColorBuffer destinationOffset:0
-                       size:sizeof(struct ClearFragment)];
-    
-    [encoder endEncoding];
-    [commandBuffer commit];
+    [NuoMesh updatePrivateBuffer:_clearColorBuffer withCommandQueue:self.commandQueue
+                        withData:&clearParam withSize:sizeof(struct ClearFragment)];
 }
 
 
