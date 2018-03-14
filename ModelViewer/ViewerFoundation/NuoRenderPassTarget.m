@@ -29,6 +29,23 @@
 }
 
 
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+               withPixelFormat:(MTLPixelFormat)pixelFormat
+               withSampleCount:(uint)sampleCount
+{
+    self = [super init];
+    if (self)
+    {
+        _targetPixelFormat = pixelFormat;
+        _renderPassEncoderCount = 0;
+        _device = device;
+        _sampleCount = sampleCount;
+    }
+    
+    return self;
+}
+
+
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withSampleCount:(uint)sampleCount
 {
     self = [super init];

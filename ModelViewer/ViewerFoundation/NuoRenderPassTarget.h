@@ -43,10 +43,13 @@
  */
 @property (nonatomic, assign) BOOL sharedTargetTexture;
 
-@property (nonatomic, assign) MTLPixelFormat targetPixelFormat;
+@property (nonatomic, readonly) MTLPixelFormat targetPixelFormat;
 
 @property (nonatomic, assign) MTLClearColor clearColor;
 
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+               withPixelFormat:(MTLPixelFormat)pixelFormat
+               withSampleCount:(uint)sampleCount;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withSampleCount:(uint)sampleCount;
 
