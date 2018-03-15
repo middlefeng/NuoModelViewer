@@ -12,13 +12,7 @@
 @interface NuoTextureMesh : NuoScreenSpaceMesh
 
 
-/**
- *  the mesh is either showing a texture, or a solid color (when the modelTexture is nil)
- */
 @property (nonatomic, weak) id<MTLTexture> modelTexture;
-
-@property (nonatomic, assign) BOOL clearWithColor;
-@property (nonatomic, assign) MTLClearColor clearColor;
 
 /**
  *  in addition to showing a single texture, the mesh can take a second texture and display
