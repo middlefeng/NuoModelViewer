@@ -133,22 +133,22 @@
     
     passDescriptor.colorAttachments[0].texture = (self.sampleCount == 1) ? _positionBuffer : _positionBufferSample;
     passDescriptor.colorAttachments[0].clearColor = self.clearColor;
-    passDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[0].loadAction = NUO_LOAD_ACTION;
     passDescriptor.colorAttachments[0].storeAction = storeAction;
     
     passDescriptor.colorAttachments[1].texture = (self.sampleCount == 1) ? _normalBuffer : _normalBufferSample;
     passDescriptor.colorAttachments[1].clearColor = self.clearColor;
-    passDescriptor.colorAttachments[1].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[1].loadAction = NUO_LOAD_ACTION;
     passDescriptor.colorAttachments[1].storeAction = storeAction;
     
     passDescriptor.colorAttachments[2].texture = (self.sampleCount == 1) ? _ambientBuffer : _ambientBufferSample;
     passDescriptor.colorAttachments[2].clearColor = self.clearColor;
-    passDescriptor.colorAttachments[2].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[2].loadAction = NUO_LOAD_ACTION;
     passDescriptor.colorAttachments[2].storeAction = storeAction;
     
     passDescriptor.colorAttachments[3].texture = (self.sampleCount == 1) ? _shadowOverlayBuffer : _shadowOverlayBufferSample;
     passDescriptor.colorAttachments[3].clearColor = self.clearColor;
-    passDescriptor.colorAttachments[3].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[3].loadAction = NUO_LOAD_ACTION;
     passDescriptor.colorAttachments[3].storeAction = storeAction;
     
     if (self.sampleCount > 1)

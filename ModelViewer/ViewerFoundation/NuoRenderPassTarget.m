@@ -148,7 +148,9 @@
     _renderPassEncoder = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     _renderPassEncoderCount = 1;
     
+#if !BUILT_IN_LOAD_ACTION_CLEAR
     [self clearAction:_renderPassEncoder];
+#endif
     
     return _renderPassEncoder;
 }
@@ -185,7 +187,7 @@
     
     passDescriptor.colorAttachments[0].texture = (_sampleCount == 1) ? _targetTexture : _sampleTexture;
     passDescriptor.colorAttachments[0].clearColor = _clearColor;
-    passDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[0].loadAction = NUO_LOAD_ACTION;
     passDescriptor.colorAttachments[0].storeAction = (_sampleCount == 1) ? MTLStoreActionStore : MTLStoreActionMultisampleResolve;
     if (_sampleCount > 1)
         passDescriptor.colorAttachments[0].resolveTexture = _targetTexture;

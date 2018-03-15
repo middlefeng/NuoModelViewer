@@ -12,6 +12,20 @@
 
 
 
+#define BUILT_IN_LOAD_ACTION_CLEAR 1
+
+#if BUILT_IN_LOAD_ACTION_CLEAR
+
+#define NUO_LOAD_ACTION MTLLoadActionClear
+
+#else
+
+#define NUO_LOAD_ACTION MTLLoadActionDontCare
+
+#endif
+
+
+
 @interface NuoRenderPassTarget : NSObject
 
 
