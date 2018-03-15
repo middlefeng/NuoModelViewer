@@ -159,6 +159,8 @@
 
 - (void)clearAction:(id<MTLRenderCommandEncoder>)encoder
 {
+    assert(_clearMesh);
+    
     [_clearMesh drawMesh:encoder indexBuffer:0];
 }
 
