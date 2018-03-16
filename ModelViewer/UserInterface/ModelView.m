@@ -634,16 +634,14 @@ MouseDragMode;
             
             [_lightPanel updateControls:source];
         }
-        else
-        {
-            [_modelRender setAdvancedShaowEnabled:NO];
-        }
     }
     else
     {
         _trackingLighting = NO;
     }
     
+    if (!_trackingLighting)
+        [_modelRender setAdvancedShaowEnabled:NO];
     [_modelRender setSampleCount:1];
     _mouseMoved = NO;
 }
