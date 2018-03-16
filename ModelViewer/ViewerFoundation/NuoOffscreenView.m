@@ -85,24 +85,20 @@
     
     // privately managed by GPU only, same pixel format and sample-count as scene render
     //
-    NuoRenderPassTarget* sceneTarget = [NuoRenderPassTarget alloc];
-    sceneTarget.device = commandBuffer.device;
-    sceneTarget.sampleCount = sceneSampleCount;
-    sceneTarget.clearColor = mtlClearColor;
+    NuoRenderPassTarget* sceneTarget = [[NuoRenderPassTarget alloc] initWithDevice:commandBuffer.device
+                                                                   withPixelFormat:scenePixelFormat
+                                                                   withSampleCount:sceneSampleCount];
     sceneTarget.manageTargetTexture = YES;
     sceneTarget.sharedTargetTexture = NO;
-    sceneTarget.targetPixelFormat = scenePixelFormat;
     sceneTarget.name = @"Scene";
     
     // sharely managed by GPU and CPU, export to RGBA (since PNG need it)
     //
-    NuoRenderPassTarget* exportTarget = [NuoRenderPassTarget new];
-    exportTarget.device = commandBuffer.device;
-    exportTarget.sampleCount = 1;
-    exportTarget.clearColor = mtlClearColor;
+    NuoRenderPassTarget* exportTarget = [[NuoRenderPassTarget alloc] initWithDevice:commandBuffer.device
+                                                                    withPixelFormat:MTLPixelFormatRGBA8Unorm
+                                                                    withSampleCount:1];
     exportTarget.manageTargetTexture = YES;
     exportTarget.sharedTargetTexture = YES;
-    exportTarget.targetPixelFormat = MTLPixelFormatRGBA8Unorm;
     exportTarget.name = @"Export";
     
     _sceneTarget = sceneTarget;

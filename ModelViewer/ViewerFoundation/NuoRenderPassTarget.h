@@ -12,6 +12,20 @@
 
 
 
+#define BUILT_IN_LOAD_ACTION_CLEAR 1
+
+#if BUILT_IN_LOAD_ACTION_CLEAR
+
+#define NUO_LOAD_ACTION MTLLoadActionClear
+
+#else
+
+#define NUO_LOAD_ACTION MTLLoadActionDontCare
+
+#endif
+
+
+
 @interface NuoRenderPassTarget : NSObject
 
 
@@ -43,9 +57,15 @@
  */
 @property (nonatomic, assign) BOOL sharedTargetTexture;
 
-@property (nonatomic, assign) MTLPixelFormat targetPixelFormat;
+@property (nonatomic, readonly) MTLPixelFormat targetPixelFormat;
 
 @property (nonatomic, assign) MTLClearColor clearColor;
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+               withPixelFormat:(MTLPixelFormat)pixelFormat
+               withSampleCount:(uint)sampleCount;
+
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withSampleCount:(uint)sampleCount;
 
 /**
  *  overriden by subclass, called on the drawable-size setting
@@ -54,6 +74,8 @@
 
 - (id<MTLRenderCommandEncoder>)retainRenderPassEndcoder:(id<MTLCommandBuffer>)commandBuffer;
 - (void)releaseRenderPassEndcoder;
+
+- (void)clearAction:(id<MTLRenderCommandEncoder>)encoder;
 
 - (MTLRenderPassDescriptor *)currentRenderPassDescriptor;
 

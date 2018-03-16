@@ -7,6 +7,7 @@
 //
 
 #import "NuoRenderPassTarget.h"
+#import "NuoClearMesh.h"
 
 
 
@@ -23,18 +24,51 @@
 {
     id<MTLRenderCommandEncoder> _renderPassEncoder;
     size_t _renderPassEncoderCount;
+    
+    NuoClearMesh* _clearMesh;
 }
 
 
-- (instancetype)init
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+               withPixelFormat:(MTLPixelFormat)pixelFormat
+               withSampleCount:(uint)sampleCount
+{
+    self = [super init];
+    if (self)
+    {
+        _targetPixelFormat = pixelFormat;
+        _renderPassEncoderCount = 0;
+        _device = device;
+        _sampleCount = sampleCount;
+    }
+    
+    return self;
+}
+
+
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withSampleCount:(uint)sampleCount
 {
     self = [super init];
     if (self)
     {
         _targetPixelFormat = MTLPixelFormatBGRA8Unorm;
         _renderPassEncoderCount = 0;
+        _device = commandQueue.device;
+        _sampleCount = sampleCount;
+        
+        _clearMesh = [[NuoClearMesh alloc] initWithCommandQueue:commandQueue];
+        [_clearMesh makePipelineState:_targetPixelFormat sampleCount:_sampleCount];
+        [_clearMesh setClearColor:_clearColor];
     }
+    
     return self;
+}
+
+
+- (void)setClearColor:(MTLClearColor)clearColor
+{
+    _clearColor = clearColor;
+    [_clearMesh setClearColor:_clearColor];
 }
 
 
@@ -114,7 +148,20 @@
     _renderPassEncoder = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     _renderPassEncoderCount = 1;
     
+#if !BUILT_IN_LOAD_ACTION_CLEAR
+    [self clearAction:_renderPassEncoder];
+#endif
+    
     return _renderPassEncoder;
+}
+
+
+
+- (void)clearAction:(id<MTLRenderCommandEncoder>)encoder
+{
+    assert(_clearMesh);
+    
+    [_clearMesh drawMesh:encoder indexBuffer:0];
 }
 
 
@@ -142,7 +189,7 @@
     
     passDescriptor.colorAttachments[0].texture = (_sampleCount == 1) ? _targetTexture : _sampleTexture;
     passDescriptor.colorAttachments[0].clearColor = _clearColor;
-    passDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[0].loadAction = NUO_LOAD_ACTION;
     passDescriptor.colorAttachments[0].storeAction = (_sampleCount == 1) ? MTLStoreActionStore : MTLStoreActionMultisampleResolve;
     if (_sampleCount > 1)
         passDescriptor.colorAttachments[0].resolveTexture = _targetTexture;
