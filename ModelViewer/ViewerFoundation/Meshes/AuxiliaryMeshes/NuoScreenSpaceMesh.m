@@ -41,7 +41,6 @@
 
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
            withFragementShader:(NSString*)shaderName
-               withSampleCount:(NSUInteger)sampleCount
                  withBlendMode:(ScreenSpaceBlendMode)mode
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
@@ -49,7 +48,7 @@
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"texture_project"];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:shaderName];
-    pipelineDescriptor.sampleCount = sampleCount;
+    pipelineDescriptor.sampleCount = self.sampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = pixelFormat;
     
     if (mode != kBlend_None)

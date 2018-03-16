@@ -40,9 +40,9 @@
         self.renderTarget.sampleCount = 1;
         
         _screenMesh = [[NuoScreenSpaceMesh alloc] initWithCommandQueue:commandQueue];
+        _screenMesh.sampleCount = 1;
         [_screenMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm
                         withFragementShader:@"fragement_deferred"
-                            withSampleCount:1
                               withBlendMode:kBlend_Alpha];
         
         _deferredRenderParamBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoDeferredRenderUniforms)

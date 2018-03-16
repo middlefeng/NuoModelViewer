@@ -53,7 +53,7 @@
     [_dissectRenderTarget setDrawableSize:drawableSize];
     
     [_textureMesh setAuxiliaryTexture:_dissectRenderTarget.targetTexture];
-    [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withSampleCount:_sampleCount];
+    [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
 }
 
 
@@ -67,10 +67,11 @@
     [super setSampleCount:sampleCount];
     
     _sampleCount = sampleCount;
-    [_dissectRenderTarget setSampleCount:sampleCount];
+    [_dissectRenderTarget setSampleCount:_sampleCount];
     
+    [_textureMesh setSampleCount:_sampleCount];
     [_textureMesh setAuxiliaryTexture:_dissectRenderTarget.targetTexture];
-    [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withSampleCount:_sampleCount];
+    [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
 }
 
 

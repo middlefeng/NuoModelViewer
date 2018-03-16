@@ -30,7 +30,6 @@ ScreenSpaceBlendMode;
 
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
            withFragementShader:(NSString*)shaderName
-               withSampleCount:(NSUInteger)sampleCount
                  withBlendMode:(ScreenSpaceBlendMode)mode;
 
 

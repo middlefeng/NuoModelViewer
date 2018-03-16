@@ -58,10 +58,11 @@
     _texturesAccumulated.name = @"Average Texture";
     
     _accumulatedMesh = [[NuoTextureMesh alloc] initWithCommandQueue:self.commandQueue];
-    [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withSampleCount:1];
+    _accumulatedMesh.sampleCount = 1;
+    [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
     
     [self makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withFragementShader:shaderName
-                 withSampleCount:1 withBlendMode:kBlend_Accumulate];
+                   withBlendMode:kBlend_Accumulate];
 }
 
 

@@ -34,6 +34,7 @@
 - (void)resetResources
 {
     _averageMesh = [[NuoTextureAverageMesh alloc] initWithCommandQueue:self.commandQueue];
+    _averageMesh.sampleCount = 1;
     [_averageMesh makePipelineAndSampler];
 }
 
