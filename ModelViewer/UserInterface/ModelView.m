@@ -640,8 +640,11 @@ MouseDragMode;
         _trackingLighting = NO;
     }
     
-    if (!_trackingLighting)
+    // ok to turn off the advanced shadow unless in case of recording blur, or adjusting light.
+    //
+    if (!_trackingLighting && _modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Stop)
         [_modelRender setAdvancedShaowEnabled:NO];
+    
     [_modelRender setSampleCount:1];
     _mouseMoved = NO;
 }
