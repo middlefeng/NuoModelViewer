@@ -40,8 +40,9 @@
     
     if (self)
     {
-        self.renderTarget = [[NuoShadowMapTarget alloc] init];
-        self.renderTarget.device = commandQueue.device;
+        self.renderTarget = [[NuoShadowMapTarget alloc] initWithCommandQueue:commandQueue
+                                                             withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                             withSampleCount:1];
         self.commandQueue = commandQueue;
         
         ((NuoShadowMapTarget*)self.renderTarget).name = name;
@@ -144,6 +145,7 @@
     
     [self releaseDefaultEncoder];
 }
+
 
 
 - (matrix_float4x4)lightCastMatrix

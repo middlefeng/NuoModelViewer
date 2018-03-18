@@ -36,10 +36,12 @@
 
 - (void)makeResources
 {
-    _dissectRenderTarget = [NuoRenderPassTarget new];
-    _dissectRenderTarget.device = self.commandQueue.device;
+
+    _dissectRenderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                             withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                             withSampleCount:kSampleCount];
+
     _dissectRenderTarget.name = @"Dissect";
-    _dissectRenderTarget.sampleCount = _sampleCount;
     _dissectRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
     _dissectRenderTarget.manageTargetTexture = YES;
     

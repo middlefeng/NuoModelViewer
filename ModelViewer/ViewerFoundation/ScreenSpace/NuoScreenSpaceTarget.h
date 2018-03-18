@@ -20,7 +20,7 @@
 @property (nonatomic, readonly) id<MTLTexture> shadowOverlayBuffer;
 
 
-- (instancetype)initWithSampleCount:(unsigned int)sampleCount;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withSampleCount:(uint)sampleCount;
 
 
 @end

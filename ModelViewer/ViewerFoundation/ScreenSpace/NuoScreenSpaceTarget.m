@@ -7,7 +7,7 @@
 //
 
 #import "NuoScreenSpaceTarget.h"
-
+#import "NuoClearMesh.h"
 
 
 
@@ -17,19 +17,26 @@
     id<MTLTexture> _normalBufferSample;
     id<MTLTexture> _ambientBufferSample;
     id<MTLTexture> _shadowOverlayBufferSample;
+    
+    NuoClearMesh* _clearMesh;
 }
 
 
 
 
-- (instancetype)initWithSampleCount:(unsigned int)sampleCount
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withSampleCount:(uint)sampleCount
 {
-    self = [super init];
+    self = [super initWithCommandQueue:commandQueue
+                       withPixelFormat:MTLPixelFormatBGRA8Unorm
+                       withSampleCount:sampleCount];
     if (self)
     {
-        self.sampleCount = sampleCount;
         self.manageTargetTexture = NO;  // not use the default color target
         self.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 0.0);
+        
+        _clearMesh = [[NuoClearMesh alloc] initWithCommandQueue:commandQueue];
+        [_clearMesh makePipelineScreenSpaceState];
+        [_clearMesh setClearColor:self.clearColor];
     }
     return self;
 }
@@ -37,6 +44,12 @@
 
 - (void)makeTextures
 {
+    if (_clearMesh.sampleCount != self.sampleCount)
+    {
+        [_clearMesh setSampleCount:self.sampleCount];
+        [_clearMesh makePipelineScreenSpaceState];
+    }
+    
     MTLTextureDescriptor *texDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatRGBA16Float
                                                                                        width:[self drawableSize].width
                                                                                       height:[self drawableSize].height
@@ -85,6 +98,12 @@
 }
 
 
+- (void)clearAction:(id<MTLRenderCommandEncoder>)encoder
+{
+    [_clearMesh drawScreenSpace:encoder indexBuffer:0];
+}
+
+
 - (MTLRenderPassDescriptor *)currentRenderPassDescriptor
 {
     MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];
@@ -92,22 +111,22 @@
     
     passDescriptor.colorAttachments[0].texture = (self.sampleCount == 1) ? _positionBuffer : _positionBufferSample;
     passDescriptor.colorAttachments[0].clearColor = self.clearColor;
-    passDescriptor.colorAttachments[0].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[0].loadAction = NUO_LOAD_ACTION;
     passDescriptor.colorAttachments[0].storeAction = storeAction;
     
     passDescriptor.colorAttachments[1].texture = (self.sampleCount == 1) ? _normalBuffer : _normalBufferSample;
     passDescriptor.colorAttachments[1].clearColor = self.clearColor;
-    passDescriptor.colorAttachments[1].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[1].loadAction = NUO_LOAD_ACTION;
     passDescriptor.colorAttachments[1].storeAction = storeAction;
     
     passDescriptor.colorAttachments[2].texture = (self.sampleCount == 1) ? _ambientBuffer : _ambientBufferSample;
     passDescriptor.colorAttachments[2].clearColor = self.clearColor;
-    passDescriptor.colorAttachments[2].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[2].loadAction = NUO_LOAD_ACTION;
     passDescriptor.colorAttachments[2].storeAction = storeAction;
     
     passDescriptor.colorAttachments[3].texture = (self.sampleCount == 1) ? _shadowOverlayBuffer : _shadowOverlayBufferSample;
     passDescriptor.colorAttachments[3].clearColor = self.clearColor;
-    passDescriptor.colorAttachments[3].loadAction = MTLLoadActionClear;
+    passDescriptor.colorAttachments[3].loadAction = NUO_LOAD_ACTION;
     passDescriptor.colorAttachments[3].storeAction = storeAction;
     
     if (self.sampleCount > 1)

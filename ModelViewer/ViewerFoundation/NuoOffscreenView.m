@@ -20,9 +20,13 @@
 
 @property (nonatomic, weak) id<MTLDevice> device;
 
-@property (nonatomic, strong) NuoRenderPassTarget* sceneTarget;
-@property (nonatomic, strong) NuoRenderPassTarget* exportTarget;
-@property (nonatomic, strong) NSArray* renderPasses;
+/**
+ *  temporarily set during rendering for the pipeline's calling back
+ */
+@property (nonatomic, weak) NuoRenderPassTarget* sceneTarget;
+
+@property (nonatomic, strong) NSArray<NuoRenderPass*>* renderPasses;
+@property (nonatomic, strong) NSColor* clearColor;
 
 @property (nonatomic, assign) NSUInteger drawSize;
 
@@ -37,7 +41,7 @@
 - (instancetype)initWithDevice:(id<MTLDevice>)device
                     withTarget:(NSUInteger)drawSize
                 withClearColor:(NSColor*)clearColor
-                     withScene:(NSArray<NuoRenderPass*>*) renderPasses
+                     withScene:(NSArray<NuoRenderPass*>*)renderPasses
 {
     self = [super init];
     
@@ -52,37 +56,7 @@
         _renderPipeline.renderPipelineDelegate = self;
         _renderPipeline.renderPasses = _renderPasses;
         
-        NSUInteger lastRender = [renderPasses count] - 1;
-        NuoRenderPassTarget* lastTarget = renderPasses[lastRender].renderTarget;
-        MTLPixelFormat scenePixelFormat = lastTarget.targetPixelFormat;
-        NSUInteger sceneSampleCount = lastTarget.sampleCount;
-        MTLClearColor mtlClearColor = lastTarget.clearColor;
-        if (clearColor)
-            mtlClearColor = MTLClearColorMake(clearColor.redComponent, clearColor.greenComponent,
-                                              clearColor.blueComponent, clearColor.alphaComponent);
-        
-        
-        // privately managed by GPU only, same pixel format and sample-count as scene render
-        //
-        _sceneTarget = [NuoRenderPassTarget new];
-        _sceneTarget.device = device;
-        _sceneTarget.sampleCount = sceneSampleCount;
-        _sceneTarget.clearColor = mtlClearColor;
-        _sceneTarget.manageTargetTexture = YES;
-        _sceneTarget.sharedTargetTexture = NO;
-        _sceneTarget.targetPixelFormat = scenePixelFormat;
-        _sceneTarget.name = @"Scene";
-        
-        // sharely managed by GPU and CPU, export to RGBA (since PNG need it)
-        //
-        _exportTarget = [NuoRenderPassTarget new];
-        _exportTarget.device = device;
-        _exportTarget.sampleCount = 1;
-        _exportTarget.clearColor = mtlClearColor;
-        _exportTarget.manageTargetTexture = YES;
-        _exportTarget.sharedTargetTexture = YES;
-        _exportTarget.targetPixelFormat = MTLPixelFormatRGBA8Unorm;
-        _exportTarget.name = @"Export";
+        _clearColor = clearColor;
     }
     
     return self;
@@ -99,12 +73,40 @@
 - (void)renderWithCommandQueue:(id<MTLCommandBuffer>)commandBuffer
                 withCompletion:(void (^)(id<MTLTexture>))completionBlock;
 {
-    // final pass to convert the result to RGBA
-    NuoRenderPipelinePass* finalPass = [[NuoRenderPipelinePass alloc] initWithCommandQueue:commandBuffer.commandQueue
-                                                                           withPixelFormat:_exportTarget.targetPixelFormat
-                                                                           withSampleCount:1 /* no MSAA for mere conversion */];
     NSUInteger lastRender = [_renderPasses count] - 1;
     NuoRenderPass* lastScenePass = _renderPasses[lastRender];
+    NuoRenderPassTarget* lastTarget = lastScenePass.renderTarget;
+    MTLPixelFormat scenePixelFormat = lastTarget.targetPixelFormat;
+    uint sceneSampleCount = (uint)lastTarget.sampleCount;
+    MTLClearColor mtlClearColor = lastTarget.clearColor;
+    if (_clearColor)
+        mtlClearColor = MTLClearColorMake(_clearColor.redComponent, _clearColor.greenComponent,
+                                          _clearColor.blueComponent, _clearColor.alphaComponent);
+    
+    // privately managed by GPU only, same pixel format and sample-count as scene render
+    //
+    NuoRenderPassTarget* sceneTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandBuffer.commandQueue
+                                                                         withPixelFormat:scenePixelFormat
+                                                                         withSampleCount:sceneSampleCount];
+    sceneTarget.manageTargetTexture = YES;
+    sceneTarget.sharedTargetTexture = NO;
+    sceneTarget.name = @"Scene";
+    
+    // sharely managed by GPU and CPU, export to RGBA (since PNG need it)
+    //
+    NuoRenderPassTarget* exportTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandBuffer.commandQueue
+                                                                          withPixelFormat:MTLPixelFormatRGBA8Unorm
+                                                                          withSampleCount:1];
+    exportTarget.manageTargetTexture = YES;
+    exportTarget.sharedTargetTexture = YES;
+    exportTarget.name = @"Export";
+    
+    _sceneTarget = sceneTarget;
+    
+    // final pass to convert the result to RGBA
+    NuoRenderPipelinePass* finalPass = [[NuoRenderPipelinePass alloc] initWithCommandQueue:commandBuffer.commandQueue
+                                                                           withPixelFormat:exportTarget.targetPixelFormat
+                                                                           withSampleCount:1 /* no MSAA for mere conversion */];
     NuoRenderPassTarget* displayTarget = [lastScenePass renderTarget];
     CGSize displaySize = [displayTarget drawableSize];
     
@@ -114,22 +116,22 @@
         drawEdge = drawEdge * aspectRation;
     CGSize drawSize = CGSizeMake(drawEdge, drawEdge / aspectRation);
     
-    [lastScenePass setRenderTarget:_sceneTarget];
+    [lastScenePass setRenderTarget:sceneTarget];
     [_renderPipeline setDrawableSize:drawSize];
     
     if (![_renderPipeline renderWithCommandBuffer:commandBuffer inFlight:0])
         assert(false);
     
     [finalPass setSourceTexture:_sceneTarget.targetTexture];
-    [finalPass setRenderTarget:_exportTarget];
+    [finalPass setRenderTarget:exportTarget];
     [finalPass setDrawableSize:drawSize];
     [finalPass drawWithCommandBuffer:commandBuffer withInFlightIndex:0];
     
     id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
-    [encoder synchronizeResource:_exportTarget.targetTexture];
+    [encoder synchronizeResource:exportTarget.targetTexture];
     [encoder endEncoding];
     
-    __block id<MTLTexture> result = _exportTarget.targetTexture;
+    __block id<MTLTexture> result = exportTarget.targetTexture;
     
     [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer> commandBuffer)
      {

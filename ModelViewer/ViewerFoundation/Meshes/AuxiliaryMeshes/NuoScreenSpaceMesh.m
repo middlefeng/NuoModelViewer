@@ -88,7 +88,7 @@
     [self makePipelineState:pipelineDescriptor];
     
     MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
-    depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionLess;
+    depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionAlways;
     depthStencilDescriptor.depthWriteEnabled = NO;
     
     self.depthStencilState = [self.device newDepthStencilStateWithDescriptor:depthStencilDescriptor];

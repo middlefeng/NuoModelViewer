@@ -70,6 +70,12 @@
 
 
 
+- (void)clearAction:(id<MTLRenderCommandEncoder>)encoder
+{
+}
+
+
+
 - (MTLRenderPassDescriptor *)currentRenderPassDescriptor
 {
     MTLRenderPassDescriptor *passDescriptor = [MTLRenderPassDescriptor renderPassDescriptor];

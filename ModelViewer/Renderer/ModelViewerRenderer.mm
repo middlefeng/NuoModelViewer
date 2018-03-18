@@ -78,10 +78,10 @@
         _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 0"];
         _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 1"];
         
-        _immediateTarget = [[NuoRenderPassTarget alloc] init];
+        _immediateTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
+                                                             withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                             withSampleCount:kSampleCount];
         _immediateTarget.name = @"immediate";
-        _immediateTarget.sampleCount = kSampleCount;
-        _immediateTarget.device = commandQueue.device;
         _immediateTarget.manageTargetTexture = YES;
         _immediateTarget.sharedTargetTexture = NO;
         
@@ -763,11 +763,11 @@
     for (size_t i = 0; i < kInFlightBufferCount; ++i)
     {
         modelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoUniforms)
-                                                   options:MTLResourceOptionCPUCacheModeDefault];
+                                                   options:MTLResourceStorageModeManaged];
         lightingBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightUniforms)
-                                                      options:MTLResourceOptionCPUCacheModeDefault];
+                                                      options:MTLResourceStorageModeManaged];
         lightCastModelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightVertexUniforms)
-                                                        options:MTLResourceOptionCPUCacheModeDefault];
+                                                        options:MTLResourceStorageModeManaged];
         
     }
     
@@ -885,6 +885,7 @@
     uniforms.viewProjectionMatrix = matrix_multiply(_projection, uniforms.viewMatrix);
 
     memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
+    [self.transUniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(uniforms))];
     
     NuoLightUniforms lighting;
     lighting.ambientDensity = _ambientDensity;
@@ -908,6 +909,7 @@
     }
     
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(NuoLightUniforms));
+    [self.lightingUniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(NuoLightUniforms))];
     
     for (NuoMesh* mesh in _meshes)
     {
@@ -959,6 +961,7 @@
     lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix;
     lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix;
     memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
+    [_lightCastBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(lightUniforms))];
     
     [_deferredRenderer setMeshes:_meshes];
     [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
