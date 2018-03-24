@@ -69,7 +69,7 @@
     texDescR.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
     
     // all the render target texture's configuration should be in sync.
-    // use _normalBuffer/_normalBufferSample as the predicuate of whether refresh the resources
+    // use _normalBuffer/_normalBufferSample as the predicate of whether refresh the resources
     
     if (![self isTextureMatchDrawableSize:_normalBuffer])
     {

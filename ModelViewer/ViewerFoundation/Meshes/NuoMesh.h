@@ -8,6 +8,22 @@
 
 
 
+/**
+ *
+ 
+     NuoRenderPass
+        NuoShadowMapRenderer
+        NuoDeferredRenderer
+        NuoRenderPipelinePass
+            NuoMeshSceneRenderPass
+                NuoScreenSpaceRenderer
+                (App Classes ...)
+     
+ */
+
+
+
+
 @class NuoMeshBounds;
 
 

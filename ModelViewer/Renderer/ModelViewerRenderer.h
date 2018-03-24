@@ -24,6 +24,24 @@
  */
 
 
+/**
+
+ Class hierachy: asterisk (*) indicates renderers that support dynamic MSAA sampling count change
+ 
+ NuoRenderPass
+    NuoShadowMapRenderer
+    NuoDeferredRenderer                (*)
+    NuoRenderPipelinePass
+        NotationRenderer
+        MotionBlurRenderer
+        NuoMeshSceneRenderPass
+            NuoScreenSpaceRenderer    (*)
+            ModelDissectRenderer
+            ModelRenderer             (*)
+ 
+ */
+
+
 
 typedef enum
 {
