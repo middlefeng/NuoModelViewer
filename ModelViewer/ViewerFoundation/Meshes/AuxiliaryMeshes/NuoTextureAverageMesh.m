@@ -51,6 +51,7 @@
     NSString* shaderName = @"fragment_texutre_average";
     
     _texturesAccumulated = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                             withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                              withSampleCount:1];
     
     _texturesAccumulated.clearColor = MTLClearColorMake(0, 0, 0, 0);
@@ -58,10 +59,11 @@
     _texturesAccumulated.name = @"Average Texture";
     
     _accumulatedMesh = [[NuoTextureMesh alloc] initWithCommandQueue:self.commandQueue];
-    [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withSampleCount:1];
+    _accumulatedMesh.sampleCount = 1;
+    [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
     
     [self makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withFragementShader:shaderName
-                 withSampleCount:1 withBlendMode:kBlend_Accumulate];
+                   withBlendMode:kBlend_Accumulate];
 }
 
 

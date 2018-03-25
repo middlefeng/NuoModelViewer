@@ -126,6 +126,20 @@ MouseDragMode;
 }
 
 
+- (void)handleDraggingQuality
+{
+    NSEvent *event = [[NSApplication sharedApplication] currentEvent];
+    BOOL startingDrag = event.type == NSLeftMouseDown;
+    BOOL endingDrag = event.type == NSLeftMouseUp;
+    BOOL dragging = event.type == NSLeftMouseDragged;
+    
+    if (startingDrag || dragging)
+        [_modelRender setSampleCount:1];
+    if (endingDrag)
+        [_modelRender setSampleCount:kSampleCount];
+}
+
+
 - (void)addFrameRatePanel
 {
     NSRect panelRect = [self frameRatePanelLocation];
@@ -238,6 +252,8 @@ MouseDragMode;
     
     if (panel)
     {
+        [self handleDraggingQuality];
+        
         [_modelComponentPanels setHidden:![panel showModelParts]];
         [self showHideFrameRate:[panel showFrameRate]];
         
@@ -336,6 +352,8 @@ MouseDragMode;
 
 - (void)lightOptionUpdate:(LightOperationPanel*)panel;
 {
+    [self handleDraggingQuality];
+    
     _notationRenderer.density = [panel lightDensity];
     _notationRenderer.spacular = [panel lightSpacular];
     _notationRenderer.shadowSoften = [panel shadowSoften];
@@ -479,6 +497,7 @@ MouseDragMode;
     [renders addObject:_modelRender];
     
     NuoRenderPassTarget* modelRenderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                                               withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                                withSampleCount:1];
     modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
     modelRenderTarget.manageTargetTexture = YES;
@@ -496,6 +515,7 @@ MouseDragMode;
         _modelDissectRenderer.dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
         
         NuoRenderPassTarget* modelDissectTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                                                    withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                                     withSampleCount:kSampleCount];
         modelDissectTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         modelDissectTarget.manageTargetTexture = YES;
@@ -513,6 +533,7 @@ MouseDragMode;
         [renders addObject:_motionBlurRenderer];
         
         NuoRenderPassTarget* motionBlurTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                                                  withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                                   withSampleCount:1];
         motionBlurTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
         motionBlurTarget.manageTargetTexture = YES;
@@ -535,6 +556,7 @@ MouseDragMode;
         [renders addObject:_notationRenderer];
         
         NuoRenderPassTarget* notationRenderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                                                      withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                                       withSampleCount:kSampleCount];
         notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         notationRenderTarget.manageTargetTexture = NO;
@@ -618,12 +640,21 @@ MouseDragMode;
         _trackingLighting = NO;
     }
     
+    // ok to turn off the advanced shadow unless in case of recording blur, or adjusting light.
+    //
+    if (!_trackingLighting && _modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Stop)
+        [_modelRender setAdvancedShaowEnabled:NO];
+    
+    [_modelRender setSampleCount:1];
     _mouseMoved = NO;
 }
 
 
 - (void)mouseUp:(NSEvent *)event
 {
+    [_modelRender setAdvancedShaowEnabled:YES];
+    [_modelRender setSampleCount:kSampleCount];
+    
     _trackingLighting = NO;
     _trackingSplitView = NO;
     [self render];

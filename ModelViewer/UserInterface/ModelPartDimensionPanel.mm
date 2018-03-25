@@ -8,6 +8,7 @@
 
 #import "ModelPartDimensionPanel.h"
 #import "NuoMesh.h"
+#import "NuoMeshBounds.h"
 
 
 
@@ -103,18 +104,14 @@
     
     NSArray<NuoMesh*>* mesh = _selectedMesh;
     
-    NuoMeshBox* bounding = mesh[0].boundingBoxLocal;
+    NuoBounds bounds = *((NuoBounds*)[mesh[0].boundsLocal boundingBox]);
     for (size_t i = 1; i < mesh.count; ++i)
-        bounding = [bounding unionWith:mesh[i].boundingBoxLocal];
+        bounds = bounds.Union(*((NuoBounds*)[mesh[i].boundsLocal boundingBox]));
     
     NSString* dimensionString = [[NSString alloc] initWithFormat:@"%0.1f, %0.1f, %0.1f",
-                                 bounding.span.x,
-                                 bounding.span.y,
-                                 bounding.span.z];
+                                        bounds._span.x, bounds._span.y, bounds._span.z];
     NSString* centerString = [[NSString alloc] initWithFormat:@"%0.1f, %0.1f, %0.1f",
-                              bounding.center.x,
-                              bounding.center.y,
-                              bounding.center.z];
+                                        bounds._center.x, bounds._center.y, bounds._center.z];
     
     [_dimensionValue setStringValue:dimensionString];
     [_centerValue setStringValue:centerString];

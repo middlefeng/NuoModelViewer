@@ -22,6 +22,7 @@
 
 
 - (void)setDrawableSize:(CGSize)drawableSize;
+- (void)setSampleCount:(NSUInteger)sampleCount;
 
 /**
  *  draw calls that target to their own target (e.g. shadow map texture)

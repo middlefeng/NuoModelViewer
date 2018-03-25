@@ -24,6 +24,24 @@
  */
 
 
+/**
+
+ Class hierachy: asterisk (*) indicates renderers that support dynamic MSAA sampling count change
+ 
+ NuoRenderPass
+    NuoShadowMapRenderer
+    NuoDeferredRenderer                (*)
+    NuoRenderPipelinePass
+        NotationRenderer
+        MotionBlurRenderer
+        NuoMeshSceneRenderPass
+            NuoScreenSpaceRenderer    (*)
+            ModelDissectRenderer
+            ModelRenderer             (*)
+ 
+ */
+
+
 
 typedef enum
 {
@@ -74,6 +92,7 @@ TransformMode;
 - (BOOL)isValidPack:(NSString*)path;
 
 - (NuoMeshCompound*)mainModelMesh;
+- (void)setAdvancedShaowEnabled:(BOOL)enabled;
 
 - (NSString*)exportSceneAsString:(CGSize)canvasSize;
 - (void)importScene:(NuoLua*)lua;

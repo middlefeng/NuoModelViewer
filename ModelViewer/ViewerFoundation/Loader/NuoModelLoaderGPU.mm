@@ -10,6 +10,7 @@
 
 #import "NuoMeshOptions.h"
 #import "NuoMeshCompound.h"
+#import "NuoMeshBounds.h"
 
 
 
@@ -56,19 +57,12 @@
     size_t index = 0;
     for (auto& model : models)
     {
-        NuoBox boundingBox = model->GetBoundingBox();
-        
         NuoMesh* mesh = CreateMesh(options, commandQueue, model);
         
-        NuoMeshBox* meshBounding = [[NuoMeshBox alloc] init];
-        meshBounding.span.x = boundingBox._spanX;
-        meshBounding.span.y = boundingBox._spanY;
-        meshBounding.span.z = boundingBox._spanZ;
-        meshBounding.center.x = boundingBox._centerX;
-        meshBounding.center.y = boundingBox._centerY;
-        meshBounding.center.z = boundingBox._centerZ;
+        NuoMeshBounds* bounds = [NuoMeshBounds new];
+        *((NuoBounds*)[bounds boundingBox]) = model->GetBoundingBox();
         
-        mesh.boundingBoxLocal = meshBounding;
+        [mesh setBoundsLocal:bounds];
         [result addObject:mesh];
         
         if (progress)

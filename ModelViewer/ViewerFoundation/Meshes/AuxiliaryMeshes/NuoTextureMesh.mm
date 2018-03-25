@@ -35,13 +35,13 @@ struct TextureMixFragment
 }
 
 
-- (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat withSampleCount:(NSUInteger)sampleCount
+- (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
 {
     NSString* shaderName = _auxiliaryTexture ? @"fragment_texture_mix" :
                                                @"fragment_texture";
      
     [self makePipelineAndSampler:pixelFormat withFragementShader:shaderName
-                 withSampleCount:sampleCount withBlendMode:kBlend_None];
+                   withBlendMode:kBlend_None];
 }
 
 

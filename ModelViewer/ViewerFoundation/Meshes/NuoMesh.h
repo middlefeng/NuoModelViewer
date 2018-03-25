@@ -7,46 +7,24 @@
 
 
 
-extern const BOOL kShadowPCSS;
-extern const BOOL kShadowPCF;
+
+/**
+ *
+ 
+     NuoRenderPass
+        NuoShadowMapRenderer
+        NuoDeferredRenderer
+        NuoRenderPipelinePass
+            NuoMeshSceneRenderPass
+                NuoScreenSpaceRenderer
+                (App Classes ...)
+     
+ */
 
 
 
-@interface NuoCoord : NSObject
 
-@property (nonatomic, assign) float x;
-@property (nonatomic, assign) float y;
-@property (nonatomic, assign) float z;
-
-- (float)maxDimension;
-- (float)distanceTo:(NuoCoord*)other;
-- (NuoCoord*)interpolateTo:(NuoCoord*)other byFactor:(float)factor;
-
-@end
-
-
-
-@interface NuoBoundingSphere : NSObject
-
-@property (nonatomic, strong) NuoCoord* center;
-@property (nonatomic, assign) float radius;
-
-- (NuoBoundingSphere*)unionWith:(NuoBoundingSphere*)other;
-
-@end
-
-
-
-@interface NuoMeshBox : NSObject
-
-@property (nonatomic, strong) NuoCoord* center;
-@property (nonatomic, strong) NuoCoord* span;
-
-- (NuoMeshBox*)unionWith:(NuoMeshBox*)other;
-- (NuoBoundingSphere*)boundingSphere;
-
-@end
-
+@class NuoMeshBounds;
 
 
 @interface NuoMesh : NSObject
@@ -61,6 +39,12 @@ extern const BOOL kShadowPCF;
 
 @property (nonatomic, readonly, assign) float smoothTolerance;
 @property (nonatomic, assign) BOOL smoothConservative;
+
+
+
+@property (nonatomic, assign) NSUInteger sampleCount;
+@property (nonatomic, assign) BOOL shadowOptionPCSS;
+@property (nonatomic, assign) BOOL shadowOptionPCF;
 
 
 
@@ -96,9 +80,8 @@ extern const BOOL kShadowPCF;
 @property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
 
-@property (nonatomic, strong) NuoMeshBox* boundingBoxLocal;
-@property (nonatomic, strong, readonly) NuoBoundingSphere* boundingSphereLocal;
-@property (nonatomic, strong, readonly) NuoBoundingSphere* boundingSphere;
+@property (nonatomic, strong) NuoMeshBounds* bounds;
+@property (nonatomic, strong) NuoMeshBounds* boundsLocal;
 @property (nonatomic, assign) BOOL enabled;
 @property (nonatomic, assign) BOOL cullEnabled;
 
@@ -127,6 +110,8 @@ extern const BOOL kShadowPCF;
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader;
 - (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor;
 - (void)makeDepthStencilState;
+
+- (void)makeGPUStates;
 
 
 - (void)setRawModel:(void*)model;

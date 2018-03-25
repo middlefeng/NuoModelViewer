@@ -16,7 +16,7 @@
 @property (nonatomic, assign) MTLClearColor clearColor;
 
 
-- (void)makePipelineState:(MTLPixelFormat)pixelFormat sampleCount:(NSUInteger)sampleCount;
+- (void)makePipelineStateWithPixelFormat:(MTLPixelFormat)pixelFormat;
 - (void)makePipelineScreenSpaceState;
 
 

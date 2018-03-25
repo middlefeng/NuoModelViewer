@@ -118,17 +118,20 @@
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
-    pipelineDescriptor.sampleCount = kSampleCount;
+    pipelineDescriptor.sampleCount = self.sampleCount;
     
     bool alphaInbedded = !_ignoreTextureAlpha;
     bool hasTexOpacity = !(!_textureOpacity);
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     
+    BOOL pcss = self.shadowOptionPCSS;
+    BOOL pcf = self.shadowOptionPCF;
+    
     [funcConstant setConstantValue:&alphaInbedded type:MTLDataTypeBool atIndex:0];
     [funcConstant setConstantValue:&hasTexOpacity type:MTLDataTypeBool atIndex:1];
     [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];
-    [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
-    [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
+    [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
     [funcConstant setConstantValue:&_meshMode type:MTLDataTypeInt atIndex:6];
     
     if (!_textureBump)
@@ -206,6 +209,12 @@
     [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
     
     [super drawScreenSpace:renderPass indexBuffer:index];
+}
+
+
+- (void)setSampleCount:(NSUInteger)sampleCount
+{
+    [super setSampleCount:sampleCount];
 }
 
 
@@ -321,10 +330,13 @@
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
+    BOOL pcss = self.shadowOptionPCSS;
+    BOOL pcf = self.shadowOptionPCF;
+    
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];
-    [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
-    [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
+    [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
     [funcConstant setConstantValue:&_meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
@@ -332,7 +344,7 @@
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_materialed"
                                                         constantValues:funcConstant error:nil];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
-    pipelineDescriptor.sampleCount = kSampleCount;
+    pipelineDescriptor.sampleCount = self.sampleCount;
     
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];

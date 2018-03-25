@@ -7,9 +7,13 @@
 //
 
 #import "NuoMeshCompound.h"
+#import "NuoMeshBounds.h"
 
 
 @implementation NuoMeshCompound
+{
+    NSUInteger _sampleCount;
+}
 
 
 
@@ -47,11 +51,48 @@
 {
     _meshes = meshes;
     
-    NuoMeshBox* bounding = meshes[0].boundingBoxLocal;
+    NuoBounds bounds = *((NuoBounds*)[meshes[0].bounds boundingBox]);
+    NuoSphere sphere = *((NuoSphere*)[meshes[0].bounds boundingSphere]);
     for (size_t i = 1; i < meshes.count; ++i)
-        bounding = [bounding unionWith:meshes[i].boundingBoxLocal];
+    {
+        bounds = bounds.Union(*((NuoBounds*)[meshes[i].bounds boundingBox]));
+        sphere = sphere.Union(*((NuoSphere*)[meshes[i].bounds boundingSphere]));
+    }
     
-    self.boundingBoxLocal = bounding;
+    NuoMeshBounds* meshBounds = [NuoMeshBounds new];
+    *((NuoBounds*)[meshBounds boundingBox]) = bounds;
+    *((NuoSphere*)[meshBounds boundingSphere]) = sphere;
+    
+    self.boundsLocal = meshBounds;
+}
+
+
+- (void)setSampleCount:(NSUInteger)sampleCount
+{
+    _sampleCount = sampleCount;
+    
+    for (NuoMesh* mesh in _meshes)
+        mesh.sampleCount = sampleCount;
+}
+
+
+- (void)setShadowOptionPCSS:(BOOL)shadowOptionPCSS
+{
+    for (NuoMesh* mesh in _meshes)
+        mesh.shadowOptionPCSS = shadowOptionPCSS;
+}
+
+
+- (void)setShadowOptionPCF:(BOOL)shadowOptionPCF
+{
+    for (NuoMesh* mesh in _meshes)
+        mesh.shadowOptionPCF = shadowOptionPCF;
+}
+
+
+- (NSUInteger)sampleCount
+{
+    return _sampleCount;
 }
 
 

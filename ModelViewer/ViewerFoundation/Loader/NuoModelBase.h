@@ -14,24 +14,13 @@
 #include <map>
 
 #include <simd/simd.h>
+#include "NuoBounds.h"
 
 
 
 class NuoModelBase;
 class NuoMaterial;
 
-
-class NuoBox
-{
-public:
-    float _centerX;
-    float _centerY;
-    float _centerZ;
-    
-    float _spanX;
-    float _spanY;
-    float _spanZ;
-};
 
 
 
@@ -127,7 +116,7 @@ public:
     
     virtual size_t GetVerticesNumber() = 0;
     virtual vector_float4 GetPosition(size_t index) = 0;
-    virtual NuoBox GetBoundingBox();
+    virtual NuoBounds GetBoundingBox();
     
     virtual void* Ptr() = 0;
     virtual size_t Length() = 0;

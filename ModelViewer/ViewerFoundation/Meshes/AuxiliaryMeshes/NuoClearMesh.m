@@ -49,10 +49,10 @@ struct ClearFragment
 }
 
 
-- (void)makePipelineState:(MTLPixelFormat)pixelFormat sampleCount:(NSUInteger)sampleCount
+- (void)makePipelineStateWithPixelFormat:(MTLPixelFormat)pixelFormat
 {
     [self makePipelineAndSampler:pixelFormat withFragementShader:@"fragment_clear"
-                 withSampleCount:sampleCount withBlendMode:kBlend_None];
+                   withBlendMode:kBlend_None];
 }
 
 

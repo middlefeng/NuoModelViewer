@@ -12,7 +12,7 @@
 
 
 
-#define BUILT_IN_LOAD_ACTION_CLEAR 1
+#define BUILT_IN_LOAD_ACTION_CLEAR 0
 
 #if BUILT_IN_LOAD_ACTION_CLEAR
 
@@ -34,7 +34,7 @@
 
 @property (nonatomic, weak) id<MTLDevice> device;
 
-@property (nonatomic, assign) uint sampleCount;
+@property (nonatomic, assign) NSUInteger sampleCount;
 @property (nonatomic, assign) CGSize drawableSize;
 
 /**
@@ -61,16 +61,19 @@
 
 @property (nonatomic, assign) MTLClearColor clearColor;
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
-               withPixelFormat:(MTLPixelFormat)pixelFormat
-               withSampleCount:(uint)sampleCount;
-
-- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withSampleCount:(uint)sampleCount;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                     withPixelFormat:(MTLPixelFormat)pixelFormat
+                     withSampleCount:(uint)sampleCount;
 
 /**
  *  overriden by subclass, called on the drawable-size setting
  */
 - (void)makeTextures;
+
+/**
+ *  used to determine if a texture match the drawable size
+ */
+- (BOOL)isTextureMatchDrawableSize:(id<MTLTexture>)texture;
 
 - (id<MTLRenderCommandEncoder>)retainRenderPassEndcoder:(id<MTLCommandBuffer>)commandBuffer;
 - (void)releaseRenderPassEndcoder;

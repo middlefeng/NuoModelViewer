@@ -77,7 +77,7 @@
     NuoRenderPass* lastScenePass = _renderPasses[lastRender];
     NuoRenderPassTarget* lastTarget = lastScenePass.renderTarget;
     MTLPixelFormat scenePixelFormat = lastTarget.targetPixelFormat;
-    uint sceneSampleCount = lastTarget.sampleCount;
+    uint sceneSampleCount = (uint)lastTarget.sampleCount;
     MTLClearColor mtlClearColor = lastTarget.clearColor;
     if (_clearColor)
         mtlClearColor = MTLClearColorMake(_clearColor.redComponent, _clearColor.greenComponent,
@@ -85,18 +85,18 @@
     
     // privately managed by GPU only, same pixel format and sample-count as scene render
     //
-    NuoRenderPassTarget* sceneTarget = [[NuoRenderPassTarget alloc] initWithDevice:commandBuffer.device
-                                                                   withPixelFormat:scenePixelFormat
-                                                                   withSampleCount:sceneSampleCount];
+    NuoRenderPassTarget* sceneTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandBuffer.commandQueue
+                                                                         withPixelFormat:scenePixelFormat
+                                                                         withSampleCount:sceneSampleCount];
     sceneTarget.manageTargetTexture = YES;
     sceneTarget.sharedTargetTexture = NO;
     sceneTarget.name = @"Scene";
     
     // sharely managed by GPU and CPU, export to RGBA (since PNG need it)
     //
-    NuoRenderPassTarget* exportTarget = [[NuoRenderPassTarget alloc] initWithDevice:commandBuffer.device
-                                                                    withPixelFormat:MTLPixelFormatRGBA8Unorm
-                                                                    withSampleCount:1];
+    NuoRenderPassTarget* exportTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandBuffer.commandQueue
+                                                                          withPixelFormat:MTLPixelFormatRGBA8Unorm
+                                                                          withSampleCount:1];
     exportTarget.manageTargetTexture = YES;
     exportTarget.sharedTargetTexture = YES;
     exportTarget.name = @"Export";

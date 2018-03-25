@@ -15,6 +15,7 @@
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
+- (void)setSampleCount:(NSUInteger)sampleCount;
 
 
 @end

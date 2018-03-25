@@ -13,7 +13,7 @@
 @implementation NuoBoardMesh
 {
     NuoMeshModeShaderParameter _meshMode;
-    NuoCoord* _dimensions;
+    vector_float3 _dimensions;
 }
 
 
@@ -21,7 +21,7 @@
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                   withVerticesBuffer:(void *)buffer withLength:(size_t)length
                          withIndices:(void *)indices withLength:(size_t)indicesLength
-                       withDimension:(NuoCoord*)dimensions
+                       withDimension:(vector_float3)dimensions
 {
     self = [super initWithCommandQueue:commandQueue
                     withVerticesBuffer:buffer withLength:length
@@ -61,17 +61,20 @@
     NSString* vertexFunc = @"vertex_project_shadow";
     NSString* fragmnFunc = @"fragment_light_shadow";
     
+    BOOL pcss = self.shadowOptionPCSS;
+    BOOL pcf = self.shadowOptionPCF;
+    
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&_shadowOverlayOnly type:MTLDataTypeBool atIndex:3];
-    [funcConstant setConstantValue:&kShadowPCSS type:MTLDataTypeBool atIndex:4];
-    [funcConstant setConstantValue:&kShadowPCF type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
+    [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
     [funcConstant setConstantValue:&_meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmnFunc
                                                         constantValues:funcConstant error:nil];
-    pipelineDescriptor.sampleCount = kSampleCount;
+    pipelineDescriptor.sampleCount = self.sampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
@@ -111,7 +114,7 @@
 }
 
 
-- (NuoCoord*)dimensions
+- (vector_float3)dimensions
 {
     return _dimensions;
 }

@@ -29,16 +29,15 @@
         if (!renderStep.isPipelinePass)
             continue;
         
-        NuoRenderPipelinePass* render1 = (NuoRenderPipelinePass*)renderStep;
-        NuoRenderPipelinePass* render2 = nil;
+        NuoRenderPipelinePass* renderStepSuccessor = nil;
         
         if (i < [_renderPasses count] - 1)
-            render2 = (NuoRenderPipelinePass*)[_renderPasses objectAtIndex:i + 1];
+            renderStepSuccessor = (NuoRenderPipelinePass*)[_renderPasses objectAtIndex:i + 1];
         
-        if (render2)
+        if (renderStepSuccessor)
         {
-            NuoRenderPassTarget* interResult = render1.renderTarget;
-            [render2 setSourceTexture:interResult.targetTexture];
+            NuoRenderPassTarget* interResult = renderStep.renderTarget;
+            [renderStepSuccessor setSourceTexture:interResult.targetTexture];
         }
         else
         {
@@ -46,7 +45,7 @@
             if (!currentDrawable)
                 return NO;
             
-            NuoRenderPassTarget* finalResult = render1.renderTarget;
+            NuoRenderPassTarget* finalResult = renderStep.renderTarget;
             [finalResult setTargetTexture:currentDrawable];
         }
     }
@@ -69,6 +68,17 @@
         [render setDrawableSize:size];
     }
 }
+
+
+- (void)setSampleCount:(NSUInteger)sampleCount
+{
+    for (size_t i = 0; i < [_renderPasses count]; ++i)
+    {
+        NuoRenderPass* render = _renderPasses[i];
+        [render setSampleCount:sampleCount];
+    }
+}
+
 
 
 @end

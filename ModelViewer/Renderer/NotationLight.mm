@@ -18,6 +18,7 @@
 #include "NuoMeshUniform.h"
 
 #import "NuoLightSource.h"
+#import "NuoMeshBounds.h"
 
 
 
@@ -55,15 +56,8 @@
         PNuoModelArrow arrow = std::make_shared<NuoModelArrow>(bodyLength, bodyRadius, headLength, headRadius);
         arrow->CreateBuffer();
         
-        NuoBox boundingBox = arrow->GetBoundingBox();
-        
-        NuoMeshBox* meshBounding = [[NuoMeshBox alloc] init];
-        meshBounding.span.x = boundingBox._spanX;
-        meshBounding.span.y = boundingBox._spanY;
-        meshBounding.span.z = boundingBox._spanZ;
-        meshBounding.center.x = boundingBox._centerX;
-        meshBounding.center.y = boundingBox._centerY;
-        meshBounding.center.z = boundingBox._centerZ;
+        NuoMeshBounds* meshBounds = [NuoMeshBounds new];
+        *((NuoBounds*)[meshBounds boundingBox]) = arrow->GetBoundingBox();
         
         _lightVector = [[NuoMesh alloc] initWithCommandQueue:commandQueue
                                     withVerticesBuffer:arrow->Ptr() withLength:arrow->Length()
@@ -71,10 +65,10 @@
         
         MTLRenderPipelineDescriptor* pipelineDesc = [_lightVector makePipelineStateDescriptor];
         
-        // if no MSAA, shoud uncomment the floowing line
+        // if no MSAA, shoud uncomment the following line
         // pipelineDesc.sampleCount = 1;
         
-        [_lightVector setBoundingBoxLocal:meshBounding];
+        [_lightVector setBoundsLocal:meshBounds];
         [_lightVector makePipelineState:pipelineDesc];
         [_lightVector makeDepthStencilState];
     }
@@ -83,9 +77,9 @@
 }
 
 
-- (NuoMeshBox*)boundingBox
+- (NuoMeshBounds*)bounds
 {
-    return _lightVector.boundingBoxLocal;
+    return _lightVector.bounds;
 }
 
 
@@ -100,13 +94,13 @@
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
     NuoLightSource* desc = _lightSourceDesc;
-    NuoMeshBox* bounding = _lightVector.boundingBoxLocal;
+    struct NuoBoundsBase* bounds = [_lightVector.boundsLocal boundingBox];
     
     const vector_float3 translationToCenter =
     {
-        - bounding.center.x,
-        - bounding.center.y,
-        - bounding.center.z + bounding.span.z / 2.0f
+        - bounds->_center.x,
+        - bounds->_center.y,
+        - bounds->_center.z + bounds->_span.z / 2.0f
     };
     
     const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);

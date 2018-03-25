@@ -11,7 +11,9 @@
 #import "NuoLightSource.h"
 #import "NuoShadowMapTarget.h"
 
-#include "NuoMesh.h"
+#import "NuoMesh.h"
+#import "NuoMeshBounds.h"
+
 #include "NuoUniforms.h"
 #include "NuoMathUtilities.h"
 
@@ -38,7 +40,9 @@
     
     if (self)
     {
-        self.renderTarget = [[NuoShadowMapTarget alloc] initWithCommandQueue:commandQueue withSampleCount:1];
+        self.renderTarget = [[NuoShadowMapTarget alloc] initWithCommandQueue:commandQueue
+                                                             withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                             withSampleCount:1];
         self.commandQueue = commandQueue;
         
         ((NuoShadowMapTarget*)self.renderTarget).name = name;
@@ -71,17 +75,20 @@
     vector_float4 center = {0, 0, 0, 1};
     float meshRadius = 0.0;
     
-    NuoBoundingSphere* sphere = nil;
+    NuoSphere sphere;
+    NuoBounds bounds;
     if (_meshes && _meshes.count > 0)
     {
-        sphere = [_meshes[0] boundingSphere];
+        sphere = *((NuoSphere*)[[_meshes[0] bounds] boundingSphere]);
+        bounds = *((NuoBounds*)[[_meshes[0] bounds] boundingBox]);
         for (NSUInteger i = 1; i < _meshes.count; ++i)
-            sphere = [sphere unionWith:[_meshes[i] boundingSphere]];
+        {
+            sphere = sphere.Union(*((NuoSphere*)[_meshes[i] bounds].boundingSphere));
+            bounds = bounds.Union(*((NuoBounds*)[_meshes[i] bounds].boundingBox));
+        }
         
-        center.x = sphere.center.x;
-        center.y = sphere.center.y;
-        center.z = sphere.center.z;
-        meshRadius = sphere.radius;
+        center.xyz = sphere._center.xyz;
+        meshRadius = sphere._radius;
     }
     
     vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
@@ -92,16 +99,22 @@
                                                            lightSource.lightingRotationY);
     lightAsEye = matrix_multiply(lightAsEyeMatrix, lightAsEye);
     lightAsEye = lightAsEye + center;
+    lightAsEye.w = 1.0;
     
     const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye.xyz, center.xyz, up);
     
     CGSize drawableSize = self.renderTarget.drawableSize;
     float aspectRatio = drawableSize.width / drawableSize.height;
+    bounds = bounds.Transform(viewMatrix);
+    
     float viewPortHeight = meshRadius;
     float viewPortWidth = aspectRatio * viewPortHeight;
+    float near = -bounds._span.z / 2.0 - bounds._center.z;
+    float far =   bounds._span.z / 2.0 - bounds._center.z;
+    
     const matrix_float4x4 projectionMatrix = matrix_orthor(-viewPortWidth, viewPortWidth,
                                                            viewPortHeight, -viewPortHeight,
-                                                           -meshRadius + kCameraDistance, meshRadius + kCameraDistance);
+                                                           near, far);
     
     NuoUniforms uniforms;
     uniforms.viewMatrix = viewMatrix;
