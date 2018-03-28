@@ -16,22 +16,40 @@
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    if ((self = [super init]))
+    if (self = [super init])
     {
         self.commandQueue = commandQueue;
         
-        // create sampler state for shadow map sampling
-        MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
-        samplerDesc.sAddressMode = MTLSamplerAddressModeClampToEdge;
-        samplerDesc.tAddressMode = MTLSamplerAddressModeClampToEdge;
-        samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
-        samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
-        samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
-        samplerDesc.compareFunction = MTLCompareFunctionGreater;
-        _shadowMapSamplerState = [commandQueue.device newSamplerStateWithDescriptor:samplerDesc];
+        [self createShadowSamplerState];
     }
     
     return self;
+}
+
+
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                     withPixelFormat:(MTLPixelFormat)pixelFormat withSampleCount:(uint)sampleCount
+{
+    if (self = [super initWithCommandQueue:commandQueue
+                           withPixelFormat:pixelFormat withSampleCount:sampleCount])
+    {
+        [self createShadowSamplerState];
+    }
+    
+    return self;
+}
+
+
+- (void)createShadowSamplerState
+{
+    MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
+    samplerDesc.sAddressMode = MTLSamplerAddressModeClampToEdge;
+    samplerDesc.tAddressMode = MTLSamplerAddressModeClampToEdge;
+    samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
+    samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
+    samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
+    samplerDesc.compareFunction = MTLCompareFunctionGreater;
+    _shadowMapSamplerState = [self.commandQueue.device newSamplerStateWithDescriptor:samplerDesc];
 }
 
 
