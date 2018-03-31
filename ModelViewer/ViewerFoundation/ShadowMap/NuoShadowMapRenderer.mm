@@ -75,6 +75,19 @@
     vector_float4 center = {0, 0, 0, 1};
     float meshRadius = 0.0;
     
+    NuoSphere sphere;
+    if (_meshes && _meshes.count > 0)
+    {
+        sphere = *((NuoSphere*)[[_meshes[0] bounds] boundingSphere]);
+        for (NSUInteger i = 1; i < _meshes.count; ++i)
+        {
+            sphere = sphere.Union(*((NuoSphere*)[_meshes[i] bounds].boundingSphere));
+        }
+        
+        center.xyz = sphere._center.xyz;
+        meshRadius = sphere._radius;
+    }
+    
     vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
     vector_float3 up = {0, 1, 0};
     
@@ -90,22 +103,19 @@
     CGSize drawableSize = self.renderTarget.drawableSize;
     float aspectRatio = drawableSize.width / drawableSize.height;
     
-    NuoSphere sphere;
     NuoBounds bounds;
     if (_meshes && _meshes.count > 0)
     {
-        sphere = *((NuoSphere*)[[_meshes[0] bounds] boundingSphere]);
-        bounds = *((NuoBounds*)[[_meshes[0] bounds] boundingBox]);
+        NuoBounds boundsInWorld = *((NuoBounds*)[[_meshes[0] bounds] boundingBox]);
+        bounds = boundsInWorld.Transform(viewMatrix);
+        
         for (NSUInteger i = 1; i < _meshes.count; ++i)
         {
-            sphere = sphere.Union(*((NuoSphere*)[_meshes[i] bounds].boundingSphere));
-            bounds = bounds.Union(*((NuoBounds*)[_meshes[i] bounds].boundingBox));
+            NuoBounds boundsInWorld = *((NuoBounds*)[[_meshes[i] bounds] boundingBox]);
+            NuoBounds boundsInView = boundsInWorld.Transform(viewMatrix);
+            bounds = bounds.Union(boundsInView);
         }
-        
-        center.xyz = sphere._center.xyz;
-        meshRadius = sphere._radius;
     }
-    bounds = bounds.Transform(viewMatrix);
     
     float viewPortHeight = meshRadius;
     float viewPortWidth = aspectRatio * viewPortHeight;
