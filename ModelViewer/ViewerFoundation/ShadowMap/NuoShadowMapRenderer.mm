@@ -75,6 +75,21 @@
     vector_float4 center = {0, 0, 0, 1};
     float meshRadius = 0.0;
     
+    vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
+    vector_float3 up = {0, 1, 0};
+    
+    NuoLightSource* lightSource = _lightSource;
+    const matrix_float4x4 lightAsEyeMatrix = matrix_rotate(lightSource.lightingRotationX,
+                                                           lightSource.lightingRotationY);
+    lightAsEye = matrix_multiply(lightAsEyeMatrix, lightAsEye);
+    lightAsEye = lightAsEye + center;
+    lightAsEye.w = 1.0;
+    
+    const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye.xyz, center.xyz, up);
+    
+    CGSize drawableSize = self.renderTarget.drawableSize;
+    float aspectRatio = drawableSize.width / drawableSize.height;
+    
     NuoSphere sphere;
     NuoBounds bounds;
     if (_meshes && _meshes.count > 0)
@@ -90,21 +105,6 @@
         center.xyz = sphere._center.xyz;
         meshRadius = sphere._radius;
     }
-    
-    vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
-    vector_float3 up = {0, 1, 0};
-    
-    NuoLightSource* lightSource = _lightSource;
-    const matrix_float4x4 lightAsEyeMatrix = matrix_rotate(lightSource.lightingRotationX,
-                                                           lightSource.lightingRotationY);
-    lightAsEye = matrix_multiply(lightAsEyeMatrix, lightAsEye);
-    lightAsEye = lightAsEye + center;
-    lightAsEye.w = 1.0;
-    
-    const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye.xyz, center.xyz, up);
-    
-    CGSize drawableSize = self.renderTarget.drawableSize;
-    float aspectRatio = drawableSize.width / drawableSize.height;
     bounds = bounds.Transform(viewMatrix);
     
     float viewPortHeight = meshRadius;
