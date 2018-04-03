@@ -160,7 +160,7 @@
     
     // move model from camera for a default distance (3 times of r)
     //
-    vector_float3 span = [_mainModelMesh.bounds boundingBox]->_span;
+    vector_float3 span = [[_mainModelMesh worldBounds:matrix_identity_float4x4] boundingBox]->_span;
     float radius = std::max(span.x, std::max(span.y, span.z)) / 2.0;
     const float defaultDistance = - 3.0 * radius;
     const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
@@ -315,7 +315,7 @@
     modelBoard->CreateBuffer();
     NuoBoardMesh* boardMesh = CreateBoardMesh(self.commandQueue, modelBoard, [_modelOptions basicMaterialized]);
     
-    NuoBoundsBase* bounds = [boardMesh.bounds boundingBox];
+    NuoBoundsBase* bounds = [[boardMesh boundsLocal] boundingBox];
     float radius = std::max(bounds->_span.x, bounds->_span.y);
     const float defaultDistance = - 3.0 * radius;
     const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
@@ -786,7 +786,7 @@
 {
     NuoBounds bounds;
     if (_selectedMesh)
-        bounds = *((NuoBounds*)[_selectedMesh.bounds boundingBox]);
+        bounds = *((NuoBounds*)[[_selectedMesh worldBounds:matrix_identity_float4x4] boundingBox]);
     float radius = bounds.MaxDimension();
     
     // simply using "z" works until the view matrix is no longer an identitiy
@@ -841,21 +841,18 @@
     [self handleDeltaPosition];
     
     float sceneCenter = 0;
-    NuoBounds bounds;
     NuoSphere sphere;
     NuoMeshBounds* meshBounds;
     for (NuoMesh* mesh in _meshes)
     {
         if (!meshBounds)
         {
-            meshBounds = mesh.bounds;
-            bounds = *((NuoBounds*)[meshBounds boundingBox]);
-            sphere = *((NuoSphere*)[meshBounds boundingBox]);
+            meshBounds = [mesh worldBounds:matrix_identity_float4x4];
+            sphere = *((NuoSphere*)[meshBounds boundingSphere]);
         }
         else
         {
-            bounds = bounds.Union(*(NuoBounds*)[mesh.bounds boundingBox]);
-            sphere = sphere.Union(*(NuoSphere*)[mesh.bounds boundingSphere]);
+            sphere = sphere.Union(*(NuoSphere*)[[mesh worldBounds:matrix_identity_float4x4] boundingSphere]);
         }
     }
 
@@ -872,7 +869,21 @@
     
     // bounding box transform and determining the near/far
     //
-    bounds = bounds.Transform(viewTrans);
+    NuoBounds bounds;
+    meshBounds = nil;
+    for (NuoMesh* mesh in _meshes)
+    {
+        if (!meshBounds)
+        {
+            meshBounds = [mesh worldBounds:viewTrans];
+            bounds = *((NuoBounds*)[meshBounds boundingBox]);
+        }
+        else
+        {
+            bounds = bounds.Union(*(NuoBounds*)[[mesh worldBounds:viewTrans] boundingBox]);
+        }
+    }
+
     float near = -bounds._center.z - bounds._span.z / 2.0 + 0.01;
     float far = near + bounds._span.z + 0.02;
     near = std::max<float>(0.001, near);
@@ -1015,7 +1026,7 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        vector_float3 center = [mesh.bounds boundingBox]->_center;
+        vector_float3 center = [[mesh worldBounds:matrix_identity_float4x4] boundingBox]->_center;
         vector_float4 centerVec = { center.x, center.y, center.z, 1.0 };
         vector_float4 centerProjected = matrix_multiply(_projection, centerVec);
         vector_float2 centerOnScreen = centerProjected.xy / centerProjected.w;

@@ -80,7 +80,6 @@
 @property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
 
-@property (nonatomic, strong) NuoMeshBounds* bounds;
 @property (nonatomic, strong) NuoMeshBounds* boundsLocal;
 @property (nonatomic, assign) BOOL enabled;
 @property (nonatomic, assign) BOOL cullEnabled;
@@ -126,6 +125,7 @@
 - (BOOL)hasTransparency;
 - (void)setTransparency:(BOOL)transparent;
 
+- (NuoMeshBounds*)worldBounds:(matrix_float4x4)transform;
 
 - (void)centerMesh;
 
