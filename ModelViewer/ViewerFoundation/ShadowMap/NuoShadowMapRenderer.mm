@@ -117,12 +117,15 @@
     else
         viewPortHeight = viewPortWidth / aspectRatio;
     
+    float l = bounds._center.x - viewPortWidth;
+    float r = bounds._center.x + viewPortWidth;
+    float t = bounds._center.y + viewPortHeight;
+    float b = bounds._center.y - viewPortHeight;
+    
     float near = -bounds._span.z / 2.0 - bounds._center.z;
     float far =   bounds._span.z / 2.0 - bounds._center.z;
     
-    const matrix_float4x4 projectionMatrix = matrix_orthor(-viewPortWidth, viewPortWidth,
-                                                           viewPortHeight, -viewPortHeight,
-                                                           near, far);
+    const matrix_float4x4 projectionMatrix = matrix_orthor(l, r, t, b, near, far);
     
     NuoUniforms uniforms;
     uniforms.viewMatrix = viewMatrix;
