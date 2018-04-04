@@ -81,7 +81,8 @@ A simple Wavefront OBJ viewer.
 ## TODO
 
 * Order-independent transparency.
-* <del>Bump texture.</del>
+* Bump (displacement) texture.
+* <del>Normal texture.</del>
 * <del>Direction of lgiht source.</del>
 * <del>Intensity of light source.</del>
 * <del>Mutilple light sources.</del>
@@ -95,6 +96,7 @@ A simple Wavefront OBJ viewer.
     * <del>Adjustable occluder search range.</del>
     * <del>More adjustable bias.</del>
   * <del>Transparency (strength) of shadow overlay.</del> (Achieved by ambient)
+  * Adaptive shadow map resolution/region.
 * <del>Per light-source, per-surface shadow properties (bias, soft edge).</del>
 * <del>Cull mode.</del>
 * Surrounding.
@@ -106,6 +108,7 @@ A simple Wavefront OBJ viewer.
   * <del>Material opacity adjustment.
   * Material adjustment (specular, colors, etc).
   * List of board objects.
+  * Self illumination.
 * Reflection.
 * <del>BRDF mode.</del>
 * <del>Ambient occlusion.</del>
