@@ -70,24 +70,14 @@
 
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
+    // use an arbitrary camera vector and an arbitrary rotation center for the light source
+    // viewpoint since the light is directional (not position sensative)
+    //
+    // the shadow map range will be determined later by the post-view-transform bounds
+    //
+    const vector_float4 center = {0, 0, 0, 1};
     static const float kCameraDistance = 1.0;
-    
-    vector_float4 center = {0, 0, 0, 1};
-    
-    {
-        NuoBounds bounds;
-        if (_meshes && _meshes.count > 0)
-        {
-            bounds = *((NuoBounds*)[[_meshes[0] worldBounds:matrix_identity_float4x4] boundingBox]);
-            for (NSUInteger i = 1; i < _meshes.count; ++i)
-                bounds = bounds.Union(*((NuoBounds*)[_meshes[i] worldBounds:matrix_identity_float4x4].boundingBox));
-            
-            center.xyz = bounds._center;
-        }
-    }
-    
     vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
-    vector_float3 up = {0, 1, 0};
     
     NuoLightSource* lightSource = _lightSource;
     const matrix_float4x4 lightAsEyeMatrix = matrix_rotate(lightSource.lightingRotationX,
@@ -96,6 +86,7 @@
     lightAsEye = lightAsEye + center;
     lightAsEye.w = 1.0;
     
+    const vector_float3 up = {0, 1, 0};
     const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye.xyz, center.xyz, up);
     
     CGSize drawableSize = self.renderTarget.drawableSize;
@@ -112,6 +103,9 @@
     float viewPortHeight = bounds._span.y / 2.0;
     float viewPortWidth = bounds._span.x / 2.0;
     
+    // the shadow map is of the same aspect ratio (and resolution) as the scene render target,
+    // which is not an optimal decision, yet has to be respected here
+    //
     if (viewPortWidth / viewPortHeight < aspectRatio)
         viewPortWidth = aspectRatio * viewPortHeight;
     else
