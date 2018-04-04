@@ -73,19 +73,17 @@
     static const float kCameraDistance = 1.0;
     
     vector_float4 center = {0, 0, 0, 1};
-    float meshRadius = 0.0;
     
-    NuoSphere sphere;
-    if (_meshes && _meshes.count > 0)
     {
-        sphere = *((NuoSphere*)[[_meshes[0] worldBounds:matrix_identity_float4x4] boundingSphere]);
-        for (NSUInteger i = 1; i < _meshes.count; ++i)
+        NuoBounds bounds;
+        if (_meshes && _meshes.count > 0)
         {
-            sphere = sphere.Union(*((NuoSphere*)[_meshes[i] worldBounds:matrix_identity_float4x4].boundingSphere));
+            bounds = *((NuoBounds*)[[_meshes[0] worldBounds:matrix_identity_float4x4] boundingBox]);
+            for (NSUInteger i = 1; i < _meshes.count; ++i)
+                bounds = bounds.Union(*((NuoBounds*)[_meshes[i] worldBounds:matrix_identity_float4x4].boundingBox));
+            
+            center.xyz = bounds._center;
         }
-        
-        center.xyz = sphere._center.xyz;
-        meshRadius = sphere._radius;
     }
     
     vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
@@ -108,15 +106,11 @@
     {
         bounds = *((NuoBounds*)[[_meshes[0] worldBounds:viewMatrix] boundingBox]);
         for (NSUInteger i = 1; i < _meshes.count; ++i)
-        {
             bounds = bounds.Union(*((NuoBounds*)[_meshes[i] worldBounds:viewMatrix].boundingBox));
-        }
     }
     
-    float viewPortHeight = fmax((bounds._center.y + bounds._span.y / 2.0) - center.y,
-                                center.y - (bounds._center.y - bounds._span.y / 2.0));
-    float viewPortWidth = fmax((bounds._center.x + bounds._span.x / 2.0) - center.x,
-                               center.x - (bounds._center.x - bounds._span.x / 2.0));
+    float viewPortHeight = bounds._span.y / 2.0;
+    float viewPortWidth = bounds._span.x / 2.0;
     
     if (viewPortWidth / viewPortHeight < aspectRatio)
         viewPortWidth = aspectRatio * viewPortHeight;
