@@ -112,10 +112,17 @@
             bounds = bounds.Union(*((NuoBounds*)[_meshes[i] worldBounds:viewMatrix].boundingBox));
         }
     }
-    //bounds = bounds.Transform(viewMatrix);
     
-    float viewPortHeight = meshRadius;
-    float viewPortWidth = aspectRatio * viewPortHeight;
+    float viewPortHeight = fmax((bounds._center.y + bounds._span.y / 2.0) - center.y,
+                                center.y - (bounds._center.y - bounds._span.y / 2.0));
+    float viewPortWidth = fmax((bounds._center.x + bounds._span.x / 2.0) - center.x,
+                               center.x - (bounds._center.x - bounds._span.x / 2.0));
+    
+    if (viewPortWidth / viewPortHeight < aspectRatio)
+        viewPortWidth = aspectRatio * viewPortHeight;
+    else
+        viewPortHeight = viewPortWidth / aspectRatio;
+    
     float near = -bounds._span.z / 2.0 - bounds._center.z;
     float far =   bounds._span.z / 2.0 - bounds._center.z;
     
