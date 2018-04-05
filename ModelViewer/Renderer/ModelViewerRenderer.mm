@@ -37,10 +37,16 @@
 @property (nonatomic, weak) NuoMesh* selectedMesh;
 @property (nonatomic, strong) NSMutableArray<NuoMesh*>* meshes;
 
-// transform data. "viewTrans" is relative to the scene's center
+// transform data. "viewRotation" is relative to the scene's center
 //
-@property (assign) matrix_float4x4 viewTrans;
+@property (assign) matrix_float4x4 viewRotation;
+@property (assign) matrix_float4x4 viewTranslation;
 @property (assign) matrix_float4x4 projection;
+
+// need store the center of a snapshot of the scene as the meshes in the scene
+// keep moving
+//
+@property (assign) vector_float3 sceneCenter;
 
 @property (strong) NuoModelLoaderGPU* modelLoader;
 
@@ -90,7 +96,8 @@
         _meshes = [NSMutableArray new];
         _boardMeshes = [NSMutableArray new];
         
-        _viewTrans = matrix_identity_float4x4;
+        _viewRotation = matrix_identity_float4x4;
+        _viewTranslation = matrix_identity_float4x4;
         
         self.paramsProvider = self;
     }
@@ -136,6 +143,16 @@
 }
 
 
+
+- (void)setTransMode:(TransformMode)transMode
+{
+    _transMode = transMode;
+    
+    if (transMode == kTransformMode_View)
+        [self caliberateSceneCenter];
+}
+
+
 - (void)setRenderTarget:(NuoRenderPassTarget *)renderTarget
 {
     [super setRenderTarget:renderTarget];
@@ -165,6 +182,8 @@
     const float defaultDistance = - 3.0 * radius;
     const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
     [_mainModelMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
+    
+    [self caliberateSceneCenter];
 }
 
 
@@ -271,7 +290,8 @@
 
 - (BOOL)viewTransformReset
 {
-    return matrix_equal(_viewTrans, matrix_identity_float4x4);
+    return matrix_equal(_viewRotation, matrix_identity_float4x4) &&
+           matrix_equal(_viewTranslation, matrix_identity_float4x4);
 }
 
 
@@ -305,7 +325,8 @@
 
 - (void)resetViewTransform
 {
-    _viewTrans = matrix_identity_float4x4;
+    _viewRotation = matrix_identity_float4x4;
+    _viewTranslation = matrix_identity_float4x4;
 }
 
 
@@ -415,8 +436,12 @@
     }
     
     {
-        exporter.StartEntry("viewMatrix");
-        exporter.SetMatrix(_viewTrans);
+        exporter.StartEntry("viewMatrixRotation");
+        exporter.SetMatrix(_viewRotation);
+        exporter.EndEntry(true);
+        
+        exporter.StartEntry("viewMatrixTranslation");
+        exporter.SetMatrix(_viewTranslation);
         exporter.EndEntry(true);
     }
     
@@ -624,9 +649,20 @@
         [_mainModelMesh setTransformTranslate:[lua getMatrixFromTable:-1]];
     [lua removeField];
     
+    // backward compatible the old "viewMatrix"
     [lua getField:@"viewMatrix" fromTable:-1];
     if (![lua isNil:-1])
-        _viewTrans = [lua getMatrixFromTable:-1];
+        _viewRotation = [lua getMatrixFromTable:-1];
+    [lua removeField];
+    
+    [lua getField:@"viewMatrixRotation" fromTable:-1];
+    if (![lua isNil:-1])
+        _viewRotation = [lua getMatrixFromTable:-1];
+    [lua removeField];
+    
+    [lua getField:@"viewMatrixTranslation" fromTable:-1];
+    if (![lua isNil:-1])
+        _viewRotation = [lua getMatrixFromTable:-1];
     [lua removeField];
     
     [lua getField:@"view" fromTable:-1];
@@ -720,6 +756,8 @@
     }
     
     [lua removeField];
+    
+    [self caliberateSceneCenter];
 }
 
 
@@ -784,6 +822,9 @@
 
 - (void)handleDeltaPosition
 {
+    if (_transMode == kTransformMode_Model && [self viewTransformReset])
+        [self caliberateSceneCenter];
+    
     NuoBounds bounds;
     if (_selectedMesh)
         bounds = *((NuoBounds*)[[_selectedMesh worldBounds:matrix_identity_float4x4] boundingBox]);
@@ -801,7 +842,7 @@
     // accumulate delta rotation into matrix
     //
     if (_transMode == kTransformMode_View)
-        _viewTrans = matrix_rotation_append(_viewTrans, _rotationXDelta, _rotationYDelta);
+        _viewRotation = matrix_rotation_append(_viewRotation, _rotationXDelta, _rotationYDelta);
     else
         _selectedMesh.transformPoise = matrix_rotation_append(_selectedMesh.transformPoise, _rotationXDelta, _rotationYDelta);
     
@@ -824,7 +865,7 @@
     matrix_float4x4 transMatrix = _selectedMesh.transformTranslate;
     if (_transMode == kTransformMode_View)
     {
-        _viewTrans = matrix_multiply(matrix_translation(translation), _viewTrans);
+        _viewTranslation = matrix_multiply(matrix_translation(translation), _viewTranslation);
     }
     else
     {
@@ -833,6 +874,29 @@
     }
 }
 
+
+- (void)caliberateSceneCenter
+{
+    NuoBounds bounds;
+    NuoMeshBounds* meshBounds;
+    
+    for (NuoMesh* mesh in _meshes)
+    {
+        if (!meshBounds)
+        {
+            meshBounds = [mesh worldBounds:matrix_identity_float4x4];
+            bounds = *((NuoBounds*)[meshBounds boundingBox]);
+        }
+        else
+        {
+            bounds = bounds.Union(*(NuoBounds*)[[mesh worldBounds:matrix_identity_float4x4] boundingBox]);
+        }
+    }
+    
+    _sceneCenter = bounds._center.xyz;
+}
+
+
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
     // move all delta position coming from the view's mouse/gesture into the matrix,
@@ -840,29 +904,10 @@
     //
     [self handleDeltaPosition];
     
-    float sceneCenter = 0;
-    NuoSphere sphere;
-    NuoMeshBounds* meshBounds;
-    for (NuoMesh* mesh in _meshes)
-    {
-        if (!meshBounds)
-        {
-            meshBounds = [mesh worldBounds:matrix_identity_float4x4];
-            sphere = *((NuoSphere*)[meshBounds boundingSphere]);
-        }
-        else
-        {
-            sphere = sphere.Union(*(NuoSphere*)[[mesh worldBounds:matrix_identity_float4x4] boundingSphere]);
-        }
-    }
-
-    // still use the bounding sphere center for the scene rotation,
-    // as this is in line with the previous behavior
-    
-    sceneCenter = sphere._center.z;
-    
-    vector_float3 center = { 0.0, 0.0, sceneCenter };
-    matrix_float4x4 viewTrans = matrix_rotation_around(_viewTrans, center);
+    // rotation is around the center of a previous scene snapshot
+    //
+    matrix_float4x4 viewTrans = matrix_rotation_around(_viewRotation, _sceneCenter);
+    viewTrans = matrix_multiply(_viewTranslation, viewTrans);
     
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
@@ -870,7 +915,7 @@
     // bounding box transform and determining the near/far
     //
     NuoBounds bounds;
-    meshBounds = nil;
+    NuoMeshBounds* meshBounds = nil;
     for (NuoMesh* mesh in _meshes)
     {
         if (!meshBounds)
