@@ -71,9 +71,9 @@
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
     // use an arbitrary camera vector and an arbitrary rotation center for the light source
-    // viewpoint since the light is directional (not position sensative)
+    // viewpoint since the light is directional (not position sensitive)
     //
-    // the shadow map range will be determined later by the post-view-transform bounds
+    // the light source viewpoint volume will be determined later by the post-view-transform bounds
     //
     const vector_float4 center = {0, 0, 0, 1};
     static const float kCameraDistance = 1.0;
