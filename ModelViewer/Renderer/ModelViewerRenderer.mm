@@ -827,7 +827,7 @@
     
     NuoBounds bounds;
     if (_selectedMesh)
-        bounds = *((NuoBounds*)[[_selectedMesh worldBounds:matrix_identity_float4x4] boundingBox]);
+        bounds = *((NuoBounds*)[[_selectedMesh worldBounds:[self viewMatrix]] boundingBox]);
     float radius = bounds.MaxDimension();
     
     // simply using "z" works until the view matrix is no longer an identitiy
@@ -897,6 +897,17 @@
 }
 
 
+- (matrix_float4x4)viewMatrix
+{
+    // rotation is around the center of a previous scene snapshot
+    //
+    matrix_float4x4 viewTrans = matrix_rotation_around(_viewRotation, _sceneCenter);
+    viewTrans = matrix_multiply(_viewTranslation, viewTrans);
+    
+    return viewTrans;
+}
+
+
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
     // move all delta position coming from the view's mouse/gesture into the matrix,
@@ -906,8 +917,7 @@
     
     // rotation is around the center of a previous scene snapshot
     //
-    matrix_float4x4 viewTrans = matrix_rotation_around(_viewRotation, _sceneCenter);
-    viewTrans = matrix_multiply(_viewTranslation, viewTrans);
+    matrix_float4x4 viewTrans = [self viewMatrix];
     
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
