@@ -4,6 +4,8 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Transformation on the entire scene accurately around the scene's center.
+* More accurate bounds calculation (improving shadow map sampling quality).
 * User selection on GPU.
 * Better take advantage of dedicated video memory by using private buffers. Especially important for <a href="https://www.instagram.com/p/BflXSN7BsUY/">desktop-class graphics card or external GPU</a>).
 * Background loading.
