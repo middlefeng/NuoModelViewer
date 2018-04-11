@@ -334,7 +334,6 @@ MouseDragMode;
                  [lua loadFile:openPanel.URL.path];
                  NSArray* keys = [lua getKeysFromTable:-1];
                  
-                 NSMutableArray<NuoMeshAnimation*>* animations = [[NSMutableArray alloc] init];
                  for (NSString* key in keys)
                  {
                      NuoMeshAnimation* current = [NuoMeshAnimation new];
