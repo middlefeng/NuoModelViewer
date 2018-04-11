@@ -320,6 +320,12 @@ MouseDragMode;
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
     openPanel.allowedFileTypes = @[@"anm"];
     
+    __weak ModelRenderer* renderer = _modelRender;
+    __weak ModelOperationPanel* panel = _modelPanel;
+    
+    NSMutableArray<NuoMeshAnimation*>* animations = [[NSMutableArray alloc] init];
+    _animations = animations;
+    
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
              if (result == NSFileHandlingPanelOKButton)
@@ -335,15 +341,14 @@ MouseDragMode;
                      current.animationName = key;
                      
                      [lua getField:key fromTable:-1];
-                     [current importAnimation:lua forMesh:_modelRender.mainModelMesh.meshes];
+                     [current importAnimation:lua forMesh:renderer.mainModelMesh.meshes];
                      [lua removeField];
                      
                      if (current.mesh.count)
                          [animations addObject:current];
                  }
                  
-                 _animations = animations;
-                 [_modelPanel setModelPartAnimations:_animations];
+                 [panel setModelPartAnimations:animations];
              }
          }];
 }
@@ -997,6 +1002,7 @@ MouseDragMode;
     
     __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
     __weak ModelView* selfWeak = self;
+    __weak ModelRenderer* renderer = _modelRender;
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
@@ -1011,7 +1017,7 @@ MouseDragMode;
                      [cubeMesh makeDepthStencilState];
                      [cubeMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
                  
-                     [_modelRender setCubeMesh:cubeMesh];
+                     [renderer setCubeMesh:cubeMesh];
                      [selfWeak render];
                  }
              }];
@@ -1049,12 +1055,14 @@ MouseDragMode;
     [savePanel setCanSelectHiddenExtension:YES];
     [savePanel setAllowedFileTypes:@[@"scn"]];
     
+    __weak ModelRenderer* renderer = _modelRender;
+    
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
                  if (result == NSFileHandlingPanelOKButton)
                  {
                      NSString* path = savePanel.URL.path;
-                     NSString* result = [_modelRender exportSceneAsString:[self.window contentView].frame.size];
+                     NSString* result = [renderer exportSceneAsString:[self.window contentView].frame.size];
                      const char* pathStr = path.UTF8String;
                      
                      FILE* file = fopen(pathStr, "w");
@@ -1077,17 +1085,20 @@ MouseDragMode;
     [savePanel setAllowedFileTypes:@[@"png"]];
     
     __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
+    __weak ModelRenderer* modelRenderer = _modelRender;
+    __weak MotionBlurRenderer* motionBlurRenderer = _motionBlurRenderer;
+    __weak ModelOperationPanel* panel = _modelPanel;
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
              if (result == NSFileHandlingPanelOKButton)
              {
-                 CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
-                                            _modelRender.renderTarget.drawableSize.width);
+                 CGFloat previewSize = fmax(modelRenderer.renderTarget.drawableSize.height,
+                                            modelRenderer.renderTarget.drawableSize.width);
                  
-                 NSArray* renders = (_modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Start) ?
-                                        @[_modelRender, _motionBlurRenderer] :
-                                        @[_modelRender];
+                 NSArray* renders = (panel.motionBlurRecordStatus == kMotionBlurRecord_Start) ?
+                                        @[modelRenderer, motionBlurRenderer] :
+                                        @[modelRenderer];
                  
                  NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:commandQueue.device withTarget:previewSize
                                                                               withClearColor:[NSColor colorWithRed:0.0
@@ -1120,17 +1131,20 @@ MouseDragMode;
     [savePanel setAllowedFileTypes:@[@"png"]];
     
     __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
+    __weak ModelRenderer* modelRenderer = _modelRender;
+    __weak MotionBlurRenderer* motionBlurRenderer = _motionBlurRenderer;
+    __weak ModelOperationPanel* panel = _modelPanel;
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
              if (result == NSFileHandlingPanelOKButton)
              {
-                 CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
-                                            _modelRender.renderTarget.drawableSize.width);
+                 CGFloat previewSize = fmax(modelRenderer.renderTarget.drawableSize.height,
+                                            modelRenderer.renderTarget.drawableSize.width);
                  
-                 NSArray* renders = (_modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Start) ?
-                                           @[_modelRender, _motionBlurRenderer] :
-                                           @[_modelRender];
+                 NSArray* renders = (panel.motionBlurRecordStatus == kMotionBlurRecord_Start) ?
+                                           @[modelRenderer, motionBlurRenderer] :
+                                           @[modelRenderer];
                  
                  NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:commandQueue.device withTarget:previewSize
                                                                          withClearColor:[NSColor colorWithRed:0.0
@@ -1142,7 +1156,7 @@ MouseDragMode;
                  NSString* pathBackground = [path stringByDeletingPathExtension];
                  pathBackground = [pathBackground stringByAppendingString:@"-bg.png"];
                  
-                 _modelRender.mainModelMesh.enabled = NO;
+                 modelRenderer.mainModelMesh.enabled = NO;
                  
                  [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
                                     withCompletion:^(id<MTLTexture> result)
@@ -1151,8 +1165,8 @@ MouseDragMode;
                                           [textureBase saveTexture:result toImage:pathBackground];
                                       }];
                  
-                 _modelRender.mainModelMesh.enabled = YES;
-                 _modelRender.backdropMesh.enabled = NO;
+                 modelRenderer.mainModelMesh.enabled = YES;
+                 modelRenderer.backdropMesh.enabled = NO;
                  
                  [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
                                     withCompletion:^(id<MTLTexture> result)
@@ -1161,7 +1175,7 @@ MouseDragMode;
                                           [textureBase saveTexture:result toImage:path];
                                       }];
                  
-                 _modelRender.backdropMesh.enabled = YES;
+                 modelRenderer.backdropMesh.enabled = YES;
              }
          }];
 }
@@ -1201,6 +1215,7 @@ MouseDragMode;
     
     __weak BoardSettingsPanel* panelWeak = panel;
     __weak ModelRenderer* renderer = _modelRender;
+    __weak NSMenuItem* menu = _removeObjectMenu;
     
     [self.window beginSheet:panel completionHandler:^(NSModalResponse returnCode)
      {
@@ -1212,8 +1227,8 @@ MouseDragMode;
                  [renderer createBoard:size];
                  [self render];
                  
-                 [_removeObjectMenu setTarget:self];
-                 [_removeObjectMenu setAction:@selector(removeObject:)];
+                 [menu setTarget:self];
+                 [menu setAction:@selector(removeObject:)];
              }
          }
      }];
