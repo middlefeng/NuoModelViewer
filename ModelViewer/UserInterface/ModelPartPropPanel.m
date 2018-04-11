@@ -184,7 +184,7 @@
         [_modelSmoothOption setAllowsMixedState:YES];
     }
     
-    NSString* names = nil;
+    NSString* names = @"";
 #if METAL_2
     NSControlStateValue smoothOption = NSOffState;
     NSControlStateValue reverseCullOption = NSOffState;
@@ -192,7 +192,7 @@
     NSInteger smoothOption = NSOffState;
     NSInteger reverseCullOption = NSOffState;
 #endif
-    NSString* smoothToleranceStr;
+    NSString* smoothToleranceStr = @"0.0";
     CGFloat smoothTolerance = 0.0f;
     
     for (NuoMesh* mesh in meshes)
