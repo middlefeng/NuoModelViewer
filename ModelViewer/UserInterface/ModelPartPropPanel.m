@@ -184,7 +184,7 @@
         [_modelSmoothOption setAllowsMixedState:YES];
     }
     
-    NSString* names = @"";
+    NSString* names = nil;
 #if METAL_2
     NSControlStateValue smoothOption = NSOffState;
     NSControlStateValue reverseCullOption = NSOffState;
