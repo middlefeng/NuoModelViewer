@@ -135,7 +135,7 @@ fragment FragementScreenSpace fragement_screen_space(VertexScreenSpace vert [[st
 
 
 /**
- *  shaders that generate phong result wit shadow casting,
+ *  shaders that generate phong result with shadow casting,
  */
 
 vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)]],
