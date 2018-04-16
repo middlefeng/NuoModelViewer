@@ -98,6 +98,7 @@ A simple Wavefront OBJ viewer.
     * <del>Adjustable occluder search range.</del>
     * <del>More adjustable bias.</del>
   * <del>Transparency (strength) of shadow overlay.</del> (Achieved by ambient)
+  * Linear shadow map (more plausible PCSS, VSM).
   * Adaptive shadow map resolution/region.
 * <del>Per light-source, per-surface shadow properties (bias, soft edge).</del>
 * <del>Cull mode.</del>
