@@ -92,7 +92,7 @@
 
 - (void)makePipelineShadowState
 {
-    NSString* shadowShader = _textureBump ? @"vertex_shadow_tex_materialed_bump" : @"vertex_shadow_tex_materialed";
+    NSString* shadowShader = _textureBump ? @"vertex_simple_tex_materialed_bump" : @"vertex_simple_tex_materialed";
     [super makePipelineShadowState:shadowShader];
 }
 
@@ -321,7 +321,7 @@
 
 - (void)makePipelineShadowState
 {
-    [super makePipelineShadowState:@"vertex_shadow_materialed"];
+    [super makePipelineShadowState:@"vertex_simple_materialed"];
 }
 
 

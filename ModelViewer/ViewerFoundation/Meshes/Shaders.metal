@@ -31,19 +31,19 @@ float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
 
 
 /**
- *  shader that generate shadow-map texture from the light view point.
- *  no fragement shader needed.
+ *  shader that generates screen-space position only, used for stencile-based color,
+ *  or depth-only rendering (e.g. shadow-map)
  */
 
-vertex PositionSimple vertex_shadow(device Vertex *vertices [[buffer(0)]],
+vertex PositionSimple vertex_simple(device Vertex *vertices [[buffer(0)]],
                                     constant NuoUniforms &uniforms [[buffer(1)]],
                                     constant NuoMeshUniforms &meshUniform [[buffer(2)]],
                                     uint vid [[vertex_id]])
 {
-    PositionSimple outShadow;
-    outShadow.position = uniforms.viewProjectionMatrix *
+    PositionSimple outSimple;
+    outSimple.position = uniforms.viewProjectionMatrix *
                          meshUniform.transform * vertices[vid].position;
-    return outShadow;
+    return outSimple;
 }
 
 

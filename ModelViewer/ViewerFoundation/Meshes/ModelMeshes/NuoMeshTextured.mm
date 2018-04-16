@@ -152,7 +152,7 @@ static CIContext* sCIContext = nil;
 
 - (void)makePipelineShadowState
 {
-    [super makePipelineShadowState:@"vertex_shadow_textured"];
+    [super makePipelineShadowState:@"vertex_simple_textured"];
 }
 
 

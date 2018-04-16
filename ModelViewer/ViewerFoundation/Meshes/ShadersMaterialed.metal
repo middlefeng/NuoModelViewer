@@ -30,14 +30,14 @@ struct ProjectedVertex
 };
 
 
-vertex PositionSimple vertex_shadow_materialed(device Vertex *vertices [[buffer(0)]],
+vertex PositionSimple vertex_simple_materialed(device Vertex *vertices [[buffer(0)]],
                                                constant NuoUniforms &uniforms [[buffer(1)]],
                                                constant NuoMeshUniforms &meshUniforms [[buffer(2)]],
                                                uint vid [[vertex_id]])
 {
-    PositionSimple outShadow;
-    outShadow.position = uniforms.viewProjectionMatrix * meshUniforms.transform * vertices[vid].position;
-    return outShadow;
+    PositionSimple outSimple;
+    outSimple.position = uniforms.viewProjectionMatrix * meshUniforms.transform * vertices[vid].position;
+    return outSimple;
 }
 
 
