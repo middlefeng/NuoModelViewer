@@ -40,10 +40,7 @@ vertex PositionSimple vertex_simple(device Vertex *vertices [[buffer(0)]],
                                     constant NuoMeshUniforms &meshUniform [[buffer(2)]],
                                     uint vid [[vertex_id]])
 {
-    PositionSimple outSimple;
-    outSimple.position = uniforms.viewProjectionMatrix *
-                         meshUniform.transform * vertices[vid].position;
-    return outSimple;
+    return vertex_simple<Vertex>(vertices, uniforms, meshUniform, vid);
 }
 
 

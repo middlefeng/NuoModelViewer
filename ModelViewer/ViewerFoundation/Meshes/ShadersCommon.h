@@ -146,4 +146,21 @@ metal::float2 rand(metal::float2 co);
 
 
 
+
+
+
+template <class T>
+PositionSimple vertex_simple(device T *vertices [[buffer(0)]],
+                             constant NuoUniforms &uniforms [[buffer(1)]],
+                             constant NuoMeshUniforms &meshUniform [[buffer(2)]],
+                             metal::uint vid [[vertex_id]])
+{
+    PositionSimple outSimple;
+    outSimple.position = uniforms.viewProjectionMatrix *
+                         meshUniform.transform * vertices[vid].position;
+    return outSimple;
+}
+
+
+
 #endif /* ShadersCommon_h */
