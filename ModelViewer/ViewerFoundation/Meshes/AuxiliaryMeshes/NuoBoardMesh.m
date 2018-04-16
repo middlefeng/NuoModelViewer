@@ -91,7 +91,7 @@
 
 - (void)makePipelineShadowState
 {
-    [super makePipelineShadowState:@"vertex_shadow"];
+    [super makePipelineShadowState:@"vertex_simple"];
 }
 
 
