@@ -76,18 +76,16 @@ static float3 bumpped_normal(float3 normal, float3 tangent, float3 bitangent, fl
 
 
 /**
- *  shaders that generate shadow-map texture from the light view point
+ *  shaders that generates screen-space position only, used for stencile-based color,
+ *  or depth-only rendering (e.g. shadow-map)
  */
 
-vertex PositionSimple vertex_shadow_tex_materialed_bump(device Vertex *vertices [[buffer(0)]],
+vertex PositionSimple vertex_simple_tex_materialed_bump(device Vertex *vertices [[buffer(0)]],
                                                         constant NuoUniforms &uniforms [[buffer(1)]],
                                                         constant NuoMeshUniforms &meshUniforms [[buffer(2)]],
                                                         uint vid [[vertex_id]])
 {
-    PositionSimple outShadow;
-    outShadow.position = uniforms.viewProjectionMatrix *
-                         meshUniforms.transform * vertices[vid].position;
-    return outShadow;
+    return vertex_simple<Vertex>(vertices, uniforms, meshUniforms, vid);
 }
 
 

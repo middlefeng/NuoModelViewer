@@ -387,7 +387,7 @@
 
 - (void)makePipelineShadowState
 {
-    return [self makePipelineShadowState:@"vertex_shadow"];
+    return [self makePipelineShadowState:@"vertex_simple"];
 }
 
 - (void)makeDepthStencilState

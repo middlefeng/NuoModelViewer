@@ -22,17 +22,16 @@ struct ProjectedVertex
 };
 
 /**
- *   shader to generate the shadow map from the light source view point
+ *   shader that generates screen-space position only, used for stencile-based color,
+ *   or depth-only rendering (e.g. shadow-map)
  */
 
-vertex PositionSimple vertex_shadow_textured(device Vertex *vertices [[buffer(0)]],
+vertex PositionSimple vertex_simple_textured(device Vertex *vertices [[buffer(0)]],
                                              constant NuoUniforms &uniforms [[buffer(1)]],
                                              constant NuoMeshUniforms &meshUniforms [[buffer(2)]],
                                              uint vid [[vertex_id]])
 {
-    PositionSimple outShadow;
-    outShadow.position = uniforms.viewProjectionMatrix * meshUniforms.transform * vertices[vid].position;
-    return outShadow;
+    return vertex_simple<Vertex>(vertices, uniforms, meshUniforms, vid);
 }
 
 
