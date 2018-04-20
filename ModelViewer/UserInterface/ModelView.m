@@ -15,8 +15,12 @@
 #import "BoardSettingsPanel.h"
 
 #import "FrameRateView.h"
+
+// pipeline stages
+//
 #import "ModelViewerRenderer.h"
 #import "ModelDissectRenderer.h"
+#import "ModelSelectionRenderer.h"
 #import "NotationRenderer.h"
 #import "MotionBlurRenderer.h"
 
@@ -59,8 +63,12 @@ MouseDragMode;
 {
     NuoLua* _lua;
     ModelViewConfiguration* _configuration;
+    
+    // pipeline stages
+    //
     ModelRenderer* _modelRender;
     ModelDissectRenderer* _modelDissectRenderer;
+    ModelSelectionRenderer* _modelSelectionRenderer;
     NotationRenderer* _notationRenderer;
     MotionBlurRenderer* _motionBlurRenderer;
     
@@ -457,6 +465,10 @@ MouseDragMode;
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
+    _modelSelectionRenderer = [[ModelSelectionRenderer alloc] initWithCommandQueue:self.commandQueue
+                                                                   withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                   withSampleCount:kSampleCount];
+    
     // sync the model renderer with the initial settings in the model panel
     //
     [self modelOptionUpdate:_modelPanel];
@@ -550,6 +562,22 @@ MouseDragMode;
     else if (_modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Stop)
     {
         [_motionBlurRenderer resetResources];
+    }
+    
+    {
+        [renders addObject:_modelSelectionRenderer];
+        
+        NuoRenderPassTarget* selectionTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                                                 withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                                 withSampleCount:kSampleCount];
+        
+        selectionTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
+        selectionTarget.manageTargetTexture = YES;
+        selectionTarget.name = @"Selection";
+        
+        [_modelSelectionRenderer setRenderTarget:selectionTarget];
+        
+        lastTarget = selectionTarget;
     }
     
     // notation renderer

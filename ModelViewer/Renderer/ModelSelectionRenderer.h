@@ -6,8 +6,8 @@
 //  Copyright © 2018 middleware. All rights reserved.
 //
 
-#import "NuoRenderPipelinePass.h"
+#import "NuoMeshSceneRenderPass.h"
 
-@interface ModelSelectionRenderer : NuoRenderPipelinePass
+@interface ModelSelectionRenderer : NuoMeshSceneRenderPass
 
 @end

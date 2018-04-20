@@ -8,6 +8,20 @@
 
 #import "ModelSelectionRenderer.h"
 
+
+
 @implementation ModelSelectionRenderer
+
+
+- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+{
+    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    
+    renderPass.label = @"Selection";
+    
+    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    [self releaseDefaultEncoder];
+}
+
 
 @end
