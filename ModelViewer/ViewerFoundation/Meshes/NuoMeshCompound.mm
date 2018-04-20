@@ -51,12 +51,12 @@
 {
     _meshes = meshes;
     
-    NuoBounds bounds = *((NuoBounds*)[meshes[0].bounds boundingBox]);
-    NuoSphere sphere = *((NuoSphere*)[meshes[0].bounds boundingSphere]);
+    NuoBounds bounds = *((NuoBounds*)[meshes[0].boundsLocal boundingBox]);
+    NuoSphere sphere = *((NuoSphere*)[meshes[0].boundsLocal boundingSphere]);
     for (size_t i = 1; i < meshes.count; ++i)
     {
-        bounds = bounds.Union(*((NuoBounds*)[meshes[i].bounds boundingBox]));
-        sphere = sphere.Union(*((NuoSphere*)[meshes[i].bounds boundingSphere]));
+        bounds = bounds.Union(*((NuoBounds*)[meshes[i].boundsLocal boundingBox]));
+        sphere = sphere.Union(*((NuoSphere*)[meshes[i].boundsLocal boundingSphere]));
     }
     
     NuoMeshBounds* meshBounds = [NuoMeshBounds new];
@@ -64,6 +64,32 @@
     *((NuoSphere*)[meshBounds boundingSphere]) = sphere;
     
     self.boundsLocal = meshBounds;
+}
+
+
+- (NuoMeshBounds*)worldBounds:(matrix_float4x4)transform
+{
+    matrix_float4x4 transformLocal = matrix_multiply(self.transformTranslate, self.transformPoise);
+    transform = matrix_multiply(transform, transformLocal);
+    
+    
+    NuoMeshBounds* meshBounds = [_meshes[0] worldBounds:transform];
+    NuoBounds bounds = *((NuoBounds*)[meshBounds boundingBox]);
+    NuoSphere sphere = *((NuoSphere*)[meshBounds boundingSphere]);
+    
+    for (size_t i = 1; i < _meshes.count; ++i)
+    {
+        NuoMeshBounds* meshBoundsItem = [_meshes[i] worldBounds:transform];
+        
+        bounds = bounds.Union(*((NuoBounds*)[meshBoundsItem boundingBox]));
+        sphere = sphere.Union(*((NuoSphere*)[meshBoundsItem boundingSphere]));
+    }
+    
+    NuoMeshBounds* result = [NuoMeshBounds new];
+    *((NuoBounds*)[result boundingBox]) = bounds;
+    *((NuoSphere*)[result boundingSphere]) = sphere;
+    
+    return result;
 }
 
 

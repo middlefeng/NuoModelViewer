@@ -192,7 +192,7 @@
     NSInteger smoothOption = NSOffState;
     NSInteger reverseCullOption = NSOffState;
 #endif
-    NSString* smoothToleranceStr;
+    NSString* smoothToleranceStr = @"0.0";
     CGFloat smoothTolerance = 0.0f;
     
     for (NuoMesh* mesh in meshes)

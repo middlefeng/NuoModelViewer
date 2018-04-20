@@ -4,6 +4,8 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Transformation on the entire scene accurately around the scene's center.
+* More accurate bounds calculation (improving shadow map sampling quality).
 * User selection on GPU.
 * Better take advantage of dedicated video memory by using private buffers. Especially important for <a href="https://www.instagram.com/p/BflXSN7BsUY/">desktop-class graphics card or external GPU</a>).
 * Background loading.
@@ -81,7 +83,8 @@ A simple Wavefront OBJ viewer.
 ## TODO
 
 * Order-independent transparency.
-* <del>Bump texture.</del>
+* Bump (displacement) texture.
+* <del>Normal texture.</del>
 * <del>Direction of lgiht source.</del>
 * <del>Intensity of light source.</del>
 * <del>Mutilple light sources.</del>
@@ -95,6 +98,8 @@ A simple Wavefront OBJ viewer.
     * <del>Adjustable occluder search range.</del>
     * <del>More adjustable bias.</del>
   * <del>Transparency (strength) of shadow overlay.</del> (Achieved by ambient)
+  * Linear shadow map (more plausible PCSS, VSM).
+  * Adaptive shadow map resolution/region.
 * <del>Per light-source, per-surface shadow properties (bias, soft edge).</del>
 * <del>Cull mode.</del>
 * Surrounding.
@@ -106,6 +111,7 @@ A simple Wavefront OBJ viewer.
   * <del>Material opacity adjustment.
   * Material adjustment (specular, colors, etc).
   * List of board objects.
+  * Self illumination.
 * Reflection.
 * <del>BRDF mode.</del>
 * <del>Ambient occlusion.</del>

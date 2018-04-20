@@ -139,23 +139,21 @@
 
 
 
-- (void)updateBounds
+- (NuoMeshBounds*)worldBounds:(matrix_float4x4)transform
 {
-    matrix_float4x4 transform = matrix_multiply(_transformTranslate, _transformPoise);
+    NuoBounds* boundsLocal = ((NuoBounds*)[_boundsLocal boundingBox]);
+    NuoSphere* sphereLocal = ((NuoSphere*)[_boundsLocal boundingSphere]);
     
-    if (!_boundsLocal)
-        return;
+    matrix_float4x4 transformObject = matrix_multiply(_transformTranslate, _transformPoise);
+    transform = matrix_multiply(transform, transformObject);
     
-    NuoBounds localBounds = *((NuoBounds*)[_boundsLocal boundingBox]);
-    NuoSphere localSphere = *((NuoSphere*)[_boundsLocal boundingSphere]);
+    NuoMeshBounds* worldMeshBounds = [NuoMeshBounds new];
+    NuoBounds* worldBounds = ((NuoBounds*)[worldMeshBounds boundingBox]);
+    NuoSphere* worldSphere = ((NuoSphere*)[worldMeshBounds boundingSphere]);
     
-    if (!_bounds)
-        _bounds = [NuoMeshBounds new];
-    
-    NuoBounds* boundsProperty = (NuoBounds*)[_bounds boundingBox];
-    NuoSphere* sphereProperty = (NuoSphere*)[_bounds boundingSphere];
-    *boundsProperty = localBounds.Transform(transform);
-    *sphereProperty = localSphere.Transform(transform);
+    *worldBounds = boundsLocal->Transform(transform);
+    *worldSphere = sphereLocal->Transform(transform);
+    return worldMeshBounds;
 }
 
 
@@ -173,8 +171,6 @@
         NuoSphere* localSphere = ((NuoSphere*)[_boundsLocal boundingSphere]);
         *localSphere = localBounds->Sphere();
     }
-    
-    [self updateBounds];
 }
 
 
@@ -182,7 +178,6 @@
 - (void)setTransformTranslate:(matrix_float4x4)transformTranslate
 {
     _transformTranslate = transformTranslate;
-    [self updateBounds];
 }
 
 
@@ -512,8 +507,6 @@
     };
     const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
     _transformPoise = modelCenteringMatrix;
-    
-    [self updateBounds];
 }
 
 

@@ -90,6 +90,7 @@
                                                                          withSampleCount:sceneSampleCount];
     sceneTarget.manageTargetTexture = YES;
     sceneTarget.sharedTargetTexture = NO;
+    sceneTarget.clearColor = mtlClearColor;
     sceneTarget.name = @"Scene";
     
     // sharely managed by GPU and CPU, export to RGBA (since PNG need it)
@@ -99,6 +100,7 @@
                                                                           withSampleCount:1];
     exportTarget.manageTargetTexture = YES;
     exportTarget.sharedTargetTexture = YES;
+    sceneTarget.clearColor = mtlClearColor;
     exportTarget.name = @"Export";
     
     _sceneTarget = sceneTarget;

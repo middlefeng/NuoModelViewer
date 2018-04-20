@@ -31,9 +31,7 @@ vertex PositionSimple vertex_simple_textured(device Vertex *vertices [[buffer(0)
                                              constant NuoMeshUniforms &meshUniforms [[buffer(2)]],
                                              uint vid [[vertex_id]])
 {
-    PositionSimple outSimple;
-    outSimple.position = uniforms.viewProjectionMatrix * meshUniforms.transform * vertices[vid].position;
-    return outSimple;
+    return vertex_simple<Vertex>(vertices, uniforms, meshUniforms, vid);
 }
 
 

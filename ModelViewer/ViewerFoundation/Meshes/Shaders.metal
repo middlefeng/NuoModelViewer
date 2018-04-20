@@ -40,10 +40,7 @@ vertex PositionSimple vertex_simple(device Vertex *vertices [[buffer(0)]],
                                     constant NuoMeshUniforms &meshUniform [[buffer(2)]],
                                     uint vid [[vertex_id]])
 {
-    PositionSimple outSimple;
-    outSimple.position = uniforms.viewProjectionMatrix *
-                         meshUniform.transform * vertices[vid].position;
-    return outSimple;
+    return vertex_simple<Vertex>(vertices, uniforms, meshUniform, vid);
 }
 
 
@@ -138,7 +135,7 @@ fragment FragementScreenSpace fragement_screen_space(VertexScreenSpace vert [[st
 
 
 /**
- *  shaders that generate phong result wit shadow casting,
+ *  shaders that generate phong result with shadow casting,
  */
 
 vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)]],

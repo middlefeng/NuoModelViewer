@@ -79,7 +79,7 @@
 
 - (NuoMeshBounds*)bounds
 {
-    return _lightVector.bounds;
+    return [_lightVector worldBounds:matrix_identity_float4x4];
 }
 
 

@@ -70,29 +70,14 @@
 
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
+    // use an arbitrary camera vector and an arbitrary rotation center for the light source
+    // viewpoint since the light is directional (not position sensitive)
+    //
+    // the light source viewpoint volume will be determined later by the post-view-transform bounds
+    //
+    const vector_float4 center = {0, 0, 0, 1};
     static const float kCameraDistance = 1.0;
-    
-    vector_float4 center = {0, 0, 0, 1};
-    float meshRadius = 0.0;
-    
-    NuoSphere sphere;
-    NuoBounds bounds;
-    if (_meshes && _meshes.count > 0)
-    {
-        sphere = *((NuoSphere*)[[_meshes[0] bounds] boundingSphere]);
-        bounds = *((NuoBounds*)[[_meshes[0] bounds] boundingBox]);
-        for (NSUInteger i = 1; i < _meshes.count; ++i)
-        {
-            sphere = sphere.Union(*((NuoSphere*)[_meshes[i] bounds].boundingSphere));
-            bounds = bounds.Union(*((NuoBounds*)[_meshes[i] bounds].boundingBox));
-        }
-        
-        center.xyz = sphere._center.xyz;
-        meshRadius = sphere._radius;
-    }
-    
     vector_float4 lightAsEye = {0, 0, kCameraDistance, 1};
-    vector_float3 up = {0, 1, 0};
     
     NuoLightSource* lightSource = _lightSource;
     const matrix_float4x4 lightAsEyeMatrix = matrix_rotate(lightSource.lightingRotationX,
@@ -101,20 +86,40 @@
     lightAsEye = lightAsEye + center;
     lightAsEye.w = 1.0;
     
+    const vector_float3 up = {0, 1, 0};
     const matrix_float4x4 viewMatrix = matrix_lookAt(lightAsEye.xyz, center.xyz, up);
     
     CGSize drawableSize = self.renderTarget.drawableSize;
     float aspectRatio = drawableSize.width / drawableSize.height;
-    bounds = bounds.Transform(viewMatrix);
     
-    float viewPortHeight = meshRadius;
-    float viewPortWidth = aspectRatio * viewPortHeight;
+    NuoBounds bounds;
+    if (_meshes && _meshes.count > 0)
+    {
+        bounds = *((NuoBounds*)[[_meshes[0] worldBounds:viewMatrix] boundingBox]);
+        for (NSUInteger i = 1; i < _meshes.count; ++i)
+            bounds = bounds.Union(*((NuoBounds*)[_meshes[i] worldBounds:viewMatrix].boundingBox));
+    }
+    
+    float viewPortHeight = bounds._span.y / 2.0;
+    float viewPortWidth = bounds._span.x / 2.0;
+    
+    // the shadow map is of the same aspect ratio (and resolution) as the scene render target,
+    // which is not an optimal decision, yet has to be respected here
+    //
+    if (viewPortWidth / viewPortHeight < aspectRatio)
+        viewPortWidth = aspectRatio * viewPortHeight;
+    else
+        viewPortHeight = viewPortWidth / aspectRatio;
+    
+    float l = bounds._center.x - viewPortWidth;
+    float r = bounds._center.x + viewPortWidth;
+    float t = bounds._center.y + viewPortHeight;
+    float b = bounds._center.y - viewPortHeight;
+    
     float near = -bounds._span.z / 2.0 - bounds._center.z;
     float far =   bounds._span.z / 2.0 - bounds._center.z;
     
-    const matrix_float4x4 projectionMatrix = matrix_orthor(-viewPortWidth, viewPortWidth,
-                                                           viewPortHeight, -viewPortHeight,
-                                                           near, far);
+    const matrix_float4x4 projectionMatrix = matrix_orthor(l, r, t, b, near, far);
     
     NuoUniforms uniforms;
     uniforms.viewMatrix = viewMatrix;
