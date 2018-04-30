@@ -7,6 +7,7 @@
 //
 
 #import "NuoBoardMesh.h"
+#import "NuoMesh_Extension.h"
 
 
 

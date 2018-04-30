@@ -7,6 +7,7 @@
 //
 
 #import "NuoMeshTexMatieraled.h"
+#import "NuoMesh_Extension.h"
 #import "NuoTextureBase.h"
 
 
@@ -305,7 +306,7 @@
     materialMesh->_meshMode = mode;
     
     [materialMesh makePipelineShadowState];
-    [materialMesh makePipelineState:[materialMesh makePipelineStateDescriptor]];
+    [materialMesh makePipelineState];
     [materialMesh makeDepthStencilState];
     
     return materialMesh;

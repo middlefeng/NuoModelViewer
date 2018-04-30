@@ -780,7 +780,7 @@
     for (NuoBoardMesh* board in _boardMeshes)
     {
         board.shadowOverlayOnly = [modelOptions basicMaterialized];
-        [board makePipelineState:[board makePipelineStateDescriptor]];
+        [board makePipelineState];
     }
 }
 

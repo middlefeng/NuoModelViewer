@@ -319,6 +319,11 @@
     return pipelineDescriptor;
 }
 
+- (void)makePipelineState
+{
+    [self makePipelineState:[self makePipelineStateDescriptor]];
+}
+
 - (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor
 {
     NSError *error = nil;
@@ -407,7 +412,7 @@
 {
     [self makePipelineScreenSpaceState];
     [self makePipelineShadowState];
-    [self makePipelineState:[self makePipelineStateDescriptor]];
+    [self makePipelineState];
     [self makeDepthStencilState];
 }
 

@@ -7,6 +7,8 @@
 //
 
 #import "NuoMeshTextured.h"
+#import "NuoMesh_Extension.h"
+
 #import "NuoTextureBase.h"
 #import <CoreImage/CoreImage.h>
 

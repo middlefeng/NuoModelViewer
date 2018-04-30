@@ -94,20 +94,8 @@
 //
 - (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode;
 
-// used to implement the "cloneForMode" through the class hierachy
-//
-- (void)shareResourcesFrom:(NuoMesh*)mesh;
 
-- (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
-
-- (void)makePipelineScreenSpaceStateWithVertexShader:(NSString*)vertexShader
-                                  withFragemtnShader:(NSString*)fragmentShader;
-- (void)makePipelineScreenSpaceStateWithVertexShader:(NSString*)vertexShader
-                                  withFragemtnShader:(NSString*)fragmentShader
-                                       withConstants:(MTLFunctionConstantValues*)constants;
-
-- (void)makePipelineShadowState:(NSString*)vertexShadowShader;
-- (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor;
+- (void)makePipelineState;
 - (void)makeDepthStencilState;
 
 - (void)makeGPUStates;

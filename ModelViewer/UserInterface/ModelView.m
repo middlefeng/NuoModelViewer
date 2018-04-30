@@ -1040,8 +1040,7 @@ MouseDragMode;
                      NuoCubeMesh* cubeMesh = [[NuoCubeMesh alloc] initWithCommandQueue:commandQueue];
                      NuoTextureBase* base = [NuoTextureBase getInstance:commandQueue];
                      cubeMesh.cubeTexture = [base textureCubeWithImageNamed:path];
-                         
-                     [cubeMesh makeDepthStencilState];
+
                      [cubeMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
                  
                      [renderer setCubeMesh:cubeMesh];
