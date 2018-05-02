@@ -546,6 +546,7 @@ MouseDragMode;
     modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
     modelRenderTarget.manageTargetTexture = YES;
     modelRenderTarget.name = @"Model";
+    modelRenderTarget.resolveDepth = (_modelSelectionRenderer != nil);
     
     [_modelRender setRenderTarget:modelRenderTarget];
     lastTarget = modelRenderTarget;

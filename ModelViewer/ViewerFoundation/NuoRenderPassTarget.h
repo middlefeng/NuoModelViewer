@@ -35,6 +35,7 @@
 @property (nonatomic, weak) id<MTLDevice> device;
 
 @property (nonatomic, assign) NSUInteger sampleCount;
+@property (nonatomic, assign) BOOL resolveDepth;
 @property (nonatomic, assign) CGSize drawableSize;
 
 /**
@@ -43,6 +44,7 @@
 @property (nonatomic, strong) id<MTLTexture> targetTexture;
 
 @property (nonatomic, strong) id<MTLTexture> depthTexture;
+@property (nonatomic, readonly) id<MTLTexture> depthAttachmentTexture;
 
 /**
  *  whether the target texture is managed by the render-pass itself

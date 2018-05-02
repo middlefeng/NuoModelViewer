@@ -137,7 +137,7 @@
         passDescriptor.colorAttachments[3].resolveTexture = _shadowOverlayBuffer;
     }
     
-    passDescriptor.depthAttachment.texture = self.depthTexture;
+    passDescriptor.depthAttachment.texture = self.depthAttachmentTexture;
     passDescriptor.depthAttachment.clearDepth = 1.0;
     passDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
     passDescriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
