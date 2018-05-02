@@ -288,6 +288,38 @@ MouseDragMode;
 
 
 
+- (void)modelPartsSelectionChanged:(NSArray<NuoMesh*>*)selected
+{
+    if (selected && selected.count && !_modelSelectionRenderer)
+    {
+        _modelSelectionRenderer = [[ModelSelectionRenderer alloc] initWithCommandQueue:self.commandQueue
+                                                                       withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                       withSampleCount:kSampleCount];
+        _modelSelectionRenderer.paramsProvider = _modelRender;
+        [self setupPipelineSettings];
+    }
+    
+    if (!selected || !selected.count)
+    {
+        if (_modelSelectionRenderer)
+        {
+            _modelSelectionRenderer = nil;
+            [self setupPipelineSettings];
+        }
+    }
+    else
+    {
+        NSMutableArray<NuoMesh*>* selectedIndicate = [NSMutableArray new];
+        for (NuoMesh* mesh in selected)
+            [selectedIndicate addObject:[mesh cloneForMode:kMeshMode_Selection]];
+        
+        [_modelSelectionRenderer setSelectedMeshParts:selectedIndicate];
+        [self render];
+    }
+}
+
+
+
 - (void)showHideFrameRate:(BOOL)show
 {
     [_frameRateView setHidden:!show];
@@ -465,10 +497,6 @@ MouseDragMode;
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
-    _modelSelectionRenderer = [[ModelSelectionRenderer alloc] initWithCommandQueue:self.commandQueue
-                                                                   withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                   withSampleCount:kSampleCount];
-    
     // sync the model renderer with the initial settings in the model panel
     //
     [self modelOptionUpdate:_modelPanel];
@@ -564,6 +592,10 @@ MouseDragMode;
         [_motionBlurRenderer resetResources];
     }
     
+    // selection overlay
+    //
+    
+    if (_modelSelectionRenderer)
     {
         [renders addObject:_modelSelectionRenderer];
         

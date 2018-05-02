@@ -8,6 +8,11 @@
 
 #import "NuoMeshSceneRenderPass.h"
 
+@class NuoMesh;
+
+
 @interface ModelSelectionRenderer : NuoMeshSceneRenderPass
+
+@property (nonatomic, strong) NSArray<NuoMesh*>* selectedMeshParts;
 
 @end

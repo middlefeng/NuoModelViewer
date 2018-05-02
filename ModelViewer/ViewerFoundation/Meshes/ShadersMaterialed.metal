@@ -73,6 +73,9 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
                                           depth2d<float> shadowMap1 [[texture(1)]],
                                           sampler depthSamplr [[sampler(0)]])
 {
+    if (kMeshMode == kMeshMode_Selection)
+        return float4(0.9);
+    
     float3 normal = normalize(vert.normal);
     float3 diffuseColor = vert.diffuseColor;
     

@@ -94,6 +94,9 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
 {
     VertexFragmentCharacters outVert = vertex_characters(vert);
     
+    if (kMeshMode == kMeshMode_Selection)
+        return float4(0.9);
+    
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     float4 opacityTexel = 1.0;
     if (kAlphaChannelInSeparatedTexture)

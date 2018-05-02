@@ -7,6 +7,7 @@
 //
 
 #import "ModelSelectionRenderer.h"
+#import "NuoMesh.h"
 
 
 
@@ -20,6 +21,11 @@
     renderPass.label = @"Selection";
     
     [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
+    
+    for (NuoMesh* selectedMesh in _selectedMeshParts)
+        [selectedMesh drawMesh:renderPass indexBuffer:inFlight];
+    
     [self releaseDefaultEncoder];
 }
 

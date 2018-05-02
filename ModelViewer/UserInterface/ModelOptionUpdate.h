@@ -7,6 +7,7 @@
 //
 
 
+@class NuoMesh;
 @class NuoMeshOption;
 @class ModelOperationPanel;
 @class LightOperationPanel;
@@ -19,6 +20,8 @@
 - (void)modelOptionUpdate:(ModelOperationPanel*)panel;
 - (void)lightOptionUpdate:(LightOperationPanel*)panel;
 - (void)animationLoad;
+
+- (void)modelPartsSelectionChanged:(NSArray<NuoMesh*>*)selected;
 
 @end
 
