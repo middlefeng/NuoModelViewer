@@ -152,6 +152,10 @@
     
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
+    
+    // blending is ON, except for the selection indicator mode
+    //
+    colorAttachment.blendingEnabled = (_meshMode != kMeshMode_Selection);
     colorAttachment.blendingEnabled = YES;
     colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
     colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
@@ -349,7 +353,10 @@
     
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
-    colorAttachment.blendingEnabled = YES;
+    
+    // blending is ON, except for the selection indicator mode
+    //
+    colorAttachment.blendingEnabled = (_meshMode != kMeshMode_Selection);
     colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
     colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
     colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;

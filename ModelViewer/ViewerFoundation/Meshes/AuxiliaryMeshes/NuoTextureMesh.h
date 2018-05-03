@@ -29,6 +29,7 @@
  *  may or may not the same as to that of modelTexture. Metal supports
  *  this as implicit pixel format conversion.
  */
-- (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat;
+- (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
+                 withBlendMode:(ScreenSpaceBlendMode)blendMode;
 
 @end

@@ -55,7 +55,7 @@
     [_dissectRenderTarget setDrawableSize:drawableSize];
     
     [_textureMesh setAuxiliaryTexture:_dissectRenderTarget.targetTexture];
-    [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
+    [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_None];
 }
 
 
@@ -73,7 +73,7 @@
     
     [_textureMesh setSampleCount:_sampleCount];
     [_textureMesh setAuxiliaryTexture:_dissectRenderTarget.targetTexture];
-    [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
+    [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_None];
 }
 
 
