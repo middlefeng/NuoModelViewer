@@ -130,6 +130,7 @@
     _indexBuffer = mesh.indexBuffer;
     _transformBuffers = mesh.transformBuffers;
     _enabled = mesh.enabled;
+    _cullEnabled = mesh.cullEnabled;
     
     _shadowOptionPCSS = mesh.shadowOptionPCSS;
     _shadowOptionPCF = mesh.shadowOptionPCF;

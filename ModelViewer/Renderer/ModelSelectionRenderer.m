@@ -54,24 +54,31 @@
 }
 
 
-- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-               withInFlightIndex:(unsigned int)inFlight
-{
-    id<MTLRenderCommandEncoder> renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
-    
-    renderPass.label = @"selection - immediate";
-    
-    [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
-    
-    for (NuoMesh* selectedMesh in _selectedMeshParts)
-        [selectedMesh drawMesh:renderPass indexBuffer:inFlight];
-    
-    [_immediateTarget releaseRenderPassEndcoder];
-}
-
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
+    {
+        // the immediate rendering must NOT be put in the predraw because the depth map, which comes from
+        // the model renderer, has not been ready (meaning not refreshed for the current frame, still the
+        // residual of the last) at that point
+        
+        id<MTLRenderCommandEncoder> renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
+        
+        renderPass.label = @"selection - immediate";
+        
+        // the indicator layer is renderred according to
+        //  - the scene parameter
+        //  - the scene's depth map (for covering effect)
+        //
+        [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
+        [self setDepthMapTo:renderPass];
+        
+        for (NuoMesh* selectedMesh in _selectedMeshParts)
+            [selectedMesh drawMesh:renderPass indexBuffer:inFlight];
+        
+        [_immediateTarget releaseRenderPassEndcoder];
+    }
+    
     id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
     
     renderPass.label = @"selection - overlay";

@@ -19,7 +19,8 @@ struct Vertex
 
 struct ProjectedVertex
 {
-    float4 position [[position]];
+    float4 position     [[position]];
+    float4 positionNDC;
     float3 eye;
     float3 normal;
     float3 tangent;
@@ -50,6 +51,7 @@ vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[b
     float3x3 normalMatrix = meshUniforms.normalTransform;
     
     outVert.position = uniforms.viewProjectionMatrix * meshPosition;
+    outVert.positionNDC = uniforms.viewProjectionMatrix * meshPosition;
     outVert.eye =  -(uniforms.viewMatrix * meshPosition).xyz;
     outVert.normal = normalMatrix * vertices[vid].normal.xyz;
     outVert.tangent = normalMatrix * (vertices[vid].tangent.xyz);
@@ -95,17 +97,18 @@ fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
                                              constant NuoLightUniforms &lighting [[buffer(0)]],
                                              depth2d<float> shadowMap0 [[texture(0)]],
                                              depth2d<float> shadowMap1 [[texture(1)]],
-                                             texture2d<float> diffuseTexture [[texture(2)]],
-                                             texture2d<float> opacityTexture [[texture(3),
+                                             depth2d<float> depth      [[texture(2), function_constant(kDepthPrerenderred)]],
+                                             texture2d<float> diffuseTexture [[texture(3)]],
+                                             texture2d<float> opacityTexture [[texture(4),
                                                                                function_constant(kAlphaChannelInSeparatedTexture)]],
-                                             texture2d<float> bumpTexture [[texture(4)]],
+                                             texture2d<float> bumpTexture [[texture(5)]],
                                              sampler depthSamplr [[sampler(0)]],
                                              sampler samplr [[sampler(1)]])
 {
-    VertexFragmentCharacters outVert = vertex_characters(vert);
-    
     if (kMeshMode == kMeshMode_Selection)
-        return float4(0.9);
+        return diffuse_lighted_selection(vert.positionNDC, vert.normal, depth, depthSamplr);
+    
+    VertexFragmentCharacters outVert = vertex_characters(vert);
     
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     float4 opacityTexel = 1.0;

@@ -45,6 +45,12 @@
     
     texMaterialMesh->_meshMode = mode;
     
+    if (mode != kMeshMode_Normal)
+    {
+        self.cullEnabled = NO;
+        self.reverseCommonCullMode = NO;
+    }
+    
     [texMaterialMesh makePipelineShadowState];
     [texMaterialMesh makePipelineState:[texMaterialMesh makePipelineStateDescriptor]];
     [texMaterialMesh makeDepthStencilState];
@@ -156,7 +162,6 @@
     // blending is ON, except for the selection indicator mode
     //
     colorAttachment.blendingEnabled = (_meshMode != kMeshMode_Selection);
-    colorAttachment.blendingEnabled = YES;
     colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
     colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
     colorAttachment.sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
@@ -233,7 +238,7 @@
     [renderPass setVertexBuffer:self.transformBuffers[index] offset:0 atIndex:3];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
-    NSUInteger texBufferIndex = 2; /* mesh texture starts after the shadow-map texture */
+    NSUInteger texBufferIndex = 3; /* mesh texture starts after the shadow-map texture */
     
     [renderPass setFragmentTexture:self.diffuseTex atIndex:texBufferIndex++];
     if (_textureOpacity)

@@ -1116,6 +1116,12 @@
 }
 
 
+- (void)setResolveDepth:(BOOL)resolveDepth
+{
+    [_immediateTarget setResolveDepth:resolveDepth];
+}
+
+
 
 #pragma mark -- Protocol NuoMeshSceneParametersProvider
 
@@ -1145,6 +1151,12 @@
 - (NSArray<id<MTLBuffer>>*)transUniformBuffers
 {
     return _transUniformBuffers;
+}
+
+
+- (id<MTLTexture>)depthMap
+{
+    return _immediateTarget.depthTexture;
 }
 
 
