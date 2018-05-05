@@ -16,6 +16,12 @@
 // used to implement the "cloneForMode" through the class hierachy
 //
 - (void)shareResourcesFrom:(NuoMesh*)mesh;
+- (void)setMeshMode:(NuoMeshModeShaderParameter)mode;
+- (NuoMeshModeShaderParameter)meshMode;
+
+//
+// pipeline construction facilities
+//
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 - (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor;
@@ -26,6 +32,8 @@
 - (void)makePipelineScreenSpaceStateWithVertexShader:(NSString*)vertexShader
                                   withFragemtnShader:(NSString*)fragmentShader
                                        withConstants:(MTLFunctionConstantValues*)constants;
+
+- (void)setupCommonPipelineFunctionConstants:(MTLFunctionConstantValues*)constants;
 
 
 @end

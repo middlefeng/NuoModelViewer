@@ -17,8 +17,6 @@
     id<MTLTexture> _textureBump;
     BOOL _ignoreTextureAlpha;
     BOOL _physicallyReflection;
-    
-    NuoMeshModeShaderParameter _meshMode;
 }
 
 
@@ -32,8 +30,6 @@
                            withIndices:indices
                             withLength:indicesLength];
     
-    _meshMode = kMeshMode_Normal;
-    
     return self;
 }
 
@@ -43,13 +39,7 @@
     NuoMeshTexMatieraled* texMaterialMesh = [NuoMeshTexMatieraled new];
     [texMaterialMesh shareResourcesFrom:self];
     
-    texMaterialMesh->_meshMode = mode;
-    
-    if (mode != kMeshMode_Normal)
-    {
-        self.cullEnabled = NO;
-        self.reverseCommonCullMode = NO;
-    }
+    texMaterialMesh.meshMode = mode;
     
     [texMaterialMesh makePipelineShadowState];
     [texMaterialMesh makePipelineState:[texMaterialMesh makePipelineStateDescriptor]];
@@ -131,15 +121,10 @@
     bool hasTexOpacity = !(!_textureOpacity);
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     
-    BOOL pcss = self.shadowOptionPCSS;
-    BOOL pcf = self.shadowOptionPCF;
-    
     [funcConstant setConstantValue:&alphaInbedded type:MTLDataTypeBool atIndex:0];
     [funcConstant setConstantValue:&hasTexOpacity type:MTLDataTypeBool atIndex:1];
     [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];
-    [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
-    [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
-    [funcConstant setConstantValue:&_meshMode type:MTLDataTypeInt atIndex:6];
+    [self setupCommonPipelineFunctionConstants:funcConstant];
     
     if (!_textureBump)
     {
@@ -161,7 +146,7 @@
     
     // blending is ON, except for the selection indicator mode
     //
-    colorAttachment.blendingEnabled = (_meshMode != kMeshMode_Selection);
+    colorAttachment.blendingEnabled = (self.meshMode != kMeshMode_Selection);
     colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
     colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
     colorAttachment.sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
@@ -284,7 +269,6 @@
 {
     BOOL _hasTransparent;
     BOOL _physicallyReflection;
-    NuoMeshModeShaderParameter _meshMode;
 }
 
 
@@ -300,7 +284,8 @@
                       withLength:indicesLength];
     
     if (self)
-        _meshMode = kMeshMode_Normal;
+    {
+    }
     
     return self;
 }
@@ -312,7 +297,7 @@
     NuoMeshMatieraled* materialMesh = [NuoMeshMatieraled new];
     [materialMesh shareResourcesFrom:self];
     
-    materialMesh->_meshMode = mode;
+    materialMesh.meshMode = mode;
     
     [materialMesh makePipelineShadowState];
     [materialMesh makePipelineState];
@@ -340,14 +325,9 @@
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
-    BOOL pcss = self.shadowOptionPCSS;
-    BOOL pcf = self.shadowOptionPCF;
-    
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];
-    [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
-    [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
-    [funcConstant setConstantValue:&_meshMode type:MTLDataTypeInt atIndex:6];
+    [self setupCommonPipelineFunctionConstants:funcConstant];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_project_materialed"];
@@ -361,7 +341,7 @@
     
     // blending is ON, except for the selection indicator mode
     //
-    colorAttachment.blendingEnabled = (_meshMode != kMeshMode_Selection);
+    colorAttachment.blendingEnabled = (self.meshMode != kMeshMode_Selection);
     colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
     colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
     colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;

@@ -23,6 +23,8 @@
 {
     BOOL _hasTransparency;
     std::shared_ptr<NuoModelBase> _rawModel;
+    
+    NuoMeshModeShaderParameter _meshMode;
 }
 
 
@@ -42,6 +44,7 @@
         _transformPoise = matrix_identity_float4x4;
         _transformTranslate = matrix_identity_float4x4;
         _sampleCount = kSampleCount;
+        _meshMode = kMeshMode_Normal;
     }
     
     return self;
@@ -276,6 +279,37 @@
         _sampleCount = sampleCount;
         [self makeGPUStates];
     }
+}
+
+
+- (void)setMeshMode:(NuoMeshModeShaderParameter)mode
+{
+    _meshMode = mode;
+    
+    if (_meshMode != kMeshMode_Normal)
+    {
+        _cullEnabled = NO;
+        _reverseCommonCullMode = NO;
+    }
+}
+
+
+
+- (NuoMeshModeShaderParameter)meshMode
+{
+    return _meshMode;
+}
+
+
+- (void)setupCommonPipelineFunctionConstants:(MTLFunctionConstantValues*)constants
+{
+    BOOL pcss = self.shadowOptionPCSS;
+    BOOL pcf = self.shadowOptionPCF;
+    NuoMeshModeShaderParameter meshMode = self.meshMode;
+    
+    [constants setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
+    [constants setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
+    [constants setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
 }
 
 
