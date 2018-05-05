@@ -35,8 +35,13 @@
 @property (nonatomic, weak) id<MTLDevice> device;
 
 @property (nonatomic, assign) NSUInteger sampleCount;
-@property (nonatomic, assign) BOOL resolveDepth;
 @property (nonatomic, assign) CGSize drawableSize;
+
+/**
+ *  with multi-sampling, determine whether the depth map need to be
+ *  resolved to be used by other renderers
+ */
+@property (nonatomic, assign) BOOL resolveDepth;
 
 /**
  *  the texture that holds the rendered pixels of the current pass
