@@ -99,7 +99,14 @@
 
 - (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode
 {
-    return self;
+    NuoMesh* mesh = [NuoMesh new];
+    [mesh shareResourcesFrom:self];
+    
+    [mesh makePipelineShadowState];
+    [mesh makePipelineState];
+    [mesh makeDepthStencilState];
+    
+    return mesh;
 }
 
 

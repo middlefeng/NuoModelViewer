@@ -52,7 +52,14 @@ static CIContext* sCIContext = nil;
 
 - (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode
 {
-    return self;
+    NuoMeshTextured* mesh = [NuoMeshTextured new];
+    [mesh shareResourcesFrom:self];
+    
+    [mesh makePipelineShadowState];
+    [mesh makePipelineState];
+    [mesh makeDepthStencilState];
+    
+    return mesh;
 }
 
 
