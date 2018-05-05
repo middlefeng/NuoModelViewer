@@ -41,6 +41,8 @@
         
         _textureMesh = [[NuoTextureMesh alloc] initWithCommandQueue:self.commandQueue];
         [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
+        
+        _enabled = YES;
     }
     
     return self;
@@ -66,15 +68,18 @@
         
         renderPass.label = @"selection - immediate";
         
-        // the indicator layer is renderred according to
-        //  - the scene parameter
-        //  - the scene's depth map (for covering effect)
-        //
-        [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
-        [self setDepthMapTo:renderPass];
-        
-        for (NuoMesh* selectedMesh in _selectedMeshParts)
-            [selectedMesh drawMesh:renderPass indexBuffer:inFlight];
+        if (_enabled)
+        {
+            // the indicator layer is renderred according to
+            //  - the scene parameter
+            //  - the scene's depth map (for covering effect)
+            //
+            [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
+            [self setDepthMapTo:renderPass];
+            
+            for (NuoMesh* selectedMesh in _selectedMeshParts)
+                [selectedMesh drawMesh:renderPass indexBuffer:inFlight];
+        }
         
         [_immediateTarget releaseRenderPassEndcoder];
     }

@@ -13,6 +13,7 @@
 
 @interface ModelSelectionRenderer : NuoMeshSceneRenderPass
 
+@property (nonatomic, assign) BOOL enabled;
 @property (nonatomic, strong) NSArray<NuoMesh*>* selectedMeshParts;
 
 @end

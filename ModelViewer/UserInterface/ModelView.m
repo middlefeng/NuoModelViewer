@@ -262,6 +262,7 @@ MouseDragMode;
     {
         [self handleDraggingQuality];
         
+        [_modelSelectionRenderer setEnabled:[panel showModelParts]];
         [_modelComponentPanels setHidden:![panel showModelParts]];
         [self showHideFrameRate:[panel showFrameRate]];
         
