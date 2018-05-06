@@ -66,7 +66,7 @@
         
         id<MTLRenderCommandEncoder> renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
         
-        renderPass.label = @"selection - immediate";
+        renderPass.label = @"Selection - immediate";
         
         if (_enabled)
         {
@@ -86,7 +86,7 @@
     
     id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
     
-    renderPass.label = @"selection - overlay";
+    renderPass.label = @"Selection - overlay";
     
     // draw the scene
     [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
