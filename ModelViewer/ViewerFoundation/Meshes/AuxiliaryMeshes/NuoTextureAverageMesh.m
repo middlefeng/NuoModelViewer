@@ -60,7 +60,7 @@
     
     _accumulatedMesh = [[NuoTextureMesh alloc] initWithCommandQueue:self.commandQueue];
     _accumulatedMesh.sampleCount = 1;
-    [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
+    [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_None];
     
     [self makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withFragementShader:shaderName
                    withBlendMode:kBlend_Accumulate];

@@ -12,7 +12,7 @@
 
 
 
-#define BUILT_IN_LOAD_ACTION_CLEAR 0
+#define BUILT_IN_LOAD_ACTION_CLEAR 1
 
 #if BUILT_IN_LOAD_ACTION_CLEAR
 
@@ -38,11 +38,18 @@
 @property (nonatomic, assign) CGSize drawableSize;
 
 /**
+ *  with multi-sampling, determine whether the depth map need to be
+ *  resolved to be used by other renderers
+ */
+@property (nonatomic, assign) BOOL resolveDepth;
+
+/**
  *  the texture that holds the rendered pixels of the current pass
  */
 @property (nonatomic, strong) id<MTLTexture> targetTexture;
 
 @property (nonatomic, strong) id<MTLTexture> depthTexture;
+@property (nonatomic, readonly) id<MTLTexture> depthAttachmentTexture;
 
 /**
  *  whether the target texture is managed by the render-pass itself

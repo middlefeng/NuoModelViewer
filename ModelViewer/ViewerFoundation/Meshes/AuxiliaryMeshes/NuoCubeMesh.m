@@ -7,6 +7,8 @@
 //
 
 #import "NuoCubeMesh.h"
+#import "NuoMesh_Extension.h"
+
 #import "NuoUniforms.h"
 #import "NuoMathUtilities.h"
 #import "NuoTextureBase.h"
@@ -134,6 +136,8 @@ static uint16_t kIndices[] =
 
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
 {
+    [self makeDepthStencilState];
+    
     _format = pixelFormat;
     
     id<MTLLibrary> library = [self.device newDefaultLibrary];

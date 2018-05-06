@@ -7,6 +7,7 @@
 //
 
 #import "NuoBackdropMesh.h"
+#import "NuoMesh_Extension.h"
 #import "NuoTextureBase.h"
 
 #include "NuoMathUtilities.h"

@@ -120,6 +120,8 @@ constant bool kShadowPCF                        [[ function_constant(5) ]];
 
 constant int  kMeshMode                         [[ function_constant(6) ]];
 
+constant bool kDepthPrerenderred = kMeshMode == kMeshMode_Selection;
+
 
 
 metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
@@ -128,6 +130,11 @@ metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert
                                                    metal::float4 diffuseTexel,
                                                    metal::depth2d<float> shadowMap[2],
                                                    metal::sampler samplr);
+
+metal::float4 diffuse_lighted_selection(metal::float4 vertPositionNDC,
+                                        metal::float3 normal,
+                                        metal::depth2d<float> depth,
+                                        metal::sampler depthSamplr);
 
 
 metal::float4 diffuse_common(metal::float4 diffuseTexel, float extraOpacity);

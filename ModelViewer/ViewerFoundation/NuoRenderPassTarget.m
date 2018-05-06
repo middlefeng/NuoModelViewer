@@ -14,6 +14,7 @@
 @interface NuoRenderPassTarget()
 
 @property (nonatomic, strong) id<MTLTexture> sampleTexture;
+@property (nonatomic, strong) id<MTLTexture> sampleDepth;
 
 @end
 
@@ -86,6 +87,26 @@
 }
 
 
+- (void)setResolveDepth:(BOOL)resolveDepth
+{
+    if (_resolveDepth == resolveDepth)
+        return;
+    
+    _resolveDepth = resolveDepth;
+    
+    if (_drawableSize.width > 0 && _drawableSize.height > 0)
+        [self makeTextures];
+}
+
+
+
+- (id<MTLTexture>)depthAttachmentTexture
+{
+    return (_sampleCount == 1) ? _depthTexture : _sampleDepth;
+}
+
+
+
 - (void)makeTextures
 {
     assert(_name);
@@ -97,35 +118,40 @@
     }
     
     if (![self isTextureMatchDrawableSize:_depthTexture] ||
-        _depthTexture.sampleCount != _sampleCount)
+        (_sampleCount > 1 && _resolveDepth && _depthTexture.sampleCount != _sampleCount))
     {
-        MTLTextureDescriptor *desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float
-                                                                                        width:[self drawableSize].width
-                                                                                       height:[self drawableSize].height
-                                                                                    mipmapped:NO];
-        desc.sampleCount = _sampleCount;
-        desc.textureType = (_sampleCount == 1) ? MTLTextureType2D : MTLTextureType2DMultisample;
-        desc.resourceOptions = MTLResourceStorageModePrivate;
-        desc.usage = MTLTextureUsageRenderTarget;
-        
-        self.depthTexture = [_device newTextureWithDescriptor:desc];
-        
-        NSString* name = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"depth sample"];
-        [self.sampleTexture setLabel:name];
-        
-        MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:_targetPixelFormat
-                                                                                              width:[self drawableSize].width
-                                                                                             height:[self drawableSize].height
-                                                                                          mipmapped:NO];
+        if (_resolveDepth || _sampleCount == 1)
+        {
+            MTLTextureDescriptor *desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float
+                                                                                            width:[self drawableSize].width
+                                                                                           height:[self drawableSize].height
+                                                                                        mipmapped:NO];
+            
+            
+            
+            desc.sampleCount = 1;
+            desc.textureType = MTLTextureType2D;
+            desc.resourceOptions = MTLResourceStorageModePrivate;
+            desc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
+            
+            self.depthTexture = [_device newTextureWithDescriptor:desc];
+            
+            NSString* name = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"depth"];
+            [self.depthTexture setLabel:name];
+        }
         
         if (_manageTargetTexture)
         {
-            sampleDesc.sampleCount = 1;
-            sampleDesc.textureType = MTLTextureType2D;
-            sampleDesc.resourceOptions = _sharedTargetTexture ? MTLResourceStorageModeManaged : MTLResourceStorageModePrivate;
-            sampleDesc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
+            MTLTextureDescriptor *desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:_targetPixelFormat
+                                                                                            width:[self drawableSize].width
+                                                                                           height:[self drawableSize].height
+                                                                                        mipmapped:NO];
+            desc.sampleCount = 1;
+            desc.textureType = MTLTextureType2D;
+            desc.resourceOptions = _sharedTargetTexture ? MTLResourceStorageModeManaged : MTLResourceStorageModePrivate;
+            desc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
             
-            _targetTexture = [_device newTextureWithDescriptor:sampleDesc];
+            _targetTexture = [_device newTextureWithDescriptor:desc];
             
             NSString* name = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"target"];
             [_targetTexture setLabel:name];
@@ -150,6 +176,13 @@
         
         NSString* sampleName = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"sample"];
         [self.sampleTexture setLabel:sampleName];
+        
+        sampleDesc.textureType = MTLTextureType2DMultisample;
+        sampleDesc.pixelFormat = MTLPixelFormatDepth32Float;
+        
+        self.sampleDepth = [_device newTextureWithDescriptor:sampleDesc];
+        NSString* sampleDepthName = [[NSString alloc] initWithFormat:@"%@ - %@", _name, @"depth sample"];
+        [self.sampleDepth setLabel:sampleDepthName];
     }
 }
 
@@ -213,10 +246,26 @@
     if (_sampleCount > 1)
         passDescriptor.colorAttachments[0].resolveTexture = _targetTexture;
     
-    passDescriptor.depthAttachment.texture = self.depthTexture;
+    passDescriptor.depthAttachment.texture = (_sampleCount == 1) ? self.depthTexture : self.sampleDepth;
     passDescriptor.depthAttachment.clearDepth = 1.0;
     passDescriptor.depthAttachment.loadAction = MTLLoadActionClear;
-    passDescriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
+    
+    if (_resolveDepth)
+    {
+        if (_sampleCount > 1)
+        {
+            passDescriptor.depthAttachment.resolveTexture = self.depthTexture;
+            passDescriptor.depthAttachment.storeAction = MTLStoreActionMultisampleResolve;
+        }
+        else
+        {
+            passDescriptor.depthAttachment.storeAction = MTLStoreActionStore;
+        }
+    }
+    else
+    {
+        passDescriptor.depthAttachment.storeAction = MTLStoreActionDontCare;
+    }
     
     return passDescriptor;
 }

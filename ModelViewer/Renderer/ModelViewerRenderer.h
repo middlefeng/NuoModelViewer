@@ -105,6 +105,8 @@ TransformMode;
 - (void)removeSelectedMesh;
 - (void)selectMeshWithScreen:(CGPoint)point;
 
+- (void)setResolveDepth:(BOOL)resolveDepth;
+
 - (NSArray<NuoMesh*>*)cloneMeshesFor:(NuoMeshModeShaderParameter)mode;
 
 

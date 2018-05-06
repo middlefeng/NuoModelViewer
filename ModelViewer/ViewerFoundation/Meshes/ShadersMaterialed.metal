@@ -16,7 +16,8 @@ struct Vertex
 
 struct ProjectedVertex
 {
-    float4 position [[position]];
+    float4 position     [[position]];
+    float4 positionNDC;
     float3 eye;
     float3 normal;
     
@@ -53,6 +54,7 @@ vertex ProjectedVertex vertex_project_materialed(device Vertex *vertices [[buffe
     float4 meshPosition = meshUniforms.transform * vertices[vid].position;
     
     outVert.position = uniforms.viewProjectionMatrix * meshPosition;
+    outVert.positionNDC = uniforms.viewProjectionMatrix * meshPosition;
     outVert.eye =  -(uniforms.viewMatrix * meshPosition).xyz;
     outVert.normal = meshUniforms.normalTransform * vertices[vid].normal.xyz;
     
@@ -71,8 +73,12 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
                                           constant NuoLightUniforms &lightUniform [[buffer(0)]],
                                           depth2d<float> shadowMap0 [[texture(0)]],
                                           depth2d<float> shadowMap1 [[texture(1)]],
+                                          depth2d<float> depth      [[texture(2), function_constant(kDepthPrerenderred)]],
                                           sampler depthSamplr [[sampler(0)]])
 {
+    if (kMeshMode == kMeshMode_Selection)
+        return diffuse_lighted_selection(vert.positionNDC, vert.normal, depth, depthSamplr);
+    
     float3 normal = normalize(vert.normal);
     float3 diffuseColor = vert.diffuseColor;
     

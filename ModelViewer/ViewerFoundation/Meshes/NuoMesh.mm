@@ -23,6 +23,8 @@
 {
     BOOL _hasTransparency;
     std::shared_ptr<NuoModelBase> _rawModel;
+    
+    NuoMeshModeShaderParameter _meshMode;
 }
 
 
@@ -42,6 +44,7 @@
         _transformPoise = matrix_identity_float4x4;
         _transformTranslate = matrix_identity_float4x4;
         _sampleCount = kSampleCount;
+        _meshMode = kMeshMode_Normal;
     }
     
     return self;
@@ -96,7 +99,14 @@
 
 - (instancetype)cloneForMode:(NuoMeshModeShaderParameter)mode
 {
-    return self;
+    NuoMesh* mesh = [NuoMesh new];
+    [mesh shareResourcesFrom:self];
+    
+    [mesh makePipelineShadowState];
+    [mesh makePipelineState];
+    [mesh makeDepthStencilState];
+    
+    return mesh;
 }
 
 
@@ -130,6 +140,7 @@
     _indexBuffer = mesh.indexBuffer;
     _transformBuffers = mesh.transformBuffers;
     _enabled = mesh.enabled;
+    _cullEnabled = mesh.cullEnabled;
     
     _shadowOptionPCSS = mesh.shadowOptionPCSS;
     _shadowOptionPCF = mesh.shadowOptionPCF;
@@ -278,6 +289,37 @@
 }
 
 
+- (void)setMeshMode:(NuoMeshModeShaderParameter)mode
+{
+    _meshMode = mode;
+    
+    if (_meshMode != kMeshMode_Normal)
+    {
+        _cullEnabled = NO;
+        _reverseCommonCullMode = NO;
+    }
+}
+
+
+
+- (NuoMeshModeShaderParameter)meshMode
+{
+    return _meshMode;
+}
+
+
+- (void)setupCommonPipelineFunctionConstants:(MTLFunctionConstantValues*)constants
+{
+    BOOL pcss = self.shadowOptionPCSS;
+    BOOL pcf = self.shadowOptionPCF;
+    NuoMeshModeShaderParameter meshMode = self.meshMode;
+    
+    [constants setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
+    [constants setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
+    [constants setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
+}
+
+
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
     id<MTLLibrary> library = [self.device newDefaultLibrary];
@@ -317,6 +359,11 @@
     colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
     
     return pipelineDescriptor;
+}
+
+- (void)makePipelineState
+{
+    [self makePipelineState:[self makePipelineStateDescriptor]];
 }
 
 - (void)makePipelineState:(MTLRenderPipelineDescriptor*)pipelineDescriptor
@@ -407,7 +454,7 @@
 {
     [self makePipelineScreenSpaceState];
     [self makePipelineShadowState];
-    [self makePipelineState:[self makePipelineStateDescriptor]];
+    [self makePipelineState];
     [self makeDepthStencilState];
 }
 

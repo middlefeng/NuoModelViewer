@@ -7,6 +7,7 @@
 //
 
 #import "NuoScreenSpaceMesh.h"
+#import "NuoMesh_Extension.h"
 #import "NuoTextureBase.h"
 
 

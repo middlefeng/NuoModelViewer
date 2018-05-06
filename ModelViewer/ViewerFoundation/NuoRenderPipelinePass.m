@@ -30,7 +30,7 @@
         self.commandQueue = commandQueue;
         _textureMesh = [[NuoTextureMesh alloc] initWithCommandQueue:commandQueue];
         _textureMesh.sampleCount = sampleCount;
-        [_textureMesh makePipelineAndSampler:pixelFormat];
+        [_textureMesh makePipelineAndSampler:pixelFormat withBlendMode:kBlend_None];
     }
     
     return self;

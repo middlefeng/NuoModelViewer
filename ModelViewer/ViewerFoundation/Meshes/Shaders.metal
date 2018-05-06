@@ -289,6 +289,36 @@ ProjectedVertex vertex_project_common(device Vertex *vertices,
 
 
 
+float4 diffuse_lighted_selection(float4 vertPositionNDC, float3 normal,
+                                 depth2d<float> depth, sampler depthSamplr)
+{
+    float2 screenPos = vertPositionNDC.xy / vertPositionNDC.w;
+    screenPos.x = (screenPos.x + 1) * 0.5;
+    screenPos.y = (-screenPos.y + 1) * 0.5;
+    
+    float depthSample = depth.sample(depthSamplr, screenPos);
+    float indicatorDepth = vertPositionNDC.z / vertPositionNDC.w;
+    
+    // light always comes from the direct front
+    //
+    const float3 lightVector = float3(0.0, 0.0, 1.0);
+    
+    // as light coming from front, a negative diffuse intensity means the normal
+    // should be reversed to show the object's front most surface (even when it is
+    // back facing).
+    //
+    float diffuseIntensity = saturate(dot(normal, lightVector));
+    if (diffuseIntensity <= 0)
+        diffuseIntensity = saturate(dot(-normal, lightVector));
+    
+    if (depthSample > indicatorDepth - 0.001)
+        return float4(float3(0.0, 0.8, 0.0) * diffuseIntensity, 0.30);
+    else
+        return float4(float3(0.8, 0.0, 0.0) * diffuseIntensity, 0.15);
+}
+
+
+
 float4 diffuse_common(float4 diffuseTexel, float extraOpacity)
 {
     if (kAlphaChannelInSeparatedTexture)

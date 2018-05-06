@@ -7,12 +7,12 @@
 //
 
 #import "NuoBoardMesh.h"
+#import "NuoMesh_Extension.h"
 
 
 
 @implementation NuoBoardMesh
 {
-    NuoMeshModeShaderParameter _meshMode;
     vector_float3 _dimensions;
 }
 
@@ -30,7 +30,6 @@
     if (self)
     {
         _dimensions = dimensions;
-        _meshMode = kMeshMode_Normal;
     }
     
     return self;
@@ -43,7 +42,7 @@
     NuoBoardMesh* boardMesh = [NuoBoardMesh new];
     [boardMesh shareResourcesFrom:self];
     
-    boardMesh->_meshMode = mode;
+    boardMesh.meshMode = mode;
     
     [boardMesh makePipelineShadowState];
     [boardMesh makePipelineState:[boardMesh makePipelineStateDescriptor]];
@@ -61,14 +60,9 @@
     NSString* vertexFunc = @"vertex_project_shadow";
     NSString* fragmnFunc = @"fragment_light_shadow";
     
-    BOOL pcss = self.shadowOptionPCSS;
-    BOOL pcf = self.shadowOptionPCF;
-    
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&_shadowOverlayOnly type:MTLDataTypeBool atIndex:3];
-    [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
-    [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
-    [funcConstant setConstantValue:&_meshMode type:MTLDataTypeInt atIndex:6];
+    [self setupCommonPipelineFunctionConstants:funcConstant];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];

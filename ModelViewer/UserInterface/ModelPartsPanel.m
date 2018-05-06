@@ -209,6 +209,7 @@
     }
     
     [_panelUpdateDelegate modelPartSelectionChanged:result];
+    [_updateDelegate modelPartsSelectionChanged:result];
     
     return proposedSelectionIndexes;
 }

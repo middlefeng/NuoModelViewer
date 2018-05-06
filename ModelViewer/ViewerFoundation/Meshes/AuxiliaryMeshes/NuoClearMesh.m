@@ -7,6 +7,7 @@
 //
 
 #import "NuoClearMesh.h"
+#import "NuoMesh_Extension.h"
 
 
 struct ClearFragment

@@ -42,10 +42,7 @@ NuoBoardMesh* CreateBoardMesh(id<MTLCommandQueue> commandQueue, const std::share
     resultMesh.boundsLocal = bounds;
     
     [resultMesh setShadowOverlayOnly:shadowCastOnly];
-    [resultMesh makePipelineShadowState];
-    [resultMesh makePipelineScreenSpaceState];
-    [resultMesh makePipelineState:[resultMesh makePipelineStateDescriptor]];
-    [resultMesh makeDepthStencilState];
+    [resultMesh makeGPUStates];
     
     return resultMesh;
 }

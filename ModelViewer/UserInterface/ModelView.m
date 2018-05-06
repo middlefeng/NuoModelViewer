@@ -15,8 +15,12 @@
 #import "BoardSettingsPanel.h"
 
 #import "FrameRateView.h"
+
+// pipeline stages
+//
 #import "ModelViewerRenderer.h"
 #import "ModelDissectRenderer.h"
+#import "ModelSelectionRenderer.h"
 #import "NotationRenderer.h"
 #import "MotionBlurRenderer.h"
 
@@ -59,8 +63,12 @@ MouseDragMode;
 {
     NuoLua* _lua;
     ModelViewConfiguration* _configuration;
+    
+    // pipeline stages
+    //
     ModelRenderer* _modelRender;
     ModelDissectRenderer* _modelDissectRenderer;
+    ModelSelectionRenderer* _modelSelectionRenderer;
     NotationRenderer* _notationRenderer;
     MotionBlurRenderer* _motionBlurRenderer;
     
@@ -254,6 +262,7 @@ MouseDragMode;
     {
         [self handleDraggingQuality];
         
+        [_modelSelectionRenderer setEnabled:[panel showModelParts]];
         [_modelComponentPanels setHidden:![panel showModelParts]];
         [self showHideFrameRate:[panel showFrameRate]];
         
@@ -276,6 +285,38 @@ MouseDragMode;
     [_modelComponentPanels updatePanels];
     
     [self render];
+}
+
+
+
+- (void)modelPartsSelectionChanged:(NSArray<NuoMesh*>*)selected
+{
+    if (selected && selected.count && !_modelSelectionRenderer)
+    {
+        _modelSelectionRenderer = [[ModelSelectionRenderer alloc] initWithCommandQueue:self.commandQueue
+                                                                       withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                       withSampleCount:kSampleCount];
+        _modelSelectionRenderer.paramsProvider = _modelRender;
+        [self setupPipelineSettings];
+    }
+    
+    if (!selected || !selected.count)
+    {
+        if (_modelSelectionRenderer)
+        {
+            _modelSelectionRenderer = nil;
+            [self setupPipelineSettings];
+        }
+    }
+    else
+    {
+        NSMutableArray<NuoMesh*>* selectedIndicate = [NSMutableArray new];
+        for (NuoMesh* mesh in selected)
+            [selectedIndicate addObject:[mesh cloneForMode:kMeshMode_Selection]];
+        
+        [_modelSelectionRenderer setSelectedMeshParts:selectedIndicate];
+        [self render];
+    }
 }
 
 
@@ -507,6 +548,7 @@ MouseDragMode;
     modelRenderTarget.manageTargetTexture = YES;
     modelRenderTarget.name = @"Model";
     
+    [_modelRender setResolveDepth:(_modelSelectionRenderer != nil)];
     [_modelRender setRenderTarget:modelRenderTarget];
     lastTarget = modelRenderTarget;
     
@@ -550,6 +592,26 @@ MouseDragMode;
     else if (_modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Stop)
     {
         [_motionBlurRenderer resetResources];
+    }
+    
+    // selection overlay
+    //
+    
+    if (_modelSelectionRenderer)
+    {
+        [renders addObject:_modelSelectionRenderer];
+        
+        NuoRenderPassTarget* selectionTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                                                 withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                                 withSampleCount:kSampleCount];
+        
+        selectionTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
+        selectionTarget.manageTargetTexture = YES;
+        selectionTarget.name = @"Selection";
+        
+        [_modelSelectionRenderer setRenderTarget:selectionTarget];
+        
+        lastTarget = selectionTarget;
     }
     
     // notation renderer
@@ -1012,8 +1074,7 @@ MouseDragMode;
                      NuoCubeMesh* cubeMesh = [[NuoCubeMesh alloc] initWithCommandQueue:commandQueue];
                      NuoTextureBase* base = [NuoTextureBase getInstance:commandQueue];
                      cubeMesh.cubeTexture = [base textureCubeWithImageNamed:path];
-                         
-                     [cubeMesh makeDepthStencilState];
+
                      [cubeMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
                  
                      [renderer setCubeMesh:cubeMesh];

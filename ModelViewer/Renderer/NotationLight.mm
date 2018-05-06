@@ -63,13 +63,11 @@
                                     withVerticesBuffer:arrow->Ptr() withLength:arrow->Length()
                                            withIndices:arrow->IndicesPtr() withLength:arrow->IndicesLength()];
         
-        MTLRenderPipelineDescriptor* pipelineDesc = [_lightVector makePipelineStateDescriptor];
-        
         // if no MSAA, shoud uncomment the following line
         // pipelineDesc.sampleCount = 1;
         
         [_lightVector setBoundsLocal:meshBounds];
-        [_lightVector makePipelineState:pipelineDesc];
+        [_lightVector makePipelineState];
         [_lightVector makeDepthStencilState];
     }
     

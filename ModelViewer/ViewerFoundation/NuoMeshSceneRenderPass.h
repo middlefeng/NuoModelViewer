@@ -27,6 +27,7 @@
 - (BOOL)cullEnabled;
 
 - (NuoShadowMapRenderer*)shadowMapRenderer:(NSUInteger)index;
+- (id<MTLTexture>)depthMap;
 
 
 @end
@@ -47,6 +48,12 @@
  *  the actual value of those uniforms come from the NuoMeshSceneParametersProvider.
  */
 - (void)setSceneBuffersTo:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight;
+
+/**
+ *  the function set a depth map to the render pass. unlike "setSceneBuffersTo:..." which is very
+ *  basic and almost always needed, this is not required by renderers which do not need a depth map
+ */
+- (void)setDepthMapTo:(id<MTLRenderCommandEncoder>)renderPass;
 
 
 @end

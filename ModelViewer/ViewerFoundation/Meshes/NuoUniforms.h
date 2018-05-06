@@ -95,9 +95,23 @@ NuoDeferredRenderUniforms;
 
 typedef enum
 {
+    kPipeline_AlphaEmbeded,
+    kPipeline_TextureAlpha,
+    kPipeline_PhysicallyBased,
+    kPipeline_ShadowOverlay,
+    kPipeline_PCSS,
+    kPipeline_PCF,
+    kPipeline_Mode
+}
+NuoMeshPipelineConstantIndex;
+
+
+typedef enum
+{
     kMeshMode_Normal,
     kMeshMode_ShadowOccluder,
-    kMeshMode_ShadowPenumbraFactor
+    kMeshMode_ShadowPenumbraFactor,
+    kMeshMode_Selection
 }
 NuoMeshModeShaderParameter;
 
