@@ -4,6 +4,12 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Overlay indicator for selected parts.
+
+<p align="left">
+  <img width="400" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F-35-selection.png"/>
+</p>
+
 * Transformation on the entire scene accurately around the scene's center.
 * More accurate bounds calculation (improving shadow map sampling quality).
 * User selection on GPU.
