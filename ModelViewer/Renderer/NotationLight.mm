@@ -95,16 +95,16 @@
     NuoLightSource* desc = _lightSourceDesc;
     struct NuoBoundsBase* bounds = [_lightVector.boundsLocal boundingBox];
     
-    const vector_float3 translationToCenter =
-    {
+    const NuoVectorFloat3 translationToCenter
+    (
         - bounds->_center.x,
         - bounds->_center.y,
         - bounds->_center.z + bounds->_span.z / 2.0f
-    };
+    );
     
-    const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
-    const matrix_float4x4 modelMatrix = matrix_rotation_append(modelCenteringMatrix, desc.lightingRotationX, desc.lightingRotationY);
-    [_lightVector updateUniform:inFlight withTransform:modelMatrix];
+    const NuoMatrixFloat44 modelCenteringMatrix = NuoMatrixTranslation(translationToCenter);
+    const NuoMatrixFloat44 modelMatrix = NuoMatrixRotationAppend(modelCenteringMatrix, desc.lightingRotationX, desc.lightingRotationY);
+    [_lightVector updateUniform:inFlight withTransform:modelMatrix._m];
     
     NuoModelCharacterUniforms characters;
     characters.opacity = _selected ? 1.0f : 0.1f;

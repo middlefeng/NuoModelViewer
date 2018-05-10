@@ -48,10 +48,10 @@ class NuoVector
 public:
     typename _typeTrait::_vectorType _vector;
 
-    inline itemType x() { return _vector.x; }
-    inline itemType y() { return _vector.y; }
-    inline itemType z() { return _vector.z; }
-    inline itemType w();
+    inline itemType x() const { return _vector.x; }
+    inline itemType y() const { return _vector.y; }
+    inline itemType z() const { return _vector.z; }
+    inline itemType w() const;
     
     inline itemType& operator[] (size_t i) { return _vector[i]; }
     
@@ -69,14 +69,14 @@ public:
 
 
 template <>
-inline float NuoVector<float, 3>::w()
+inline float NuoVector<float, 3>::w() const
 {
     return 1.0;
 }
 
 
 template <>
-inline float NuoVector<float, 4>::w()
+inline float NuoVector<float, 4>::w() const
 {
     return _vector.w;
 }
@@ -125,30 +125,18 @@ public:
 };
 
 
+
+#if __APPLE__
+
+
 template <class itemType, int dimension>
 inline NuoVector<itemType, dimension>
 operator * (const NuoMatrix<itemType, dimension>& m, const NuoVector<itemType, dimension>& v);
 
 
-static inline NuoMatrix<float, 4> ToMatrix(glm::mat4x4& gmat);
-
-
-inline NuoMatrix<float, 4> NuoMatrixRotation(NuoVector<float, 3> axis, float angle)
-{
-    glm::vec3 gaxis(axis.x(), axis.y(), axis.z());
-    glm::mat4x4 gmat = glm::rotate(glm::mat4x4(1.0), -angle, gaxis);
-    
-    return ToMatrix(gmat);
-}
-
-
-#if __APPLE__
-
-typedef NuoVector<float, 4> NuoVectorFloat4;
-typedef NuoVector<float, 3> NuoVectorFloat3;
-
-typedef NuoMatrix<float, 3> NuoMatrixFloat33;
-typedef NuoMatrix<float, 4> NuoMatrixFloat44;
+template <class itemType, int dimension>
+inline NuoMatrix<itemType, dimension>
+operator * (const NuoMatrix<itemType, dimension>& m1, const NuoMatrix<itemType, dimension>& m2);
 
 
 template <>
@@ -159,11 +147,69 @@ operator * (const NuoMatrix<float, 4>& m, const NuoVector<float, 4>& v)
 }
 
 
+template <>
+inline NuoMatrix<float, 4>
+operator * (const NuoMatrix<float, 4>& m1, const NuoMatrix<float, 4>& m2)
+{
+    return NuoMatrix<float, 4>(matrix_multiply(m1._m, m2._m));
+}
+
+
 static inline NuoMatrix<float, 4> ToMatrix(glm::mat4x4& gmat)
 {
     matrix_float4x4* result = (matrix_float4x4*)(&gmat);
     return NuoMatrix<float, 4>(*result);
 }
+
+#endif
+
+
+static inline NuoMatrix<float, 4> ToMatrix(glm::mat4x4& gmat);
+
+
+inline NuoMatrix<float, 4> NuoMatrixRotation(const NuoVector<float, 3>& axis, float angle)
+{
+    glm::vec3 gaxis(axis.x(), axis.y(), axis.z());
+    glm::mat4x4 gmat = glm::rotate(glm::mat4x4(1.0), -angle, gaxis);
+    
+    return ToMatrix(gmat);
+}
+
+
+inline NuoMatrix<float, 4> NuoMatrixRotation(float rotateX, float rotateY)
+{
+    NuoVector<float, 3> xAxis(1, 0, 0);
+    NuoVector<float, 3> yAxis(0, 1, 0);
+    const NuoMatrix<float, 4> xRot = NuoMatrixRotation(xAxis, rotateX);
+    const NuoMatrix<float, 4> yRot = NuoMatrixRotation(yAxis, rotateY);
+    
+    return xRot * yRot;
+}
+
+
+inline NuoMatrix<float, 4> NuoMatrixTranslation(const NuoVector<float, 3>& t)
+{
+    glm::vec3 gt(t.x(), t.y(), t.z());
+    glm::mat4x4 gmat = glm::translate(glm::mat4x4(1.0), gt);
+    
+    return ToMatrix(gmat);
+}
+
+
+inline NuoMatrix<float, 4> NuoMatrixRotationAppend(const NuoMatrix<float, 4>& start, float rotateX, float rotateY)
+{
+    const NuoMatrix<float, 4> rotate = NuoMatrixRotation(rotateX, rotateY);
+    return rotate * start;
+}
+
+
+#if __APPLE__
+
+typedef NuoVector<float, 4> NuoVectorFloat4;
+typedef NuoVector<float, 3> NuoVectorFloat3;
+
+typedef NuoMatrix<float, 3> NuoMatrixFloat33;
+typedef NuoMatrix<float, 4> NuoMatrixFloat44;
 
 #endif
 
