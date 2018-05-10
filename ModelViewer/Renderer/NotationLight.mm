@@ -10,6 +10,7 @@
 
 #import "NuoMesh.h"
 #import "NuoMathUtilities.h"
+#include "NuoMathVector.h"
 
 #include "NuoModelArrow.h"
 #include <memory>
@@ -138,13 +139,13 @@
 {
     NuoLightSource* desc = _lightSourceDesc;
     
-    matrix_float4x4 rotationMatrix = matrix_rotate(desc.lightingRotationX,
-                                                   desc.lightingRotationY);
+    NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(desc.lightingRotationX,
+                                                        desc.lightingRotationY);
     
-    const vector_float4 startVec = { 0, 0, 1, 1 };
-    vector_float4 projected = matrix_multiply(rotationMatrix, startVec);
+    const NuoVectorFloat4 startVec(0, 0, 1, 1);
+    NuoVectorFloat4 projected = rotationMatrix * startVec;
     
-    return CGPointMake(projected.x / projected.w, projected.y / projected.w);
+    return CGPointMake(projected.x() / projected.w(), projected.y() / projected.w());
 }
 
 

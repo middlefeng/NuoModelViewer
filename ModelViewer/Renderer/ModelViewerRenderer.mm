@@ -19,6 +19,8 @@
 #include "NuoTableExporter.h"
 #include "NuoPackage.h"
 
+#include "NuoMathVector.h"
+
 #include "NuoLua.h"
 
 #import "NuoLightSource.h"

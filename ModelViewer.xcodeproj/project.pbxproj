@@ -193,6 +193,7 @@
 		2C4434551E1EF50B00C861AF /* ModelOptionUpdate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelOptionUpdate.h; sourceTree = "<group>"; };
 		2C4B60401D8AD32100A12968 /* ModelOperationPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelOperationPanel.h; sourceTree = "<group>"; };
 		2C4B60411D8AD32100A12968 /* ModelOperationPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ModelOperationPanel.m; sourceTree = "<group>"; };
+		2C4BFC3720A4D98E002856E8 /* NuoMathVector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoMathVector.h; sourceTree = "<group>"; };
 		2C4DE7741DFB55E100199F1D /* lua.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = lua.xcodeproj; path = Lua/project/lua.xcodeproj; sourceTree = "<group>"; };
 		2C52F12C1DCC03380034ACDC /* NuoTextureMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoTextureMesh.h; sourceTree = "<group>"; };
 		2C52F12D1DCC03380034ACDC /* NuoTextureMesh.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoTextureMesh.mm; sourceTree = "<group>"; };
@@ -499,6 +500,7 @@
 				2C5A584E1ED3F2FD00121A82 /* NuoModelBoard.cpp */,
 				2C5DDAD51D6591B000A9DC9A /* NuoMathUtilities.h */,
 				2C5DDAD41D6591B000A9DC9A /* NuoMathUtilities.cpp */,
+				2C4BFC3720A4D98E002856E8 /* NuoMathVector.h */,
 				2C9E397A1DF7D8BC00286EA0 /* NuoTableExporter.h */,
 				2C9E39791DF7D8BC00286EA0 /* NuoTableExporter.cpp */,
 				2C9072E21FE306A800359F12 /* NuoPackage.h */,
