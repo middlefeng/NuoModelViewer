@@ -27,3 +27,16 @@ NuoMatrix<float, 4> NuoMatrixRotationAround(NuoMatrix<float, 4> rotate, NuoVecto
     
     return (trans2 * (rotate * trans1));
 }
+
+
+NuoMatrix<float, 4> NuoMatrixLookAt(const NuoVector<float, 3>& eye,
+                                    const NuoVector<float, 3>& center,
+                                    const NuoVector<float, 3>& up)
+{
+    glm::vec3 aeye(eye.x(), eye.y(), eye.z());
+    glm::vec3 acenter(center.x(), center.y(), center.z());
+    glm::vec3 aup(up.x(), up.y(), up.z());
+    
+    glm::mat4x4 gmat = glm::lookAt(aeye, acenter, aup);
+    return ToMatrix(gmat);
+}

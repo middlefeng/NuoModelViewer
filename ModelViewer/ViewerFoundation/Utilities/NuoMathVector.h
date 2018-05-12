@@ -183,9 +183,14 @@ public:
 };
 
 
-NuoMatrix<float, 4> NuoMatrixScale(const NuoVector<float, 3>& scale);
 NuoMatrix<float, 4> NuoMatrixPerspective(float aspect, float fovy, float near, float far);
+NuoMatrix<float, 4> NuoMatrixOrthor(float left, float right, float top, float bottom, float near, float far);
+
+NuoMatrix<float, 4> NuoMatrixScale(const NuoVector<float, 3>& scale);
 NuoMatrix<float, 4> NuoMatrixRotationAround(NuoMatrix<float, 4> rotate, NuoVector<float, 3> center);
+NuoMatrix<float, 4> NuoMatrixLookAt(const NuoVector<float, 3>& eye,
+                                    const NuoVector<float, 3>& center,
+                                    const NuoVector<float, 3>& up);
 
 
 
