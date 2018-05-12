@@ -7,7 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <simd/simd.h>
+
+#include "NuoMathVector.h"
 
 
 @interface NuoMeshRotation : NSObject
@@ -24,6 +25,6 @@
 
 - (instancetype)initWith:(NuoMeshRotation*)rotation;
 
-- (matrix_float4x4)rotationMatrix;
+- (const NuoMatrixFloat44&)rotationMatrix;
 
 @end

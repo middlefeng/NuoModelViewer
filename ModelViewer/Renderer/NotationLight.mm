@@ -93,13 +93,13 @@
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
     NuoLightSource* desc = _lightSourceDesc;
-    struct NuoBoundsBase* bounds = [_lightVector.boundsLocal boundingBox];
+    NuoBounds* bounds = [_lightVector.boundsLocal boundingBox];
     
     const NuoVectorFloat3 translationToCenter
     (
-        - bounds->_center.x,
-        - bounds->_center.y,
-        - bounds->_center.z + bounds->_span.z / 2.0f
+        - bounds->_center.x(),
+        - bounds->_center.y(),
+        - bounds->_center.z() + bounds->_span.z() / 2.0f
     );
     
     const NuoMatrixFloat44 modelCenteringMatrix = NuoMatrixTranslation(translationToCenter);

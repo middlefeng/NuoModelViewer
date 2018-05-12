@@ -137,7 +137,7 @@
 
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
 {
     memcpy(_texCountBuffer[bufferIndex].contents, &_textureCount, sizeof(int));
     [_texCountBuffer[bufferIndex] didModifyRange:NSMakeRange(0, sizeof(int))];

@@ -17,7 +17,7 @@
 
 @interface NuoMeshBounds : NSObject
 
-- (struct NuoBoundsBase*)boundingBox;
-- (struct NuoSphereBase*)boundingSphere;
+- (struct NuoBounds*)boundingBox;
+- (struct NuoSphere*)boundingSphere;
 
 @end

@@ -109,9 +109,9 @@
         bounds = bounds.Union(*((NuoBounds*)[mesh[i].boundsLocal boundingBox]));
     
     NSString* dimensionString = [[NSString alloc] initWithFormat:@"%0.1f, %0.1f, %0.1f",
-                                        bounds._span.x, bounds._span.y, bounds._span.z];
+                                        bounds._span.x(), bounds._span.y(), bounds._span.z()];
     NSString* centerString = [[NSString alloc] initWithFormat:@"%0.1f, %0.1f, %0.1f",
-                                        bounds._center.x, bounds._center.y, bounds._center.z];
+                                        bounds._center.x(), bounds._center.y(), bounds._center.z()];
     
     [_dimensionValue setStringValue:dimensionString];
     [_centerValue setStringValue:centerString];

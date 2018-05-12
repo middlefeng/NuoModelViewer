@@ -71,8 +71,8 @@ static uint16_t kIndices[] =
     NSArray<id<MTLBuffer>>* _cubeMatrixBuffer;
     MTLPixelFormat _format;
     
-    matrix_float4x4 _cubeMatrix;
-    matrix_float4x4 _projectMatrix;
+    NuoMatrixFloat44 _cubeMatrix;
+    NuoMatrixFloat44 _projectMatrix;
 }
 
 
@@ -112,16 +112,16 @@ static uint16_t kIndices[] =
 }
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
 {
     NuoUniforms uniforms;
     
-    _cubeMatrix = matrix_rotation_append(_cubeMatrix, _rotationXDelta, _rotationYDelta);
+    _cubeMatrix = NuoMatrixRotationAppend(_cubeMatrix, _rotationXDelta, _rotationYDelta);
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
-    uniforms.viewProjectionMatrix = matrix_multiply(_projectMatrix, _cubeMatrix);
-    uniforms.viewMatrix = _cubeMatrix;
+    uniforms.viewProjectionMatrix = (_projectMatrix * _cubeMatrix)._m;
+    uniforms.viewMatrix = _cubeMatrix._m;
     
     memcpy([_cubeMatrixBuffer[bufferIndex] contents], &uniforms, sizeof(uniforms));
 }

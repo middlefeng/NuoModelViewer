@@ -11,7 +11,7 @@
 
 
 
-#include <simd/simd.h>
+#include "NuoMathVector.h"
 
 
 /**
@@ -23,52 +23,43 @@
  */
 
 
-struct NuoBoundsBase
-{
-    vector_float3 _center;
-    vector_float3 _span;
-};
 
-
-struct NuoSphereBase
-{
-    vector_float3 _center;
-    float _radius;
-};
-
-
-#if __cplusplus
-
-
-class NuoSphere : public NuoSphereBase
+class NuoSphere
 {
 
 public:
+    
+    NuoVectorFloat3 _center;
+    float _radius;
     
     NuoSphere();
     
     NuoSphere Union(const NuoSphere& sphere);
-    NuoSphere Transform(const matrix_float4x4& matrix) const;
+    NuoSphere Transform(const NuoMatrixFloat44& matrix) const;
 
 };
 
 
-class NuoBounds : public NuoBoundsBase
+class NuoBounds
 {
+    
 public:
+    
+    NuoVectorFloat3 _center;
+    NuoVectorFloat3 _span;
+    
     NuoBounds();
     
-    NuoBounds Transform(const matrix_float4x4& matrix) const;
+    NuoBounds Transform(const NuoMatrixFloat44& matrix) const;
 
     NuoBounds Union(const NuoBounds& bounds) const;
-    NuoBounds Union(const vector_float3& point) const;
+    NuoBounds Union(const NuoVectorFloat3& point) const;
     float MaxDimension() const;
     
     NuoSphere Sphere() const;
 };
 
 
-#endif
 
 
 

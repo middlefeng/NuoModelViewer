@@ -21,6 +21,15 @@ template <class itemType, int itemCount> class VectorTrait;
 
 #include <simd/simd.h>
 
+
+template <>
+class VectorTrait<float, 2>
+{
+public:
+    typedef vector_float2 _vectorType;
+};
+
+
 template <>
 class VectorTrait<float, 3>
 {
@@ -53,10 +62,17 @@ public:
     inline itemType z() const { return _vector.z; }
     inline itemType w() const;
     
-    inline itemType& operator[] (size_t i) { return _vector[i]; }
+    inline void x(itemType x) { _vector.x = x; }
+    inline void y(itemType y) { _vector.y = y; }
+    inline void z(itemType z) { _vector.z = z; }
+    inline void w(itemType w) const;
+    
+    inline itemType operator[] (size_t i) const { return _vector[i]; }
     
     inline NuoVector(const typename _typeTrait::_vectorType& x) : _vector(x) {};
     
+    inline NuoVector() {};
+    inline NuoVector(itemType x, itemType y);
     inline NuoVector(itemType x, itemType y, itemType z);
     inline NuoVector(itemType x, itemType y, itemType z, itemType w);
     
@@ -65,6 +81,10 @@ public:
     {
         return (_vector = v);
     }
+    
+    inline NuoVector operator - () const;
+    
+    inline NuoVector Normalize() const;
 };
 
 
@@ -79,6 +99,20 @@ template <>
 inline float NuoVector<float, 4>::w() const
 {
     return _vector.w;
+}
+
+template <>
+inline void NuoVector<float, 4>::w(float w) const
+{
+    _vector.w = w;
+}
+
+
+template <>
+inline NuoVector<float, 2>::NuoVector(float x, float y)
+{
+    _vector.x = x;
+    _vector.y = y;
 }
 
 
@@ -101,6 +135,26 @@ inline NuoVector<float, 4>::NuoVector(float x, float y, float z, float w)
 }
 
 
+template <class itemType, int itemCount>
+inline NuoVector<itemType, itemCount>
+operator - (const NuoVector<itemType, itemCount>& v1, const NuoVector<itemType, itemCount>& v2);
+
+template <class itemType, int itemCount>
+inline NuoVector<itemType, itemCount>
+operator + (const NuoVector<itemType, itemCount>& v1, const NuoVector<itemType, itemCount>& v2);
+
+template <class itemType, int itemCount>
+inline itemType NuoDistance(const NuoVector<itemType, itemCount>& v1, const NuoVector<itemType, itemCount>& v2);
+
+template <class itemType, int itemCount>
+inline NuoVector<itemType, itemCount>
+operator / (const NuoVector<itemType, itemCount>& v, itemType div);
+
+template <class itemType, int itemCount>
+inline NuoVector<itemType, itemCount>
+operator * (const NuoVector<itemType, itemCount>& v, itemType div);
+
+
 template <class itemType, int dimension>
 class NuoMatrix
 {
@@ -110,7 +164,9 @@ private:
 public:
     typename _typeTrait::_matrixType _m;
     
-    inline typename _typeTrait::_vectorType& operator[] (size_t i) { return _m[i]; }
+    inline NuoMatrix();
+    
+    inline typename _typeTrait::_vectorType operator[] (size_t i) const { return _m.columns[i]; }
     
     inline NuoMatrix(const typename _typeTrait::_matrixType& v)
     {
@@ -122,11 +178,31 @@ public:
     {
         return (_m = v);
     }
+    
+    inline bool IsIdentity() const;
 };
+
+
+NuoMatrix<float, 4> NuoMatrixScale(const NuoVector<float, 3>& scale);
+NuoMatrix<float, 4> NuoMatrixPerspective(float aspect, float fovy, float near, float far);
+NuoMatrix<float, 4> NuoMatrixRotationAround(NuoMatrix<float, 4> rotate, NuoVector<float, 3> center);
 
 
 
 #if __APPLE__
+
+
+template <class itemType, int itemCount>
+inline NuoVector<itemType, itemCount> NuoVector<itemType, itemCount>::Normalize() const
+{
+    return NuoVector<itemType, itemCount>(vector_normalize(_vector));
+}
+
+template <class itemType, int itemCount>
+inline NuoVector<itemType, itemCount> NuoVector<itemType, itemCount>::operator - () const
+{
+    return NuoVector<itemType, itemCount>(-(_vector));
+}
 
 
 template <class itemType, int dimension>
@@ -139,11 +215,64 @@ inline NuoMatrix<itemType, dimension>
 operator * (const NuoMatrix<itemType, dimension>& m1, const NuoMatrix<itemType, dimension>& m2);
 
 
-template <>
-inline NuoVector<float, 4>
-operator * (const NuoMatrix<float, 4>& m, const NuoVector<float, 4>& v)
+template <int itemCount>
+inline NuoVector<float, itemCount>
+operator * (const NuoMatrix<float, itemCount>& m, const NuoVector<float, itemCount>& v)
 {
-    return NuoVector<float, 4>(matrix_multiply(m._m, v._vector));
+    return NuoVector<float, itemCount>(matrix_multiply(m._m, v._vector));
+}
+
+
+template <int itemCount>
+inline NuoVector<float, itemCount>
+operator - (const NuoVector<float, itemCount>& v1,
+            const NuoVector<float, itemCount>& v2)
+{
+    return NuoVector<float, itemCount>(v1._vector - v2._vector);
+}
+
+
+template <int itemCount>
+inline NuoVector<float, itemCount>
+operator + (const NuoVector<float, itemCount>& v1,
+            const NuoVector<float, itemCount>& v2)
+{
+    return NuoVector<float, itemCount>(v1._vector + v2._vector);
+}
+
+template <int itemCount>
+inline float NuoDistance(const NuoVector<float, itemCount>& v1, const NuoVector<float, itemCount>& v2)
+{
+    return simd::distance(v1._vector, v2._vector);
+}
+
+
+template <int itemCount>
+inline NuoVector<float, itemCount>
+operator / (const NuoVector<float, itemCount>& v, float div)
+{
+    return NuoVector<float, itemCount>(v._vector / div);
+}
+
+template <int itemCount>
+inline NuoVector<float, itemCount>
+operator * (const NuoVector<float, itemCount>& v, float mul)
+{
+    return NuoVector<float, itemCount>(v._vector * mul);
+}
+
+
+template <>
+inline NuoMatrix<float, 4>::NuoMatrix()
+    : _m(matrix_identity_float4x4)
+{
+}
+
+
+template <>
+inline bool NuoMatrix<float, 4>::IsIdentity() const
+{
+    return matrix_equal(_m, matrix_identity_float4x4);
 }
 
 
@@ -155,16 +284,24 @@ operator * (const NuoMatrix<float, 4>& m1, const NuoMatrix<float, 4>& m2)
 }
 
 
+inline NuoMatrix<float, 3> NuoMatrixExtractLinear(const NuoMatrix<float, 4>& m)
+{
+    vector_float3 X = m._m.columns[0].xyz;
+    vector_float3 Y = m._m.columns[1].xyz;
+    vector_float3 Z = m._m.columns[2].xyz;
+    matrix_float3x3 l = { X, Y, Z };
+    return NuoMatrix<float, 3>(l);
+}
+
+
 static inline NuoMatrix<float, 4> ToMatrix(glm::mat4x4& gmat)
 {
     matrix_float4x4* result = (matrix_float4x4*)(&gmat);
     return NuoMatrix<float, 4>(*result);
 }
 
+
 #endif
-
-
-static inline NuoMatrix<float, 4> ToMatrix(glm::mat4x4& gmat);
 
 
 inline NuoMatrix<float, 4> NuoMatrixRotation(const NuoVector<float, 3>& axis, float angle)
@@ -207,6 +344,7 @@ inline NuoMatrix<float, 4> NuoMatrixRotationAppend(const NuoMatrix<float, 4>& st
 
 typedef NuoVector<float, 4> NuoVectorFloat4;
 typedef NuoVector<float, 3> NuoVectorFloat3;
+typedef NuoVector<float, 2> NuoVectorFloat2;
 
 typedef NuoMatrix<float, 3> NuoMatrixFloat33;
 typedef NuoMatrix<float, 4> NuoMatrixFloat44;

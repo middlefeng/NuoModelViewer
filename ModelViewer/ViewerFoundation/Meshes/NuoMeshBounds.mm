@@ -16,13 +16,13 @@
     NuoSphere _boundingSphere;
 }
 
-- (struct NuoBoundsBase*)boundingBox
+- (struct NuoBounds*)boundingBox
 {
     return &_boundingBox;
 }
 
 
-- (struct NuoSphereBase*)boundingSphere
+- (struct NuoSphere*)boundingSphere
 {
     return &_boundingSphere;
 }

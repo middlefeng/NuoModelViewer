@@ -41,14 +41,14 @@
 
 // transform data. "viewRotation" is relative to the scene's center
 //
-@property (assign) matrix_float4x4 viewRotation;
-@property (assign) matrix_float4x4 viewTranslation;
-@property (assign) matrix_float4x4 projection;
+@property (assign) NuoMatrixFloat44 viewRotation;
+@property (assign) NuoMatrixFloat44 viewTranslation;
+@property (assign) NuoMatrixFloat44 projection;
 
 // need store the center of a snapshot of the scene as the meshes in the scene
 // keep moving
 //
-@property (assign) vector_float3 sceneCenter;
+@property (assign) NuoVectorFloat3 sceneCenter;
 
 @property (strong) NuoModelLoaderGPU* modelLoader;
 
@@ -179,8 +179,8 @@
     
     // move model from camera for a default distance (3 times of r)
     //
-    vector_float3 span = [[_mainModelMesh worldBounds:matrix_identity_float4x4] boundingBox]->_span;
-    float radius = std::max(span.x, std::max(span.y, span.z)) / 2.0;
+    NuoBounds* bounds = [[_mainModelMesh worldBounds:NuoMatrixFloat44()] boundingBox];
+    float radius = bounds->MaxDimension() / 2.0;
     const float defaultDistance = - 3.0 * radius;
     const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
     [_mainModelMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
@@ -292,8 +292,8 @@
 
 - (BOOL)viewTransformReset
 {
-    return matrix_equal(_viewRotation, matrix_identity_float4x4) &&
-           matrix_equal(_viewTranslation, matrix_identity_float4x4);
+    return _viewRotation.IsIdentity() &&
+           _viewTranslation.IsIdentity();
 }
 
 
@@ -338,8 +338,8 @@
     modelBoard->CreateBuffer();
     NuoBoardMesh* boardMesh = CreateBoardMesh(self.commandQueue, modelBoard, [_modelOptions basicMaterialized]);
     
-    NuoBoundsBase* bounds = [[boardMesh boundsLocal] boundingBox];
-    float radius = std::max(bounds->_span.x, bounds->_span.y);
+    NuoBounds* bounds = [[boardMesh boundsLocal] boundingBox];
+    float radius = bounds->MaxDimension();
     const float defaultDistance = - 3.0 * radius;
     const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
     [boardMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
@@ -770,8 +770,8 @@
     
     if (_modelLoader)
     {
-        matrix_float4x4 originalPoise = _mainModelMesh.transformPoise;
-        matrix_float4x4 originalTrans = _mainModelMesh.transformTranslate;
+        NuoMatrixFloat44 originalPoise = _mainModelMesh.transformPoise;
+        NuoMatrixFloat44 originalTrans = _mainModelMesh.transformTranslate;
         
         [self createMeshsWithProgress:progress];
         
@@ -834,7 +834,7 @@
     
     // simply using "z" works until the view matrix is no longer an identitiy
     //
-    float distance = bounds._center.z;
+    float distance = bounds._center.z();
     
     const float distanceDelta = _zoomDelta * radius / 10.0f;
     const float cameraDistance = distanceDelta + distance;
@@ -844,9 +844,9 @@
     // accumulate delta rotation into matrix
     //
     if (_transMode == kTransformMode_View)
-        _viewRotation = matrix_rotation_append(_viewRotation, _rotationXDelta, _rotationYDelta);
+        _viewRotation = NuoMatrixRotationAppend(_viewRotation, _rotationXDelta, _rotationYDelta);
     else
-        _selectedMesh.transformPoise = matrix_rotation_append(_selectedMesh.transformPoise, _rotationXDelta, _rotationYDelta);
+        _selectedMesh.transformPoise = NuoMatrixRotationAppend(_selectedMesh.transformPoise, _rotationXDelta, _rotationYDelta);
     
     _rotationXDelta = 0;
     _rotationYDelta = 0;
@@ -864,14 +864,14 @@
         distanceDelta
     };
     
-    matrix_float4x4 transMatrix = _selectedMesh.transformTranslate;
+    NuoMatrixFloat44 transMatrix = _selectedMesh.transformTranslate;
     if (_transMode == kTransformMode_View)
     {
-        _viewTranslation = matrix_multiply(matrix_translation(translation), _viewTranslation);
+        _viewTranslation = NuoMatrixTranslation(translation) * _viewTranslation;
     }
     else
     {
-        transMatrix = matrix_multiply(matrix_translation(translation), transMatrix);
+        transMatrix = NuoMatrixTranslation(translation) * transMatrix;
         [_selectedMesh setTransformTranslate:transMatrix];
     }
 }
@@ -895,18 +895,16 @@
         }
     }
     
-    _sceneCenter = bounds._center.xyz;
+    _sceneCenter = NuoVectorFloat3(bounds._center.x(), bounds._center.y(), bounds._center.z());
 }
 
 
-- (matrix_float4x4)viewMatrix
+- (NuoMatrixFloat44)viewMatrix
 {
     // rotation is around the center of a previous scene snapshot
     //
-    matrix_float4x4 viewTrans = matrix_rotation_around(_viewRotation, _sceneCenter);
-    viewTrans = matrix_multiply(_viewTranslation, viewTrans);
-    
-    return viewTrans;
+    NuoMatrixFloat44 viewTrans = NuoMatrixRotationAround(_viewRotation, _sceneCenter);
+    return _viewTranslation * viewTrans;
 }
 
 
@@ -919,7 +917,7 @@
     
     // rotation is around the center of a previous scene snapshot
     //
-    matrix_float4x4 viewTrans = [self viewMatrix];
+    NuoMatrixFloat44 viewTrans = [self viewMatrix];
     
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
@@ -941,16 +939,16 @@
         }
     }
 
-    float near = -bounds._center.z - bounds._span.z / 2.0 + 0.01;
-    float far = near + bounds._span.z + 0.02;
+    float near = -bounds._center.z() - bounds._span.z() / 2.0 + 0.01;
+    float far = near + bounds._span.z() + 0.02;
     near = std::max<float>(0.001, near);
     far = std::max<float>(near + 0.001, far);
     
     _projection = matrix_perspective(aspect, _fieldOfView, near, far);
 
     NuoUniforms uniforms;
-    uniforms.viewMatrix = viewTrans;
-    uniforms.viewProjectionMatrix = matrix_multiply(_projection, uniforms.viewMatrix);
+    uniforms.viewMatrix = viewTrans._m;
+    uniforms.viewProjectionMatrix = (_projection * viewTrans)._m;
 
     memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
     [self.transUniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(uniforms))];
@@ -1083,18 +1081,17 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        vector_float3 center = [[mesh worldBounds:matrix_identity_float4x4] boundingBox]->_center;
-        vector_float4 centerVec = { center.x, center.y, center.z, 1.0 };
-        vector_float4 centerProjected = matrix_multiply(_projection, centerVec);
-        vector_float2 centerOnScreen = centerProjected.xy / centerProjected.w;
+        NuoVectorFloat3 center = [[mesh worldBounds:NuoMatrixFloat44()] boundingBox]->_center;
+        NuoVectorFloat4 centerVec(center.x(), center.y(), center.z(), 1.0);
+        NuoVectorFloat4 centerProjected = _projection * centerVec;
+        NuoVectorFloat2 centerOnScreen = NuoVectorFloat2(centerProjected.x(), centerProjected.y()) / centerProjected.w();
         
-        vector_float2 normalized;
         CGSize drawableSize = self.renderTarget.drawableSize;
         float scale = [[NSScreen mainScreen] backingScaleFactor];
-        normalized.x = (point.x * scale) / drawableSize.width * 2.0 - 1.0;
-        normalized.y = (point.y * scale) / drawableSize.height * 2.0 - 1.0;
+        NuoVectorFloat2 normalized((point.x * scale) / drawableSize.width * 2.0 - 1.0,
+                                   (point.y * scale) / drawableSize.height * 2.0 - 1.0);
         
-        float currentDistance = vector_distance(normalized, centerOnScreen);
+        float currentDistance = NuoDistance(normalized, centerOnScreen);
         if (currentDistance < distance)
         {
             distance = currentDistance;

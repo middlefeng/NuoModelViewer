@@ -27,10 +27,10 @@
     NSUInteger backDropW = [backdrop width];
     NSUInteger backDropH = [backdrop height];
     
-    CGFloat normalizedW = 1.0;
-    CGFloat normalizedH = 1.0;
+    float normalizedW = 1.0;
+    float normalizedH = 1.0;
     
-    CGFloat aspectRatio = ((float)backDropW) / ((float)backDropH);
+    float aspectRatio = ((float)backDropW) / ((float)backDropH);
     if (aspectRatio > 1.0)
         normalizedW = normalizedH * aspectRatio;
     else
@@ -78,19 +78,19 @@
 {
     NuoUniforms uniforms;
     
-    vector_float3 scale = { _scale, _scale, 1.0 };
-    vector_float3 translate = { _translation.x, _translation.y, 0.0 };
+    NuoVectorFloat3 scale(_scale, _scale, 1.0);
+    NuoVectorFloat3 translate(_translation.x, _translation.y, 0.0);
     
     float aspectRatio = drawableSize.width / drawableSize.height;
     if (aspectRatio > 1.0)
-        scale.y *= aspectRatio;
+        scale.y(scale.y() * aspectRatio);
     else
-        scale.x /= aspectRatio;
+        scale.x(scale.x() / aspectRatio);
     
-    matrix_float4x4 matrix = matrix_uniform_scale_v(scale);
-    matrix_float4x4 matrixTrans = matrix_translation(translate);
+    NuoMatrixFloat44 matrix = NuoMatrixScale(scale);
+    NuoMatrixFloat44 matrixTrans = NuoMatrixTranslation(translate);
     
-    uniforms.viewProjectionMatrix = matrix_multiply(matrixTrans, matrix);
+    uniforms.viewProjectionMatrix = (matrixTrans * matrix)._m;
     uniforms.viewMatrix = uniforms.viewProjectionMatrix;
     
     memcpy([_backdropTransformBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));

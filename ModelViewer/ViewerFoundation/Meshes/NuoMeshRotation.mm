@@ -13,7 +13,7 @@
 
 @implementation NuoMeshRotation
 {
-    matrix_float4x4 _rotationMatrix;
+    NuoMatrixFloat44 _rotationMatrix;
 }
 
 
@@ -62,14 +62,14 @@
 
 - (void)generateMatrices
 {
-    vector_float3 transformVector = { _x, _y, _z };
-    vector_float3 rotationVector = { _xAxis, _yAxis, _zAxis };
+    NuoVectorFloat3 transformVector( _x, _y, _z);
+    NuoVectorFloat3 rotationVector(_xAxis, _yAxis, _zAxis);
     
-    matrix_float4x4 transMatrix = matrix_translation(transformVector);
-    matrix_float4x4 transMatrixInv = matrix_translation(-transformVector);
-    matrix_float4x4 rotationMatrix = matrix_rotation(vector_normalize(rotationVector), _radius);
+    NuoMatrixFloat44 transMatrix = NuoMatrixTranslation(transformVector);
+    NuoMatrixFloat44 transMatrixInv = NuoMatrixTranslation(-transformVector);
+    NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(rotationVector.Normalize(), _radius);
     
-    _rotationMatrix = matrix_multiply(transMatrixInv, matrix_multiply(rotationMatrix, transMatrix));
+    _rotationMatrix = (transMatrixInv * (rotationMatrix * transMatrix));
 }
 
 
@@ -82,7 +82,7 @@
 
 
 
-- (matrix_float4x4)rotationMatrix
+- (const NuoMatrixFloat44&)rotationMatrix
 {
     return _rotationMatrix;
 }

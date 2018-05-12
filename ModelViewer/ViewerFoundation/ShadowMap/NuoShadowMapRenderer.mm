@@ -100,8 +100,8 @@
             bounds = bounds.Union(*((NuoBounds*)[_meshes[i] worldBounds:viewMatrix].boundingBox));
     }
     
-    float viewPortHeight = bounds._span.y / 2.0;
-    float viewPortWidth = bounds._span.x / 2.0;
+    float viewPortHeight = bounds._span.y() / 2.0f;
+    float viewPortWidth = bounds._span.x() / 2.0f;
     
     // the shadow map is of the same aspect ratio (and resolution) as the scene render target,
     // which is not an optimal decision, yet has to be respected here
@@ -111,13 +111,13 @@
     else
         viewPortHeight = viewPortWidth / aspectRatio;
     
-    float l = bounds._center.x - viewPortWidth;
-    float r = bounds._center.x + viewPortWidth;
-    float t = bounds._center.y + viewPortHeight;
-    float b = bounds._center.y - viewPortHeight;
+    float l = bounds._center.x() - viewPortWidth;
+    float r = bounds._center.x() + viewPortWidth;
+    float t = bounds._center.y() + viewPortHeight;
+    float b = bounds._center.y() - viewPortHeight;
     
-    float near = -bounds._span.z / 2.0 - bounds._center.z;
-    float far =   bounds._span.z / 2.0 - bounds._center.z;
+    float near = -bounds._span.z() / 2.0 - bounds._center.z();
+    float far =   bounds._span.z() / 2.0 - bounds._center.z();
     
     const matrix_float4x4 projectionMatrix = matrix_orthor(l, r, t, b, near, far);
     

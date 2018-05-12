@@ -5,6 +5,8 @@
 #include "NuoMeshRotation.h"
 #include "NuoUniforms.h"
 
+#include "NuoMathVector.h"
+
 
 
 
@@ -57,11 +59,11 @@
 // note this transform may include a slight translation before rotation
 // because the model need to be centered (usually around its bounding box)
 //
-@property (nonatomic, assign) matrix_float4x4 transformPoise;
+@property (nonatomic, assign) NuoMatrixFloat44 transformPoise;
 
 // mesh transform about the translate in the world coordinate
 //
-@property (nonatomic, assign) matrix_float4x4 transformTranslate;
+@property (nonatomic, assign) NuoMatrixFloat44 transformTranslate;
 
 // all (prior view-matrix) mesh-transforms concatenate and passed to GPU
 //
@@ -106,14 +108,14 @@
 - (void)smoothWithTolerance:(float)tolerance;
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform;
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform;
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
 - (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
 - (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
 - (BOOL)hasTransparency;
 - (void)setTransparency:(BOOL)transparent;
 
-- (NuoMeshBounds*)worldBounds:(matrix_float4x4)transform;
+- (NuoMeshBounds*)worldBounds:(const NuoMatrixFloat44&)transform;
 
 - (void)centerMesh;
 
