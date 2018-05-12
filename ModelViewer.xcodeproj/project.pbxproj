@@ -299,6 +299,11 @@
 		2CE2D80A1E254790000CCD2D /* ModelPartsTableView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ModelPartsTableView.xib; sourceTree = "<group>"; };
 		2CEE8CF51F71BC3F00C4D4F6 /* LightShadowPopoverController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LightShadowPopoverController.h; sourceTree = "<group>"; };
 		2CEE8CF61F71BC3F00C4D4F6 /* LightShadowPopoverController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LightShadowPopoverController.m; sourceTree = "<group>"; };
+		2CF47A4520A72A0500B15AB5 /* NuoMathVectorTypeTraitMac.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NuoMathVectorTypeTraitMac.hpp; sourceTree = "<group>"; };
+		2CF47A4620A72A7100B15AB5 /* NuoMathVectorMac.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NuoMathVectorMac.hpp; sourceTree = "<group>"; };
+		2CF47A4820A72B7F00B15AB5 /* NuoMathVectorTypeTraitRegular.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = NuoMathVectorTypeTraitRegular.hpp; sourceTree = "<group>"; };
+		2CF47A4920A72B7F00B15AB5 /* NuoMathVectorRegular.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoMathVectorRegular.cpp; sourceTree = "<group>"; };
+		2CF47A4A20A72B7F00B15AB5 /* NuoMathVectorRegular.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = NuoMathVectorRegular.hpp; sourceTree = "<group>"; };
 		2CF62A451EE9B4E7003E23EF /* BoardSettingsPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BoardSettingsPanel.h; sourceTree = "<group>"; };
 		2CF62A461EE9B4E7003E23EF /* BoardSettingsPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BoardSettingsPanel.m; sourceTree = "<group>"; };
 		2CF62A671EEF5E11003E23EF /* NuoLightSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoLightSource.h; sourceTree = "<group>"; };
@@ -503,7 +508,8 @@
 				2C5DDAD41D6591B000A9DC9A /* NuoMathUtilities.cpp */,
 				2C4BFC3720A4D98E002856E8 /* NuoMathVector.h */,
 				2C69167020A61CD50072E8F2 /* NuoMathVector.cpp */,
-				2C69167220A61E450072E8F2 /* NuoMathVectorMac.cpp */,
+				2CF47A4720A72B2E00B15AB5 /* Regular */,
+				2CF47A4020A729BE00B15AB5 /* Mac */,
 				2C9E397A1DF7D8BC00286EA0 /* NuoTableExporter.h */,
 				2C9E39791DF7D8BC00286EA0 /* NuoTableExporter.cpp */,
 				2C9072E21FE306A800359F12 /* NuoPackage.h */,
@@ -641,6 +647,26 @@
 				2C9D9AAC1D658F0800283E46 /* main.m */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		2CF47A4020A729BE00B15AB5 /* Mac */ = {
+			isa = PBXGroup;
+			children = (
+				2CF47A4520A72A0500B15AB5 /* NuoMathVectorTypeTraitMac.hpp */,
+				2CF47A4620A72A7100B15AB5 /* NuoMathVectorMac.hpp */,
+				2C69167220A61E450072E8F2 /* NuoMathVectorMac.cpp */,
+			);
+			path = Mac;
+			sourceTree = "<group>";
+		};
+		2CF47A4720A72B2E00B15AB5 /* Regular */ = {
+			isa = PBXGroup;
+			children = (
+				2CF47A4820A72B7F00B15AB5 /* NuoMathVectorTypeTraitRegular.hpp */,
+				2CF47A4920A72B7F00B15AB5 /* NuoMathVectorRegular.cpp */,
+				2CF47A4A20A72B7F00B15AB5 /* NuoMathVectorRegular.hpp */,
+			);
+			path = Regular;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
