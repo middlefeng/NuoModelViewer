@@ -8,8 +8,13 @@
 
 #import "NuoLua.h"
 
+extern "C"
+{
+
 #include "lua.h"
 #include "lauxlib.h"
+    
+}
 
 
 @implementation NuoLua
@@ -144,25 +149,32 @@
 }
 
 
-- (matrix_float4x4)getMatrixFromTable:(int)index
+- (NuoMatrixFloat44)getMatrixFromTable:(int)index
 {
-    matrix_float4x4 matrix = { 0 };
+    NuoMatrixFloat44 matrix;
     
     for (size_t i = 0; i < 4; ++i)
     {
-        vector_float4 vector = { 0 };
+        NuoVectorFloat4 vector(0, 0, 0, 0);
         lua_geti(_luaState, index, i);
         
         for (int itemIndex = 0; itemIndex < 4; ++itemIndex)
         {
             lua_geti(_luaState, -1, itemIndex);
-            vector[itemIndex] = lua_tonumber(_luaState, -1);
+            switch (itemIndex)
+            {
+                case 0: vector.x(lua_tonumber(_luaState, -1)); break;
+                case 1: vector.y(lua_tonumber(_luaState, -1)); break;
+                case 2: vector.z(lua_tonumber(_luaState, -1)); break;
+                case 3: vector.w(lua_tonumber(_luaState, -1)); break;
+                default: break;
+            }
             lua_pop(_luaState, 1);
         }
         
         lua_pop(_luaState, 1);
         
-        matrix.columns[i] = vector;
+        matrix[i] = vector._vector;
     }
     
     return matrix;

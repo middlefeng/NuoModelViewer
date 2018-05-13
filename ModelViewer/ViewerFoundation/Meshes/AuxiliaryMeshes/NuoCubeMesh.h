@@ -7,7 +7,6 @@
 //
 
 #import "NuoMesh.h"
-#import <simd/simd.h>
 
 
 
@@ -24,7 +23,7 @@
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat;
-- (void)setProjectionMatrix:(matrix_float4x4)projection;
+- (void)setProjectionMatrix:(const NuoMatrixFloat44&)projection;
 
 
 @end

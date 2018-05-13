@@ -85,7 +85,7 @@ static uint16_t kIndices[] =
     
     if (self)
     {
-        _cubeMatrix = matrix_identity_float4x4;
+        _cubeMatrix = NuoMatrixFloat44();
         
         {
             id<MTLBuffer> matrix[kInFlightBufferCount];
@@ -106,7 +106,7 @@ static uint16_t kIndices[] =
 }
 
 
-- (void)setProjectionMatrix:(matrix_float4x4)projection
+- (void)setProjectionMatrix:(const NuoMatrixFloat44&)projection
 {
     _projectMatrix = projection;
 }

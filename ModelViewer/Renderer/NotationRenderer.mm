@@ -10,7 +10,6 @@
 #import "NotationRenderer.h"
 
 #import "NuoMesh.h"
-#import "NuoMathUtilities.h"
 #import "NuoLua.h"
 
 #import "NotationLight.h"
@@ -114,21 +113,21 @@
     const float cameraDefaultDistance = (modelNearest - modelSpan);
     const float cameraDistance = cameraDefaultDistance + zoom * modelSpan / 20.0f;
     
-    const vector_float3 cameraTranslation =
-    {
+    const NuoVectorFloat3 cameraTranslation
+    (
         0, 0, cameraDistance
-    };
+    );
     
-    const matrix_float4x4 viewMatrix = matrix_translation(cameraTranslation);
+    const NuoMatrixFloat44 viewMatrix = NuoMatrixTranslation(cameraTranslation);
     
     const float aspect = _notationArea.size.width / _notationArea.size.height;
     const float near = -cameraDistance - modelSpan;
     const float far = near + modelSpan * 2.0;
-    const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, (2 * M_PI) / 30, near, far);
+    const NuoMatrixFloat44 projectionMatrix = NuoMatrixPerspective(aspect, (2 * M_PI) / 30, near, far);
     
     NuoUniforms uniforms;
-    uniforms.viewMatrix = viewMatrix;
-    uniforms.viewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.viewMatrix);
+    uniforms.viewMatrix = viewMatrix._m;
+    uniforms.viewProjectionMatrix = (projectionMatrix * viewMatrix)._m;
     
     memcpy([_transforms[inFlight] contents], &uniforms, sizeof(NuoUniforms));
 }

@@ -29,7 +29,7 @@
 
 @implementation NuoShadowMapRenderer
 {
-    matrix_float4x4 _lightCastMatrix;
+    NuoMatrixFloat44 _lightCastMatrix;
 }
 
 
@@ -154,7 +154,7 @@
 
 
 
-- (matrix_float4x4)lightCastMatrix
+- (NuoMatrixFloat44)lightCastMatrix
 {
     return _lightCastMatrix;
 }

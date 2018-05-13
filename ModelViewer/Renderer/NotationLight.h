@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
-#import <simd/simd.h>
 
 
 @class NuoLightSource;

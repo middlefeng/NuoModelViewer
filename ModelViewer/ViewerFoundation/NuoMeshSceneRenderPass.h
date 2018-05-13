@@ -9,7 +9,6 @@
 #import "NuoRenderPipelinePass.h"
 
 #import <Metal/Metal.h>
-#import <simd/simd.h>
 
 
 

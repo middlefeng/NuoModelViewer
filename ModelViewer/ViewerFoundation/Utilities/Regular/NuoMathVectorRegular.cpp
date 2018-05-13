@@ -34,13 +34,13 @@ NuoMatrix<float, 4> NuoMatrixPerspective(float aspect, float fovy, float near, f
     float zScale = -(far) / zRange;
     float wzScale = - far * near / zRange;
     
-    vector_float4 P = { xScale, 0, 0, 0 };
-    vector_float4 Q = { 0, yScale, 0, 0 };
-    vector_float4 R = { 0, 0, zScale, -1 };
-    vector_float4 S = { 0, 0, wzScale, 0 };
+    glm::vec4 P(xScale, 0, 0, 0);
+    glm::vec4 Q(0, yScale, 0, 0);
+    glm::vec4 R(0, 0, zScale, -1);
+    glm::vec4 S(0, 0, wzScale, 0);
     
-    matrix_float4x4 mat = { P, Q, R, S };
-    return mat;
+    glm::mat4x4 mat(P, Q, R, S);
+    return ToMatrix(mat);
 }
 
 

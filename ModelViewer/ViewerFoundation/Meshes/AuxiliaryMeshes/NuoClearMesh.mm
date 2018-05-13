@@ -12,7 +12,7 @@
 
 struct ClearFragment
 {
-    vector_float4 clearColor;
+    vector4 clearColor;
 };
 
 
@@ -40,10 +40,10 @@ struct ClearFragment
 - (void)setClearColor:(MTLClearColor)clearColor
 {
     _clearColor = clearColor;
-    vector_float4 color4 = { (float)clearColor.red, (float)clearColor.green,
-                             (float)clearColor.blue, (float)clearColor.alpha };
+    NuoVectorFloat4 color4(clearColor.red, clearColor.green,
+                           clearColor.blue, clearColor.alpha);
     struct ClearFragment clearParam;
-    clearParam.clearColor = color4;
+    clearParam.clearColor = color4._vector;
     
     [NuoMesh updatePrivateBuffer:_clearColorBuffer withCommandQueue:self.commandQueue
                         withData:&clearParam withSize:sizeof(struct ClearFragment)];

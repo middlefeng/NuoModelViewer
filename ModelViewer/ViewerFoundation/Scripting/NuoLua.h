@@ -7,8 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <simd/simd.h>
-
+#import "NuoMathVector.h"
 
 
 struct lua_State;
@@ -35,7 +34,7 @@ struct lua_State;
 - (float)getArrayItemAsNumber:(size_t)item fromTable:(int)index;
 - (NSString*)getArrayItemAsString:(size_t)item fromTable:(int)index;
 
-- (matrix_float4x4)getMatrixFromTable:(int)index;
+- (NuoMatrixFloat44)getMatrixFromTable:(int)index;
 
 - (bool)isNil:(int)index;
 

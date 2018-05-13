@@ -7,7 +7,6 @@
 //
 
 #import "NuoMesh.h"
-#include <simd/simd.h>
 
 
 @interface NuoBoardMesh : NuoMesh

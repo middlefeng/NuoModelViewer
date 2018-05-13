@@ -5,7 +5,6 @@
 
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
-#import <simd/simd.h>
 
 #include "NuoTypes.h"
 #include "NuoMeshCompound.h"
@@ -1024,8 +1023,8 @@
     // store the light view point projection for shadow map detection in the scene
     //
     NuoLightVertexUniforms lightUniforms;
-    lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix;
-    lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix;
+    lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix._m;
+    lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix._m;
     memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
     [_lightCastBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(lightUniforms))];
     

@@ -10,6 +10,10 @@
 #define NuoMathVectorFunctions_h
 
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+
 template <class itemType, int itemCount>
 inline NuoVector<itemType, itemCount> NuoVector<itemType, itemCount>::Normalize() const
 {
@@ -82,7 +86,7 @@ operator * (const NuoVector<float, itemCount>& v, float mul)
 
 template <>
 inline NuoMatrix<float, 4>::NuoMatrix()
-: _m(matrix_identity_float4x4)
+    : _m(matrix_identity_float4x4)
 {
 }
 
@@ -109,6 +113,20 @@ inline NuoMatrix<float, 3> NuoMatrixExtractLinear(const NuoMatrix<float, 4>& m)
     vector_float3 Z = m._m.columns[2].xyz;
     matrix_float3x3 l = { X, Y, Z };
     return NuoMatrix<float, 3>(l);
+}
+
+
+template <>
+inline typename NuoMatrix<float, 4>::_typeTrait::_vectorType& NuoMatrix<float, 4>::operator[] (size_t i)
+{
+    return _m.columns[i];
+}
+
+
+template <>
+inline typename NuoMatrix<float, 4>::_typeTrait::_vectorType NuoMatrix<float, 4>::operator[] (size_t i) const
+{
+    return _m.columns[i];
 }
 
 

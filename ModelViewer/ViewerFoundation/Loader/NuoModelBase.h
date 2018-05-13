@@ -13,7 +13,6 @@
 #include <string>
 #include <map>
 
-#include <simd/simd.h>
 #include "NuoBounds.h"
 
 

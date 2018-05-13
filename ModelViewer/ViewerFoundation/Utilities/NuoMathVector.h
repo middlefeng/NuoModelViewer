@@ -10,16 +10,19 @@
 #define NuoMathVector_h
 
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-
 template <class itemType, int itemCount> class VectorTrait;
 
 
-#if __APPLE__
+#define USE_SIMD 1
+
+
+#if __APPLE__ && USE_SIMD
 
 #include "Mac/NuoMathVectorTypeTraitMac.hpp"
+
+#else
+
+#include "Regular/NuoMathVectorTypeTraitRegular.hpp"
     
 #endif
 
@@ -40,7 +43,7 @@ public:
     inline void x(itemType x) { _vector.x = x; }
     inline void y(itemType y) { _vector.y = y; }
     inline void z(itemType z) { _vector.z = z; }
-    inline void w(itemType w) const;
+    inline void w(itemType w);
     
     inline itemType operator[] (size_t i) const { return _vector[i]; }
     
@@ -77,7 +80,7 @@ inline float NuoVector<float, 4>::w() const
 }
 
 template <>
-inline void NuoVector<float, 4>::w(float w) const
+inline void NuoVector<float, 4>::w(float w)
 {
     _vector.w = w;
 }
@@ -141,7 +144,8 @@ public:
     
     inline NuoMatrix();
     
-    inline typename _typeTrait::_vectorType operator[] (size_t i) const { return _m.columns[i]; }
+    inline typename _typeTrait::_vectorType& operator[] (size_t i);
+    inline typename _typeTrait::_vectorType operator[] (size_t i) const;
     
     inline NuoMatrix(const typename _typeTrait::_matrixType& v)
     {
@@ -169,9 +173,13 @@ NuoMatrix<float, 4> NuoMatrixLookAt(const NuoVector<float, 3>& eye,
 
 
 
-#if __APPLE__
+#if __APPLE__ && USE_SIMD
 
 #include "Mac/NuoMathVectorMac.hpp"
+
+#else
+
+#include "Regular/NuoMathVectorRegular.hpp"
 
 #endif
 

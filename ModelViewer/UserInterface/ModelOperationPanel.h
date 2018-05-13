@@ -8,7 +8,6 @@
 
 #import "NuoRoundedView.h"
 #import "NuoTypes.h"
-#import "NuoUniforms.h"
 
 #import "ModelOptionUpdate.h"
 #import "ModelViewerRenderer.h"
