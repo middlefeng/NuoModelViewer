@@ -12,7 +12,7 @@
 
 
 @class NuoLightSource;
-@class NuoLua;
+class NuoLua;
 
 
 @interface NotationRenderer : NuoRenderPipelinePass

@@ -61,7 +61,7 @@ MouseDragMode;
 
 @implementation ModelView
 {
-    NuoLua* _lua;
+    NuoLua _lua;
     ModelViewConfiguration* _configuration;
     
     // pipeline stages
@@ -97,10 +97,7 @@ MouseDragMode;
 
 - (NuoLua*)lua
 {
-    if (!_lua)
-        _lua = [[NuoLua alloc] init];
-    
-    return _lua;
+    return &_lua;
 }
 
 
@@ -372,17 +369,17 @@ MouseDragMode;
              if (result == NSFileHandlingPanelOKButton)
              {
                  NuoLua* lua = [self lua];
-                 [lua loadFile:openPanel.URL.path];
-                 NSArray* keys = [lua getKeysFromTable:-1];
+                 lua->LoadFile(openPanel.URL.path.UTF8String);
+                 NuoLua::KeySet keys = lua->GetKeysFromTable(-1);
                  
-                 for (NSString* key in keys)
+                 for (const std::string& key : keys)
                  {
                      NuoMeshAnimation* current = [NuoMeshAnimation new];
-                     current.animationName = key;
+                     current.animationName = [NSString stringWithUTF8String:key.c_str()];
                      
-                     [lua getField:key fromTable:-1];
+                     lua->GetField(key, -1);
                      [current importAnimation:lua forMesh:renderer.mainModelMesh.meshes];
-                     [lua removeField];
+                     lua->RemoveField();
                      
                      if (current.mesh.count)
                          [animations addObject:current];
@@ -985,13 +982,13 @@ MouseDragMode;
 - (void)loadScene:(NSString*)path
 {
     NuoLua* lua = [self lua];
-    [lua loadFile:path];
+    lua->LoadFile(path.UTF8String);
     
     CGSize drawableSize;
-    [lua getField:@"canvas" fromTable:-1];
-    drawableSize.width = [lua getFieldAsNumber:@"width" fromTable:-1];
-    drawableSize.height = [lua getFieldAsNumber:@"height" fromTable:-1];
-    [lua removeField];
+    lua->GetField("canvas", -1);
+    drawableSize.width = lua->GetFieldAsNumber("width", -1);
+    drawableSize.height = lua->GetFieldAsNumber("height", -1);
+    lua->RemoveField();
     
     NSWindow* window = self.window;
     [window setContentSize:drawableSize];

@@ -164,32 +164,32 @@
 
 - (void)importScene:(NuoLua*)lua
 {
-    [lua getField:@"lights" fromTable:-1];
+    lua->GetField("lights", -1);
     for (int lightIndex = 0; lightIndex < _lightVectors.count; ++lightIndex)
     {
-        [lua getItem:lightIndex fromTable:-1];
+        lua->GetItem(lightIndex, -1);
         
-        _lightSources[lightIndex].lightingRotationX = [lua getFieldAsNumber:@"rotateX" fromTable:-1];
-        _lightSources[lightIndex].lightingRotationY = [lua getFieldAsNumber:@"rotateY" fromTable:-1];
-        _lightSources[lightIndex].lightingDensity = [lua getFieldAsNumber:@"density" fromTable:-1];
-        _lightSources[lightIndex].lightingSpacular = [lua getFieldAsNumber:@"spacular" fromTable:-1];
-        _lightSources[lightIndex].enableShadow = [lua getFieldAsBool:@"enableShadow" fromTable:-1];
+        _lightSources[lightIndex].lightingRotationX = lua->GetFieldAsNumber("rotateX", -1);
+        _lightSources[lightIndex].lightingRotationY = lua->GetFieldAsNumber("rotateY", -1);
+        _lightSources[lightIndex].lightingDensity = lua->GetFieldAsNumber("density", -1);
+        _lightSources[lightIndex].lightingSpacular = lua->GetFieldAsNumber("spacular", -1);
+        _lightSources[lightIndex].enableShadow = lua->GetFieldAsBool("enableShadow", -1);
         
         if (_lightSources[lightIndex].enableShadow)
         {
             assert(lightIndex < 2);
             
-            _lightSources[lightIndex].shadowSoften = [lua getFieldAsNumber:@"shadowSoften" fromTable:-1];
-            _lightSources[lightIndex].shadowBias = [lua getFieldAsNumber:@"shadowBias" fromTable:-1];
+            _lightSources[lightIndex].shadowSoften = lua->GetFieldAsNumber("shadowSoften", -1);
+            _lightSources[lightIndex].shadowBias = lua->GetFieldAsNumber("shadowBias", -1);
         }
         else
         {
             assert(lightIndex >= 2);
         }
         
-        [lua removeField];
+        lua->RemoveField();
     }
-    [lua removeField];
+    lua->RemoveField();
 }
 
 

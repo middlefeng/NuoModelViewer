@@ -640,122 +640,122 @@
 
 - (void)importScene:(NuoLua*)lua
 {
-    [lua getField:@"rotationMatrix" fromTable:-1];
-    [_mainModelMesh setTransformPoise:[lua getMatrixFromTable:-1]];
-    [lua removeField];
+    lua->GetField("rotationMatrix", -1);
+    [_mainModelMesh setTransformPoise:lua->GetMatrixFromTable(-1)];
+    lua->RemoveField();
     
-    [lua getField:@"translationMatrix" fromTable:-1];
-    if (![lua isNil:-1])
-        [_mainModelMesh setTransformTranslate:[lua getMatrixFromTable:-1]];
-    [lua removeField];
+    lua->GetField("translationMatrix", -1);
+    if (!lua->IsNil(-1))
+        [_mainModelMesh setTransformTranslate:lua->GetMatrixFromTable(-1)];
+    lua->RemoveField();
     
     // backward compatible the old "viewMatrix"
-    [lua getField:@"viewMatrix" fromTable:-1];
-    if (![lua isNil:-1])
-        _viewRotation = [lua getMatrixFromTable:-1];
-    [lua removeField];
+    lua->GetField("viewMatrix", -1);
+    if (!lua->IsNil(-1))
+        _viewRotation = lua->GetMatrixFromTable(-1);
+    lua->RemoveField();
     
-    [lua getField:@"viewMatrixRotation" fromTable:-1];
-    if (![lua isNil:-1])
-        _viewRotation = [lua getMatrixFromTable:-1];
-    [lua removeField];
+    lua->GetField("viewMatrixRotation", -1);
+    if (!lua->IsNil(-1))
+        _viewRotation = lua->GetMatrixFromTable(-1);
+    lua->RemoveField();
     
-    [lua getField:@"viewMatrixTranslation" fromTable:-1];
-    if (![lua isNil:-1])
-        _viewRotation = [lua getMatrixFromTable:-1];
-    [lua removeField];
+    lua->GetField("viewMatrixTranslation", -1);
+    if (!lua->IsNil(-1))
+        _viewRotation = lua->GetMatrixFromTable(-1);
+    lua->RemoveField();
     
-    [lua getField:@"view" fromTable:-1];
-    _fieldOfView = [lua getFieldAsNumber:@"FOV" fromTable:-1];
-    [lua removeField];
+    lua->GetField("view", -1);
+    _fieldOfView = lua->GetFieldAsNumber("FOV", -1);
+    lua->RemoveField();
     
-    [lua getField:@"models" fromTable:-1];
+    lua->GetField("models", -1);
     
-    size_t length = [lua getArraySize:-1];
+    size_t length = lua->GetArraySize(-1);
     size_t passedModel = 0;
     
     for (size_t i = 0; i < length; ++i)
     {
-        [lua getItem:(int)(i + 1) fromTable:-1];
-        NSString* name = [lua getFieldAsString:@"name" fromTable:-1];
+        lua->GetItem((int)(i + 1), -1);
+        const std::string name = lua->GetFieldAsString("name", -1);
         for (size_t i = passedModel; i < _mainModelMesh.meshes.count; ++i)
         {
             NuoMesh* mesh = _mainModelMesh.meshes[i];
             
-            if ([mesh.modelName isEqualToString:name])
+            if (mesh.modelName.UTF8String == name)
             {
-                [mesh setEnabled:[lua getFieldAsBool:@"enabled" fromTable:-1]];
-                [mesh setReverseCommonCullMode:[lua getFieldAsBool:@"cullModeReverse" fromTable:-1]];
-                [mesh setUnifiedOpacity:[lua getFieldAsNumber:@"opacity" fromTable:-1]];
-                [mesh setSmoothConservative:[lua getFieldAsBool:@"smoothConservative" fromTable:-1]];
-                [mesh smoothWithTolerance:[lua getFieldAsNumber:@"smooth" fromTable:-1]];
+                [mesh setEnabled:lua->GetFieldAsBool("enabled", -1)];
+                [mesh setReverseCommonCullMode:lua->GetFieldAsBool("cullModeReverse", -1)];
+                [mesh setUnifiedOpacity:lua->GetFieldAsNumber("opacity", -1)];
+                [mesh setSmoothConservative:lua->GetFieldAsBool("smoothConservative", -1)];
+                [mesh smoothWithTolerance:lua->GetFieldAsNumber("smooth", -1)];
                 
                 passedModel = ++i;
                 break;
             }
         }
-        [lua removeField];
+        lua->RemoveField();
     }
-    [lua removeField];
+    lua->RemoveField();
     
-    [lua getField:@"boards" fromTable:-1];
+    lua->GetField("boards", -1);
     
-    if (![lua isNil:-1])
+    if (!lua->IsNil(-1))
     {
-        length = [lua getArraySize:-1];
+        length = lua->GetArraySize(-1);
         if (length > 0)
             [self removeAllBoards];
         
         for (size_t i = 0; i < length; ++i)
         {
-            [lua getItem:(int)(i + 1) fromTable:-1];
+            lua->GetItem((int)(i + 1), -1);
             
             float width, height, thickness;
             {
-                [lua getField:@"dimensions" fromTable:-1];
+                lua->GetField("dimensions", -1);
                 
-                width = [lua getFieldAsNumber:@"width" fromTable:-1];
-                height = [lua getFieldAsNumber:@"height" fromTable:-1];
-                thickness = [lua getFieldAsNumber:@"thickness" fromTable:-1];
+                width = lua->GetFieldAsNumber("width", -1);
+                height = lua->GetFieldAsNumber("height", -1);
+                thickness = lua->GetFieldAsNumber("thickness", -1);
                 
-                [lua removeField];
+                lua->RemoveField();
             }
             
             NuoBoardMesh* boardMesh = [self createBoard:CGSizeMake(width, height)];
-            [lua getField:@"rotationMatrix" fromTable:-1];
-            [boardMesh setTransformPoise:[lua getMatrixFromTable:-1]];
-            [lua removeField];
+            lua->GetField("rotationMatrix", -1);
+            [boardMesh setTransformPoise:lua->GetMatrixFromTable(-1)];
+            lua->RemoveField();
             
-            [lua getField:@"translationMatrix" fromTable:-1];
-            [boardMesh setTransformTranslate:[lua getMatrixFromTable:-1]];
-            [lua removeField];
+            lua->GetField("translationMatrix", -1);
+            [boardMesh setTransformTranslate:lua->GetMatrixFromTable(-1)];
+            lua->RemoveField();
             
-            [lua removeField];
+            lua->RemoveField();
         }
     }
     
-    [lua removeField];
+    lua->RemoveField();
     
-    [lua getField:@"lights" fromTable:-1];
+    lua->GetField("lights", -1);
     
-    _ambientDensity = [lua getFieldAsNumber:@"ambient" fromTable:-1];
+    _ambientDensity = lua->GetFieldAsNumber("ambient", -1);
     
     {
-        [lua getField:@"ambientParams" fromTable:-1];
+        lua->GetField("ambientParams", -1);
         
-        if (![lua isNil:-1])
+        if (!lua->IsNil(-1))
         {
             NuoDeferredRenderUniforms params = _deferredParameters;
-            params.ambientOcclusionParams.bias = [lua getFieldAsNumber:@"bias" fromTable:-1];
-            params.ambientOcclusionParams.intensity = [lua getFieldAsNumber:@"intensity" fromTable:-1];
-            params.ambientOcclusionParams.sampleRadius = [lua getFieldAsNumber:@"range" fromTable:-1];
-            params.ambientOcclusionParams.scale = [lua getFieldAsNumber:@"scale" fromTable:-1];
+            params.ambientOcclusionParams.bias = lua->GetFieldAsNumber("bias", -1);
+            params.ambientOcclusionParams.intensity = lua->GetFieldAsNumber("intensity", -1);
+            params.ambientOcclusionParams.sampleRadius = lua->GetFieldAsNumber("range", -1);
+            params.ambientOcclusionParams.scale = lua->GetFieldAsNumber("scale", -1);
             [self setDeferredParameters:params];
         }
-        [lua removeField];
+        lua->RemoveField();
     }
     
-    [lua removeField];
+    lua->RemoveField();
     
     [self caliberateSceneCenter];
 }

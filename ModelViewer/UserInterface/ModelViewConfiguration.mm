@@ -101,20 +101,21 @@
     if (!exist || isDir)
         return;
     
-    NuoLua* lua = [[NuoLua alloc] init];
+    NuoLua lua;
     
-    [lua loadFile:_path];
+    lua.LoadFile(_path.UTF8String);
     
-    [lua getField:@"windowFrame" fromTable:-1];
+    lua.GetField("windowFrame", -1);
     
-    _windowFrame.origin.x = [lua getFieldAsNumber:@"x" fromTable:-1];
-    _windowFrame.origin.y = [lua getFieldAsNumber:@"y" fromTable:-1];
-    _windowFrame.size.width = [lua getFieldAsNumber:@"w" fromTable:-1];
-    _windowFrame.size.height = [lua getFieldAsNumber:@"h" fromTable:-1];
+    _windowFrame.origin.x = lua.GetFieldAsNumber("x", -1);
+    _windowFrame.origin.y = lua.GetFieldAsNumber("y", -1);
+    _windowFrame.size.width = lua.GetFieldAsNumber("w", -1);
+    _windowFrame.size.height = lua.GetFieldAsNumber("h", -1);
     
-    [lua removeField];
+    lua.RemoveField();
     
-    _deviceName = [lua getFieldAsString:@"device" fromTable:-1];
+    const std::string deviceName = lua.GetFieldAsString("device", -1);
+    _deviceName = [NSString stringWithUTF8String:deviceName.c_str()];
 }
 
 

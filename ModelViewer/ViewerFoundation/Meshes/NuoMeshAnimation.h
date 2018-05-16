@@ -11,9 +11,8 @@
 #include "NuoMeshRotation.h"
 
 
-@class NuoLua;
 @class NuoMesh;
-
+class NuoLua;
 
 
 @interface NuoMeshAnimation : NSObject

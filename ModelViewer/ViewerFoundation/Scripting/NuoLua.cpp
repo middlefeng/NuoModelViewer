@@ -17,34 +17,29 @@ extern "C"
 }
 
 
-@implementation NuoLua
+NuoLua::NuoLua()
 {
-    lua_State* _luaState;
+    _luaState = luaL_newstate();
+}
+
+
+NuoLua::~NuoLua()
+{
+    lua_close(_luaState);
 }
 
 
 
-- (instancetype)init
+void NuoLua::LoadFile(const std::string& path)
 {
-    self = [super init];
-    if (self)
-        _luaState = luaL_newstate();
-    
-    return self;
+    luaL_dofile(_luaState, path.c_str());
 }
 
 
 
-- (void)loadFile:(NSString*)path
+NuoLua::KeySet NuoLua::GetKeysFromTable(int index)
 {
-    luaL_dofile(_luaState, path.UTF8String);
-}
-
-
-
-- (NSArray*)getKeysFromTable:(int)index
-{
-    NSMutableArray* result = [[NSMutableArray alloc] init];
+    NuoLua::KeySet result;
     
     lua_pushnil(_luaState);  /* first key */
     while (lua_next(_luaState, index - 1) != 0)
@@ -52,7 +47,7 @@ extern "C"
         const char* key = lua_tostring(_luaState, -2);
         lua_pop(_luaState, 1);
         
-        [result addObject:[[NSString alloc] initWithUTF8String:key]];
+        result.insert(key);
     }
     
     return result;
@@ -60,13 +55,13 @@ extern "C"
 
 
 
-- (void)getField:(NSString*)key fromTable:(int)index
+void NuoLua::GetField(const std::string& key, int index)
 {
-    lua_getfield(_luaState, index, key.UTF8String);
+    lua_getfield(_luaState, index, key.c_str());
 }
 
 
-- (size_t)getArraySize:(int)index
+size_t NuoLua::GetArraySize(int index)
 {
     lua_len(_luaState, index);
     size_t len = lua_tointeger(_luaState, -1);
@@ -76,19 +71,19 @@ extern "C"
 }
 
 
-- (void)getItem:(int)itemIndex fromTable:(int)index
+void NuoLua::GetItem(int itemIndex, int index)
 {
     lua_geti(_luaState, index, itemIndex);
 }
 
 
-- (void)removeField
+void NuoLua::RemoveField()
 {
     lua_pop(_luaState, 1);
 }
 
 
-- (bool)getArrayItemAsBool:(size_t)item fromTable:(int)index
+bool NuoLua::GetArrayItemAsBool(size_t item, int index)
 {
     lua_geti(_luaState, index, item);
     bool result = lua_toboolean(_luaState, -1);
@@ -98,7 +93,7 @@ extern "C"
 }
 
 
-- (float)getArrayItemAsNumber:(size_t)item fromTable:(int)index
+float NuoLua::GetArrayItemAsNumber(size_t item, int index)
 {
     lua_geti(_luaState, index, item);
     float result = lua_tonumber(_luaState, -1);
@@ -108,30 +103,29 @@ extern "C"
 }
 
 
-- (NSString*)getArrayItemAsString:(size_t)item fromTable:(int)index
+std::string NuoLua::GetArrayItemAsString(size_t item, int index)
 {
     lua_geti(_luaState, index, item);
-    const char* result = lua_tostring(_luaState, -1);
+    const std::string result = lua_tostring(_luaState, -1);
     lua_pop(_luaState, 1);
     
-    return [[NSString alloc] initWithUTF8String:result];
+    return result;
 }
 
 
-- (NSString*)getFieldAsString:(NSString*)key fromTable:(int)index
+std::string NuoLua::GetFieldAsString(const std::string& key, int index)
 {
-    lua_getfield(_luaState, index, key.UTF8String);
-    const char* result = lua_tostring(_luaState, -1);
-    NSString* r = [[NSString alloc] initWithUTF8String:result];
+    lua_getfield(_luaState, index, key.c_str());
+    const std::string result = lua_tostring(_luaState, -1);
     lua_pop(_luaState, 1);
     
-    return r;
+    return result;
 }
 
 
-- (float)getFieldAsNumber:(NSString*)key fromTable:(int)index
+float NuoLua::GetFieldAsNumber(const std::string& key, int index)
 {
-    lua_getfield(_luaState, index, key.UTF8String);
+    lua_getfield(_luaState, index, key.c_str());
     float value = lua_tonumber(_luaState, -1);
     lua_pop(_luaState, 1);
     
@@ -139,9 +133,9 @@ extern "C"
 }
 
 
-- (bool)getFieldAsBool:(NSString*)key fromTable:(int)index
+bool NuoLua::GetFieldAsBool(const std::string& key, int index)
 {
-    lua_getfield(_luaState, index, key.UTF8String);
+    lua_getfield(_luaState, index, key.c_str());
     bool value = lua_toboolean(_luaState, -1);
     lua_pop(_luaState, 1);
     
@@ -149,7 +143,7 @@ extern "C"
 }
 
 
-- (NuoMatrixFloat44)getMatrixFromTable:(int)index
+NuoMatrixFloat44 NuoLua::GetMatrixFromTable(int index)
 {
     NuoMatrixFloat44 matrix;
     
@@ -181,11 +175,10 @@ extern "C"
 }
 
 
-- (bool)isNil:(int)index
+bool NuoLua::IsNil(int index)
 {
     return lua_isnil(_luaState, index);
 }
 
 
 
-@end
