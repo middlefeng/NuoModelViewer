@@ -23,8 +23,8 @@
     
     if (self)
     {
-        self.transformPoise = matrix_identity_float4x4;
-        self.transformTranslate = matrix_identity_float4x4;
+        self.transformPoise = NuoMatrixFloat44();
+        self.transformTranslate = NuoMatrixFloat44();
         self.enabled = YES;
     }
     

@@ -12,7 +12,6 @@
 #import "NuoMeshTextured.h"
 #import "NuoMeshTexMatieraled.h"
 #import "NuoMeshUniform.h"
-#import "NuoMathUtilities.h"
 
 
 
@@ -41,8 +40,8 @@
     
     if (self)
     {
-        _transformPoise = matrix_identity_float4x4;
-        _transformTranslate = matrix_identity_float4x4;
+        _transformPoise = NuoMatrixFloat44();
+        _transformTranslate = NuoMatrixFloat44();
         _sampleCount = kSampleCount;
         _meshMode = kMeshMode_Normal;
     }
@@ -87,8 +86,8 @@
             _transformBuffers = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
         }
         
-        _transformPoise = matrix_identity_float4x4;
-        _transformTranslate = matrix_identity_float4x4;
+        _transformPoise = NuoMatrixFloat44();
+        _transformTranslate = NuoMatrixFloat44();
         _sampleCount = kSampleCount;
     }
     
@@ -469,7 +468,7 @@
     
     NuoMeshUniforms uniforms;
     uniforms.transform = transformWorld._m;
-    uniforms.normalTransform = matrix_extract_linear(uniforms.transform);
+    uniforms.normalTransform = NuoMatrixExtractLinear(transformWorld)._m;
     memcpy([_transformBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
 

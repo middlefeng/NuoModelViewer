@@ -9,6 +9,26 @@
 #include "NuoMathVector.h"
 
 
+NuoInternalMatrix<4> operator * (const NuoInternalMatrix<4>& m1, const NuoInternalMatrix<4>& m2)
+{
+    glm::mat4x4* mat1 = (glm::mat4x4*)&m1;
+    glm::mat4x4* mat2 = (glm::mat4x4*)&m2;
+    glm::mat4x4 mat = (*mat1) * (*mat2);
+    return *(NuoInternalMatrix<4>*)&mat;
+}
+
+
+
+NuoInternalVec<4> operator * (const NuoInternalMatrix<4>& m, const NuoInternalVec<4>& v)
+{
+    glm::mat4x4* mat = (glm::mat4x4*)&m;
+    glm::vec4* vec = (glm::vec4*)&v;
+    glm::vec4 ve = (*mat) * (*vec);
+    
+    return *(NuoInternalVec<4>*)&ve;
+}
+
+
 
 NuoMatrix<float, 4> NuoMatrixPerspective(float aspect, float fovy, float near, float far)
 {
@@ -68,11 +88,11 @@ NuoMatrix<float, 4> NuoMatrixOrthor(float left, float right, float top, float bo
     float wyScale = - (top + bottom) / (top - bottom);
     float wxScale = - (right + left) / (right - left);
     
-    vector_float4 P = { xScale, 0, 0, 0 };
-    vector_float4 Q = { 0, yScale, 0, 0 };
-    vector_float4 R = { 0, 0, zScale, 0 };
-    vector_float4 S = { wxScale, wyScale, wzScale, 1 };
+    glm::vec4 P(xScale, 0, 0, 0);
+    glm::vec4 Q(0, yScale, 0, 0);
+    glm::vec4 R(0, 0, zScale, 0);
+    glm::vec4 S(wxScale, wyScale, wzScale, 1);
     
-    matrix_float4x4 mat = { P, Q, R, S };
-    return mat;
+    glm::mat4x4 mat(P, Q, R, S);
+    return ToMatrix(mat);
 }

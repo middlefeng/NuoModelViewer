@@ -20,8 +20,8 @@
  */
 typedef struct
 {
-    matrix44 transform;
-    matrix33 normalTransform;
+    matrix44 transform       __attribute__ ((aligned (16)));
+    matrix33 normalTransform __attribute__ ((aligned (16)));
 }
 NuoMeshUniforms;
 

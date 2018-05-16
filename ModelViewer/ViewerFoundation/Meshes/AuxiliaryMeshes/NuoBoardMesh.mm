@@ -16,7 +16,7 @@
 
 @implementation NuoBoardMesh
 {
-    vector_float3 _dimensions;
+    NuoVectorFloat3 _dimensions;
 }
 
 
@@ -24,7 +24,7 @@
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                   withVerticesBuffer:(void *)buffer withLength:(size_t)length
                          withIndices:(void *)indices withLength:(size_t)indicesLength
-                       withDimension:(vector_float3)dimensions
+                       withDimension:(const NuoVectorFloat3&)dimensions
 {
     self = [super initWithCommandQueue:commandQueue
                     withVerticesBuffer:buffer withLength:length
@@ -111,7 +111,7 @@
 }
 
 
-- (vector_float3)dimensions
+- (const NuoVectorFloat3&)dimensions
 {
     return _dimensions;
 }
@@ -124,14 +124,13 @@
 NuoBoardMesh* CreateBoardMesh(id<MTLCommandQueue> commandQueue, const std::shared_ptr<NuoModelBoard> model, bool shadowCastOnly)
 {
     NuoBoardMesh* resultMesh = nil;
-    vector_float3 dimensions = { model->_width, model->_height, model->_thickness };
     
     resultMesh = [[NuoBoardMesh alloc] initWithCommandQueue:commandQueue
                                          withVerticesBuffer:model->Ptr()
                                                  withLength:model->Length()
                                                 withIndices:model->IndicesPtr()
                                                  withLength:model->IndicesLength()
-                                              withDimension:dimensions];
+                                              withDimension:NuoVectorFloat3(model->_width, model->_height, model->_thickness)];
     
     NuoMeshBounds* bounds = [NuoMeshBounds new];
     *((NuoBounds*)[bounds boundingBox]) = model->GetBoundingBox();

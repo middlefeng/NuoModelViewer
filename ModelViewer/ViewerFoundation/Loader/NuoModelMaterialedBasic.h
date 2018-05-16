@@ -47,14 +47,14 @@ public:
 
 struct NuoItemMaterialedTexturedBasic
 {
-    vector_float4 _position;
-    vector_float4 _normal;
-    vector_float2 _texCoord;
+    NuoVectorFloat4::_typeTrait::_vectorType _position;
+    NuoVectorFloat4::_typeTrait::_vectorType _normal;
+    NuoVectorFloat2::_typeTrait::_vectorType _texCoord __attribute__ ((aligned (16)));
     
-    vector_float3 _diffuse;
-    vector_float3 _ambient;
-    vector_float3 _specular;
-    vector_float2 _shinessDisolve;
+    NuoVectorFloat3::_typeTrait::_vectorType _diffuse  __attribute__ ((aligned (16)));
+    NuoVectorFloat3::_typeTrait::_vectorType _ambient  __attribute__ ((aligned (16)));
+    NuoVectorFloat3::_typeTrait::_vectorType _specular __attribute__ ((aligned (16)));
+    NuoVectorFloat2::_typeTrait::_vectorType _shinessDisolve __attribute__ ((aligned (16)));
     
     NuoItemMaterialedTexturedBasic();
     
@@ -81,16 +81,16 @@ public:
 
 struct NuoItermMaterialedBumpedTextured
 {
-    vector_float4 _position;
-    vector_float4 _normal;
-    vector_float4 _tangent;
-    vector_float4 _bitangent;
-    vector_float2 _texCoord;
+    NuoVectorFloat4::_typeTrait::_vectorType _position __attribute__ ((aligned (16)));
+    NuoVectorFloat4::_typeTrait::_vectorType _normal   __attribute__ ((aligned (16)));
+    NuoVectorFloat4::_typeTrait::_vectorType _tangent  __attribute__ ((aligned (16)));
+    NuoVectorFloat4::_typeTrait::_vectorType _bitangent __attribute__ ((aligned (16)));
+    NuoVectorFloat2::_typeTrait::_vectorType _texCoord  __attribute__ ((aligned (16)));
     
-    vector_float3 _diffuse;
-    vector_float3 _ambient;
-    vector_float3 _specular;
-    vector_float2 _shinessDisolve;
+    NuoVectorFloat3::_typeTrait::_vectorType _diffuse  __attribute__ ((aligned (16)));
+    NuoVectorFloat3::_typeTrait::_vectorType _ambient  __attribute__ ((aligned (16)));
+    NuoVectorFloat3::_typeTrait::_vectorType _specular  __attribute__ ((aligned (16)));
+    NuoVectorFloat2::_typeTrait::_vectorType _shinessDisolve __attribute__ ((aligned (16)));
     
     NuoItermMaterialedBumpedTextured();
     
@@ -112,13 +112,13 @@ public:
 
 struct NuoItemMaterialedBasic
 {
-    vector_float4 _position;
-    vector_float4 _normal;
+    NuoVectorFloat4::_typeTrait::_vectorType _position;
+    NuoVectorFloat4::_typeTrait::_vectorType _normal;
     
-    vector_float3 _diffuse;
-    vector_float3 _ambient;
-    vector_float3 _specular;
-    vector_float2 _shinessDisolve;
+    NuoVectorFloat3::_typeTrait::_vectorType _diffuse __attribute__ ((aligned (16)));
+    NuoVectorFloat3::_typeTrait::_vectorType _ambient __attribute__ ((aligned (16)));
+    NuoVectorFloat3::_typeTrait::_vectorType _specular __attribute__ ((aligned (16)));
+    NuoVectorFloat2::_typeTrait::_vectorType _shinessDisolve __attribute__ ((aligned (16)));
     
     NuoItemMaterialedBasic();
     

@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "NuoMathVector.h"
+#include "NuoMathVector.h"
 
 
 struct lua_State;

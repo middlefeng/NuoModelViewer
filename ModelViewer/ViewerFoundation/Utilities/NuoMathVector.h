@@ -13,7 +13,7 @@
 template <class itemType, int itemCount> class VectorTrait;
 
 
-#define USE_SIMD 1
+#define USE_SIMD 0
 
 
 #if __APPLE__ && USE_SIMD
@@ -30,9 +30,9 @@ template <class itemType, int itemCount> class VectorTrait;
 template <class itemType, int itemCount>
 class NuoVector
 {
-    typedef VectorTrait<itemType, itemCount> _typeTrait;
     
 public:
+    typedef VectorTrait<itemType, itemCount> _typeTrait;
     typename _typeTrait::_vectorType _vector;
 
     inline itemType x() const { return _vector.x; }
@@ -62,7 +62,12 @@ public:
     
     inline NuoVector operator - () const;
     
-    inline NuoVector Normalize() const;
+    inline NuoVector Normalize() const
+    {
+        return NuoVector<itemType, itemCount>(Normalize(_vector));
+    }
+    
+    inline static typename _typeTrait::_vectorType Normalize(const typename _typeTrait::_vectorType& v);
 };
 
 
@@ -132,14 +137,20 @@ template <class itemType, int itemCount>
 inline NuoVector<itemType, itemCount>
 operator * (const NuoVector<itemType, itemCount>& v, itemType div);
 
+template <class itemType, int itemCount>
+inline itemType NuoDot(const NuoVector<itemType, itemCount>& v1, const NuoVector<itemType, itemCount>& v2);
+
+template <class itemType, int itemCount>
+inline NuoVector<itemType, itemCount>
+NuoCross(const NuoVector<itemType, itemCount>& v1, const NuoVector<itemType, itemCount>& v2);
+
 
 template <class itemType, int dimension>
 class NuoMatrix
 {
-private:
-    typedef VectorTrait<itemType, dimension> _typeTrait;
     
 public:
+    typedef VectorTrait<itemType, dimension> _typeTrait;
     typename _typeTrait::_matrixType _m;
     
     inline NuoMatrix();

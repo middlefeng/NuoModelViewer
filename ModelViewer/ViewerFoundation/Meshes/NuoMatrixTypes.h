@@ -10,8 +10,6 @@
 #define NuoMatrixTypes_h
 
 
-#define USE_SIMD 1
-
 /**
  *  Matrix/Vector types that cross the C++ and shader code
  *
@@ -20,23 +18,12 @@
 
 #ifndef Metal
 
-#if USE_SIMD
+#include "NuoMathVector.h"
 
-    #import <simd/simd.h>
+typedef NuoMatrixFloat44::_typeTrait::_matrixType matrix44;
+typedef NuoMatrixFloat33::_typeTrait::_matrixType matrix33;
+#define vector4 NuoVectorFloat4::_typeTrait::_vectorType
 
-    #define matrix44 matrix_float4x4
-    #define matrix33 matrix_float3x3
-    #define vector4 vector_float4
-
-#else
-
-    #include <glm/glm.hpp>
-
-    #define matrix44 glm::mat4x4
-    #define matrix33 glm::mat3x3
-    typedef glm::vec4 vector4;
-
-#endif
 
 #else
 

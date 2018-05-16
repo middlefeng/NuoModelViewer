@@ -10,11 +10,25 @@
 #define NuoMathVectorFunctions_h
 
 
+
 template <class itemType, int itemCount>
-inline NuoVector<itemType, itemCount> NuoVector<itemType, itemCount>::Normalize() const
+inline typename NuoVector<itemType, itemCount>::_typeTrait::_vectorType
+NuoVector<itemType, itemCount>::Normalize(const typename NuoVector<itemType, itemCount>::_typeTrait::_vectorType& v)
 {
-    return NuoVector<itemType, itemCount>(vector_normalize(_vector));
+    glm::vec3 vec;
+    vec.x = v.x;
+    vec.y = v.y;
+    vec.z = v.z;
+    
+    vec = glm::normalize(vec);
+    
+    typename NuoVector<itemType, itemCount>::_typeTrait::_vectorType r;
+    r.x = vec.x;
+    r.y = vec.y;
+    r.z = vec.z;
+    return r;
 }
+
 
 template <class itemType, int itemCount>
 inline NuoVector<itemType, itemCount> NuoVector<itemType, itemCount>::operator - () const
@@ -58,10 +72,18 @@ operator + (const NuoVector<float, itemCount>& v1,
     return NuoVector<float, itemCount>(v1._vector + v2._vector);
 }
 
-template <int itemCount>
-inline float NuoDistance(const NuoVector<float, itemCount>& v1, const NuoVector<float, itemCount>& v2)
+inline float NuoDistance(const NuoVector<float, 2>& v1, const NuoVector<float, 2>& v2)
 {
-    return glm::distance(v1._vector, v2._vector);
+    glm::vec2 vec1(v1._vector.x, v1._vector.y);
+    glm::vec2 vec2(v2._vector.x, v2._vector.y);
+    return glm::distance(vec1, vec2);
+}
+
+inline float NuoDistance(const NuoVector<float, 3>& v1, const NuoVector<float, 3>& v2)
+{
+    glm::vec3 vec1(v1._vector.x, v1._vector.y, v1._vector.z);
+    glm::vec3 vec2(v2._vector.x, v2._vector.y, v2._vector.z);
+    return glm::distance(vec1, vec2);
 }
 
 
@@ -80,6 +102,42 @@ operator * (const NuoVector<float, itemCount>& v, float mul)
 }
 
 
+inline float NuoDot(const NuoVector<float, 3>& v1, const NuoVector<float, 3>& v2)
+{
+    glm::vec3 vec1(v1._vector.x, v1._vector.y, v1._vector.z);
+    glm::vec3 vec2(v2._vector.x, v2._vector.y, v2._vector.z);
+    return glm::dot(vec1, vec2);
+}
+
+inline float NuoDot(const NuoVector<float, 4>& v1, const NuoVector<float, 4>& v2)
+{
+    glm::vec4 vec1(v1._vector.x, v1._vector.y, v1._vector.z, v1._vector.w);
+    glm::vec4 vec2(v2._vector.x, v2._vector.y, v2._vector.z, v2._vector.w);
+    return glm::dot(vec1, vec2);
+}
+
+inline NuoVector<float, 3>
+NuoCross(const NuoVector<float, 3>& v1, const NuoVector<float, 3>& v2)
+{
+    glm::vec3 vec1(v1._vector.x, v1._vector.y, v1._vector.z);
+    glm::vec3 vec2(v2._vector.x, v2._vector.y, v2._vector.z);
+    glm::vec3 vec = glm::cross(vec1, vec2);
+    
+    NuoVector<float, 3> r;
+    r._vector.x = vec.x;
+    r._vector.y = vec.y;
+    r._vector.z = vec.z;
+    
+    return r;
+}
+
+
+template <>
+inline NuoMatrix<float, 3>::NuoMatrix()
+{
+}
+
+
 template <>
 inline NuoMatrix<float, 4>::NuoMatrix()
 {
@@ -89,7 +147,35 @@ inline NuoMatrix<float, 4>::NuoMatrix()
 template <>
 inline bool NuoMatrix<float, 4>::IsIdentity() const
 {
-    return _m == glm::mat4x4();
+    return _m == NuoMatrix<float, 4>()._m;
+}
+
+
+template <>
+inline typename NuoMatrix<float, 3>::_typeTrait::_vectorType& NuoMatrix<float, 3>::operator[] (size_t i)
+{
+    return _m[(int)i];
+}
+
+
+template <>
+inline typename NuoMatrix<float, 3>::_typeTrait::_vectorType NuoMatrix<float, 3>::operator[] (size_t i) const
+{
+    return _m[(int)i];
+}
+
+
+template <>
+inline typename NuoMatrix<float, 4>::_typeTrait::_vectorType& NuoMatrix<float, 4>::operator[] (size_t i)
+{
+    return _m[(int)i];
+}
+
+
+template <>
+inline typename NuoMatrix<float, 4>::_typeTrait::_vectorType NuoMatrix<float, 4>::operator[] (size_t i) const
+{
+    return _m[(int)i];
 }
 
 
@@ -103,17 +189,18 @@ operator * (const NuoMatrix<float, 4>& m1, const NuoMatrix<float, 4>& m2)
 
 inline NuoMatrix<float, 3> NuoMatrixExtractLinear(const NuoMatrix<float, 4>& m)
 {
-    glm::vec3 X(m._m[0][0], m._m[0][1], m._m[0][2]);
-    glm::vec3 Y(m._m[1][0], m._m[1][1], m._m[1][2]);
-    glm::vec3 Z(m._m[2][0], m._m[2][1], m._m[2][2]);
-    glm::mat3x3 l(X, Y, Z);
-    return NuoMatrix<float, 3>(l);
+    NuoMatrix<float, 3> r;
+    r[0].x = m._m[0][0]; r[0].y = m._m[0][1]; r[0].z = m._m[0][2];
+    r[1].x = m._m[1][0]; r[1].y = m._m[1][1]; r[1].z = m._m[1][2];
+    r[2].x = m._m[2][0]; r[2].y = m._m[2][1]; r[2].z = m._m[2][2];
+    return r;
 }
 
 
 static inline NuoMatrix<float, 4> ToMatrix(glm::mat4x4& gmat)
 {
-    return NuoMatrix<float, 4>(gmat);
+    NuoInternalMatrix<4>* mat = (NuoInternalMatrix<4>*)&gmat;
+    return NuoMatrix<float, 4>(*mat);
 }
 
 

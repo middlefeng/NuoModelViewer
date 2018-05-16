@@ -10,10 +10,10 @@
 #import "NuoMesh_Extension.h"
 
 #import "NuoUniforms.h"
-#import "NuoMathUtilities.h"
 #import "NuoTextureBase.h"
 
 #include "NuoTypes.h"
+#include "NuoMathVector.h"
 
 
 

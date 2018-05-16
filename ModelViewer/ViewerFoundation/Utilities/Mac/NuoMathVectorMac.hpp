@@ -15,10 +15,12 @@
 
 
 template <class itemType, int itemCount>
-inline NuoVector<itemType, itemCount> NuoVector<itemType, itemCount>::Normalize() const
+inline typename NuoVector<itemType, itemCount>::_typeTrait::_vectorType
+NuoVector<itemType, itemCount>::Normalize(const typename NuoVector<itemType, itemCount>::_typeTrait::_vectorType& v)
 {
-    return NuoVector<itemType, itemCount>(vector_normalize(_vector));
+    return vector_normalize(v);
 }
+
 
 template <class itemType, int itemCount>
 inline NuoVector<itemType, itemCount> NuoVector<itemType, itemCount>::operator - () const
@@ -77,6 +79,19 @@ operator / (const NuoVector<float, itemCount>& v, float div)
 }
 
 template <int itemCount>
+inline float NuoDot(const NuoVector<float, itemCount>& v1, const NuoVector<float, itemCount>& v2)
+{
+    return vector_dot(v1._vector, v2._vector);
+}
+
+template <int itemCount>
+inline NuoVector<float, itemCount>
+NuoCross(const NuoVector<float, itemCount>& v1, const NuoVector<float, itemCount>& v2)
+{
+    return NuoVector<float, itemCount>(vector_cross(v1._vector, v2._vector));
+}
+
+template <int itemCount>
 inline NuoVector<float, itemCount>
 operator * (const NuoVector<float, itemCount>& v, float mul)
 {
@@ -128,6 +143,9 @@ inline typename NuoMatrix<float, 4>::_typeTrait::_vectorType NuoMatrix<float, 4>
 {
     return _m.columns[i];
 }
+
+
+#include <stdio.h>
 
 
 static inline NuoMatrix<float, 4> ToMatrix(glm::mat4x4& gmat)

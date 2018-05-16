@@ -12,7 +12,6 @@
 #include "NuoCubeMesh.h"
 #include "NuoBackdropMesh.h"
 #include "NuoRenderPassTarget.h"
-#include "NuoMathUtilities.h"
 #include "NuoModelBase.h"
 #include "NuoModelLoader.h"
 #include "NuoTableExporter.h"
@@ -97,8 +96,8 @@
         _meshes = [NSMutableArray new];
         _boardMeshes = [NSMutableArray new];
         
-        _viewRotation = matrix_identity_float4x4;
-        _viewTranslation = matrix_identity_float4x4;
+        _viewRotation = NuoMatrixFloat44();
+        _viewTranslation = NuoMatrixFloat44();
         
         self.paramsProvider = self;
     }
@@ -181,8 +180,8 @@
     NuoBounds* bounds = [[_mainModelMesh worldBounds:NuoMatrixFloat44()] boundingBox];
     float radius = bounds->MaxDimension() / 2.0;
     const float defaultDistance = - 3.0 * radius;
-    const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
-    [_mainModelMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
+    const NuoVectorFloat3 defaultDistanceVec(0, 0, defaultDistance);
+    [_mainModelMesh setTransformTranslate:NuoMatrixTranslation(defaultDistanceVec)];
     
     [self caliberateSceneCenter];
 }
@@ -326,8 +325,8 @@
 
 - (void)resetViewTransform
 {
-    _viewRotation = matrix_identity_float4x4;
-    _viewTranslation = matrix_identity_float4x4;
+    _viewRotation = NuoMatrixFloat44();
+    _viewTranslation = NuoMatrixFloat44();
 }
 
 
@@ -340,8 +339,8 @@
     NuoBounds* bounds = [[boardMesh boundsLocal] boundingBox];
     float radius = bounds->MaxDimension();
     const float defaultDistance = - 3.0 * radius;
-    const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
-    [boardMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
+    const NuoVectorFloat3 defaultDistanceVec(0, 0, defaultDistance);
+    [boardMesh setTransformTranslate:NuoMatrixTranslation(defaultDistanceVec)];
     [_boardMeshes addObject:boardMesh];
     
     // boards are all opaque so they are drawn first
@@ -461,15 +460,15 @@
                 exporter.StartEntry("dimensions");
                 exporter.StartTable();
                 {
-                    vector_float3 dimension = boardMesh.dimensions;
+                    const NuoVectorFloat3& dimension = boardMesh.dimensions;
                     exporter.StartEntry("width");
-                    exporter.SetEntryValueFloat(dimension.x);
+                    exporter.SetEntryValueFloat(dimension.x());
                     exporter.EndEntry(false);
                     exporter.StartEntry("height");
-                    exporter.SetEntryValueFloat(dimension.y);
+                    exporter.SetEntryValueFloat(dimension.y());
                     exporter.EndEntry(false);
                     exporter.StartEntry("thickness");
-                    exporter.SetEntryValueFloat(dimension.z);
+                    exporter.SetEntryValueFloat(dimension.z());
                     exporter.EndEntry(false);
                 }
                 exporter.EndTable();
@@ -857,11 +856,11 @@
     _transXDelta = 0;
     _transYDelta = 0;
     
-    const vector_float3 translation =
-    {
+    const NuoVectorFloat3 translation
+    (
         doTransX, doTransY,
         distanceDelta
-    };
+    );
     
     NuoMatrixFloat44 transMatrix = _selectedMesh.transformTranslate;
     if (_transMode == kTransformMode_View)
@@ -885,12 +884,12 @@
     {
         if (!meshBounds)
         {
-            meshBounds = [mesh worldBounds:matrix_identity_float4x4];
-            bounds = *((NuoBounds*)[meshBounds boundingBox]);
+            meshBounds = [mesh worldBounds:NuoMatrixFloat44()];
+            bounds = *([meshBounds boundingBox]);
         }
         else
         {
-            bounds = bounds.Union(*(NuoBounds*)[[mesh worldBounds:matrix_identity_float4x4] boundingBox]);
+            bounds = bounds.Union(*[[mesh worldBounds:NuoMatrixFloat44()] boundingBox]);
         }
     }
     
@@ -943,7 +942,7 @@
     near = std::max<float>(0.001, near);
     far = std::max<float>(near + 0.001, far);
     
-    _projection = matrix_perspective(aspect, _fieldOfView, near, far);
+    _projection = NuoMatrixPerspective(aspect, _fieldOfView, near, far);
 
     NuoUniforms uniforms;
     uniforms.viewMatrix = viewTrans._m;
@@ -956,12 +955,14 @@
     lighting.ambientDensity = _ambientDensity;
     for (unsigned int i = 0; i < 4; ++i)
     {
-        const matrix_float4x4 rotationMatrix = matrix_rotate(_lights[i].lightingRotationX,
-                                                             _lights[i].lightingRotationY);
+        const NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(_lights[i].lightingRotationX,
+                                                                  _lights[i].lightingRotationY);
         
-        vector_float4 lightVector { 0, 0, 1, 0 };
-        lightVector = matrix_multiply(rotationMatrix, lightVector);
-        lighting.lightParams[i].direction = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
+        NuoVectorFloat4 lightVector(0, 0, 1, 0);
+        lightVector = rotationMatrix * lightVector;
+        lighting.lightParams[i].direction = NuoVectorFloat4(lightVector.x(),
+                                                            lightVector.y(),
+                                                            lightVector.z(), 0.0)._vector;
         lighting.lightParams[i].density = _lights[i].lightingDensity;
         lighting.lightParams[i].spacular = _lights[i].lightingSpacular;
         
@@ -978,15 +979,15 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        [mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
+        [mesh updateUniform:inFlight withTransform:NuoMatrixFloat44()];
         [mesh setCullEnabled:_cullEnabled];
     }
     
     if (_cubeMesh)
     {
-        const matrix_float4x4 projectionMatrixForCube = matrix_perspective(aspect, _fieldOfView, 0.3, 2.0);
+        const NuoMatrixFloat44 projectionMatrixForCube = NuoMatrixPerspective(aspect, _fieldOfView, 0.3, 2.0);
         [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
-        [_cubeMesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
+        [_cubeMesh updateUniform:inFlight withTransform:NuoMatrixFloat44()];
     }
     
     if (_backdropMesh)

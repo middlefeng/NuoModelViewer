@@ -147,7 +147,7 @@
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
-    [self updateUniform:index withTransform:matrix_identity_float4x4];
+    [self updateUniform:index withTransform:NuoMatrixFloat44()];
     
     [renderPass setFragmentTexture:_texturesAccumulated.targetTexture atIndex:0];
     [renderPass setFragmentTexture:_textureLatest atIndex:1];

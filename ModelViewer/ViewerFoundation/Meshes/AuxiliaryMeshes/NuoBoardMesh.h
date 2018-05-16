@@ -11,7 +11,7 @@
 
 @interface NuoBoardMesh : NuoMesh
 
-@property (assign, readonly) vector_float3 dimensions;
+@property (assign, readonly) const NuoVectorFloat3& dimensions;
 @property (assign, nonatomic) BOOL shadowOverlayOnly;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;

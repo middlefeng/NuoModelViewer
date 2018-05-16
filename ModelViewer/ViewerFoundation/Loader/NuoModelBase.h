@@ -43,7 +43,7 @@ std::shared_ptr<NuoModelBase> CreateModel(const NuoModelOption& options, const N
 template <class ItemBase>
 class SmoothItem
 {
-    vector_float4 _position;
+    NuoVectorFloat4 _position;
 
 public:
     SmoothItem(ItemBase& item);
@@ -67,10 +67,10 @@ bool SmoothItem<ItemBase>::operator < (const SmoothItem<ItemBase>& other) const
     if (a < other.a) return true; \
     if (a > other.a) return false;
     
-    compare_element(_position.x);
-    compare_element(_position.y);
-    compare_element(_position.z);
-    compare_element(_position.w);
+    compare_element(_position.x());
+    compare_element(_position.y());
+    compare_element(_position.z());
+    compare_element(_position.w());
     
     return false;
 }
@@ -114,7 +114,7 @@ public:
     virtual void SmoothSurface(float tolerance, bool texDiscontinuityOnly) = 0;
     
     virtual size_t GetVerticesNumber() = 0;
-    virtual vector_float4 GetPosition(size_t index) = 0;
+    virtual NuoVectorFloat4 GetPosition(size_t index) = 0;
     virtual NuoBounds GetBoundingBox();
     
     virtual void* Ptr() = 0;
@@ -155,7 +155,7 @@ public:
     virtual void SmoothSurface(float tolerance, bool texDiscontinuityOnly) override;
     
     virtual size_t GetVerticesNumber() override;
-    virtual vector_float4 GetPosition(size_t index) override;
+    virtual NuoVectorFloat4 GetPosition(size_t index) override;
     
     virtual void* Ptr() override;
     virtual size_t Length() override;
@@ -171,8 +171,8 @@ protected:
 
 struct NuoItemSimple
 {
-    vector_float4 _position;
-    vector_float4 _normal;
+    NuoVectorFloat4::_typeTrait::_vectorType _position;
+    NuoVectorFloat4::_typeTrait::_vectorType _normal;
     
     NuoItemSimple();
     
@@ -290,9 +290,9 @@ void NuoModelCommon<ItemBase>::SmoothSurface(float tolerance, bool texDiscontinu
             
             for (ItemBase* item : existingSmootherValue)
             {
-                vector_float4 normal1 = vector_normalize(item->_normal);
-                vector_float4 normal2 = vector_normalize(_buffer[i]._normal);
-                float cross = vector_dot(normal2, normal1);
+                const NuoVectorFloat4 normal1 = NuoVectorFloat4(item->_normal).Normalize();
+                const NuoVectorFloat4 normal2 = NuoVectorFloat4(_buffer[i]._normal).Normalize();
+                float cross = NuoDot(normal2, normal1);
                 if (fabs(cross) > tolerance &&
                     (!texDiscontinuityOnly || !ItemTexCoordEequal(*item, _buffer[i])))
                 {
@@ -316,13 +316,13 @@ void NuoModelCommon<ItemBase>::SmoothSurface(float tolerance, bool texDiscontinu
         if (smoothVertex.size() <= 1)
             continue;
         
-        vector_float4 normalSum {0};
+        NuoVectorFloat4 normalSum(0);
         for (ItemBase* item : smoothVertex)
-            normalSum += item->_normal;
+            normalSum = normalSum + NuoVectorFloat4(item->_normal);
 
-        vector_float4 normal = vector_normalize(normalSum);
+        NuoVectorFloat4 normal = normalSum.Normalize();
         for (ItemBase* item : smoothVertex)
-            item->_normal = normal;
+            item->_normal = normal._vector;
     }
 }
 
@@ -342,21 +342,21 @@ void NuoModelCommon<ItemBase>::GenerateNormals()
         ItemBase *v1 = &_buffer[i1];
         ItemBase *v2 = &_buffer[i2];
         
-        vector_float3 p0 = v0->_position.xyz;
-        vector_float3 p1 = v1->_position.xyz;
-        vector_float3 p2 = v2->_position.xyz;
+        const NuoVectorFloat3 p0(v0->_position.x, v0->_position.y, v0->_position.z);
+        const NuoVectorFloat3 p1(v1->_position.x, v1->_position.y, v1->_position.z);
+        const NuoVectorFloat3 p2(v2->_position.x, v2->_position.y, v2->_position.z);
         
-        vector_float3 cross = vector_cross((p1 - p0), (p2 - p0));
-        vector_float4 cross4 = { cross.x, cross.y, cross.z, 0 };
+        const NuoVectorFloat3 cross = NuoCross((p1 - p0), (p2 - p0));
+        const NuoVectorFloat4 cross4(cross.x(), cross.y(), cross.z(), 0);
         
-        v0->_normal += cross4;
-        v1->_normal += cross4;
-        v2->_normal += cross4;
+        v0->_normal = (NuoVectorFloat4(v0->_normal) + cross4)._vector;
+        v1->_normal = (NuoVectorFloat4(v1->_normal) + cross4)._vector;
+        v2->_normal = (NuoVectorFloat4(v2->_normal) + cross4)._vector;
     }
     
     for (size_t i = 0; i < _buffer.size(); ++i)
     {
-        _buffer[i]._normal = vector_normalize(_buffer[i]._normal);
+        _buffer[i]._normal = NuoVectorFloat4::Normalize(_buffer[i]._normal);
     }
 }
 
@@ -402,7 +402,7 @@ size_t NuoModelCommon<ItemBase>::GetVerticesNumber()
 
 
 template <class ItemBase>
-vector_float4 NuoModelCommon<ItemBase>::GetPosition(size_t index)
+NuoVectorFloat4 NuoModelCommon<ItemBase>::GetPosition(size_t index)
 {
     return _buffer[index]._position;
 }

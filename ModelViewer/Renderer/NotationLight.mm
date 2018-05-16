@@ -7,9 +7,8 @@
 //
 
 #import "NotationLight.h"
-
 #import "NuoMesh.h"
-#import "NuoMathUtilities.h"
+
 #include "NuoMathVector.h"
 
 #include "NuoModelArrow.h"
@@ -78,7 +77,7 @@
 
 - (NuoMeshBounds*)bounds
 {
-    return [_lightVector worldBounds:matrix_identity_float4x4];
+    return [_lightVector worldBounds:NuoMatrixFloat44()];
 }
 
 
