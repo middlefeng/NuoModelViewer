@@ -77,7 +77,7 @@
 
 - (NuoMeshBounds*)bounds
 {
-    return [_lightVector worldBounds:NuoMatrixFloat44()];
+    return [_lightVector worldBounds:NuoMatrixFloat44Identity];
 }
 
 

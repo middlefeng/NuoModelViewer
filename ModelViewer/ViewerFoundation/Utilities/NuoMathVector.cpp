@@ -40,3 +40,8 @@ NuoMatrix<float, 4> NuoMatrixLookAt(const NuoVector<float, 3>& eye,
     glm::mat4x4 gmat = glm::lookAt(aeye, acenter, aup);
     return ToMatrix(gmat);
 }
+
+
+
+const NuoMatrix<float, 4> NuoMatrixFloat44Identity;
+const NuoMatrix<float, 3> NuoMatrixFloat34Identity;

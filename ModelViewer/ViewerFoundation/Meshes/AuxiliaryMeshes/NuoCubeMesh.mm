@@ -85,7 +85,7 @@ static uint16_t kIndices[] =
     
     if (self)
     {
-        _cubeMatrix = NuoMatrixFloat44();
+        _cubeMatrix = NuoMatrixFloat44Identity;
         
         {
             id<MTLBuffer> matrix[kInFlightBufferCount];

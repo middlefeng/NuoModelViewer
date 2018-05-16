@@ -13,7 +13,7 @@
 template <class itemType, int itemCount> class VectorTrait;
 
 
-#define USE_SIMD 0
+#define USE_SIMD 1
 
 
 #if __APPLE__ && USE_SIMD
@@ -193,6 +193,10 @@ NuoMatrix<float, 4> NuoMatrixLookAt(const NuoVector<float, 3>& eye,
 #include "Regular/NuoMathVectorRegular.hpp"
 
 #endif
+
+
+extern const NuoMatrix<float, 4> NuoMatrixFloat44Identity;
+extern const NuoMatrix<float, 3> NuoMatrixFloat34Identity;
 
 
 inline NuoMatrix<float, 4> NuoMatrixRotation(const NuoVector<float, 3>& axis, float angle)

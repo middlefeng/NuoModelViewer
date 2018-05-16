@@ -107,6 +107,13 @@ inline NuoMatrix<float, 4>::NuoMatrix()
 
 
 template <>
+inline NuoMatrix<float, 3>::NuoMatrix()
+    : _m(matrix_identity_float3x3)
+{
+}
+
+
+template <>
 inline bool NuoMatrix<float, 4>::IsIdentity() const
 {
     return matrix_equal(_m, matrix_identity_float4x4);

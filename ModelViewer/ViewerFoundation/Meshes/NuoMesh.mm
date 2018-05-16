@@ -40,8 +40,8 @@
     
     if (self)
     {
-        _transformPoise = NuoMatrixFloat44();
-        _transformTranslate = NuoMatrixFloat44();
+        _transformPoise = NuoMatrixFloat44Identity;
+        _transformTranslate = NuoMatrixFloat44Identity;
         _sampleCount = kSampleCount;
         _meshMode = kMeshMode_Normal;
     }
@@ -86,8 +86,8 @@
             _transformBuffers = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
         }
         
-        _transformPoise = NuoMatrixFloat44();
-        _transformTranslate = NuoMatrixFloat44();
+        _transformPoise = NuoMatrixFloat44Identity;
+        _transformTranslate = NuoMatrixFloat44Identity;
         _sampleCount = kSampleCount;
     }
     

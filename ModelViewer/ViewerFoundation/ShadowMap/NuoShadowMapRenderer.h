@@ -43,7 +43,7 @@
 /**
  *  The projection matrix from the view point of the lightSource.
  */
-- (NuoMatrixFloat44)lightCastMatrix;
+- (const NuoMatrixFloat44&)lightCastMatrix;
 
 
 @end

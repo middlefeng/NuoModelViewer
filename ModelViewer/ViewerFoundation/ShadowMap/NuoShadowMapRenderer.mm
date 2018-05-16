@@ -154,7 +154,7 @@
 
 
 
-- (NuoMatrixFloat44)lightCastMatrix
+- (const NuoMatrixFloat44&)lightCastMatrix
 {
     return _lightCastMatrix;
 }

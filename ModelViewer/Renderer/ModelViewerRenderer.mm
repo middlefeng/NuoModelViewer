@@ -96,8 +96,8 @@
         _meshes = [NSMutableArray new];
         _boardMeshes = [NSMutableArray new];
         
-        _viewRotation = NuoMatrixFloat44();
-        _viewTranslation = NuoMatrixFloat44();
+        _viewRotation = NuoMatrixFloat44Identity;
+        _viewTranslation = NuoMatrixFloat44Identity;
         
         self.paramsProvider = self;
     }
@@ -177,7 +177,7 @@
     
     // move model from camera for a default distance (3 times of r)
     //
-    NuoBounds* bounds = [[_mainModelMesh worldBounds:NuoMatrixFloat44()] boundingBox];
+    NuoBounds* bounds = [[_mainModelMesh worldBounds:NuoMatrixFloat44Identity] boundingBox];
     float radius = bounds->MaxDimension() / 2.0;
     const float defaultDistance = - 3.0 * radius;
     const NuoVectorFloat3 defaultDistanceVec(0, 0, defaultDistance);
@@ -325,8 +325,8 @@
 
 - (void)resetViewTransform
 {
-    _viewRotation = NuoMatrixFloat44();
-    _viewTranslation = NuoMatrixFloat44();
+    _viewRotation = NuoMatrixFloat44Identity;
+    _viewTranslation = NuoMatrixFloat44Identity;
 }
 
 
@@ -884,12 +884,12 @@
     {
         if (!meshBounds)
         {
-            meshBounds = [mesh worldBounds:NuoMatrixFloat44()];
+            meshBounds = [mesh worldBounds:NuoMatrixFloat44Identity];
             bounds = *([meshBounds boundingBox]);
         }
         else
         {
-            bounds = bounds.Union(*[[mesh worldBounds:NuoMatrixFloat44()] boundingBox]);
+            bounds = bounds.Union(*[[mesh worldBounds:NuoMatrixFloat44Identity] boundingBox]);
         }
     }
     
@@ -979,7 +979,7 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        [mesh updateUniform:inFlight withTransform:NuoMatrixFloat44()];
+        [mesh updateUniform:inFlight withTransform:NuoMatrixFloat44Identity];
         [mesh setCullEnabled:_cullEnabled];
     }
     
@@ -987,7 +987,7 @@
     {
         const NuoMatrixFloat44 projectionMatrixForCube = NuoMatrixPerspective(aspect, _fieldOfView, 0.3, 2.0);
         [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
-        [_cubeMesh updateUniform:inFlight withTransform:NuoMatrixFloat44()];
+        [_cubeMesh updateUniform:inFlight withTransform:NuoMatrixFloat44Identity];
     }
     
     if (_backdropMesh)
@@ -1081,7 +1081,7 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        NuoVectorFloat3 center = [[mesh worldBounds:NuoMatrixFloat44()] boundingBox]->_center;
+        NuoVectorFloat3 center = [[mesh worldBounds:NuoMatrixFloat44Identity] boundingBox]->_center;
         NuoVectorFloat4 centerVec(center.x(), center.y(), center.z(), 1.0);
         NuoVectorFloat4 centerProjected = _projection * centerVec;
         NuoVectorFloat2 centerOnScreen = NuoVectorFloat2(centerProjected.x(), centerProjected.y()) / centerProjected.w();
