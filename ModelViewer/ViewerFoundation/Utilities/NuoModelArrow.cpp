@@ -72,7 +72,7 @@ NuoVectorFloat4 NuoModelArrow::GetBodyNormal(size_t index)
 NuoVectorFloat4 NuoModelArrow::GetEndVertex(size_t type)
 {
     float length = _bodyLength + _headLength;
-    return NuoVectorFloat4(0, 0, length * type, 1.0);
+    return NuoVectorFloat4(0, 0, length * type, 0.0);
 }
 
 
@@ -92,7 +92,7 @@ NuoVectorFloat4 NuoModelArrow::GetHeadNormal(size_t index)
     NuoVectorFloat3 normal = NuoCross(bodyVector, tangentVector);
     normal = normal.Normalize();
     
-    return NuoVectorFloat4(normal.x(), normal.y(), normal.z(), 1.0);
+    return NuoVectorFloat4(normal.x(), normal.y(), normal.z(), 0.0);
 }
 
 
