@@ -53,7 +53,7 @@
 // mesh rotation in model coordinate, around given axis.
 // better for script-based rotation
 //
-@property (nonatomic, strong) NuoMeshRotation* rotation;
+@property (nonatomic, assign) NuoMeshRotation rotation;
 
 // mesh transform about the poise (rotation around model center).
 // note this transform may include a slight translation before rotation

@@ -74,7 +74,7 @@
         _shadowOptionPCSS = YES;
         _shadowOptionPCF = YES;
         
-        _rotation = [[NuoMeshRotation alloc] init];
+        _rotation = NuoMeshRotation();
         
         {
             id<MTLBuffer> buffers[kInFlightBufferCount];
@@ -462,8 +462,7 @@
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
 {
     NuoMatrixFloat44 localTransform = _transformTranslate * _transformPoise;
-    if (_rotation)
-        localTransform = localTransform * _rotation.rotationMatrix;
+    localTransform = localTransform * _rotation.RotationMatrix();
     NuoMatrixFloat44 transformWorld = transform * localTransform;
     
     NuoMeshUniforms uniforms;

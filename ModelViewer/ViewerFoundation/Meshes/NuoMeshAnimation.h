@@ -8,11 +8,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "NuoMeshRotation.h"
 
 
 @class NuoLua;
 @class NuoMesh;
-@class NuoMeshRotation;
 
 
 
@@ -21,7 +21,7 @@
 @property (nonatomic, strong) NSString* animationName;
 
 @property (nonatomic, strong) NSArray<NuoMesh*>* mesh;
-@property (nonatomic, strong) NuoMeshRotation* animationEndPoint;
+@property (nonatomic, assign) NuoMeshRotation animationEndPoint;
 
 
 - (void)importAnimation:(NuoLua*)lua forMesh:(NSArray<NuoMesh*>*)mesh;
