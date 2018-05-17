@@ -17,6 +17,12 @@
 template <int itemCount> struct NuoRegularVector;
 
 
+/**
+ *  vector must be 16-byte aligned regardless the dimension it is of, in order
+ *  to compatible with Metal shader
+ */
+
+
 template <int itemCount>
 struct NuoInternalVec
 {

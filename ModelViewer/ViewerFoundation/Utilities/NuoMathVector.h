@@ -120,11 +120,17 @@ inline NuoVector<float, 4>::NuoVector(float x, float y, float z, float w)
 
 template <class itemType, int itemCount>
 inline NuoVector<itemType, itemCount>
-operator - (const NuoVector<itemType, itemCount>& v1, const NuoVector<itemType, itemCount>& v2);
+operator - (const NuoVector<itemType, itemCount>& v1, const NuoVector<itemType, itemCount>& v2)
+{
+    return NuoVector<float, itemCount>(v1._vector - v2._vector);
+}
 
 template <class itemType, int itemCount>
 inline NuoVector<itemType, itemCount>
-operator + (const NuoVector<itemType, itemCount>& v1, const NuoVector<itemType, itemCount>& v2);
+operator + (const NuoVector<itemType, itemCount>& v1, const NuoVector<itemType, itemCount>& v2)
+{
+    return NuoVector<float, itemCount>(v1._vector + v2._vector);
+}
 
 template <class itemType, int itemCount>
 inline itemType NuoDistance(const NuoVector<itemType, itemCount>& v1, const NuoVector<itemType, itemCount>& v2);

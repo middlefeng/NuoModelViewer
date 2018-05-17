@@ -15,9 +15,9 @@
 
 struct NuoItemTextured
 {
-    NuoVectorFloat4::_typeTrait::_vectorType _position __attribute__ ((aligned (16)));
-    NuoVectorFloat4::_typeTrait::_vectorType _normal   __attribute__ ((aligned (16)));
-    NuoVectorFloat2::_typeTrait::_vectorType _texCoord __attribute__ ((aligned (16)));
+    NuoVectorFloat4::_typeTrait::_vectorType _position;
+    NuoVectorFloat4::_typeTrait::_vectorType _normal;
+    NuoVectorFloat2::_typeTrait::_vectorType _texCoord;
     
     NuoItemTextured();
     

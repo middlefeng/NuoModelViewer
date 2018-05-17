@@ -48,23 +48,6 @@ operator * (const NuoMatrix<float, itemCount>& m, const NuoVector<float, itemCou
 
 
 template <int itemCount>
-inline NuoVector<float, itemCount>
-operator - (const NuoVector<float, itemCount>& v1,
-            const NuoVector<float, itemCount>& v2)
-{
-    return NuoVector<float, itemCount>(v1._vector - v2._vector);
-}
-
-
-template <int itemCount>
-inline NuoVector<float, itemCount>
-operator + (const NuoVector<float, itemCount>& v1,
-            const NuoVector<float, itemCount>& v2)
-{
-    return NuoVector<float, itemCount>(v1._vector + v2._vector);
-}
-
-template <int itemCount>
 inline float NuoDistance(const NuoVector<float, itemCount>& v1, const NuoVector<float, itemCount>& v2)
 {
     return simd::distance(v1._vector, v2._vector);

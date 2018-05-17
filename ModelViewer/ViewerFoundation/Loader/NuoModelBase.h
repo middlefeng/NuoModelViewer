@@ -349,9 +349,9 @@ void NuoModelCommon<ItemBase>::GenerateNormals()
         const NuoVectorFloat3 cross = NuoCross((p1 - p0), (p2 - p0));
         const NuoVectorFloat4 cross4(cross.x(), cross.y(), cross.z(), 0);
         
-        v0->_normal = (NuoVectorFloat4(v0->_normal) + cross4)._vector;
-        v1->_normal = (NuoVectorFloat4(v1->_normal) + cross4)._vector;
-        v2->_normal = (NuoVectorFloat4(v2->_normal) + cross4)._vector;
+        v0->_normal = v0->_normal + cross4._vector;
+        v1->_normal = v1->_normal + cross4._vector;
+        v2->_normal = v2->_normal + cross4._vector;
     }
     
     for (size_t i = 0; i < _buffer.size(); ++i)

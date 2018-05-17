@@ -54,24 +54,6 @@ operator * (const NuoMatrix<float, itemCount>& m, const NuoVector<float, itemCou
     return NuoVector<float, itemCount>(m._m * v._vector);
 }
 
-
-template <int itemCount>
-inline NuoVector<float, itemCount>
-operator - (const NuoVector<float, itemCount>& v1,
-            const NuoVector<float, itemCount>& v2)
-{
-    return NuoVector<float, itemCount>(v1._vector - v2._vector);
-}
-
-
-template <int itemCount>
-inline NuoVector<float, itemCount>
-operator + (const NuoVector<float, itemCount>& v1,
-            const NuoVector<float, itemCount>& v2)
-{
-    return NuoVector<float, itemCount>(v1._vector + v2._vector);
-}
-
 inline float NuoDistance(const NuoVector<float, 2>& v1, const NuoVector<float, 2>& v2)
 {
     glm::vec2 vec1(v1._vector.x, v1._vector.y);
