@@ -662,7 +662,7 @@
     
     [lua getField:@"viewMatrixTranslation" fromTable:-1];
     if (![lua isNil:-1])
-        _viewRotation = [lua getMatrixFromTable:-1];
+        _viewTranslation = [lua getMatrixFromTable:-1];
     [lua removeField];
     
     [lua getField:@"view" fromTable:-1];
