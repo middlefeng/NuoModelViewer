@@ -662,7 +662,7 @@
     
     lua->GetField("viewMatrixTranslation", -1);
     if (!lua->IsNil(-1))
-        _viewRotation = lua->GetMatrixFromTable(-1);
+        _viewTranslation = lua->GetMatrixFromTable(-1);
     lua->RemoveField();
     
     lua->GetField("view", -1);
