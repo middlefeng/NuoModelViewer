@@ -6,6 +6,7 @@
 #include "NuoUniforms.h"
 
 #include "NuoMathVector.h"
+#include "NuoMeshBounds.h"
 
 
 
@@ -24,9 +25,6 @@
  */
 
 
-
-
-@class NuoMeshBounds;
 
 
 @interface NuoMesh : NSObject
@@ -82,7 +80,7 @@
 @property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
 
-@property (nonatomic, strong) NuoMeshBounds* boundsLocal;
+@property (nonatomic, assign) NuoMeshBounds boundsLocal;
 @property (nonatomic, assign) BOOL enabled;
 @property (nonatomic, assign) BOOL cullEnabled;
 
@@ -115,7 +113,7 @@
 - (BOOL)hasTransparency;
 - (void)setTransparency:(BOOL)transparent;
 
-- (NuoMeshBounds*)worldBounds:(const NuoMatrixFloat44&)transform;
+- (NuoMeshBounds)worldBounds:(const NuoMatrixFloat44&)transform;
 
 - (void)centerMesh;
 

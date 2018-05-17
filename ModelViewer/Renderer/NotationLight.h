@@ -9,9 +9,10 @@
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 
+#include "NuoMeshBounds.h"
+
 
 @class NuoLightSource;
-@class NuoMeshBounds;
 
 
 @interface NotationLight : NSObject
@@ -28,7 +29,7 @@
               withInFlight:(unsigned int)inFlight;
 
 
-- (NuoMeshBounds*)bounds;
+- (NuoMeshBounds)bounds;
 - (CGPoint)headPointProjected;
 
 

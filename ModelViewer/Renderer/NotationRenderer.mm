@@ -103,9 +103,9 @@
 
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
-    NuoMeshBounds* meshBounds = _lightVectors[0].bounds;
-    NuoBounds* bounds = [meshBounds boundingBox];
-    float modelSpan = fmax(bounds->_span.x(), fmax(bounds->_span.y(), bounds->_span.z()));
+    NuoMeshBounds meshBounds = _lightVectors[0].bounds;
+    const NuoBounds& bounds = meshBounds.boundingBox;
+    const float modelSpan = bounds.MaxDimension();
     
     float zoom = -200.0;
     

@@ -149,37 +149,35 @@
 
 
 
-- (NuoMeshBounds*)worldBounds:(const NuoMatrixFloat44&)transform
+- (NuoMeshBounds)worldBounds:(const NuoMatrixFloat44&)transform
 {
-    NuoBounds* boundsLocal = ((NuoBounds*)[_boundsLocal boundingBox]);
-    NuoSphere* sphereLocal = ((NuoSphere*)[_boundsLocal boundingSphere]);
+    const NuoBounds& boundsLocal = _boundsLocal.boundingBox;
+    const NuoSphere& sphereLocal = _boundsLocal.boundingSphere;
     
     const NuoMatrixFloat44 transformObject = _transformTranslate * _transformPoise;
     const NuoMatrixFloat44 transformWorld = transform * transformObject;
     
-    NuoMeshBounds* worldMeshBounds = [NuoMeshBounds new];
-    NuoBounds* worldBounds = ((NuoBounds*)[worldMeshBounds boundingBox]);
-    NuoSphere* worldSphere = ((NuoSphere*)[worldMeshBounds boundingSphere]);
+    NuoMeshBounds worldMeshBounds =
+    {
+        boundsLocal.Transform(transformWorld),
+        sphereLocal.Transform(transformWorld)
+    };
     
-    *worldBounds = boundsLocal->Transform(transformWorld);
-    *worldSphere = sphereLocal->Transform(transformWorld);
     return worldMeshBounds;
 }
 
 
 
-- (void)setBoundsLocal:(NuoMeshBounds*)boundsLocal
+- (void)setBoundsLocal:(NuoMeshBounds)boundsLocal
 {
     _boundsLocal = boundsLocal;
     
     // calculate the sphere from box if the former is not calculated.
     // some subclass might do this by itself (such as compound mesh)
     //
-    if (_boundsLocal.boundingSphere->_radius == 0.)
+    if (_boundsLocal.boundingSphere._radius == 0.)
     {
-        NuoBounds* localBounds = ((NuoBounds*)[_boundsLocal boundingBox]);
-        NuoSphere* localSphere = ((NuoSphere*)[_boundsLocal boundingSphere]);
-        *localSphere = localBounds->Sphere();
+        _boundsLocal.boundingSphere = _boundsLocal.boundingBox.Sphere();
     }
 }
 
@@ -543,15 +541,8 @@
 
 - (void)centerMesh
 {
-    NuoBounds* bounds = [_boundsLocal boundingBox];
-    const NuoVectorFloat3 translationToCenter =
-    {
-        - bounds->_center.x(),
-        - bounds->_center.y(),
-        - bounds->_center.z()
-    };
-    
-    _transformPoise = NuoMatrixTranslation(translationToCenter);
+    const NuoBounds& bounds = _boundsLocal.boundingBox;
+    _transformPoise = NuoMatrixTranslation(- bounds._center);
 }
 
 

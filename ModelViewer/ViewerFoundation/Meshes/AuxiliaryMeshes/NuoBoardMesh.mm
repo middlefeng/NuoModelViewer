@@ -132,8 +132,8 @@ NuoBoardMesh* CreateBoardMesh(id<MTLCommandQueue> commandQueue, const std::share
                                                  withLength:model->IndicesLength()
                                               withDimension:NuoVectorFloat3(model->_width, model->_height, model->_thickness)];
     
-    NuoMeshBounds* bounds = [NuoMeshBounds new];
-    *((NuoBounds*)[bounds boundingBox]) = model->GetBoundingBox();
+    NuoMeshBounds bounds;
+    bounds.boundingBox = model->GetBoundingBox();
     
     resultMesh.boundsLocal = bounds;
     

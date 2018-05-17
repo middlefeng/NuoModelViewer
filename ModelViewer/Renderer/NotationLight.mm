@@ -56,8 +56,8 @@
         PNuoModelArrow arrow = std::make_shared<NuoModelArrow>(bodyLength, bodyRadius, headLength, headRadius);
         arrow->CreateBuffer();
         
-        NuoMeshBounds* meshBounds = [NuoMeshBounds new];
-        *((NuoBounds*)[meshBounds boundingBox]) = arrow->GetBoundingBox();
+        NuoMeshBounds meshBounds;
+        meshBounds.boundingBox = arrow->GetBoundingBox();
         
         _lightVector = [[NuoMesh alloc] initWithCommandQueue:commandQueue
                                     withVerticesBuffer:arrow->Ptr() withLength:arrow->Length()
@@ -75,7 +75,7 @@
 }
 
 
-- (NuoMeshBounds*)bounds
+- (NuoMeshBounds)bounds
 {
     return [_lightVector worldBounds:NuoMatrixFloat44Identity];
 }
@@ -92,13 +92,13 @@
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
     NuoLightSource* desc = _lightSourceDesc;
-    NuoBounds* bounds = [_lightVector.boundsLocal boundingBox];
+    const NuoBounds bounds = _lightVector.boundsLocal.boundingBox;
     
     const NuoVectorFloat3 translationToCenter
     (
-        - bounds->_center.x(),
-        - bounds->_center.y(),
-        - bounds->_center.z() + bounds->_span.z() / 2.0f
+        - bounds._center.x(),
+        - bounds._center.y(),
+        - bounds._center.z() + bounds._span.z() / 2.0f
     );
     
     const NuoMatrixFloat44 modelCenteringMatrix = NuoMatrixTranslation(translationToCenter);

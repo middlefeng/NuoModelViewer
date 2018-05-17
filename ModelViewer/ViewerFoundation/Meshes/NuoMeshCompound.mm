@@ -51,44 +51,37 @@
 {
     _meshes = meshes;
     
-    NuoBounds bounds = *((NuoBounds*)[meshes[0].boundsLocal boundingBox]);
-    NuoSphere sphere = *((NuoSphere*)[meshes[0].boundsLocal boundingSphere]);
+    NuoBounds bounds = meshes[0].boundsLocal.boundingBox;
+    NuoSphere sphere = meshes[0].boundsLocal.boundingSphere;
     for (size_t i = 1; i < meshes.count; ++i)
     {
-        bounds = bounds.Union(*((NuoBounds*)[meshes[i].boundsLocal boundingBox]));
-        sphere = sphere.Union(*((NuoSphere*)[meshes[i].boundsLocal boundingSphere]));
+        bounds = bounds.Union(meshes[i].boundsLocal.boundingBox);
+        sphere = sphere.Union(meshes[i].boundsLocal.boundingSphere);
     }
     
-    NuoMeshBounds* meshBounds = [NuoMeshBounds new];
-    *((NuoBounds*)[meshBounds boundingBox]) = bounds;
-    *((NuoSphere*)[meshBounds boundingSphere]) = sphere;
-    
+    NuoMeshBounds meshBounds = { bounds, sphere };
     self.boundsLocal = meshBounds;
 }
 
 
-- (NuoMeshBounds*)worldBounds:(const NuoMatrixFloat44&)transform
+- (NuoMeshBounds)worldBounds:(const NuoMatrixFloat44&)transform
 {
     NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
     NuoMatrixFloat44 transformWorld = transform * transformLocal;
     
-    NuoMeshBounds* meshBounds = [_meshes[0] worldBounds:transformWorld];
-    NuoBounds bounds = *((NuoBounds*)[meshBounds boundingBox]);
-    NuoSphere sphere = *((NuoSphere*)[meshBounds boundingSphere]);
+    NuoMeshBounds meshBounds = [_meshes[0] worldBounds:transformWorld];
+    NuoBounds bounds = meshBounds.boundingBox;
+    NuoSphere sphere = meshBounds.boundingSphere;
     
     for (size_t i = 1; i < _meshes.count; ++i)
     {
-        NuoMeshBounds* meshBoundsItem = [_meshes[i] worldBounds:transformWorld];
+        NuoMeshBounds meshBoundsItem = [_meshes[i] worldBounds:transformWorld];
         
-        bounds = bounds.Union(*((NuoBounds*)[meshBoundsItem boundingBox]));
-        sphere = sphere.Union(*((NuoSphere*)[meshBoundsItem boundingSphere]));
+        bounds = bounds.Union(meshBoundsItem.boundingBox);
+        sphere = sphere.Union(meshBoundsItem.boundingSphere);
     }
     
-    NuoMeshBounds* result = [NuoMeshBounds new];
-    *[result boundingBox] = bounds;
-    *[result boundingSphere] = sphere;
-    
-    return result;
+    return { bounds, sphere };
 }
 
 

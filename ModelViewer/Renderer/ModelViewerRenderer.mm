@@ -177,8 +177,8 @@
     
     // move model from camera for a default distance (3 times of r)
     //
-    NuoBounds* bounds = [[_mainModelMesh worldBounds:NuoMatrixFloat44Identity] boundingBox];
-    float radius = bounds->MaxDimension() / 2.0;
+    const NuoBounds bounds = [_mainModelMesh worldBounds:NuoMatrixFloat44Identity].boundingBox;
+    const float radius = bounds.MaxDimension() / 2.0;
     const float defaultDistance = - 3.0 * radius;
     const NuoVectorFloat3 defaultDistanceVec(0, 0, defaultDistance);
     [_mainModelMesh setTransformTranslate:NuoMatrixTranslation(defaultDistanceVec)];
@@ -336,8 +336,8 @@
     modelBoard->CreateBuffer();
     NuoBoardMesh* boardMesh = CreateBoardMesh(self.commandQueue, modelBoard, [_modelOptions basicMaterialized]);
     
-    NuoBounds* bounds = [[boardMesh boundsLocal] boundingBox];
-    float radius = bounds->MaxDimension();
+    const NuoBounds bounds = boardMesh.boundsLocal.boundingBox;
+    const float radius = bounds.MaxDimension();
     const float defaultDistance = - 3.0 * radius;
     const NuoVectorFloat3 defaultDistanceVec(0, 0, defaultDistance);
     [boardMesh setTransformTranslate:NuoMatrixTranslation(defaultDistanceVec)];
@@ -827,7 +827,7 @@
     
     NuoBounds bounds;
     if (_selectedMesh)
-        bounds = *((NuoBounds*)[[_selectedMesh worldBounds:[self viewMatrix]] boundingBox]);
+        bounds = [_selectedMesh worldBounds:[self viewMatrix]].boundingBox;
     float radius = bounds.MaxDimension();
     
     // simply using "z" works until the view matrix is no longer an identitiy
@@ -878,22 +878,22 @@
 - (void)caliberateSceneCenter
 {
     NuoBounds bounds;
-    NuoMeshBounds* meshBounds;
+    bool head = true;
     
     for (NuoMesh* mesh in _meshes)
     {
-        if (!meshBounds)
+        if (head)
         {
-            meshBounds = [mesh worldBounds:NuoMatrixFloat44Identity];
-            bounds = *([meshBounds boundingBox]);
+            bounds = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox;
+            head = false;
         }
         else
         {
-            bounds = bounds.Union(*[[mesh worldBounds:NuoMatrixFloat44Identity] boundingBox]);
+            bounds = bounds.Union([mesh worldBounds:NuoMatrixFloat44Identity].boundingBox);
         }
     }
     
-    _sceneCenter = NuoVectorFloat3(bounds._center.x(), bounds._center.y(), bounds._center.z());
+    _sceneCenter = bounds._center;
 }
 
 
@@ -923,17 +923,17 @@
     // bounding box transform and determining the near/far
     //
     NuoBounds bounds;
-    NuoMeshBounds* meshBounds = nil;
+    bool head = true;
     for (NuoMesh* mesh in _meshes)
     {
-        if (!meshBounds)
+        if (head)
         {
-            meshBounds = [mesh worldBounds:viewTrans];
-            bounds = *((NuoBounds*)[meshBounds boundingBox]);
+            bounds = [mesh worldBounds:viewTrans].boundingBox;
+            head = false;
         }
         else
         {
-            bounds = bounds.Union(*(NuoBounds*)[[mesh worldBounds:viewTrans] boundingBox]);
+            bounds = bounds.Union([mesh worldBounds:viewTrans].boundingBox);
         }
     }
 
@@ -1081,7 +1081,7 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        NuoVectorFloat3 center = [[mesh worldBounds:NuoMatrixFloat44Identity] boundingBox]->_center;
+        NuoVectorFloat3 center = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox._center;
         NuoVectorFloat4 centerVec(center.x(), center.y(), center.z(), 1.0);
         NuoVectorFloat4 centerProjected = _projection * centerVec;
         NuoVectorFloat2 centerOnScreen = NuoVectorFloat2(centerProjected.x(), centerProjected.y()) / centerProjected.w();

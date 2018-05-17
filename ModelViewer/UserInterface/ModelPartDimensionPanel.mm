@@ -104,9 +104,9 @@
     
     NSArray<NuoMesh*>* mesh = _selectedMesh;
     
-    NuoBounds bounds = *((NuoBounds*)[mesh[0].boundsLocal boundingBox]);
+    NuoBounds bounds = mesh[0].boundsLocal.boundingBox;
     for (size_t i = 1; i < mesh.count; ++i)
-        bounds = bounds.Union(*((NuoBounds*)[mesh[i].boundsLocal boundingBox]));
+        bounds = bounds.Union(mesh[i].boundsLocal.boundingBox);
     
     NSString* dimensionString = [[NSString alloc] initWithFormat:@"%0.1f, %0.1f, %0.1f",
                                         bounds._span.x(), bounds._span.y(), bounds._span.z()];

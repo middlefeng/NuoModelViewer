@@ -96,9 +96,9 @@
     NuoBounds bounds;
     if (_meshes && _meshes.count > 0)
     {
-        bounds = *[[_meshes[0] worldBounds:viewMatrix] boundingBox];
+        bounds = [_meshes[0] worldBounds:viewMatrix].boundingBox;
         for (NSUInteger i = 1; i < _meshes.count; ++i)
-            bounds = bounds.Union(*([_meshes[i] worldBounds:viewMatrix].boundingBox));
+            bounds = bounds.Union([_meshes[i] worldBounds:viewMatrix].boundingBox);
     }
     
     float viewPortHeight = bounds._span.y() / 2.0f;
