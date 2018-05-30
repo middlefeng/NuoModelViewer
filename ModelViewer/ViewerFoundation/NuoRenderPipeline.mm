@@ -8,6 +8,7 @@
 
 #import "NuoRenderPipeline.h"
 #import "NuoRenderPipelinePass.h"
+#import "NuoRenderPassAttachment.h"
 
 
 
@@ -46,7 +47,10 @@
                 return NO;
             
             NuoRenderPassTarget* finalResult = renderStep.renderTarget;
-            [finalResult setTargetTexture:currentDrawable];
+            NuoRenderPassAttachment* attachment = finalResult.colorAttachments[0];
+            
+            assert(! attachment.manageTexture);
+            [attachment setTexture:currentDrawable];
         }
     }
     

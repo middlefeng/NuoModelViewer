@@ -25,6 +25,9 @@
 #endif
 
 
+@class NuoRenderPassAttachment;
+
+
 
 @interface NuoRenderPassTarget : NSObject
 
@@ -44,12 +47,11 @@
 @property (nonatomic, assign) BOOL resolveDepth;
 
 /**
- *  the texture that holds the rendered pixels of the current pass
+ *  the texture that holds the rendered pixels of the current pass, this are
+ *  merely shortcuts to the corresponding attachments
  */
-@property (nonatomic, strong) id<MTLTexture> targetTexture;
-
-@property (nonatomic, strong) id<MTLTexture> depthTexture;
-@property (nonatomic, readonly) id<MTLTexture> depthAttachmentTexture;
+@property (nonatomic, readonly) id<MTLTexture> targetTexture;
+@property (nonatomic, readonly) id<MTLTexture> depthTexture;
 
 /**
  *  whether the target texture is managed by the render-pass itself
@@ -65,6 +67,10 @@
 @property (nonatomic, assign) BOOL sharedTargetTexture;
 
 @property (nonatomic, readonly) MTLPixelFormat targetPixelFormat;
+
+
+@property (nonatomic, strong) NSArray<NuoRenderPassAttachment*>* colorAttachments;
+@property (nonatomic, strong) NuoRenderPassAttachment* depthAttachment;
 
 @property (nonatomic, assign) MTLClearColor clearColor;
 
@@ -88,5 +94,7 @@
 - (void)clearAction:(id<MTLRenderCommandEncoder>)encoder;
 
 - (MTLRenderPassDescriptor *)currentRenderPassDescriptor;
+
+- (void)setColorAttachment:(NuoRenderPassAttachment*)colorAttachment forIndex:(NSUInteger)index;
 
 @end

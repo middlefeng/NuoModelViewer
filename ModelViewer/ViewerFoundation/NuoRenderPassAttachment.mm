@@ -33,7 +33,7 @@
         return;
         
         
-    if (_needResolve || _sampleCount == 1)
+    if (_manageTexture && (_needResolve || _sampleCount == 1))
     {
         MTLTextureDescriptor *desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:_pixelFormat
                                                                                         width:_drawableSize.width
@@ -44,14 +44,14 @@
         
         desc.sampleCount = 1;
         desc.textureType = MTLTextureType2D;
-        desc.resourceOptions = MTLResourceStorageModePrivate;
+        desc.resourceOptions = _sharedTexture ? MTLResourceStorageModeManaged : MTLResourceStorageModePrivate;
         desc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
         
         _texture = [_device newTextureWithDescriptor:desc];
         [_texture setLabel:_name];
     }
     
-    if (_sampleCount > 1 && _needResolve)
+    if (_sampleCount > 1)
     {
         MTLTextureDescriptor *sampleDesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:_pixelFormat
                                                                                               width:_drawableSize.width
@@ -79,15 +79,21 @@
     {
         result = [MTLRenderPassColorAttachmentDescriptor new];
         ((MTLRenderPassColorAttachmentDescriptor*)result).clearColor = _clearColor;
+        result.loadAction = _needClear ? NUO_LOAD_ACTION : MTLLoadActionDontCare;
     }
     
     if (_type == kNuoRenderPassAttachment_Depth)
     {
         result = [MTLRenderPassDepthAttachmentDescriptor new];
+        ((MTLRenderPassDepthAttachmentDescriptor*)result).clearDepth = 1.0;
+        
+        // there is no code to clear the depth buffer without the built-in render pass
+        // clear action support, so MTLLoadActionClear is aleays used
+        //
+        result.loadAction = MTLLoadActionClear;
     }
         
     result.texture = (_sampleCount == 1) ? _texture : _sampleTexture;
-    result.loadAction = _needClear ? NUO_LOAD_ACTION : MTLLoadActionDontCare;
     
     if (_needStore)
     {

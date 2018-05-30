@@ -75,7 +75,7 @@ static const size_t kFrameDurationMeasureCount = 20;
 {
     if ((self = [super initWithCoder:aDecoder]))
     {
-        _displaySemaphore = dispatch_semaphore_create(kInFlightBufferCount);
+        _displaySemaphore = dispatch_semaphore_create(1);
     }
 
     return self;
@@ -87,7 +87,7 @@ static const size_t kFrameDurationMeasureCount = 20;
     {
         [self commonInit];
         self.metalLayer.device = device;
-        _displaySemaphore = dispatch_semaphore_create(kInFlightBufferCount);
+        _displaySemaphore = dispatch_semaphore_create(1);
     }
 
     return self;

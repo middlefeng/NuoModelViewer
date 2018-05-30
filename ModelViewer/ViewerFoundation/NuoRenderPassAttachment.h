@@ -11,6 +11,14 @@
 #import <Metal/Metal.h>
 
 
+/**
+ *  attachment is the sum of all information and resources need for an attachment to start
+ *  a render pass (i.e. an encoder in Metal). it includes a texture (sometimes a frame buffer),
+ *  optionally with a resolving target (for MSAA), and the information such as clear color,
+ *  load/store action.
+ */
+
+
 enum NuoRenderPassAttachmentType
 {
     kNuoRenderPassAttachment_Color,
@@ -26,6 +34,9 @@ enum NuoRenderPassAttachmentType
 @property (assign, nonatomic) CGSize drawableSize;
 
 @property (weak, nonatomic) id<MTLDevice> device;
+
+@property (assign, nonatomic) BOOL manageTexture;
+@property (assign, nonatomic) BOOL sharedTexture;
 @property (strong, nonatomic) id<MTLTexture> texture;
 @property (assign, nonatomic) MTLPixelFormat pixelFormat;
 
