@@ -671,7 +671,7 @@
     
     lua->GetField("models", -1);
     
-    size_t length = lua->GetArraySize(-1);
+    const size_t length = lua->GetArraySize(-1);
     size_t passedModel = 0;
     
     for (size_t i = 0; i < length; ++i)
@@ -702,7 +702,7 @@
     
     if (!lua->IsNil(-1))
     {
-        length = lua->GetArraySize(-1);
+        const size_t length = lua->GetArraySize(-1);
         if (length > 0)
             [self removeAllBoards];
         
@@ -768,8 +768,8 @@
     
     if (_modelLoader)
     {
-        NuoMatrixFloat44 originalPoise = _mainModelMesh.transformPoise;
-        NuoMatrixFloat44 originalTrans = _mainModelMesh.transformTranslate;
+        const NuoMatrixFloat44 originalPoise = _mainModelMesh.transformPoise;
+        const NuoMatrixFloat44 originalTrans = _mainModelMesh.transformTranslate;
         
         [self createMeshsWithProgress:progress];
         
@@ -862,14 +862,13 @@
         distanceDelta
     );
     
-    NuoMatrixFloat44 transMatrix = _selectedMesh.transformTranslate;
     if (_transMode == kTransformMode_View)
     {
         _viewTranslation = NuoMatrixTranslation(translation) * _viewTranslation;
     }
     else
     {
-        transMatrix = NuoMatrixTranslation(translation) * transMatrix;
+        const NuoMatrixFloat44 transMatrix = NuoMatrixTranslation(translation) * _selectedMesh.transformTranslate;
         [_selectedMesh setTransformTranslate:transMatrix];
     }
 }
@@ -901,7 +900,7 @@
 {
     // rotation is around the center of a previous scene snapshot
     //
-    NuoMatrixFloat44 viewTrans = NuoMatrixRotationAround(_viewRotation, _sceneCenter);
+    const NuoMatrixFloat44 viewTrans = NuoMatrixRotationAround(_viewRotation, _sceneCenter);
     return _viewTranslation * viewTrans;
 }
 
@@ -915,7 +914,7 @@
     
     // rotation is around the center of a previous scene snapshot
     //
-    NuoMatrixFloat44 viewTrans = [self viewMatrix];
+    const NuoMatrixFloat44 viewTrans = [self viewMatrix];
     
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
@@ -958,8 +957,7 @@
         const NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(_lights[i].lightingRotationX,
                                                                   _lights[i].lightingRotationY);
         
-        NuoVectorFloat4 lightVector(0, 0, 1, 0);
-        lightVector = rotationMatrix * lightVector;
+        const NuoVectorFloat4 lightVector(rotationMatrix * NuoVectorFloat4(0, 0, 1, 0));
         lighting.lightParams[i].direction = lightVector._vector;
         lighting.lightParams[i].density = _lights[i].lightingDensity;
         lighting.lightParams[i].spacular = _lights[i].lightingSpacular;
@@ -1079,17 +1077,17 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        NuoVectorFloat3 center = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox._center;
-        NuoVectorFloat4 centerVec(center.x(), center.y(), center.z(), 1.0);
-        NuoVectorFloat4 centerProjected = _projection * centerVec;
-        NuoVectorFloat2 centerOnScreen = NuoVectorFloat2(centerProjected.x(), centerProjected.y()) / centerProjected.w();
+        const NuoVectorFloat3 center = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox._center;
+        const NuoVectorFloat4 centerVec(center.x(), center.y(), center.z(), 1.0);
+        const NuoVectorFloat4 centerProjected = _projection * centerVec;
+        const NuoVectorFloat2 centerOnScreen = NuoVectorFloat2(centerProjected.x(), centerProjected.y()) / centerProjected.w();
         
         CGSize drawableSize = self.renderTarget.drawableSize;
-        float scale = [[NSScreen mainScreen] backingScaleFactor];
-        NuoVectorFloat2 normalized((point.x * scale) / drawableSize.width * 2.0 - 1.0,
-                                   (point.y * scale) / drawableSize.height * 2.0 - 1.0);
+        const float scale = [[NSScreen mainScreen] backingScaleFactor];
+        const NuoVectorFloat2 normalized((point.x * scale) / drawableSize.width * 2.0 - 1.0,
+                                         (point.y * scale) / drawableSize.height * 2.0 - 1.0);
         
-        float currentDistance = NuoDistance(normalized, centerOnScreen);
+        const float currentDistance = NuoDistance(normalized, centerOnScreen);
         if (currentDistance < distance)
         {
             distance = currentDistance;
