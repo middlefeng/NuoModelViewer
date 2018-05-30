@@ -94,22 +94,19 @@
     }
         
     result.texture = (_sampleCount == 1) ? _texture : _sampleTexture;
-    
-    if (_needStore)
+    result.storeAction = MTLStoreActionDontCare;
+
+    if (_needStore || _needResolve)
     {
         if (_sampleCount > 1 && _needResolve)
         {
-            result.storeAction = MTLStoreActionMultisampleResolve;
+            result.storeAction = _needStore ? MTLStoreActionStoreAndMultisampleResolve : MTLStoreActionMultisampleResolve;
             result.resolveTexture = _texture;
         }
-        else
+        else if (_needStore)
         {
             result.storeAction = MTLStoreActionStore;
         }
-    }
-    else
-    {
-        result.storeAction = MTLStoreActionDontCare;
     }
 
     return result;

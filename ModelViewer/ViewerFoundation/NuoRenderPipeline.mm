@@ -42,15 +42,17 @@
         }
         else
         {
-            id<MTLTexture> currentDrawable = [_renderPipelineDelegate nextFinalTexture];
-            if (!currentDrawable)
-                return NO;
-            
             NuoRenderPassTarget* finalResult = renderStep.renderTarget;
-            NuoRenderPassAttachment* attachment = finalResult.colorAttachments[0];
             
-            assert(! attachment.manageTexture);
-            [attachment setTexture:currentDrawable];
+            if (!finalResult.manageTargetTexture)
+            {
+                id<MTLTexture> currentDrawable = [_renderPipelineDelegate nextFinalTexture];
+                if (!currentDrawable)
+                    return NO;
+                
+                NuoRenderPassAttachment* attachment = finalResult.colorAttachments[0];
+                [attachment setTexture:currentDrawable];
+            }
         }
     }
     
