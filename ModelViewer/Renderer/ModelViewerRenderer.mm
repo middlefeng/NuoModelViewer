@@ -960,9 +960,7 @@
         
         NuoVectorFloat4 lightVector(0, 0, 1, 0);
         lightVector = rotationMatrix * lightVector;
-        lighting.lightParams[i].direction = NuoVectorFloat4(lightVector.x(),
-                                                            lightVector.y(),
-                                                            lightVector.z(), 0.0)._vector;
+        lighting.lightParams[i].direction = lightVector._vector;
         lighting.lightParams[i].density = _lights[i].lightingDensity;
         lighting.lightParams[i].spacular = _lights[i].lightingSpacular;
         
