@@ -48,16 +48,19 @@
         
         [self makeResources];
         
-        float bodyLength = bold ? 1.2 : 1.0;
-        float bodyRadius = bold ? 0.24 : 0.2;
-        float headLength = bold ? 1.2 : 1.0;
-        float headRadius = bold ? 0.36 : 0.3;
+        const float bodyLength = bold ? 1.2 : 1.0;
+        const float bodyRadius = bold ? 0.24 : 0.2;
+        const float headLength = bold ? 1.2 : 1.0;
+        const float headRadius = bold ? 0.36 : 0.3;
         
         PNuoModelArrow arrow = std::make_shared<NuoModelArrow>(bodyLength, bodyRadius, headLength, headRadius);
         arrow->CreateBuffer();
         
-        NuoMeshBounds meshBounds;
-        meshBounds.boundingBox = arrow->GetBoundingBox();
+        const NuoMeshBounds meshBounds =
+        {
+            .boundingBox = arrow->GetBoundingBox(),
+            .boundingSphere = NuoSphere()
+        };
         
         _lightVector = [[NuoMesh alloc] initWithCommandQueue:commandQueue
                                     withVerticesBuffer:arrow->Ptr() withLength:arrow->Length()

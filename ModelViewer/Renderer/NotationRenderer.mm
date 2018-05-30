@@ -103,21 +103,17 @@
 
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
-    NuoMeshBounds meshBounds = _lightVectors[0].bounds;
+    const NuoMeshBounds meshBounds = _lightVectors[0].bounds;
     const NuoBounds& bounds = meshBounds.boundingBox;
     const float modelSpan = bounds.MaxDimension();
     
-    float zoom = -200.0;
+    const float zoom = -200.0;
     
     const float modelNearest = - modelSpan;
     const float cameraDefaultDistance = (modelNearest - modelSpan);
     const float cameraDistance = cameraDefaultDistance + zoom * modelSpan / 20.0f;
     
-    const NuoVectorFloat3 cameraTranslation
-    (
-        0, 0, cameraDistance
-    );
-    
+    const NuoVectorFloat3 cameraTranslation(0, 0, cameraDistance);
     const NuoMatrixFloat44 viewMatrix = NuoMatrixTranslation(cameraTranslation);
     
     const float aspect = _notationArea.size.width / _notationArea.size.height;
@@ -135,9 +131,11 @@
 
 - (void)selectCurrentLightVector:(CGPoint)point
 {
-    CGPoint normalized;
-    normalized.x = (point.x - _notationArea.origin.x) / _notationArea.size.width * 2.0 - 1.0;
-    normalized.y = (point.y - _notationArea.origin.y) / _notationArea.size.height * 2.0 - 1.0;
+    const CGPoint normalized =
+    {
+        .x = (point.x - _notationArea.origin.x) / _notationArea.size.width * 2.0 - 1.0,
+        .y = (point.y - _notationArea.origin.y) / _notationArea.size.height * 2.0 - 1.0
+    };
     
     float minDistance = 2.0f;
     NotationLight* deselected = _currentLightVector;
