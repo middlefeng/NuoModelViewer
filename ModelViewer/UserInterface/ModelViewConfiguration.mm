@@ -115,7 +115,7 @@
     lua.RemoveField();
     
     const std::string deviceName = lua.GetFieldAsString("device", -1);
-    _deviceName = [NSString stringWithUTF8String:deviceName.c_str()];
+    _deviceName = @(deviceName.c_str());
 }
 
 

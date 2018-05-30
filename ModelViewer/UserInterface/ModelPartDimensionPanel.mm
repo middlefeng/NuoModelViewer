@@ -62,12 +62,12 @@
 
 - (void)updateControlsLayout
 {
-    CGSize viewSize = [self bounds].size;
+    const CGSize viewSize = [self bounds].size;
     
-    float margin = 12;
-    float labelWidth = 70;
-    float entryHeight = 18;
-    float lineSpace = 6;
+    const float margin = 12;
+    const float labelWidth = 70;
+    const float entryHeight = 18;
+    const float lineSpace = 6;
     
     CGRect labelFrame;
     labelFrame.size = CGSizeMake(labelWidth, entryHeight);
