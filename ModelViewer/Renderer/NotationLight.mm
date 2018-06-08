@@ -7,9 +7,9 @@
 //
 
 #import "NotationLight.h"
-
 #import "NuoMesh.h"
-#import "NuoMathUtilities.h"
+
+#include "NuoMathVector.h"
 
 #include "NuoModelArrow.h"
 #include <memory>
@@ -48,16 +48,19 @@
         
         [self makeResources];
         
-        float bodyLength = bold ? 1.2 : 1.0;
-        float bodyRadius = bold ? 0.24 : 0.2;
-        float headLength = bold ? 1.2 : 1.0;
-        float headRadius = bold ? 0.36 : 0.3;
+        const float bodyLength = bold ? 1.2 : 1.0;
+        const float bodyRadius = bold ? 0.24 : 0.2;
+        const float headLength = bold ? 1.2 : 1.0;
+        const float headRadius = bold ? 0.36 : 0.3;
         
         PNuoModelArrow arrow = std::make_shared<NuoModelArrow>(bodyLength, bodyRadius, headLength, headRadius);
         arrow->CreateBuffer();
         
-        NuoMeshBounds* meshBounds = [NuoMeshBounds new];
-        *((NuoBounds*)[meshBounds boundingBox]) = arrow->GetBoundingBox();
+        const NuoMeshBounds meshBounds =
+        {
+            .boundingBox = arrow->GetBoundingBox(),
+            .boundingSphere = NuoSphere()
+        };
         
         _lightVector = [[NuoMesh alloc] initWithCommandQueue:commandQueue
                                     withVerticesBuffer:arrow->Ptr() withLength:arrow->Length()
@@ -75,9 +78,9 @@
 }
 
 
-- (NuoMeshBounds*)bounds
+- (NuoMeshBounds)bounds
 {
-    return [_lightVector worldBounds:matrix_identity_float4x4];
+    return [_lightVector worldBounds:NuoMatrixFloat44Identity];
 }
 
 
@@ -92,18 +95,18 @@
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
     NuoLightSource* desc = _lightSourceDesc;
-    struct NuoBoundsBase* bounds = [_lightVector.boundsLocal boundingBox];
+    const NuoBounds bounds = _lightVector.boundsLocal.boundingBox;
     
-    const vector_float3 translationToCenter =
-    {
-        - bounds->_center.x,
-        - bounds->_center.y,
-        - bounds->_center.z + bounds->_span.z / 2.0f
-    };
+    const NuoVectorFloat3 translationToCenter
+    (
+        - bounds._center.x(),
+        - bounds._center.y(),
+        - bounds._center.z() + bounds._span.z() / 2.0f
+    );
     
-    const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
-    const matrix_float4x4 modelMatrix = matrix_rotation_append(modelCenteringMatrix, desc.lightingRotationX, desc.lightingRotationY);
-    [_lightVector updateUniform:inFlight withTransform:modelMatrix];
+    const NuoMatrixFloat44 modelCenteringMatrix = NuoMatrixTranslation(translationToCenter);
+    const NuoMatrixFloat44 modelMatrix = NuoMatrixRotationAppend(modelCenteringMatrix, desc.lightingRotationX, desc.lightingRotationY);
+    [_lightVector updateUniform:inFlight withTransform:modelMatrix._m];
     
     NuoModelCharacterUniforms characters;
     characters.opacity = _selected ? 1.0f : 0.1f;
@@ -138,13 +141,13 @@
 {
     NuoLightSource* desc = _lightSourceDesc;
     
-    matrix_float4x4 rotationMatrix = matrix_rotate(desc.lightingRotationX,
-                                                   desc.lightingRotationY);
+    NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(desc.lightingRotationX,
+                                                        desc.lightingRotationY);
     
-    const vector_float4 startVec = { 0, 0, 1, 1 };
-    vector_float4 projected = matrix_multiply(rotationMatrix, startVec);
+    const NuoVectorFloat4 startVec(0, 0, 1, 1);
+    NuoVectorFloat4 projected = rotationMatrix * startVec;
     
-    return CGPointMake(projected.x / projected.w, projected.y / projected.w);
+    return CGPointMake(projected.x() / projected.w(), projected.y() / projected.w());
 }
 
 

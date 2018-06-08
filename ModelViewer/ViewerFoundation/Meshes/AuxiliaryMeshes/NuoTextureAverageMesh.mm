@@ -137,7 +137,7 @@
 
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
 {
     memcpy(_texCountBuffer[bufferIndex].contents, &_textureCount, sizeof(int));
     [_texCountBuffer[bufferIndex] didModifyRange:NSMakeRange(0, sizeof(int))];
@@ -147,7 +147,7 @@
 
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
-    [self updateUniform:index withTransform:matrix_identity_float4x4];
+    [self updateUniform:index withTransform:NuoMatrixFloat44Identity];
     
     [renderPass setFragmentTexture:_texturesAccumulated.targetTexture atIndex:0];
     [renderPass setFragmentTexture:_textureLatest atIndex:1];

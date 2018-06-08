@@ -10,7 +10,6 @@
 #import "NotationRenderer.h"
 
 #import "NuoMesh.h"
-#import "NuoMathUtilities.h"
 #import "NuoLua.h"
 
 #import "NotationLight.h"
@@ -104,31 +103,27 @@
 
 - (void)updateUniformsForView:(unsigned int)inFlight
 {
-    NuoMeshBounds* meshBounds = _lightVectors[0].bounds;
-    struct NuoBoundsBase* bounds = [meshBounds boundingBox];
-    float modelSpan = fmax(bounds->_span.x, fmax(bounds->_span.y, bounds->_span.z));
+    const NuoMeshBounds meshBounds = _lightVectors[0].bounds;
+    const NuoBounds& bounds = meshBounds.boundingBox;
+    const float modelSpan = bounds.MaxDimension();
     
-    float zoom = -200.0;
+    const float zoom = -200.0;
     
     const float modelNearest = - modelSpan;
     const float cameraDefaultDistance = (modelNearest - modelSpan);
     const float cameraDistance = cameraDefaultDistance + zoom * modelSpan / 20.0f;
     
-    const vector_float3 cameraTranslation =
-    {
-        0, 0, cameraDistance
-    };
-    
-    const matrix_float4x4 viewMatrix = matrix_translation(cameraTranslation);
+    const NuoVectorFloat3 cameraTranslation(0, 0, cameraDistance);
+    const NuoMatrixFloat44 viewMatrix = NuoMatrixTranslation(cameraTranslation);
     
     const float aspect = _notationArea.size.width / _notationArea.size.height;
     const float near = -cameraDistance - modelSpan;
     const float far = near + modelSpan * 2.0;
-    const matrix_float4x4 projectionMatrix = matrix_perspective(aspect, (2 * M_PI) / 30, near, far);
+    const NuoMatrixFloat44 projectionMatrix = NuoMatrixPerspective(aspect, (2 * M_PI) / 30, near, far);
     
     NuoUniforms uniforms;
-    uniforms.viewMatrix = viewMatrix;
-    uniforms.viewProjectionMatrix = matrix_multiply(projectionMatrix, uniforms.viewMatrix);
+    uniforms.viewMatrix = viewMatrix._m;
+    uniforms.viewProjectionMatrix = (projectionMatrix * viewMatrix)._m;
     
     memcpy([_transforms[inFlight] contents], &uniforms, sizeof(NuoUniforms));
 }
@@ -136,9 +131,11 @@
 
 - (void)selectCurrentLightVector:(CGPoint)point
 {
-    CGPoint normalized;
-    normalized.x = (point.x - _notationArea.origin.x) / _notationArea.size.width * 2.0 - 1.0;
-    normalized.y = (point.y - _notationArea.origin.y) / _notationArea.size.height * 2.0 - 1.0;
+    const CGPoint normalized =
+    {
+        .x = (point.x - _notationArea.origin.x) / _notationArea.size.width * 2.0 - 1.0,
+        .y = (point.y - _notationArea.origin.y) / _notationArea.size.height * 2.0 - 1.0
+    };
     
     float minDistance = 2.0f;
     NotationLight* deselected = _currentLightVector;
@@ -165,32 +162,32 @@
 
 - (void)importScene:(NuoLua*)lua
 {
-    [lua getField:@"lights" fromTable:-1];
+    lua->GetField("lights", -1);
     for (int lightIndex = 0; lightIndex < _lightVectors.count; ++lightIndex)
     {
-        [lua getItem:lightIndex fromTable:-1];
+        lua->GetItem(lightIndex, -1);
         
-        _lightSources[lightIndex].lightingRotationX = [lua getFieldAsNumber:@"rotateX" fromTable:-1];
-        _lightSources[lightIndex].lightingRotationY = [lua getFieldAsNumber:@"rotateY" fromTable:-1];
-        _lightSources[lightIndex].lightingDensity = [lua getFieldAsNumber:@"density" fromTable:-1];
-        _lightSources[lightIndex].lightingSpacular = [lua getFieldAsNumber:@"spacular" fromTable:-1];
-        _lightSources[lightIndex].enableShadow = [lua getFieldAsBool:@"enableShadow" fromTable:-1];
+        _lightSources[lightIndex].lightingRotationX = lua->GetFieldAsNumber("rotateX", -1);
+        _lightSources[lightIndex].lightingRotationY = lua->GetFieldAsNumber("rotateY", -1);
+        _lightSources[lightIndex].lightingDensity = lua->GetFieldAsNumber("density", -1);
+        _lightSources[lightIndex].lightingSpacular = lua->GetFieldAsNumber("spacular", -1);
+        _lightSources[lightIndex].enableShadow = lua->GetFieldAsBool("enableShadow", -1);
         
         if (_lightSources[lightIndex].enableShadow)
         {
             assert(lightIndex < 2);
             
-            _lightSources[lightIndex].shadowSoften = [lua getFieldAsNumber:@"shadowSoften" fromTable:-1];
-            _lightSources[lightIndex].shadowBias = [lua getFieldAsNumber:@"shadowBias" fromTable:-1];
+            _lightSources[lightIndex].shadowSoften = lua->GetFieldAsNumber("shadowSoften", -1);
+            _lightSources[lightIndex].shadowBias = lua->GetFieldAsNumber("shadowBias", -1);
         }
         else
         {
             assert(lightIndex >= 2);
         }
         
-        [lua removeField];
+        lua->RemoveField();
     }
-    [lua removeField];
+    lua->RemoveField();
 }
 
 

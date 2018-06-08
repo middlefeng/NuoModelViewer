@@ -23,8 +23,8 @@
     
     if (self)
     {
-        self.transformPoise = matrix_identity_float4x4;
-        self.transformTranslate = matrix_identity_float4x4;
+        self.transformPoise = NuoMatrixFloat44Identity;
+        self.transformTranslate = NuoMatrixFloat44Identity;
         self.enabled = YES;
     }
     
@@ -51,45 +51,37 @@
 {
     _meshes = meshes;
     
-    NuoBounds bounds = *((NuoBounds*)[meshes[0].boundsLocal boundingBox]);
-    NuoSphere sphere = *((NuoSphere*)[meshes[0].boundsLocal boundingSphere]);
+    NuoBounds bounds = meshes[0].boundsLocal.boundingBox;
+    NuoSphere sphere = meshes[0].boundsLocal.boundingSphere;
     for (size_t i = 1; i < meshes.count; ++i)
     {
-        bounds = bounds.Union(*((NuoBounds*)[meshes[i].boundsLocal boundingBox]));
-        sphere = sphere.Union(*((NuoSphere*)[meshes[i].boundsLocal boundingSphere]));
+        bounds = bounds.Union(meshes[i].boundsLocal.boundingBox);
+        sphere = sphere.Union(meshes[i].boundsLocal.boundingSphere);
     }
     
-    NuoMeshBounds* meshBounds = [NuoMeshBounds new];
-    *((NuoBounds*)[meshBounds boundingBox]) = bounds;
-    *((NuoSphere*)[meshBounds boundingSphere]) = sphere;
-    
+    NuoMeshBounds meshBounds = { bounds, sphere };
     self.boundsLocal = meshBounds;
 }
 
 
-- (NuoMeshBounds*)worldBounds:(matrix_float4x4)transform
+- (NuoMeshBounds)worldBounds:(const NuoMatrixFloat44&)transform
 {
-    matrix_float4x4 transformLocal = matrix_multiply(self.transformTranslate, self.transformPoise);
-    transform = matrix_multiply(transform, transformLocal);
+    NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
+    NuoMatrixFloat44 transformWorld = transform * transformLocal;
     
-    
-    NuoMeshBounds* meshBounds = [_meshes[0] worldBounds:transform];
-    NuoBounds bounds = *((NuoBounds*)[meshBounds boundingBox]);
-    NuoSphere sphere = *((NuoSphere*)[meshBounds boundingSphere]);
+    NuoMeshBounds meshBounds = [_meshes[0] worldBounds:transformWorld];
+    NuoBounds bounds = meshBounds.boundingBox;
+    NuoSphere sphere = meshBounds.boundingSphere;
     
     for (size_t i = 1; i < _meshes.count; ++i)
     {
-        NuoMeshBounds* meshBoundsItem = [_meshes[i] worldBounds:transform];
+        NuoMeshBounds meshBoundsItem = [_meshes[i] worldBounds:transformWorld];
         
-        bounds = bounds.Union(*((NuoBounds*)[meshBoundsItem boundingBox]));
-        sphere = sphere.Union(*((NuoSphere*)[meshBoundsItem boundingSphere]));
+        bounds = bounds.Union(meshBoundsItem.boundingBox);
+        sphere = sphere.Union(meshBoundsItem.boundingSphere);
     }
     
-    NuoMeshBounds* result = [NuoMeshBounds new];
-    *((NuoBounds*)[result boundingBox]) = bounds;
-    *((NuoSphere*)[result boundingSphere]) = sphere;
-    
-    return result;
+    return { bounds, sphere };
 }
 
 
@@ -123,13 +115,13 @@
 
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
 {
-    matrix_float4x4 transformLocal = matrix_multiply(self.transformTranslate, self.transformPoise);
-    transform = matrix_multiply(transform, transformLocal);
+    const NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
+    const NuoMatrixFloat44 transformWorld = transform * transformLocal;
     
     for (NuoMesh* item in _meshes)
-        [item updateUniform:bufferIndex withTransform:transform];
+        [item updateUniform:bufferIndex withTransform:transformWorld];
 }
 
 

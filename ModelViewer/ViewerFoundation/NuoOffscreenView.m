@@ -15,7 +15,7 @@
 
 
 
-@interface NuoOffscreenView() < NuoRenderPipelineDelegate >
+@interface NuoOffscreenView()
 
 
 @property (nonatomic, weak) id<MTLDevice> device;
@@ -53,7 +53,6 @@
         _renderPasses = renderPasses;
         
         _renderPipeline = [NuoRenderPipeline new];
-        _renderPipeline.renderPipelineDelegate = self;
         _renderPipeline.renderPasses = _renderPasses;
         
         _clearColor = clearColor;
@@ -61,13 +60,6 @@
     
     return self;
 }
-
-
-- (id<MTLTexture>)nextFinalTexture
-{
-    return _sceneTarget.targetTexture;
-}
-
 
 
 - (void)renderWithCommandQueue:(id<MTLCommandBuffer>)commandBuffer

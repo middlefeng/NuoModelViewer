@@ -59,8 +59,8 @@
     {
         NuoMesh* mesh = CreateMesh(options, commandQueue, model);
         
-        NuoMeshBounds* bounds = [NuoMeshBounds new];
-        *((NuoBounds*)[bounds boundingBox]) = model->GetBoundingBox();
+        NuoMeshBounds bounds;
+        bounds.boundingBox = model->GetBoundingBox();
         
         [mesh setBoundsLocal:bounds];
         [result addObject:mesh];

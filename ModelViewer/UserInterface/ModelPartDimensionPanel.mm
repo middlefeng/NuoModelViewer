@@ -62,12 +62,12 @@
 
 - (void)updateControlsLayout
 {
-    CGSize viewSize = [self bounds].size;
+    const CGSize viewSize = [self bounds].size;
     
-    float margin = 12;
-    float labelWidth = 70;
-    float entryHeight = 18;
-    float lineSpace = 6;
+    const float margin = 12;
+    const float labelWidth = 70;
+    const float entryHeight = 18;
+    const float lineSpace = 6;
     
     CGRect labelFrame;
     labelFrame.size = CGSizeMake(labelWidth, entryHeight);
@@ -104,14 +104,14 @@
     
     NSArray<NuoMesh*>* mesh = _selectedMesh;
     
-    NuoBounds bounds = *((NuoBounds*)[mesh[0].boundsLocal boundingBox]);
+    NuoBounds bounds = mesh[0].boundsLocal.boundingBox;
     for (size_t i = 1; i < mesh.count; ++i)
-        bounds = bounds.Union(*((NuoBounds*)[mesh[i].boundsLocal boundingBox]));
+        bounds = bounds.Union(mesh[i].boundsLocal.boundingBox);
     
     NSString* dimensionString = [[NSString alloc] initWithFormat:@"%0.1f, %0.1f, %0.1f",
-                                        bounds._span.x, bounds._span.y, bounds._span.z];
+                                        bounds._span.x(), bounds._span.y(), bounds._span.z()];
     NSString* centerString = [[NSString alloc] initWithFormat:@"%0.1f, %0.1f, %0.1f",
-                                        bounds._center.x, bounds._center.y, bounds._center.z];
+                                        bounds._center.x(), bounds._center.y(), bounds._center.z()];
     
     [_dimensionValue setStringValue:dimensionString];
     [_centerValue setStringValue:centerString];

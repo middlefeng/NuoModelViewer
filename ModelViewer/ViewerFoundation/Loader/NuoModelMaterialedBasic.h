@@ -47,14 +47,14 @@ public:
 
 struct NuoItemMaterialedTexturedBasic
 {
-    vector_float4 _position;
-    vector_float4 _normal;
-    vector_float2 _texCoord;
+    NuoVectorFloat4::_typeTrait::_vectorType _position;
+    NuoVectorFloat4::_typeTrait::_vectorType _normal;
+    NuoVectorFloat2::_typeTrait::_vectorType _texCoord;
     
-    vector_float3 _diffuse;
-    vector_float3 _ambient;
-    vector_float3 _specular;
-    vector_float2 _shinessDisolve;
+    NuoVectorFloat3::_typeTrait::_vectorType _diffuse;
+    NuoVectorFloat3::_typeTrait::_vectorType _ambient;
+    NuoVectorFloat3::_typeTrait::_vectorType _specular;
+    NuoVectorFloat2::_typeTrait::_vectorType _shinessDisolve;
     
     NuoItemMaterialedTexturedBasic();
     
@@ -81,16 +81,16 @@ public:
 
 struct NuoItermMaterialedBumpedTextured
 {
-    vector_float4 _position;
-    vector_float4 _normal;
-    vector_float4 _tangent;
-    vector_float4 _bitangent;
-    vector_float2 _texCoord;
+    NuoVectorFloat4::_typeTrait::_vectorType _position;
+    NuoVectorFloat4::_typeTrait::_vectorType _normal;
+    NuoVectorFloat4::_typeTrait::_vectorType _tangent;
+    NuoVectorFloat4::_typeTrait::_vectorType _bitangent;
+    NuoVectorFloat2::_typeTrait::_vectorType _texCoord;
     
-    vector_float3 _diffuse;
-    vector_float3 _ambient;
-    vector_float3 _specular;
-    vector_float2 _shinessDisolve;
+    NuoVectorFloat3::_typeTrait::_vectorType _diffuse;
+    NuoVectorFloat3::_typeTrait::_vectorType _ambient;
+    NuoVectorFloat3::_typeTrait::_vectorType _specular;
+    NuoVectorFloat2::_typeTrait::_vectorType _shinessDisolve;
     
     NuoItermMaterialedBumpedTextured();
     
@@ -112,13 +112,13 @@ public:
 
 struct NuoItemMaterialedBasic
 {
-    vector_float4 _position;
-    vector_float4 _normal;
+    NuoVectorFloat4::_typeTrait::_vectorType _position;
+    NuoVectorFloat4::_typeTrait::_vectorType _normal;
     
-    vector_float3 _diffuse;
-    vector_float3 _ambient;
-    vector_float3 _specular;
-    vector_float2 _shinessDisolve;
+    NuoVectorFloat3::_typeTrait::_vectorType _diffuse;
+    NuoVectorFloat3::_typeTrait::_vectorType _ambient;
+    NuoVectorFloat3::_typeTrait::_vectorType _specular;
+    NuoVectorFloat2::_typeTrait::_vectorType _shinessDisolve;
     
     NuoItemMaterialedBasic();
     

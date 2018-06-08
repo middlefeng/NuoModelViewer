@@ -18,11 +18,12 @@
 
 #ifndef Metal
 
-#import <simd/simd.h>
+#include "NuoMathVector.h"
 
-#define matrix44 matrix_float4x4
-#define matrix33 matrix_float3x3
-#define vector4 vector_float4
+typedef NuoMatrixFloat44::_typeTrait::_matrixType matrix44;
+typedef NuoMatrixFloat33::_typeTrait::_matrixType matrix33;
+#define vector4 NuoVectorFloat4::_typeTrait::_vectorType
+
 
 #else
 

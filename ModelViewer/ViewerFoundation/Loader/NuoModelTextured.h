@@ -15,9 +15,9 @@
 
 struct NuoItemTextured
 {
-    vector_float4 _position;
-    vector_float4 _normal;
-    vector_float2 _texCoord;
+    NuoVectorFloat4::_typeTrait::_vectorType _position;
+    NuoVectorFloat4::_typeTrait::_vectorType _normal;
+    NuoVectorFloat2::_typeTrait::_vectorType _texCoord;
     
     NuoItemTextured();
     
@@ -143,13 +143,13 @@ void NuoModelTexturedWithTangentBase<ItemBase>::GenerateTangents()
     std::vector<uint32_t>& indices = NuoModelCommon<ItemBase>::_indices;
     std::vector<ItemBase>& buffer = NuoModelCommon<ItemBase>::_buffer;
     
-    std::vector<vector_float3> tan1(buffer.size());
-    std::vector<vector_float3> tan2(buffer.size());
-    std::vector<vector_float4> tangents(buffer.size());
+    std::vector<NuoVectorFloat3> tan1(buffer.size());
+    std::vector<NuoVectorFloat3> tan2(buffer.size());
+    std::vector<NuoVectorFloat4> tangents(buffer.size());
     
-    memset(tan1.data(), 0, sizeof(vector_float3) * tan1.size());
-    memset(tan2.data(), 0, sizeof(vector_float3) * tan2.size());
-    memset(tangents.data(), 0, sizeof(vector_float4) * tangents.size());
+    memset(tan1.data(), 0, sizeof(NuoVectorFloat3) * tan1.size());
+    memset(tan2.data(), 0, sizeof(NuoVectorFloat3) * tan2.size());
+    memset(tangents.data(), 0, sizeof(NuoVectorFloat4) * tangents.size());
     
     for (size_t a = 0; a < indices.size(); a += 3)
     {
@@ -157,53 +157,53 @@ void NuoModelTexturedWithTangentBase<ItemBase>::GenerateTangents()
         uint32_t index2 = indices[a + 1];
         uint32_t index3 = indices[a + 2];
         
-        vector_float4 v1 = buffer[index1]._position;
-        vector_float4 v2 = buffer[index2]._position;
-        vector_float4 v3 = buffer[index3]._position;
+        NuoVectorFloat4 v1(buffer[index1]._position);
+        NuoVectorFloat4 v2(buffer[index2]._position);
+        NuoVectorFloat4 v3(buffer[index3]._position);
         
-        vector_float2 w1 = buffer[index1]._texCoord;
-        vector_float2 w2 = buffer[index2]._texCoord;
-        vector_float2 w3 = buffer[index3]._texCoord;
+        NuoVectorFloat2 w1(buffer[index1]._texCoord);
+        NuoVectorFloat2 w2(buffer[index2]._texCoord);
+        NuoVectorFloat2 w3(buffer[index3]._texCoord);
         
-        float x1 = v2.x - v1.x;
-        float x2 = v3.x - v1.x;
-        float y1 = v2.y - v1.y;
-        float y2 = v3.y - v1.y;
-        float z1 = v2.z - v1.z;
-        float z2 = v3.z - v1.z;
-        float s1 = w2.x - w1.x;
-        float s2 = w3.x - w1.x;
-        float t1 = w2.y - w1.y;
-        float t2 = w3.y - w1.y;
+        float x1 = v2.x() - v1.x();
+        float x2 = v3.x() - v1.x();
+        float y1 = v2.y() - v1.y();
+        float y2 = v3.y() - v1.y();
+        float z1 = v2.z() - v1.z();
+        float z2 = v3.z() - v1.z();
+        float s1 = w2.x() - w1.x();
+        float s2 = w3.x() - w1.x();
+        float t1 = w2.y() - w1.y();
+        float t2 = w3.y() - w1.y();
         
         // a crude way to eliminate NaN
         float div = (s1 * t2 - s2 * t1);
         float r = 1.0f; if (fabs(div) > 1e-9) r = 1.0 / div;
         
-        vector_float3 sdir = vector_float3 { (t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r };
-        vector_float3 tdir = vector_float3 { (s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r };
+        NuoVectorFloat3 sdir = NuoVectorFloat3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+        NuoVectorFloat3 tdir = NuoVectorFloat3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
         
-        tan1[index1] += sdir;
-        tan1[index2] += sdir;
-        tan1[index3] += sdir;
-        tan2[index1] += tdir;
-        tan2[index2] += tdir;
-        tan2[index3] += tdir;
+        tan1[index1] = tan1[index1] + sdir;
+        tan1[index2] = tan1[index2] + sdir;
+        tan1[index3] = tan1[index3] + sdir;
+        tan2[index1] = tan2[index1] + tdir;
+        tan2[index2] = tan2[index2] + tdir;
+        tan2[index3] = tan2[index3] + tdir;
     }
     
     for (size_t a = 0; a < buffer.size(); ++a)
     {
-        vector_float3 n = buffer[a]._normal.xyz;
-        vector_float3 t = tan1[a];
-        t = vector_normalize(t - vector_cross(n, vector_dot(n, t)));
-        buffer[a]._tangent = vector_float4 { t.x, t.y, t.z, 0 };
+        NuoVectorFloat3 n = NuoVectorFloat3(buffer[a]._normal.x, buffer[a]._normal.y, buffer[a]._normal.z);
+        NuoVectorFloat3 t = tan1[a];
+        t = (t - n * NuoDot(n, t)).Normalize();
+        buffer[a]._tangent = NuoVectorFloat4(t.x(), t.y(), t.z(), 0)._vector;
         
         // not full sure this is completely right because somehow the Y of normal-texture need to
         // be negated
         //
-        vector_float3 b = tan2[a];
-        b = vector_normalize(b - vector_cross(b, vector_dot(n, b)) - vector_cross(t, vector_dot(t, b)));
-        buffer[a]._bitangent = vector_float4 { b.x, b.y, b.z, 0 };
+        NuoVectorFloat3 b = tan2[a];
+        b = (b - (b * NuoDot(n, b)) - (t * NuoDot(t, b))).Normalize();
+        buffer[a]._bitangent = NuoVectorFloat4(b.x(), b.y(), b.z(), 0)._vector;
     }
 }
 

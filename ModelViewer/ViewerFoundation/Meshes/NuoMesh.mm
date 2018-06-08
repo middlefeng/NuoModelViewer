@@ -12,7 +12,6 @@
 #import "NuoMeshTextured.h"
 #import "NuoMeshTexMatieraled.h"
 #import "NuoMeshUniform.h"
-#import "NuoMathUtilities.h"
 
 
 
@@ -41,8 +40,8 @@
     
     if (self)
     {
-        _transformPoise = matrix_identity_float4x4;
-        _transformTranslate = matrix_identity_float4x4;
+        _transformPoise = NuoMatrixFloat44Identity;
+        _transformTranslate = NuoMatrixFloat44Identity;
         _sampleCount = kSampleCount;
         _meshMode = kMeshMode_Normal;
     }
@@ -75,7 +74,7 @@
         _shadowOptionPCSS = YES;
         _shadowOptionPCF = YES;
         
-        _rotation = [[NuoMeshRotation alloc] init];
+        _rotation = NuoMeshRotation();
         
         {
             id<MTLBuffer> buffers[kInFlightBufferCount];
@@ -87,8 +86,8 @@
             _transformBuffers = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
         }
         
-        _transformPoise = matrix_identity_float4x4;
-        _transformTranslate = matrix_identity_float4x4;
+        _transformPoise = NuoMatrixFloat44Identity;
+        _transformTranslate = NuoMatrixFloat44Identity;
         _sampleCount = kSampleCount;
     }
     
@@ -150,43 +149,41 @@
 
 
 
-- (NuoMeshBounds*)worldBounds:(matrix_float4x4)transform
+- (NuoMeshBounds)worldBounds:(const NuoMatrixFloat44&)transform
 {
-    NuoBounds* boundsLocal = ((NuoBounds*)[_boundsLocal boundingBox]);
-    NuoSphere* sphereLocal = ((NuoSphere*)[_boundsLocal boundingSphere]);
+    const NuoBounds& boundsLocal = _boundsLocal.boundingBox;
+    const NuoSphere& sphereLocal = _boundsLocal.boundingSphere;
     
-    matrix_float4x4 transformObject = matrix_multiply(_transformTranslate, _transformPoise);
-    transform = matrix_multiply(transform, transformObject);
+    const NuoMatrixFloat44 transformObject = _transformTranslate * _transformPoise;
+    const NuoMatrixFloat44 transformWorld = transform * transformObject;
     
-    NuoMeshBounds* worldMeshBounds = [NuoMeshBounds new];
-    NuoBounds* worldBounds = ((NuoBounds*)[worldMeshBounds boundingBox]);
-    NuoSphere* worldSphere = ((NuoSphere*)[worldMeshBounds boundingSphere]);
+    NuoMeshBounds worldMeshBounds =
+    {
+        boundsLocal.Transform(transformWorld),
+        sphereLocal.Transform(transformWorld)
+    };
     
-    *worldBounds = boundsLocal->Transform(transform);
-    *worldSphere = sphereLocal->Transform(transform);
     return worldMeshBounds;
 }
 
 
 
-- (void)setBoundsLocal:(NuoMeshBounds*)boundsLocal
+- (void)setBoundsLocal:(NuoMeshBounds)boundsLocal
 {
     _boundsLocal = boundsLocal;
     
     // calculate the sphere from box if the former is not calculated.
     // some subclass might do this by itself (such as compound mesh)
     //
-    if (_boundsLocal.boundingSphere->_radius == 0.)
+    if (_boundsLocal.boundingSphere._radius == 0.)
     {
-        NuoBounds* localBounds = ((NuoBounds*)[_boundsLocal boundingBox]);
-        NuoSphere* localSphere = ((NuoSphere*)[_boundsLocal boundingSphere]);
-        *localSphere = localBounds->Sphere();
+        _boundsLocal.boundingSphere = _boundsLocal.boundingBox.Sphere();
     }
 }
 
 
 
-- (void)setTransformTranslate:(matrix_float4x4)transformTranslate
+- (void)setTransformTranslate:(const NuoMatrixFloat44)transformTranslate
 {
     _transformTranslate = transformTranslate;
 }
@@ -460,16 +457,15 @@
 
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
 {
-    matrix_float4x4 localTransform = matrix_multiply(_transformTranslate, _transformPoise);
-    if (_rotation)
-        localTransform = matrix_multiply(localTransform, _rotation.rotationMatrix);
-    transform = matrix_multiply(transform, localTransform);
+    NuoMatrixFloat44 localTransform = _transformTranslate * _transformPoise;
+    localTransform = localTransform * _rotation.RotationMatrix();
+    NuoMatrixFloat44 transformWorld = transform * localTransform;
     
     NuoMeshUniforms uniforms;
-    uniforms.transform = transform;
-    uniforms.normalTransform = matrix_extract_linear(uniforms.transform);
+    uniforms.transform = transformWorld._m;
+    uniforms.normalTransform = NuoMatrixExtractLinear(transformWorld)._m;
     memcpy([_transformBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
 
@@ -545,15 +541,8 @@
 
 - (void)centerMesh
 {
-    NuoBoundsBase* bounds = [_boundsLocal boundingBox];
-    const vector_float3 translationToCenter =
-    {
-        - bounds->_center.x,
-        - bounds->_center.y,
-        - bounds->_center.z
-    };
-    const matrix_float4x4 modelCenteringMatrix = matrix_translation(translationToCenter);
-    _transformPoise = modelCenteringMatrix;
+    const NuoBounds& bounds = _boundsLocal.boundingBox;
+    _transformPoise = NuoMatrixTranslation(- bounds._center);
 }
 
 

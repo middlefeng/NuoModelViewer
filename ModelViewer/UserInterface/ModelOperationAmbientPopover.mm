@@ -184,9 +184,7 @@
     newParams.ambientOcclusionParams.intensity = _sliderIntensity.floatValue;
     newParams.ambientOcclusionParams.sampleRadius = _sliderRadius.floatValue;
     newParams.ambientOcclusionParams.scale = _sliderScale.floatValue;
-    
-    vector_float4 clearColor = { 0.0, 0.0, 0.0, 0.0 };
-    newParams.clearColor = clearColor;
+    newParams.clearColor = NuoVectorFloat4(0.0, 0.0, 0.0, 0.0)._vector;
     
     [_sourcePanel setDeferredRenderParameters:newParams];
     [_updateDelegate modelOptionUpdate:_sourcePanel];

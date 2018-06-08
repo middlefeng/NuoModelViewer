@@ -163,8 +163,8 @@ PositionSimple vertex_simple(device T *vertices [[buffer(0)]],
                              metal::uint vid [[vertex_id]])
 {
     PositionSimple outSimple;
-    outSimple.position = uniforms.viewProjectionMatrix *
-                         meshUniform.transform * vertices[vid].position;
+    metal::float4 position = meshUniform.transform * vertices[vid].position;
+    outSimple.position = uniforms.viewProjectionMatrix * position;
     return outSimple;
 }
 

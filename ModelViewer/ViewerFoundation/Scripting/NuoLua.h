@@ -6,37 +6,52 @@
 //  Copyright © 2016 middleware. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import <simd/simd.h>
+
+#ifndef __NUO_LUA_H__
+#define __NUO_LUA_H__
 
 
+#include "NuoMathVector.h"
+#include <string>
+#include <set>
 
 struct lua_State;
 
 
 
-@interface NuoLua : NSObject
+class NuoLua
+{
+    
+    lua_State* _luaState;
 
+public:
+    
+    typedef std::set<std::string> KeySet;
+    
+    NuoLua();
+    ~NuoLua();
+    
+    void LoadFile(const std::string& path);
 
-- (void)loadFile:(NSString*)path;
+    KeySet GetKeysFromTable(int index);
 
-- (NSArray*)getKeysFromTable:(int)index;
+    void GetField(const std::string& key, int index);
+    size_t GetArraySize(int index);
+    void GetItem(int itemIndex, int index);
+    void RemoveField();
 
-- (void)getField:(NSString*)key fromTable:(int)index;
-- (size_t)getArraySize:(int)index;
-- (void)getItem:(int)itemIndex fromTable:(int)index;
-- (void)removeField;
+    float GetFieldAsNumber(const std::string& key, int index);
+    std::string GetFieldAsString(const std::string& key, int index);
+    bool GetFieldAsBool(const std::string& key, int index);
 
-- (float)getFieldAsNumber:(NSString*)key fromTable:(int)index;
-- (NSString*)getFieldAsString:(NSString*)key fromTable:(int)index;
-- (bool)getFieldAsBool:(NSString*)key fromTable:(int)index;
+    bool GetArrayItemAsBool(size_t item, int index);
+    float GetArrayItemAsNumber(size_t item, int index);
+    std::string GetArrayItemAsString(size_t item, int index);
 
-- (bool)getArrayItemAsBool:(size_t)item fromTable:(int)index;
-- (float)getArrayItemAsNumber:(size_t)item fromTable:(int)index;
-- (NSString*)getArrayItemAsString:(size_t)item fromTable:(int)index;
+    NuoMatrixFloat44 GetMatrixFromTable(int index);
 
-- (matrix_float4x4)getMatrixFromTable:(int)index;
+    bool IsNil(int index);
 
-- (bool)isNil:(int)index;
+};
 
-@end
+#endif

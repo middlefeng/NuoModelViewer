@@ -10,10 +10,10 @@
 #import "NuoMesh_Extension.h"
 
 #import "NuoUniforms.h"
-#import "NuoMathUtilities.h"
 #import "NuoTextureBase.h"
 
 #include "NuoTypes.h"
+#include "NuoMathVector.h"
 
 
 
@@ -71,8 +71,8 @@ static uint16_t kIndices[] =
     NSArray<id<MTLBuffer>>* _cubeMatrixBuffer;
     MTLPixelFormat _format;
     
-    matrix_float4x4 _cubeMatrix;
-    matrix_float4x4 _projectMatrix;
+    NuoMatrixFloat44 _cubeMatrix;
+    NuoMatrixFloat44 _projectMatrix;
 }
 
 
@@ -85,7 +85,7 @@ static uint16_t kIndices[] =
     
     if (self)
     {
-        _cubeMatrix = matrix_identity_float4x4;
+        _cubeMatrix = NuoMatrixFloat44Identity;
         
         {
             id<MTLBuffer> matrix[kInFlightBufferCount];
@@ -106,22 +106,22 @@ static uint16_t kIndices[] =
 }
 
 
-- (void)setProjectionMatrix:(matrix_float4x4)projection
+- (void)setProjectionMatrix:(const NuoMatrixFloat44&)projection
 {
     _projectMatrix = projection;
 }
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
 {
     NuoUniforms uniforms;
     
-    _cubeMatrix = matrix_rotation_append(_cubeMatrix, _rotationXDelta, _rotationYDelta);
+    _cubeMatrix = NuoMatrixRotationAppend(_cubeMatrix, _rotationXDelta, _rotationYDelta);
     _rotationXDelta = 0;
     _rotationYDelta = 0;
     
-    uniforms.viewProjectionMatrix = matrix_multiply(_projectMatrix, _cubeMatrix);
-    uniforms.viewMatrix = _cubeMatrix;
+    uniforms.viewProjectionMatrix = (_projectMatrix * _cubeMatrix)._m;
+    uniforms.viewMatrix = _cubeMatrix._m;
     
     memcpy([_cubeMatrixBuffer[bufferIndex] contents], &uniforms, sizeof(uniforms));
 }

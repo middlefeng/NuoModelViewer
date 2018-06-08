@@ -30,11 +30,11 @@ public:
 
 private:
     
-    vector_float4 GetMiddleSurfaceVertex(size_t index, size_t type);
-    vector_float4 GetBodyVertex(size_t index, size_t type);
-    vector_float4 GetBodyNormal(size_t index);
-    vector_float4 GetEndVertex(size_t type);
-    vector_float4 GetHeadNormal(size_t index);
+    NuoVectorFloat4 GetMiddleSurfaceVertex(size_t index, size_t type);
+    NuoVectorFloat4 GetBodyVertex(size_t index, size_t type);
+    NuoVectorFloat4 GetBodyNormal(size_t index);
+    NuoVectorFloat4 GetEndVertex(size_t type);
+    NuoVectorFloat4 GetHeadNormal(size_t index);
     
     void CreateEndSurface();
     void CreateBodySurface();

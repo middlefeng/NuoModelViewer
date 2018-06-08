@@ -6,18 +6,19 @@
 //  Copyright © 2018 middleware. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#ifndef __MESH_BOUNDS_H__
+#define __MESH_BOUNDS_H__
+
 
 #include "NuoBounds.h"
 
 
-/**
- *  A wrapper that minimizes the spread of C++.
- */
+class NuoMeshBounds
+{
+public:
+    NuoBounds boundingBox;
+    NuoSphere boundingSphere;
+};
 
-@interface NuoMeshBounds : NSObject
 
-- (struct NuoBoundsBase*)boundingBox;
-- (struct NuoSphereBase*)boundingSphere;
-
-@end
+#endif

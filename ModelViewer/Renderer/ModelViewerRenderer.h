@@ -8,7 +8,6 @@
 
 @class NuoMesh;
 @class NuoMeshOption;
-@class NuoLua;
 @class NuoMeshCompound;
 @class NuoBoardMesh;
 @class NuoCubeMesh;
@@ -49,6 +48,8 @@ typedef enum
     kTransformMode_View,
 }
 TransformMode;
+
+class NuoLua;
 
 
 

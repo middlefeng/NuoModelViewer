@@ -8,6 +8,7 @@
 
 #import "NuoRenderPipeline.h"
 #import "NuoRenderPipelinePass.h"
+#import "NuoRenderPassAttachment.h"
 
 
 
@@ -41,12 +42,17 @@
         }
         else
         {
-            id<MTLTexture> currentDrawable = [_renderPipelineDelegate nextFinalTexture];
-            if (!currentDrawable)
-                return NO;
-            
             NuoRenderPassTarget* finalResult = renderStep.renderTarget;
-            [finalResult setTargetTexture:currentDrawable];
+            
+            if (!finalResult.manageTargetTexture)
+            {
+                id<MTLTexture> currentDrawable = [_renderPipelineDelegate nextFinalTexture];
+                if (!currentDrawable)
+                    return NO;
+                
+                NuoRenderPassAttachment* attachment = finalResult.colorAttachments[0];
+                [attachment setTexture:currentDrawable];
+            }
         }
     }
     

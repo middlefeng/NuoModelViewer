@@ -92,18 +92,18 @@ NuoBounds NuoModelBase::GetBoundingBox()
     
     for (size_t i = 0; i < GetVerticesNumber(); ++i)
     {
-        vector_float4 position = GetPosition(i);
+        NuoVectorFloat4 position = GetPosition(i);
         
-        xMin = std::min(xMin, position.x);
-        xMax = std::max(xMax, position.x);
-        yMin = std::min(yMin, position.y);
-        yMax = std::max(yMax, position.y);
-        zMin = std::min(zMin, position.z);
-        zMax = std::max(zMax, position.z);
+        xMin = std::min(xMin, position.x());
+        xMax = std::max(xMax, position.x());
+        yMin = std::min(yMin, position.y());
+        yMax = std::max(yMax, position.y());
+        zMin = std::min(zMin, position.z());
+        zMax = std::max(zMax, position.z());
     }
     
-    vector_float3 center = { (xMax + xMin) / 2.0f, (yMax + yMin) / 2.0f, (zMax + zMin) / 2.0f };
-    vector_float3 span = { xMax - xMin, yMax - yMin, zMax - zMin };
+    NuoVectorFloat3 center((xMax + xMin) / 2.0f, (yMax + yMin) / 2.0f, (zMax + zMin) / 2.0f);
+    NuoVectorFloat3 span(xMax - xMin, yMax - yMin, zMax - zMin);
     
     NuoBounds result;
     result._center = center;

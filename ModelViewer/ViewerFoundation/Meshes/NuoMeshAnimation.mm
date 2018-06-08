@@ -31,38 +31,39 @@
 
 - (void)importAnimation:(NuoLua*)lua forMesh:(NSArray<NuoMesh*>*)mesh
 {
-    [lua getField:@"object" fromTable:-1];
+    lua->GetField("object", -1);
     {
-        size_t size = [lua getArraySize:-1];
+        size_t size = lua->GetArraySize(-1);
         for (size_t i = 0; i < size; ++i)
         {
-            NSString* name = [lua getArrayItemAsString:i + 1 fromTable:-1];
-            NSArray<NuoMesh*>* items = [self findMeshIn:mesh byName:name];
+            std::string name = lua->GetArrayItemAsString(i + 1, -1);
+            NSString* nameStr = [NSString stringWithUTF8String:name.c_str()];
+            NSArray<NuoMesh*>* items = [self findMeshIn:mesh byName:nameStr];
             if (items.count > 0)
                 [((NSMutableArray*)_mesh) addObjectsFromArray:items];
         }
     }
-    [lua removeField];
+    lua->RemoveField();
     
-    _animationEndPoint = [[NuoMeshRotation alloc] init];
+    _animationEndPoint = NuoMeshRotation();
     
-    [lua getField:@"axis" fromTable:-1];
+    lua->GetField("axis", -1);
     {
-        _animationEndPoint.xAxis = [lua getArrayItemAsNumber:1 fromTable:-1];
-        _animationEndPoint.yAxis = [lua getArrayItemAsNumber:2 fromTable:-1];
-        _animationEndPoint.zAxis = [lua getArrayItemAsNumber:3 fromTable:-1];
+        _animationEndPoint._axis.x(lua->GetArrayItemAsNumber(1, -1));
+        _animationEndPoint._axis.y(lua->GetArrayItemAsNumber(2, -1));
+        _animationEndPoint._axis.z(lua->GetArrayItemAsNumber(3, -1));
     }
-    [lua removeField];
+    lua->RemoveField();
     
-    [lua getField:@"anchor" fromTable:-1];
+    lua->GetField("anchor", -1);
     {
-        _animationEndPoint.x = [lua getArrayItemAsNumber:1 fromTable:-1];
-        _animationEndPoint.y = [lua getArrayItemAsNumber:2 fromTable:-1];
-        _animationEndPoint.z = [lua getArrayItemAsNumber:3 fromTable:-1];
+        _animationEndPoint._transformVector.x(lua->GetArrayItemAsNumber(1, -1));
+        _animationEndPoint._transformVector.y(lua->GetArrayItemAsNumber(2, -1));
+        _animationEndPoint._transformVector.z(lua->GetArrayItemAsNumber(3, -1));
     }
-    [lua removeField];
+    lua->RemoveField();
     
-    _animationEndPoint.radius = [lua getFieldAsNumber:@"radius" fromTable:-1];
+    _animationEndPoint.SetRadius(lua->GetFieldAsNumber("radius", -1));
 }
 
 
@@ -86,8 +87,8 @@
 {
     for (NuoMesh* mesh in _mesh)
     {
-        NuoMeshRotation* rotation = [[NuoMeshRotation alloc] initWith:_animationEndPoint];
-        rotation.radius *= progress;
+        NuoMeshRotation rotation = _animationEndPoint;
+        rotation.SetRadius(rotation.Radius() * progress);
         
         [mesh setRotation:rotation];
     }

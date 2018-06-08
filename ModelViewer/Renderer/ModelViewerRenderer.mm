@@ -5,7 +5,6 @@
 
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
-#import <simd/simd.h>
 
 #include "NuoTypes.h"
 #include "NuoMeshCompound.h"
@@ -13,11 +12,12 @@
 #include "NuoCubeMesh.h"
 #include "NuoBackdropMesh.h"
 #include "NuoRenderPassTarget.h"
-#include "NuoMathUtilities.h"
 #include "NuoModelBase.h"
 #include "NuoModelLoader.h"
 #include "NuoTableExporter.h"
 #include "NuoPackage.h"
+
+#include "NuoMathVector.h"
 
 #include "NuoLua.h"
 
@@ -39,14 +39,14 @@
 
 // transform data. "viewRotation" is relative to the scene's center
 //
-@property (assign) matrix_float4x4 viewRotation;
-@property (assign) matrix_float4x4 viewTranslation;
-@property (assign) matrix_float4x4 projection;
+@property (assign) NuoMatrixFloat44 viewRotation;
+@property (assign) NuoMatrixFloat44 viewTranslation;
+@property (assign) NuoMatrixFloat44 projection;
 
 // need store the center of a snapshot of the scene as the meshes in the scene
 // keep moving
 //
-@property (assign) vector_float3 sceneCenter;
+@property (assign) NuoVectorFloat3 sceneCenter;
 
 @property (strong) NuoModelLoaderGPU* modelLoader;
 
@@ -96,8 +96,8 @@
         _meshes = [NSMutableArray new];
         _boardMeshes = [NSMutableArray new];
         
-        _viewRotation = matrix_identity_float4x4;
-        _viewTranslation = matrix_identity_float4x4;
+        _viewRotation = NuoMatrixFloat44Identity;
+        _viewTranslation = NuoMatrixFloat44Identity;
         
         self.paramsProvider = self;
     }
@@ -177,11 +177,11 @@
     
     // move model from camera for a default distance (3 times of r)
     //
-    vector_float3 span = [[_mainModelMesh worldBounds:matrix_identity_float4x4] boundingBox]->_span;
-    float radius = std::max(span.x, std::max(span.y, span.z)) / 2.0;
+    const NuoBounds bounds = [_mainModelMesh worldBounds:NuoMatrixFloat44Identity].boundingBox;
+    const float radius = bounds.MaxDimension() / 2.0;
     const float defaultDistance = - 3.0 * radius;
-    const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
-    [_mainModelMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
+    const NuoVectorFloat3 defaultDistanceVec(0, 0, defaultDistance);
+    [_mainModelMesh setTransformTranslate:NuoMatrixTranslation(defaultDistanceVec)];
     
     [self caliberateSceneCenter];
 }
@@ -290,8 +290,8 @@
 
 - (BOOL)viewTransformReset
 {
-    return matrix_equal(_viewRotation, matrix_identity_float4x4) &&
-           matrix_equal(_viewTranslation, matrix_identity_float4x4);
+    return _viewRotation.IsIdentity() &&
+           _viewTranslation.IsIdentity();
 }
 
 
@@ -325,8 +325,8 @@
 
 - (void)resetViewTransform
 {
-    _viewRotation = matrix_identity_float4x4;
-    _viewTranslation = matrix_identity_float4x4;
+    _viewRotation = NuoMatrixFloat44Identity;
+    _viewTranslation = NuoMatrixFloat44Identity;
 }
 
 
@@ -336,11 +336,11 @@
     modelBoard->CreateBuffer();
     NuoBoardMesh* boardMesh = CreateBoardMesh(self.commandQueue, modelBoard, [_modelOptions basicMaterialized]);
     
-    NuoBoundsBase* bounds = [[boardMesh boundsLocal] boundingBox];
-    float radius = std::max(bounds->_span.x, bounds->_span.y);
+    const NuoBounds bounds = boardMesh.boundsLocal.boundingBox;
+    const float radius = bounds.MaxDimension();
     const float defaultDistance = - 3.0 * radius;
-    const vector_float3 defaultDistanceVec = { 0, 0, defaultDistance };
-    [boardMesh setTransformTranslate:matrix_translation(defaultDistanceVec)];
+    const NuoVectorFloat3 defaultDistanceVec(0, 0, defaultDistance);
+    [boardMesh setTransformTranslate:NuoMatrixTranslation(defaultDistanceVec)];
     [_boardMeshes addObject:boardMesh];
     
     // boards are all opaque so they are drawn first
@@ -460,15 +460,15 @@
                 exporter.StartEntry("dimensions");
                 exporter.StartTable();
                 {
-                    vector_float3 dimension = boardMesh.dimensions;
+                    const NuoVectorFloat3& dimension = boardMesh.dimensions;
                     exporter.StartEntry("width");
-                    exporter.SetEntryValueFloat(dimension.x);
+                    exporter.SetEntryValueFloat(dimension.x());
                     exporter.EndEntry(false);
                     exporter.StartEntry("height");
-                    exporter.SetEntryValueFloat(dimension.y);
+                    exporter.SetEntryValueFloat(dimension.y());
                     exporter.EndEntry(false);
                     exporter.StartEntry("thickness");
-                    exporter.SetEntryValueFloat(dimension.z);
+                    exporter.SetEntryValueFloat(dimension.z());
                     exporter.EndEntry(false);
                 }
                 exporter.EndTable();
@@ -640,122 +640,122 @@
 
 - (void)importScene:(NuoLua*)lua
 {
-    [lua getField:@"rotationMatrix" fromTable:-1];
-    [_mainModelMesh setTransformPoise:[lua getMatrixFromTable:-1]];
-    [lua removeField];
+    lua->GetField("rotationMatrix", -1);
+    [_mainModelMesh setTransformPoise:lua->GetMatrixFromTable(-1)];
+    lua->RemoveField();
     
-    [lua getField:@"translationMatrix" fromTable:-1];
-    if (![lua isNil:-1])
-        [_mainModelMesh setTransformTranslate:[lua getMatrixFromTable:-1]];
-    [lua removeField];
+    lua->GetField("translationMatrix", -1);
+    if (!lua->IsNil(-1))
+        [_mainModelMesh setTransformTranslate:lua->GetMatrixFromTable(-1)];
+    lua->RemoveField();
     
     // backward compatible the old "viewMatrix"
-    [lua getField:@"viewMatrix" fromTable:-1];
-    if (![lua isNil:-1])
-        _viewRotation = [lua getMatrixFromTable:-1];
-    [lua removeField];
+    lua->GetField("viewMatrix", -1);
+    if (!lua->IsNil(-1))
+        _viewRotation = lua->GetMatrixFromTable(-1);
+    lua->RemoveField();
     
-    [lua getField:@"viewMatrixRotation" fromTable:-1];
-    if (![lua isNil:-1])
-        _viewRotation = [lua getMatrixFromTable:-1];
-    [lua removeField];
+    lua->GetField("viewMatrixRotation", -1);
+    if (!lua->IsNil(-1))
+        _viewRotation = lua->GetMatrixFromTable(-1);
+    lua->RemoveField();
     
-    [lua getField:@"viewMatrixTranslation" fromTable:-1];
-    if (![lua isNil:-1])
-        _viewTranslation = [lua getMatrixFromTable:-1];
-    [lua removeField];
+    lua->GetField("viewMatrixTranslation", -1);
+    if (!lua->IsNil(-1))
+        _viewTranslation = lua->GetMatrixFromTable(-1);
+    lua->RemoveField();
     
-    [lua getField:@"view" fromTable:-1];
-    _fieldOfView = [lua getFieldAsNumber:@"FOV" fromTable:-1];
-    [lua removeField];
+    lua->GetField("view", -1);
+    _fieldOfView = lua->GetFieldAsNumber("FOV", -1);
+    lua->RemoveField();
     
-    [lua getField:@"models" fromTable:-1];
+    lua->GetField("models", -1);
     
-    size_t length = [lua getArraySize:-1];
+    const size_t length = lua->GetArraySize(-1);
     size_t passedModel = 0;
     
     for (size_t i = 0; i < length; ++i)
     {
-        [lua getItem:(int)(i + 1) fromTable:-1];
-        NSString* name = [lua getFieldAsString:@"name" fromTable:-1];
+        lua->GetItem((int)(i + 1), -1);
+        const std::string name = lua->GetFieldAsString("name", -1);
         for (size_t i = passedModel; i < _mainModelMesh.meshes.count; ++i)
         {
             NuoMesh* mesh = _mainModelMesh.meshes[i];
             
-            if ([mesh.modelName isEqualToString:name])
+            if (mesh.modelName.UTF8String == name)
             {
-                [mesh setEnabled:[lua getFieldAsBool:@"enabled" fromTable:-1]];
-                [mesh setReverseCommonCullMode:[lua getFieldAsBool:@"cullModeReverse" fromTable:-1]];
-                [mesh setUnifiedOpacity:[lua getFieldAsNumber:@"opacity" fromTable:-1]];
-                [mesh setSmoothConservative:[lua getFieldAsBool:@"smoothConservative" fromTable:-1]];
-                [mesh smoothWithTolerance:[lua getFieldAsNumber:@"smooth" fromTable:-1]];
+                [mesh setEnabled:lua->GetFieldAsBool("enabled", -1)];
+                [mesh setReverseCommonCullMode:lua->GetFieldAsBool("cullModeReverse", -1)];
+                [mesh setUnifiedOpacity:lua->GetFieldAsNumber("opacity", -1)];
+                [mesh setSmoothConservative:lua->GetFieldAsBool("smoothConservative", -1)];
+                [mesh smoothWithTolerance:lua->GetFieldAsNumber("smooth", -1)];
                 
                 passedModel = ++i;
                 break;
             }
         }
-        [lua removeField];
+        lua->RemoveField();
     }
-    [lua removeField];
+    lua->RemoveField();
     
-    [lua getField:@"boards" fromTable:-1];
+    lua->GetField("boards", -1);
     
-    if (![lua isNil:-1])
+    if (!lua->IsNil(-1))
     {
-        length = [lua getArraySize:-1];
+        const size_t length = lua->GetArraySize(-1);
         if (length > 0)
             [self removeAllBoards];
         
         for (size_t i = 0; i < length; ++i)
         {
-            [lua getItem:(int)(i + 1) fromTable:-1];
+            lua->GetItem((int)(i + 1), -1);
             
             float width, height, thickness;
             {
-                [lua getField:@"dimensions" fromTable:-1];
+                lua->GetField("dimensions", -1);
                 
-                width = [lua getFieldAsNumber:@"width" fromTable:-1];
-                height = [lua getFieldAsNumber:@"height" fromTable:-1];
-                thickness = [lua getFieldAsNumber:@"thickness" fromTable:-1];
+                width = lua->GetFieldAsNumber("width", -1);
+                height = lua->GetFieldAsNumber("height", -1);
+                thickness = lua->GetFieldAsNumber("thickness", -1);
                 
-                [lua removeField];
+                lua->RemoveField();
             }
             
             NuoBoardMesh* boardMesh = [self createBoard:CGSizeMake(width, height)];
-            [lua getField:@"rotationMatrix" fromTable:-1];
-            [boardMesh setTransformPoise:[lua getMatrixFromTable:-1]];
-            [lua removeField];
+            lua->GetField("rotationMatrix", -1);
+            [boardMesh setTransformPoise:lua->GetMatrixFromTable(-1)];
+            lua->RemoveField();
             
-            [lua getField:@"translationMatrix" fromTable:-1];
-            [boardMesh setTransformTranslate:[lua getMatrixFromTable:-1]];
-            [lua removeField];
+            lua->GetField("translationMatrix", -1);
+            [boardMesh setTransformTranslate:lua->GetMatrixFromTable(-1)];
+            lua->RemoveField();
             
-            [lua removeField];
+            lua->RemoveField();
         }
     }
     
-    [lua removeField];
+    lua->RemoveField();
     
-    [lua getField:@"lights" fromTable:-1];
+    lua->GetField("lights", -1);
     
-    _ambientDensity = [lua getFieldAsNumber:@"ambient" fromTable:-1];
+    _ambientDensity = lua->GetFieldAsNumber("ambient", -1);
     
     {
-        [lua getField:@"ambientParams" fromTable:-1];
+        lua->GetField("ambientParams", -1);
         
-        if (![lua isNil:-1])
+        if (!lua->IsNil(-1))
         {
             NuoDeferredRenderUniforms params = _deferredParameters;
-            params.ambientOcclusionParams.bias = [lua getFieldAsNumber:@"bias" fromTable:-1];
-            params.ambientOcclusionParams.intensity = [lua getFieldAsNumber:@"intensity" fromTable:-1];
-            params.ambientOcclusionParams.sampleRadius = [lua getFieldAsNumber:@"range" fromTable:-1];
-            params.ambientOcclusionParams.scale = [lua getFieldAsNumber:@"scale" fromTable:-1];
+            params.ambientOcclusionParams.bias = lua->GetFieldAsNumber("bias", -1);
+            params.ambientOcclusionParams.intensity = lua->GetFieldAsNumber("intensity", -1);
+            params.ambientOcclusionParams.sampleRadius = lua->GetFieldAsNumber("range", -1);
+            params.ambientOcclusionParams.scale = lua->GetFieldAsNumber("scale", -1);
             [self setDeferredParameters:params];
         }
-        [lua removeField];
+        lua->RemoveField();
     }
     
-    [lua removeField];
+    lua->RemoveField();
     
     [self caliberateSceneCenter];
 }
@@ -768,8 +768,8 @@
     
     if (_modelLoader)
     {
-        matrix_float4x4 originalPoise = _mainModelMesh.transformPoise;
-        matrix_float4x4 originalTrans = _mainModelMesh.transformTranslate;
+        const NuoMatrixFloat44 originalPoise = _mainModelMesh.transformPoise;
+        const NuoMatrixFloat44 originalTrans = _mainModelMesh.transformTranslate;
         
         [self createMeshsWithProgress:progress];
         
@@ -827,12 +827,12 @@
     
     NuoBounds bounds;
     if (_selectedMesh)
-        bounds = *((NuoBounds*)[[_selectedMesh worldBounds:[self viewMatrix]] boundingBox]);
+        bounds = [_selectedMesh worldBounds:[self viewMatrix]].boundingBox;
     float radius = bounds.MaxDimension();
     
     // simply using "z" works until the view matrix is no longer an identitiy
     //
-    float distance = bounds._center.z;
+    float distance = bounds._center.z();
     
     const float distanceDelta = _zoomDelta * radius / 10.0f;
     const float cameraDistance = distanceDelta + distance;
@@ -842,9 +842,9 @@
     // accumulate delta rotation into matrix
     //
     if (_transMode == kTransformMode_View)
-        _viewRotation = matrix_rotation_append(_viewRotation, _rotationXDelta, _rotationYDelta);
+        _viewRotation = NuoMatrixRotationAppend(_viewRotation, _rotationXDelta, _rotationYDelta);
     else
-        _selectedMesh.transformPoise = matrix_rotation_append(_selectedMesh.transformPoise, _rotationXDelta, _rotationYDelta);
+        _selectedMesh.transformPoise = NuoMatrixRotationAppend(_selectedMesh.transformPoise, _rotationXDelta, _rotationYDelta);
     
     _rotationXDelta = 0;
     _rotationYDelta = 0;
@@ -856,20 +856,19 @@
     _transXDelta = 0;
     _transYDelta = 0;
     
-    const vector_float3 translation =
-    {
+    const NuoVectorFloat3 translation
+    (
         doTransX, doTransY,
         distanceDelta
-    };
+    );
     
-    matrix_float4x4 transMatrix = _selectedMesh.transformTranslate;
     if (_transMode == kTransformMode_View)
     {
-        _viewTranslation = matrix_multiply(matrix_translation(translation), _viewTranslation);
+        _viewTranslation = NuoMatrixTranslation(translation) * _viewTranslation;
     }
     else
     {
-        transMatrix = matrix_multiply(matrix_translation(translation), transMatrix);
+        const NuoMatrixFloat44 transMatrix = NuoMatrixTranslation(translation) * _selectedMesh.transformTranslate;
         [_selectedMesh setTransformTranslate:transMatrix];
     }
 }
@@ -878,33 +877,31 @@
 - (void)caliberateSceneCenter
 {
     NuoBounds bounds;
-    NuoMeshBounds* meshBounds;
+    bool head = true;
     
     for (NuoMesh* mesh in _meshes)
     {
-        if (!meshBounds)
+        if (head)
         {
-            meshBounds = [mesh worldBounds:matrix_identity_float4x4];
-            bounds = *((NuoBounds*)[meshBounds boundingBox]);
+            bounds = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox;
+            head = false;
         }
         else
         {
-            bounds = bounds.Union(*(NuoBounds*)[[mesh worldBounds:matrix_identity_float4x4] boundingBox]);
+            bounds = bounds.Union([mesh worldBounds:NuoMatrixFloat44Identity].boundingBox);
         }
     }
     
-    _sceneCenter = bounds._center.xyz;
+    _sceneCenter = bounds._center;
 }
 
 
-- (matrix_float4x4)viewMatrix
+- (NuoMatrixFloat44)viewMatrix
 {
     // rotation is around the center of a previous scene snapshot
     //
-    matrix_float4x4 viewTrans = matrix_rotation_around(_viewRotation, _sceneCenter);
-    viewTrans = matrix_multiply(_viewTranslation, viewTrans);
-    
-    return viewTrans;
+    const NuoMatrixFloat44 viewTrans = NuoMatrixRotationAround(_viewRotation, _sceneCenter);
+    return _viewTranslation * viewTrans;
 }
 
 
@@ -917,7 +914,7 @@
     
     // rotation is around the center of a previous scene snapshot
     //
-    matrix_float4x4 viewTrans = [self viewMatrix];
+    const NuoMatrixFloat44 viewTrans = [self viewMatrix];
     
     const CGSize drawableSize = self.renderTarget.drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
@@ -925,30 +922,30 @@
     // bounding box transform and determining the near/far
     //
     NuoBounds bounds;
-    NuoMeshBounds* meshBounds = nil;
+    bool head = true;
     for (NuoMesh* mesh in _meshes)
     {
-        if (!meshBounds)
+        if (head)
         {
-            meshBounds = [mesh worldBounds:viewTrans];
-            bounds = *((NuoBounds*)[meshBounds boundingBox]);
+            bounds = [mesh worldBounds:viewTrans].boundingBox;
+            head = false;
         }
         else
         {
-            bounds = bounds.Union(*(NuoBounds*)[[mesh worldBounds:viewTrans] boundingBox]);
+            bounds = bounds.Union([mesh worldBounds:viewTrans].boundingBox);
         }
     }
 
-    float near = -bounds._center.z - bounds._span.z / 2.0 + 0.01;
-    float far = near + bounds._span.z + 0.02;
+    float near = -bounds._center.z() - bounds._span.z() / 2.0 + 0.01;
+    float far = near + bounds._span.z() + 0.02;
     near = std::max<float>(0.001, near);
     far = std::max<float>(near + 0.001, far);
     
-    _projection = matrix_perspective(aspect, _fieldOfView, near, far);
+    _projection = NuoMatrixPerspective(aspect, _fieldOfView, near, far);
 
     NuoUniforms uniforms;
-    uniforms.viewMatrix = viewTrans;
-    uniforms.viewProjectionMatrix = matrix_multiply(_projection, uniforms.viewMatrix);
+    uniforms.viewMatrix = viewTrans._m;
+    uniforms.viewProjectionMatrix = (_projection * viewTrans)._m;
 
     memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
     [self.transUniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(uniforms))];
@@ -957,12 +954,11 @@
     lighting.ambientDensity = _ambientDensity;
     for (unsigned int i = 0; i < 4; ++i)
     {
-        const matrix_float4x4 rotationMatrix = matrix_rotate(_lights[i].lightingRotationX,
-                                                             _lights[i].lightingRotationY);
+        const NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(_lights[i].lightingRotationX,
+                                                                  _lights[i].lightingRotationY);
         
-        vector_float4 lightVector { 0, 0, 1, 0 };
-        lightVector = matrix_multiply(rotationMatrix, lightVector);
-        lighting.lightParams[i].direction = { lightVector.x, lightVector.y, lightVector.z, 0.0 };
+        const NuoVectorFloat4 lightVector(rotationMatrix * NuoVectorFloat4(0, 0, 1, 0));
+        lighting.lightParams[i].direction = lightVector._vector;
         lighting.lightParams[i].density = _lights[i].lightingDensity;
         lighting.lightParams[i].spacular = _lights[i].lightingSpacular;
         
@@ -979,15 +975,15 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        [mesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
+        [mesh updateUniform:inFlight withTransform:NuoMatrixFloat44Identity];
         [mesh setCullEnabled:_cullEnabled];
     }
     
     if (_cubeMesh)
     {
-        const matrix_float4x4 projectionMatrixForCube = matrix_perspective(aspect, _fieldOfView, 0.3, 2.0);
+        const NuoMatrixFloat44 projectionMatrixForCube = NuoMatrixPerspective(aspect, _fieldOfView, 0.3, 2.0);
         [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
-        [_cubeMesh updateUniform:inFlight withTransform:matrix_identity_float4x4];
+        [_cubeMesh updateUniform:inFlight withTransform:NuoMatrixFloat44Identity];
     }
     
     if (_backdropMesh)
@@ -1024,8 +1020,8 @@
     // store the light view point projection for shadow map detection in the scene
     //
     NuoLightVertexUniforms lightUniforms;
-    lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix;
-    lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix;
+    lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix._m;
+    lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix._m;
     memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
     [_lightCastBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(lightUniforms))];
     
@@ -1081,18 +1077,17 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        vector_float3 center = [[mesh worldBounds:matrix_identity_float4x4] boundingBox]->_center;
-        vector_float4 centerVec = { center.x, center.y, center.z, 1.0 };
-        vector_float4 centerProjected = matrix_multiply(_projection, centerVec);
-        vector_float2 centerOnScreen = centerProjected.xy / centerProjected.w;
+        const NuoVectorFloat3 center = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox._center;
+        const NuoVectorFloat4 centerVec(center.x(), center.y(), center.z(), 1.0);
+        const NuoVectorFloat4 centerProjected = _projection * centerVec;
+        const NuoVectorFloat2 centerOnScreen = NuoVectorFloat2(centerProjected.x(), centerProjected.y()) / centerProjected.w();
         
-        vector_float2 normalized;
         CGSize drawableSize = self.renderTarget.drawableSize;
-        float scale = [[NSScreen mainScreen] backingScaleFactor];
-        normalized.x = (point.x * scale) / drawableSize.width * 2.0 - 1.0;
-        normalized.y = (point.y * scale) / drawableSize.height * 2.0 - 1.0;
+        const float scale = [[NSScreen mainScreen] backingScaleFactor];
+        const NuoVectorFloat2 normalized((point.x * scale) / drawableSize.width * 2.0 - 1.0,
+                                         (point.y * scale) / drawableSize.height * 2.0 - 1.0);
         
-        float currentDistance = vector_distance(normalized, centerOnScreen);
+        const float currentDistance = NuoDistance(normalized, centerOnScreen);
         if (currentDistance < distance)
         {
             distance = currentDistance;

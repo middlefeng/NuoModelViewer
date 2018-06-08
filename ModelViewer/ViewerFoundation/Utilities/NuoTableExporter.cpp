@@ -90,7 +90,7 @@ void NuoTableExporter::EndTable()
 
 
 
-void NuoTableExporter::SetMatrix(matrix_float4x4 matrix)
+void NuoTableExporter::SetMatrix(const NuoMatrixFloat44& matrix)
 {
     StartTable();
     
@@ -99,7 +99,7 @@ void NuoTableExporter::SetMatrix(matrix_float4x4 matrix)
         StartArrayIndex(col);
         StartTable();
         
-        vector_float4 colomn = matrix.columns[col];
+        NuoVectorFloat4 colomn = matrix[col];
         
         for (unsigned char row = 0; row < 4; ++ row)
         {

@@ -16,8 +16,8 @@
  */
 typedef struct
 {
-    matrix44 viewProjectionMatrix;
-    matrix44 viewMatrix;
+    matrix44 viewProjectionMatrix __attribute__ ((aligned (16)));
+    matrix44 viewMatrix __attribute__ ((aligned (16)));
 }
 NuoUniforms;
 
@@ -30,7 +30,7 @@ NuoUniforms;
 typedef struct
 {
     // enabling shadow casting for two light sources
-    matrix44 lightCastMatrix[2];
+    matrix44 lightCastMatrix[2] __attribute__ ((aligned (16)));
 }
 NuoLightVertexUniforms;
 
@@ -38,7 +38,7 @@ NuoLightVertexUniforms;
 
 typedef struct
 {
-    vector4 direction;
+    vector4 direction __attribute__ ((aligned (16)));
     float density;
     float spacular;
 }
@@ -60,8 +60,8 @@ NuoShadowParameterUniformField;
  */
 typedef struct
 {
-    NuoLightParameterUniformField lightParams[4];
-    NuoShadowParameterUniformField shadowParams[2];
+    NuoLightParameterUniformField lightParams[4]  __attribute__ ((aligned (16)));
+    NuoShadowParameterUniformField shadowParams[2] __attribute__ ((aligned (16)));
     
     float ambientDensity;
 }
@@ -88,7 +88,7 @@ NuoAmbientOcclusionUniformField;
 typedef struct
 {
     NuoAmbientOcclusionUniformField ambientOcclusionParams;
-    vector4 clearColor;
+    vector4 clearColor __attribute__ ((aligned (16)));
 }
 NuoDeferredRenderUniforms;
 

@@ -9,9 +9,9 @@
 
 
 #import <Foundation/Foundation.h>
-#import <simd/simd.h>
 
 #import "NuoRenderPass.h"
+#import "NuoMathVector.h"
 
 
 @class NuoLightSource;
@@ -43,7 +43,7 @@
 /**
  *  The projection matrix from the view point of the lightSource.
  */
-- (matrix_float4x4)lightCastMatrix;
+- (const NuoMatrixFloat44&)lightCastMatrix;
 
 
 @end

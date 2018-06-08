@@ -5,6 +5,9 @@
 #include "NuoMeshRotation.h"
 #include "NuoUniforms.h"
 
+#include "NuoMathVector.h"
+#include "NuoMeshBounds.h"
+
 
 
 
@@ -22,9 +25,6 @@
  */
 
 
-
-
-@class NuoMeshBounds;
 
 
 @interface NuoMesh : NSObject
@@ -51,17 +51,17 @@
 // mesh rotation in model coordinate, around given axis.
 // better for script-based rotation
 //
-@property (nonatomic, strong) NuoMeshRotation* rotation;
+@property (nonatomic, assign) NuoMeshRotation rotation;
 
 // mesh transform about the poise (rotation around model center).
 // note this transform may include a slight translation before rotation
 // because the model need to be centered (usually around its bounding box)
 //
-@property (nonatomic, assign) matrix_float4x4 transformPoise;
+@property (nonatomic, assign) NuoMatrixFloat44 transformPoise;
 
 // mesh transform about the translate in the world coordinate
 //
-@property (nonatomic, assign) matrix_float4x4 transformTranslate;
+@property (nonatomic, assign) NuoMatrixFloat44 transformTranslate;
 
 // all (prior view-matrix) mesh-transforms concatenate and passed to GPU
 //
@@ -80,7 +80,7 @@
 @property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
 
-@property (nonatomic, strong) NuoMeshBounds* boundsLocal;
+@property (nonatomic, assign) NuoMeshBounds boundsLocal;
 @property (nonatomic, assign) BOOL enabled;
 @property (nonatomic, assign) BOOL cullEnabled;
 
@@ -106,14 +106,14 @@
 - (void)smoothWithTolerance:(float)tolerance;
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(matrix_float4x4)transform;
+- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform;
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
 - (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
 - (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;
 - (BOOL)hasTransparency;
 - (void)setTransparency:(BOOL)transparent;
 
-- (NuoMeshBounds*)worldBounds:(matrix_float4x4)transform;
+- (NuoMeshBounds)worldBounds:(const NuoMatrixFloat44&)transform;
 
 - (void)centerMesh;
 

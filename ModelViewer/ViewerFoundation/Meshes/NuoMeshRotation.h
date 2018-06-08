@@ -6,24 +6,35 @@
 //  Copyright © 2017 middleware. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-#import <simd/simd.h>
+
+#ifndef __NUOMESHROTATION_H__
+#define __NUOMESHROTATION_H__
 
 
-@interface NuoMeshRotation : NSObject
+#include "NuoMathVector.h"
 
-@property (nonatomic, assign) float x;
-@property (nonatomic, assign) float y;
-@property (nonatomic, assign) float z;
 
-@property (nonatomic, assign) float xAxis;
-@property (nonatomic, assign) float yAxis;
-@property (nonatomic, assign) float zAxis;
+class NuoMeshRotation
+{
 
-@property (nonatomic, assign) float radius;
+private:
+    float _radius;
+    NuoMatrixFloat44 _cachedResult;
+    
+    void GenerateMatrices();
 
-- (instancetype)initWith:(NuoMeshRotation*)rotation;
+public:
+    NuoVectorFloat3 _transformVector;
+    NuoVectorFloat3 _axis;
+    
+    NuoMeshRotation();
+    NuoMeshRotation(const NuoMeshRotation& r);
+    
+    void SetRadius(float radius);
+    float Radius() const { return _radius; }
+    const NuoMatrixFloat44& RotationMatrix();
 
-- (matrix_float4x4)rotationMatrix;
+};
 
-@end
+
+#endif
