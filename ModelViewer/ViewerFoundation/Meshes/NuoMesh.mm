@@ -276,6 +276,12 @@
 }
 
 
+- (std::vector<NuoVectorFloat3>)positionBuffer
+{
+    return _rawModel->PositionBuffer();
+}
+
+
 - (void)setSampleCount:(NSUInteger)sampleCount
 {
     if (_sampleCount != sampleCount)

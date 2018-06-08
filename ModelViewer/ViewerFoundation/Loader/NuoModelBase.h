@@ -117,6 +117,8 @@ public:
     virtual NuoVectorFloat4 GetPosition(size_t index) = 0;
     virtual NuoBounds GetBoundingBox();
     
+    virtual std::vector<NuoVectorFloat3> PositionBuffer() = 0;
+    
     virtual void* Ptr() = 0;
     virtual size_t Length() = 0;
     virtual void* IndicesPtr();
@@ -156,6 +158,8 @@ public:
     
     virtual size_t GetVerticesNumber() override;
     virtual NuoVectorFloat4 GetPosition(size_t index) override;
+    
+    virtual std::vector<NuoVectorFloat3> PositionBuffer() override;
     
     virtual void* Ptr() override;
     virtual size_t Length() override;
@@ -405,6 +409,20 @@ template <class ItemBase>
 NuoVectorFloat4 NuoModelCommon<ItemBase>::GetPosition(size_t index)
 {
     return _buffer[index]._position;
+}
+
+
+template <class ItemBase>
+std::vector<NuoVectorFloat3> NuoModelCommon<ItemBase>::PositionBuffer()
+{
+    std::vector<NuoVectorFloat3> result;
+    
+    for (const ItemBase& item : _buffer)
+        result.push_back(NuoVectorFloat3(item._position.x,
+                                         item._position.y,
+                                         item._position.z));
+
+    return result;
 }
 
 

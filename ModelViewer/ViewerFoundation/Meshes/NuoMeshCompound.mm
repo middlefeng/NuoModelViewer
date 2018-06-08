@@ -108,6 +108,20 @@
 }
 
 
+- (std::vector<NuoVectorFloat3>)positionBuffer
+{
+    std::vector<NuoVectorFloat3> buffer;
+    
+    for (NuoMesh* mesh in _meshes)
+    {
+        std::vector<NuoVectorFloat3> oneBuffer = mesh.positionBuffer;
+        buffer.insert(buffer.end(), oneBuffer.begin(), oneBuffer.end());
+    }
+    
+    return buffer;
+}
+
+
 - (NSUInteger)sampleCount
 {
     return _sampleCount;

@@ -8,6 +8,8 @@
 #include "NuoMathVector.h"
 #include "NuoMeshBounds.h"
 
+#include <vector>
+
 
 
 
@@ -104,6 +106,8 @@
 - (void)setRawModel:(void*)model;
 - (NSString*)modelName;
 - (void)smoothWithTolerance:(float)tolerance;
+
+- (std::vector<NuoVectorFloat3>)positionBuffer;
 
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform;
