@@ -108,13 +108,13 @@
 }
 
 
-- (std::vector<NuoVectorFloat3>)positionBuffer
+- (PositionBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform
 {
-    std::vector<NuoVectorFloat3> buffer;
+    PositionBuffer buffer;
     
     for (NuoMesh* mesh in _meshes)
     {
-        std::vector<NuoVectorFloat3> oneBuffer = mesh.positionBuffer;
+        PositionBuffer oneBuffer = [mesh worldPositionBuffer:transform];
         buffer.insert(buffer.end(), oneBuffer.begin(), oneBuffer.end());
     }
     

@@ -72,6 +72,7 @@
 		2CB053D02043A24700EF8279 /* ModelViewConfiguration.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CB053CF2043A24700EF8279 /* ModelViewConfiguration.mm */; };
 		2CC110751FDD233100D09716 /* NuoProgressSheetPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CC110741FDD233100D09716 /* NuoProgressSheetPanel.m */; };
 		2CC5EDEE1D8A62B100419168 /* NuoRoundedView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CC5EDED1D8A62B100419168 /* NuoRoundedView.m */; };
+		2CC88F2D20CB461C00E8010D /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CC88F2820CB461C00E8010D /* MetalPerformanceShaders.framework */; };
 		2CCD521B20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CCD521A20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm */; };
 		2CCF9C771E5B4F77006EF8C4 /* NuoOffscreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CCF9C761E5B4F77006EF8C4 /* NuoOffscreenView.m */; };
 		2CCF9C801E5B7A43006EF8C4 /* NuoRenderPipeline.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CCF9C7F1E5B7A43006EF8C4 /* NuoRenderPipeline.mm */; };
@@ -281,6 +282,7 @@
 		2CC110741FDD233100D09716 /* NuoProgressSheetPanel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoProgressSheetPanel.m; sourceTree = "<group>"; };
 		2CC5EDEC1D8A62B100419168 /* NuoRoundedView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRoundedView.h; sourceTree = "<group>"; };
 		2CC5EDED1D8A62B100419168 /* NuoRoundedView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoRoundedView.m; sourceTree = "<group>"; };
+		2CC88F2820CB461C00E8010D /* MetalPerformanceShaders.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalPerformanceShaders.framework; path = System/Library/Frameworks/MetalPerformanceShaders.framework; sourceTree = SDKROOT; };
 		2CCD521920B8C0F100F6CEFE /* NuoRenderPassAttachment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoRenderPassAttachment.h; sourceTree = "<group>"; };
 		2CCD521A20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoRenderPassAttachment.mm; sourceTree = "<group>"; };
 		2CCF9C751E5B4F77006EF8C4 /* NuoOffscreenView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoOffscreenView.h; sourceTree = "<group>"; };
@@ -335,6 +337,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2CC88F2D20CB461C00E8010D /* MetalPerformanceShaders.framework in Frameworks */,
 				2C9072E61FE306E000359F12 /* libz.tbd in Frameworks */,
 				2C4DE7881DFB565900199F1D /* libluad.dylib in Frameworks */,
 			);
@@ -592,6 +595,7 @@
 		2C9072E41FE306D600359F12 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2CC88F2820CB461C00E8010D /* MetalPerformanceShaders.framework */,
 				2C9072E51FE306D600359F12 /* libz.tbd */,
 			);
 			name = Frameworks;

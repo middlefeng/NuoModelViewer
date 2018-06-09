@@ -85,6 +85,9 @@ bool ItemTexCoordEequal(const ItemBase& i1, const ItemBase& i2)
 
 
 
+typedef std::vector<NuoVectorFloat3::_typeTrait::_vectorType> PositionBuffer;
+
+
 class NuoModelBase : public std::enable_shared_from_this<NuoModelBase>
 {
 protected:
@@ -117,7 +120,7 @@ public:
     virtual NuoVectorFloat4 GetPosition(size_t index) = 0;
     virtual NuoBounds GetBoundingBox();
     
-    virtual std::vector<NuoVectorFloat3> PositionBuffer() = 0;
+    virtual PositionBuffer GetPositionBuffer() = 0;
     
     virtual void* Ptr() = 0;
     virtual size_t Length() = 0;
@@ -159,7 +162,7 @@ public:
     virtual size_t GetVerticesNumber() override;
     virtual NuoVectorFloat4 GetPosition(size_t index) override;
     
-    virtual std::vector<NuoVectorFloat3> PositionBuffer() override;
+    virtual PositionBuffer GetPositionBuffer() override;
     
     virtual void* Ptr() override;
     virtual size_t Length() override;
@@ -413,14 +416,18 @@ NuoVectorFloat4 NuoModelCommon<ItemBase>::GetPosition(size_t index)
 
 
 template <class ItemBase>
-std::vector<NuoVectorFloat3> NuoModelCommon<ItemBase>::PositionBuffer()
+PositionBuffer NuoModelCommon<ItemBase>::GetPositionBuffer()
 {
-    std::vector<NuoVectorFloat3> result;
+    PositionBuffer result;
     
     for (const ItemBase& item : _buffer)
-        result.push_back(NuoVectorFloat3(item._position.x,
-                                         item._position.y,
-                                         item._position.z));
+    {
+        NuoVectorFloat3::_typeTrait::_vectorType vector;
+        vector.x = item._position.x;
+        vector.y = item._position.y;
+        vector.z = item._position.z;
+        result.push_back(vector);
+    }
 
     return result;
 }

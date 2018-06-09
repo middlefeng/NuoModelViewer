@@ -7,6 +7,7 @@
 
 #include "NuoMathVector.h"
 #include "NuoMeshBounds.h"
+#include "NuoModelBase.h"
 
 #include <vector>
 
@@ -107,7 +108,7 @@
 - (NSString*)modelName;
 - (void)smoothWithTolerance:(float)tolerance;
 
-- (std::vector<NuoVectorFloat3>)positionBuffer;
+- (PositionBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform;
 
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform;
