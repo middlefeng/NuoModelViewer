@@ -12,7 +12,7 @@
 
 struct ClearFragment
 {
-    vector4 clearColor __attribute__ ((aligned (16)));
+    vector4 clearColor;
 };
 
 
