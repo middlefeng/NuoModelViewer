@@ -34,6 +34,7 @@ template <class ItemType>
 inline NuoRandomBuffer<ItemType>::NuoRandomBuffer(size_t size)
 {
     _buffer.resize(size);
+    InitBuffer();
 }
 
 

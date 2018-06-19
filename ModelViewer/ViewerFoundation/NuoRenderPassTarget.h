@@ -66,6 +66,8 @@
  */
 @property (nonatomic, assign) BOOL sharedTargetTexture;
 
+@property (nonatomic, assign) BOOL computeTarget;
+
 @property (nonatomic, readonly) MTLPixelFormat targetPixelFormat;
 
 

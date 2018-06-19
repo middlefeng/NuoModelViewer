@@ -45,7 +45,11 @@
         desc.sampleCount = 1;
         desc.textureType = MTLTextureType2D;
         desc.resourceOptions = _sharedTexture ? MTLResourceStorageModeManaged : MTLResourceStorageModePrivate;
-        desc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
+        
+        MTLTextureUsage usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
+        if (_computeTarget)
+            usage |= MTLTextureUsageShaderWrite;
+        desc.usage = usage;
         
         _texture = [_device newTextureWithDescriptor:desc];
         [_texture setLabel:_name];

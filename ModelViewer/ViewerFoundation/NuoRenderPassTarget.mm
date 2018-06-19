@@ -128,6 +128,7 @@
     {
         NuoRenderPassAttachment* colorAttachment = _colorAttachments[i];
         colorAttachment.drawableSize = self.drawableSize;
+        colorAttachment.computeTarget = self.computeTarget;
         colorAttachment.manageTexture = self.manageTargetTexture;
         colorAttachment.sharedTexture = self.sharedTargetTexture;
         colorAttachment.needResolve = YES;
@@ -138,11 +139,14 @@
         [colorAttachment makeTexture];
     }
     
-    _depthAttachment.drawableSize = self.drawableSize;
-    _depthAttachment.needResolve = _resolveDepth;
-    _depthAttachment.sampleCount = _sampleCount;
-    _depthAttachment.name = _name;
-    [_depthAttachment makeTexture];
+    if (!_computeTarget)
+    {
+        _depthAttachment.drawableSize = self.drawableSize;
+        _depthAttachment.needResolve = _resolveDepth;
+        _depthAttachment.sampleCount = _sampleCount;
+        _depthAttachment.name = _name;
+        [_depthAttachment makeTexture];
+    }
 }
 
 

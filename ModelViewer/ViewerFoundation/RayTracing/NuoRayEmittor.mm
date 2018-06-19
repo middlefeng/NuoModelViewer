@@ -12,8 +12,17 @@
 #include "NuoRandomBuffer.h"
 #include "NuoRayTracingUniform.h"
 
+#import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
-static const uint kRayBufferStrid = 48;
+
+const uint kRayBufferStrid = 48;
+
+
+@interface NuoRayEmittor()
+
+@property (nonatomic, weak) id<MTLDevice> device;
+
+@end
 
 
 @implementation NuoRayEmittor
@@ -33,22 +42,24 @@ static const uint kRayBufferStrid = 48;
     
     if (self)
     {
-        id<MTLDevice> device = commandQueue.device;
+        _device = commandQueue.device;
         
         id<MTLBuffer> uniformBuffer[kInFlightBufferCount];
         id<MTLBuffer> randomBuffer[kInFlightBufferCount];
+        NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> randomBufferContent(256);
+        
         for (uint i = 0; i < kInFlightBufferCount; ++i)
         {
-            uniformBuffer[i] = [device newBufferWithLength:sizeof(NuoRayVolumeUniform)
+            uniformBuffer[i] = [_device newBufferWithLength:sizeof(NuoRayVolumeUniform)
+                                                    options:MTLResourceStorageModeManaged];
+            randomBuffer[i] = [_device newBufferWithLength:randomBufferContent.BytesSize()
                                                    options:MTLResourceStorageModeManaged];
-            randomBuffer[i] = [device newBufferWithLength:sizeof(NuoRayVolumeUniform)
-                                                  options:MTLResourceStorageModeManaged];
         }
         
         _uniformBuffers = [[NSArray alloc] initWithObjects:uniformBuffer count:kInFlightBufferCount];
         _randomBuffers = [[NSArray alloc] initWithObjects:randomBuffer count:kInFlightBufferCount];
         
-        [self setupPipeline:device];
+        [self setupPipeline];
     }
     
     return self;
@@ -59,20 +70,34 @@ static const uint kRayBufferStrid = 48;
 - (void)setFieldOfView:(CGFloat)fieldOfView
 {
     _fieldOfView = fieldOfView;
-    _rayBuffer = nil;
 }
 
 
 
-- (void)setDestineTexture:(id<MTLTexture>)destineTexture
+- (uint)rayCount
 {
-    _destineTexture = destineTexture;
-    _rayBuffer = nil;
+    CGSize drawableSize = [self drawableSize];
+    
+    const uint w = (uint)drawableSize.width;
+    const uint h = (uint)drawableSize.height;
+    
+    return w * h;
 }
 
 
 
-- (void)setupPipeline:(id<MTLDevice>)device
+- (void)setDrawableSize:(CGSize)drawableSize
+{
+    _drawableSize = drawableSize;
+    
+    const uint rayCount = [self rayCount];
+    const uint rayBufferSize = kRayBufferStrid * rayCount;
+    _rayBuffer = [_device newBufferWithLength:rayBufferSize options:MTLResourceStorageModePrivate];
+}
+
+
+
+- (void)setupPipeline
 {
     NSError* error = nil;
     
@@ -80,9 +105,9 @@ static const uint kRayBufferStrid = 48;
     descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
     
     // Generates rays according to view/projection matrices
-    id<MTLLibrary> library = [device newDefaultLibrary];
+    id<MTLLibrary> library = [_device newDefaultLibrary];
     descriptor.computeFunction = [library newFunctionWithName:@"ray_emit"];
-    _pipeline = [device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
+    _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
     
     assert(error == nil);
 }
@@ -99,18 +124,20 @@ static const uint kRayBufferStrid = 48;
 
 - (void)updateUniform:(uint)inFlight
 {
-    const uint width = (uint)_destineTexture.width;
-    const uint height = (uint)_destineTexture.height;
+    CGSize drawableSize = [self drawableSize];
+    
+    const uint width = (uint)drawableSize.width;
+    const uint height = (uint)drawableSize.height;
     
     NuoRayVolumeUniform uniform;
     
     uniform.wViewPort = width;
     uniform.hViewPort = height;
     
-    const float aspectRatio = width / height;
+    const float aspectRatio = width / (float)height;
     
-    uniform.uRange = tan(_fieldOfView / 2.0) * 2.0;
-    uniform.vRange = uniform.uRange / aspectRatio;
+    uniform.vRange = tan(_fieldOfView / 2.0) * 2.0;
+    uniform.uRange = uniform.vRange * aspectRatio;
     
     memcpy([_uniformBuffers[inFlight] contents], &uniform, sizeof(uniform));
     
@@ -122,14 +149,13 @@ static const uint kRayBufferStrid = 48;
 
 - (id<MTLBuffer>)rayBuffer:(id<MTLCommandBuffer>)commandBuffer
               withInFlight:(uint)inFlight
+                  toTarget:(NuoRenderPassTarget*)renderTarget
 {
     [self updateUniform:inFlight];
-        
-    const uint w = (uint)_destineTexture.width;
-    const uint h = (uint)_destineTexture.height;
-    uint rayCount = w * h;
-    _rayBuffer = [commandBuffer.commandQueue.device newBufferWithLength:(kRayBufferStrid * rayCount)
-                                                                options:MTLResourceStorageModePrivate];
+    
+    CGSize drawableSize = [self drawableSize];
+    const float w = drawableSize.width;
+    const float h = drawableSize.height;
     
     MTLSize threads = MTLSizeMake(8, 8, 1);
     MTLSize threadgroups = MTLSizeMake((w + threads.width  - 1) / threads.width,
@@ -139,7 +165,7 @@ static const uint kRayBufferStrid = 48;
     [computeEncoder setBuffer:_uniformBuffers[inFlight] offset:0 atIndex:0];
     [computeEncoder setBuffer:_rayBuffer offset:0 atIndex:1];
     [computeEncoder setBuffer:_randomBuffers[inFlight] offset:0  atIndex:2];
-    [computeEncoder setTexture:_destineTexture atIndex:0];
+    [computeEncoder setTexture:renderTarget.targetTexture atIndex:0];
     
     [computeEncoder setComputePipelineState:_pipeline];
     [computeEncoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threads];
@@ -147,6 +173,12 @@ static const uint kRayBufferStrid = 48;
     [computeEncoder endEncoding];
     
     return _rayBuffer;
+}
+
+
+- (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight
+{
+    return _uniformBuffers[inFlight];
 }
 
 

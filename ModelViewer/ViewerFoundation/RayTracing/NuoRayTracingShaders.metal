@@ -34,11 +34,19 @@ struct RayWithMask
 };
 
 
+struct Intersection
+{
+    float distance;
+    int primitiveIndex;
+    float2 coordinates;
+};
+
+
 kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
                      constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                      device RayWithMask* rays [[buffer(1)]],
                      device float2* random [[buffer(2)]],
-                     texture2d<float, access::write> dstTex [[texture(1)]])
+                     texture2d<float, access::write> dstTex [[texture(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -46,14 +54,40 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device RayWithMask& ray = rays[rayIdx];
     
-    const float u = (tid.x / (float)uniforms.wViewPort) * uniforms.uRange - uniforms.uRange / 2.0;
-    const float v = (tid.y / (float)uniforms.hViewPort) * uniforms.vRange - uniforms.vRange / 2.0;
+    float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
+    float2 pixelCoord = (float2)tid + r;
     
-    ray.direction = normalize(float3(u, v, -1.0));
+    const float u = (pixelCoord.x / (float)uniforms.wViewPort) * uniforms.uRange - uniforms.uRange / 2.0;
+    const float v = (pixelCoord.y / (float)uniforms.hViewPort) * uniforms.vRange - uniforms.vRange / 2.0;
+    
+    ray.direction = normalize(float3(u, -v, -1.0));
     ray.origin = float3(0.0, 0.0, 0.0);
     
     ray.mask = 0;
     ray.maxDistance = INFINITY;
     
     dstTex.write(float4(0.0f, 0.0f, 0.0f, 0.0f), tid);
+    
+    
+    //dstTex.write(float4(pixelCoord.x / (float)uniforms.wViewPort, pixelCoord.y / (float)uniforms.hViewPort, 0.0, 1.0f), tid);
+}
+
+
+
+
+kernel void shade_function(uint2 tid [[thread_position_in_grid]],
+                           constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                           device Intersection *intersections [[buffer(1)]],
+                           texture2d<float, access::write> dstTex [[texture(0)]])
+{
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device Intersection & intersection = intersections[rayIdx];
+    
+    if (intersection.distance >= 0.0f)
+    {
+        dstTex.write(float4(1.0, 0.0, 0.0, 1.0f), tid);
+    }
 }
