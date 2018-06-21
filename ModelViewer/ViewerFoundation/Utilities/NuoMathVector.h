@@ -175,6 +175,8 @@ public:
         return (_m = v);
     }
     
+    inline NuoMatrix Inverse() const;
+    
     inline bool IsIdentity() const;
 };
 

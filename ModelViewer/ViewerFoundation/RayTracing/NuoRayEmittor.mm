@@ -138,6 +138,7 @@ const uint kRayBufferStrid = 48;
     
     uniform.vRange = tan(_fieldOfView / 2.0) * 2.0;
     uniform.uRange = uniform.vRange * aspectRatio;
+    uniform.viewTrans = _viewTrans._m;
     
     memcpy([_uniformBuffers[inFlight] contents], &uniform, sizeof(uniform));
     

@@ -11,6 +11,8 @@
 
 #import "NuoRenderPassTarget.h"
 
+#include "NuoMathVector.h"
+
 
 extern const uint kRayBufferStrid;
 
@@ -20,6 +22,8 @@ extern const uint kRayBufferStrid;
 
 @property (nonatomic, assign) CGFloat fieldOfView;
 @property (nonatomic, assign) CGSize drawableSize;
+@property (nonatomic, assign) NuoMatrixFloat44 viewTrans;
+
 @property (nonatomic, readonly) uint rayCount;
 
 

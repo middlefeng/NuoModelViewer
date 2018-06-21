@@ -86,7 +86,6 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
     const uint h = (uint)drawableSize.height;
     const uint intersectionSize = kRayIntersectionStrid * w * h;
     _intersectionBuffer = [_device newBufferWithLength:intersectionSize options:MTLResourceStorageModePrivate];
-    
 }
 
 
@@ -97,12 +96,12 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
 }
 
 
-- (PositionBuffer)positionBuffer:(NSArray<NuoMesh*>*)meshes withView:(const NuoMatrixFloat44&)viewTrans
+- (PositionBuffer)positionBuffer:(NSArray<NuoMesh*>*)meshes
 {
     PositionBuffer buffer;
     for (NuoMesh* mesh in meshes)
     {
-        PositionBuffer bufferForOne = [mesh worldPositionBuffer:viewTrans];
+        PositionBuffer bufferForOne = [mesh worldPositionBuffer:NuoMatrixFloat44Identity];
         buffer.insert(buffer.end(), bufferForOne.begin(), bufferForOne.end());
     }
     
@@ -111,9 +110,9 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
 
 
 
-- (void)setMeshes:(NSArray<NuoMesh*>*)meshes withView:(const NuoMatrixFloat44&)viewTrans
+- (void)setMeshes:(NSArray<NuoMesh*>*)meshes
 {
-    PositionBuffer buffer = [self positionBuffer:meshes withView:viewTrans];
+    PositionBuffer buffer = [self positionBuffer:meshes];
     uint32_t triangleCount = (uint32_t)buffer.size() / 3;
     
     id<MTLBuffer> vertexBuffer = [_device newBufferWithBytes:&buffer[0]
@@ -124,6 +123,12 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
     _accelerateStructure.triangleCount = triangleCount;
     
     [_accelerateStructure rebuild];
+}
+
+
+- (void)setView:(const NuoMatrixFloat44&)viewTrans
+{
+    [_rayEmittor setViewTrans:viewTrans.Inverse()];
 }
 
 

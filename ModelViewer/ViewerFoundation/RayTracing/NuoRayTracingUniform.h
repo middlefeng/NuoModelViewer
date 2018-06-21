@@ -10,6 +10,9 @@
 #define NuoRayTracingShadersCommon_h
 
 
+#include "Meshes/NuoMatrixTypes.h"
+
+
 typedef struct
 {
     float uRange;
@@ -17,6 +20,8 @@ typedef struct
     
     uint wViewPort;
     uint hViewPort;
+    
+    matrix44 viewTrans;
 }
 NuoRayVolumeUniform;
 

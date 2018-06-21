@@ -25,7 +25,9 @@
 
 - (instancetype)initWithQueue:(id<MTLCommandQueue>)queue;
 
-- (void)setMeshes:(NSArray<NuoMesh*>*)meshes withView:(const NuoMatrixFloat44&)viewTrans;
+- (void)setMeshes:(NSArray<NuoMesh*>*)meshes;
+- (void)setView:(const NuoMatrixFloat44&)viewTrans;
+
 - (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight
         toTarget:(NuoRenderPassTarget*)renderTarget;
 
