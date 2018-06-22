@@ -23,6 +23,7 @@
 #import "ModelSelectionRenderer.h"
 #import "NotationRenderer.h"
 #import "MotionBlurRenderer.h"
+#import "NuoRayTracingRenderer.h"
 
 #import "NuoLua.h"
 #import "NuoDirectoryUtils.h"
@@ -37,6 +38,7 @@
 #import "NuoMeshRotation.h"
 #import "NuoMeshAnimation.h"
 #import "NuoTextureBase.h"
+#import "NuoRayAccelerateStructure.h"
 
 #include "NuoOffscreenView.h"
 
@@ -71,6 +73,7 @@ MouseDragMode;
     ModelSelectionRenderer* _modelSelectionRenderer;
     NotationRenderer* _notationRenderer;
     MotionBlurRenderer* _motionBlurRenderer;
+    NuoRayTracingRenderer* _rayTracingRenderer;
     
     NSMutableArray<NuoMeshAnimation*>* _animations;
     
@@ -216,6 +219,15 @@ MouseDragMode;
     {
         NSArray<NuoMesh*>* dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
         [_modelDissectRenderer setDissectMeshes:dissectMeshes];
+    }
+    
+    if (_rayTracingRenderer)
+    {
+        // [_rayTracingRenderer setMesh:_modelRender.mainModelMesh];
+        // [_ra]
+        
+        NuoRayAccelerateStructure* rayStructure = [_modelRender rayAccelerator];
+        _rayTracingRenderer.rayStructure = rayStructure;
     }
 }
 
@@ -493,6 +505,10 @@ MouseDragMode;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
+    _rayTracingRenderer = [[NuoRayTracingRenderer alloc] initWithCommandQueue:self.commandQueue
+                                                              withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                              withSampleCount:1];
+    
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
     // sync the model renderer with the initial settings in the model panel
@@ -614,7 +630,7 @@ MouseDragMode;
     // notation renderer
     //
     
-    if (_modelPanel.showLightSettings)
+    /* if (_modelPanel.showLightSettings)
     {
         [renders addObject:_notationRenderer];
         
@@ -627,6 +643,26 @@ MouseDragMode;
         
         [_notationRenderer setRenderTarget:notationRenderTarget];
         lastTarget = nil;
+    }*/
+    
+    //if (false)
+    {
+
+        _rayTracingRenderer.fieldOfView = _modelRender.fieldOfView;
+        
+        [renders addObject:_rayTracingRenderer];
+        
+        NuoRenderPassTarget* rayTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                                                    withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                                    withSampleCount:1];
+        
+        rayTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
+        rayTarget.manageTargetTexture = NO;
+        rayTarget.name = @"Ray";
+        
+        [_rayTracingRenderer setRenderTarget:rayTarget];
+        
+        lastTarget = rayTarget;
     }
     
     // the last target is framebuffer

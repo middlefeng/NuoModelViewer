@@ -60,6 +60,14 @@ const uint kRayBufferStrid = 48;
         _randomBuffers = [[NSArray alloc] initWithObjects:randomBuffer count:kInFlightBufferCount];
         
         [self setupPipeline];
+        
+        /*_renderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
+                                                          withPixelFormat:MTLPixelFormatRGBA32Float
+                                                          withSampleCount:1];
+        _renderTarget.computeTarget = YES;
+        _renderTarget.manageTargetTexture = YES;
+        _renderTarget.sharedTargetTexture = NO;
+        _renderTarget.name = @"Ray Emit";*/
     }
     
     return self;

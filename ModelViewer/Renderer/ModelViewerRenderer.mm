@@ -22,6 +22,8 @@
 #include "NuoLua.h"
 
 #import "NuoLightSource.h"
+#import "NuoRayAccelerateStructure.h"
+
 #import "NuoShadowMapRenderer.h"
 #import "NuoDeferredRenderer.h"
 #import "NuoDirectoryUtils.h"
@@ -100,6 +102,8 @@
         _viewTranslation = NuoMatrixFloat44Identity;
         
         self.paramsProvider = self;
+        
+        _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithQueue:commandQueue];
     }
 
     return self;
@@ -113,6 +117,14 @@
     [_shadowMapRenderer[0] setDrawableSize:drawableSize];
     [_shadowMapRenderer[1] setDrawableSize:drawableSize];
     [_deferredRenderer setDrawableSize:drawableSize];
+    [_rayAccelerator setDrawableSize:drawableSize];
+}
+
+
+- (void)setFieldOfView:(float)fieldOfView
+{
+    _fieldOfView = fieldOfView;
+    [_rayAccelerator setFieldOfView:fieldOfView];
 }
 
 
@@ -184,7 +196,12 @@
     [_mainModelMesh setTransformTranslate:NuoMatrixTranslation(defaultDistanceVec)];
     
     [self caliberateSceneCenter];
+    
+    // TODO: need a more generic updating function
+    //
+    [_rayAccelerator setMeshes:_meshes withView:[self viewMatrix]];
 }
+
 
 
 - (BOOL)loadPackage:(NSString*)path withProgress:(NuoProgressFunction)progress

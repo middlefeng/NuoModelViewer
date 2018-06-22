@@ -13,6 +13,7 @@
 @class NuoCubeMesh;
 @class NuoBackdropMesh;
 @class NuoLightSource;
+@class NuoRayAccelerateStructure;
 
 /**
  TERMS:
@@ -76,6 +77,9 @@ class NuoLua;
 @property (nonatomic, assign) float rotationYDelta;
 @property (nonatomic, assign) float transXDelta;
 @property (nonatomic, assign) float transYDelta;
+
+
+@property (nonatomic, readonly) NuoRayAccelerateStructure* rayAccelerator;
 
 
 @property (nonatomic, assign) BOOL cullEnabled;
