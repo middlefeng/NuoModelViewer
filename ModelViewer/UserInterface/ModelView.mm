@@ -23,6 +23,7 @@
 #import "ModelSelectionRenderer.h"
 #import "NotationRenderer.h"
 #import "MotionBlurRenderer.h"
+#import "NuoRayTracingRenderer.h"
 
 #import "NuoLua.h"
 #import "NuoDirectoryUtils.h"
@@ -37,6 +38,7 @@
 #import "NuoMeshRotation.h"
 #import "NuoMeshAnimation.h"
 #import "NuoTextureBase.h"
+#import "NuoRayAccelerateStructure.h"
 
 #include "NuoOffscreenView.h"
 
@@ -71,6 +73,7 @@ MouseDragMode;
     ModelSelectionRenderer* _modelSelectionRenderer;
     NotationRenderer* _notationRenderer;
     MotionBlurRenderer* _motionBlurRenderer;
+    NuoRayTracingRenderer* _rayTracingRenderer;
     
     NSMutableArray<NuoMeshAnimation*>* _animations;
     
@@ -216,6 +219,12 @@ MouseDragMode;
     {
         NSArray<NuoMesh*>* dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
         [_modelDissectRenderer setDissectMeshes:dissectMeshes];
+    }
+    
+    if (_rayTracingRenderer)
+    {
+        NuoRayAccelerateStructure* rayStructure = [_modelRender rayAccelerator];
+        _rayTracingRenderer.rayStructure = rayStructure;
     }
 }
 
@@ -493,6 +502,10 @@ MouseDragMode;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
+    _rayTracingRenderer = [[NuoRayTracingRenderer alloc] initWithCommandQueue:self.commandQueue
+                                                              withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                              withSampleCount:1];
+    
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
     // sync the model renderer with the initial settings in the model panel
@@ -571,7 +584,7 @@ MouseDragMode;
     // motion blur renderer
     //
     
-    if (_modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Start)
+    if (_modelPanel.motionBlurRecordStatus == kRecord_Start)
     {
         [renders addObject:_motionBlurRenderer];
         
@@ -586,9 +599,31 @@ MouseDragMode;
         
         lastTarget = motionBlurTarget;
     }
-    else if (_modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Stop)
+    else if (_modelPanel.motionBlurRecordStatus == kRecord_Stop)
     {
         [_motionBlurRenderer resetResources];
+    }
+    
+    // ray tracing blend-in
+    
+    if (_modelPanel.rayTracingRecordStatus == kRecord_Start)
+    {
+        
+        _rayTracingRenderer.fieldOfView = _modelRender.fieldOfView;
+        
+        [renders addObject:_rayTracingRenderer];
+        
+        NuoRenderPassTarget* rayTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                                           withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                           withSampleCount:1];
+        
+        rayTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
+        rayTarget.manageTargetTexture = NO;
+        rayTarget.name = @"Ray";
+        
+        [_rayTracingRenderer setRenderTarget:rayTarget];
+        
+        lastTarget = rayTarget;
     }
     
     // selection overlay
@@ -705,7 +740,7 @@ MouseDragMode;
     
     // ok to turn off the advanced shadow unless in case of recording blur, or adjusting light.
     //
-    if (!_trackingLighting && _modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Stop)
+    if (!_trackingLighting && _modelPanel.motionBlurRecordStatus == kRecord_Stop)
         [_modelRender setAdvancedShaowEnabled:NO];
     
     [_modelRender setSampleCount:1];
@@ -795,6 +830,7 @@ MouseDragMode;
         }
     }
     
+    [_modelRender syncMeshPositionBuffer];
     [self render];
 }
 
@@ -806,6 +842,7 @@ MouseDragMode;
     else
         _modelRender.zoomDelta = 10 * event.magnification;
     
+    [_modelRender syncMeshPositionBuffer];
     [self render];
 }
 
@@ -833,6 +870,7 @@ MouseDragMode;
         _modelRender.transYDelta = deltaY;
     }
     
+    [_modelRender syncMeshPositionBuffer];
     [self render];
 }
 
@@ -1153,7 +1191,7 @@ MouseDragMode;
                  CGFloat previewSize = fmax(modelRenderer.renderTarget.drawableSize.height,
                                             modelRenderer.renderTarget.drawableSize.width);
                  
-                 NSArray* renders = (panel.motionBlurRecordStatus == kMotionBlurRecord_Start) ?
+                 NSArray* renders = (panel.motionBlurRecordStatus == kRecord_Start) ?
                                         @[modelRenderer, motionBlurRenderer] :
                                         @[modelRenderer];
                  
@@ -1199,7 +1237,7 @@ MouseDragMode;
                  CGFloat previewSize = fmax(modelRenderer.renderTarget.drawableSize.height,
                                             modelRenderer.renderTarget.drawableSize.width);
                  
-                 NSArray* renders = (panel.motionBlurRecordStatus == kMotionBlurRecord_Start) ?
+                 NSArray* renders = (panel.motionBlurRecordStatus == kRecord_Start) ?
                                            @[modelRenderer, motionBlurRenderer] :
                                            @[modelRenderer];
                  

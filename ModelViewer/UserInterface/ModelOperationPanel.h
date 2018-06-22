@@ -21,11 +21,11 @@
 
 typedef enum
 {
-    kMotionBlurRecord_Start,
-    kMotionBlurRecord_Stop,
-    kMotionBlurRecord_Pause
+    kRecord_Start,
+    kRecord_Stop,
+    kRecord_Pause
 }
-MotionBlurRecordStatus;
+RecordStatus;
 
 
 
@@ -59,7 +59,8 @@ MotionBlurRecordStatus;
 
 @property (nonatomic, assign) float animationProgress;
 
-@property (nonatomic, assign) MotionBlurRecordStatus motionBlurRecordStatus;
+@property (nonatomic, assign) RecordStatus motionBlurRecordStatus;
+@property (nonatomic, assign) RecordStatus rayTracingRecordStatus;
 
 
 - (void)addSubviews;

@@ -43,6 +43,9 @@
 @property (nonatomic, strong) NSButton* motionBlurRecord;
 @property (nonatomic, strong) NSButton* motionBlurPause;
 
+@property (nonatomic, strong) NSButton* rayTracingRecord;
+@property (nonatomic, strong) NSButton* rayTracingPause;
+
 @property (nonatomic, strong) NSPopUpButton* deviceList;
 
 @end
@@ -81,7 +84,8 @@
         _showLightSettings = NO;
         _ambientDensity = 0.28;
         
-        _motionBlurRecordStatus = kMotionBlurRecord_Stop;
+        _motionBlurRecordStatus = kRecord_Stop;
+        _rayTracingRecordStatus = kRecord_Stop;
     }
     
     return self;
@@ -107,7 +111,7 @@
     
     CGRect docViewFrame = CGRectMake(0, 0, 0, 0);
     docViewFrame.size = rootViewFrame.size;
-    docViewFrame.size.height += 265.0;
+    docViewFrame.size.height += 290.0;
     
     rootScroll.frame = rootViewFrame;
     scrollDocumentView.frame = docViewFrame;
@@ -458,6 +462,55 @@
     [scrollDocumentView addSubview:pauseButton];
     _motionBlurPause = pauseButton;
     
+    // motion blur recording
+    
+    rowCoord += 1.0;
+    
+    NSTextField* labelRayTracingLabel = [NSTextField new];
+    [labelRayTracingLabel setEditable:NO];
+    [labelRayTracingLabel setSelectable:NO];
+    [labelRayTracingLabel setBordered:NO];
+    [labelRayTracingLabel setStringValue:@"Ray Tracing:"];
+    [labelRayTracingLabel setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
+    [scrollDocumentView addSubview:labelRayTracingLabel];
+    
+    NSRect recordRectRayTracing = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    recordRectRayTracing.origin.x += 120;
+    recordRectRayTracing.origin.y -=10;
+    recordRectRayTracing.size.width = 40;
+    recordRectRayTracing.size.height = 35;
+    
+    NSButton* recordButtonRayTracing = [[NSButton alloc] init];
+    [recordButtonRayTracing setTitle:@""];
+    [recordButtonRayTracing setFrame:recordRectRayTracing];
+    [recordButtonRayTracing setBezelStyle:NSRoundedBezelStyle];
+    [recordButtonRayTracing setButtonType:NSToggleButton];
+    [recordButtonRayTracing setControlSize:NSControlSizeSmall];
+    [recordButtonRayTracing setTarget:self];
+    [recordButtonRayTracing setAction:@selector(rayTracingUpdate:)];
+    [recordButtonRayTracing setImage:[NSImage imageNamed:@"MotionBlurRecord"]];
+    [recordButtonRayTracing setAlternateImage:[NSImage imageNamed:@"MotionBlurStop"]];
+    [recordButtonRayTracing setState:NSOffState];
+    [recordButtonRayTracing setAllowsMixedState:NO];
+    [scrollDocumentView addSubview:recordButtonRayTracing];
+    _rayTracingRecord = recordButtonRayTracing;
+    
+    recordRectRayTracing.origin.x += 35;
+    
+    NSButton* pauseButtonRayTracing = [[NSButton alloc] init];
+    [pauseButtonRayTracing setTitle:@""];
+    [pauseButtonRayTracing setFrame:recordRectRayTracing];
+    [pauseButtonRayTracing setBezelStyle:NSRoundedBezelStyle];
+    [pauseButtonRayTracing setButtonType:NSToggleButton];
+    [pauseButtonRayTracing setControlSize:NSControlSizeSmall];
+    [pauseButtonRayTracing setTarget:self];
+    [pauseButtonRayTracing setAction:@selector(rayTracingUpdate:)];
+    [pauseButtonRayTracing setImage:[NSImage imageNamed:@"MotionBlurPause"]];
+    [pauseButtonRayTracing setAlternateImage:[NSImage imageNamed:@"MotionBlurPaused"]];
+    [pauseButtonRayTracing setState:NSOffState];
+    [scrollDocumentView addSubview:pauseButtonRayTracing];
+    _rayTracingPause = pauseButtonRayTracing;
+    
     // device select
     
     rowCoord += 1.8;
@@ -662,11 +715,27 @@
     [self updateControls];
     
     if (_motionBlurRecord.state == NSOnState && _motionBlurPause.state == NSOffState)
-        _motionBlurRecordStatus = kMotionBlurRecord_Start;
+        _motionBlurRecordStatus = kRecord_Start;
     else if (_motionBlurRecord.state == NSOnState)
-        _motionBlurRecordStatus = kMotionBlurRecord_Pause;
+        _motionBlurRecordStatus = kRecord_Pause;
     else
-        _motionBlurRecordStatus = kMotionBlurRecord_Stop;
+        _motionBlurRecordStatus = kRecord_Stop;
+    
+    [_optionUpdateDelegate modelOptionUpdate:self];
+}
+
+
+
+- (void)rayTracingUpdate:(id)sender
+{
+    [self updateControls];
+    
+    if (_rayTracingRecord.state == NSOnState && _rayTracingPause.state == NSOffState)
+        _rayTracingRecordStatus = kRecord_Start;
+    else if (_rayTracingRecord.state == NSOnState)
+        _rayTracingRecordStatus = kRecord_Pause;
+    else
+        _rayTracingRecordStatus = kRecord_Stop;
     
     [_optionUpdateDelegate modelOptionUpdate:self];
 }
@@ -692,6 +761,16 @@
     {
         [_motionBlurPause setEnabled:NO];
         [_motionBlurPause setState:NSOffState];
+    }
+    
+    if ([_rayTracingRecord state] == NSOnState)
+    {
+        [_rayTracingPause setEnabled:YES];
+    }
+    else
+    {
+        [_rayTracingPause setEnabled:NO];
+        [_rayTracingPause setState:NSOffState];
     }
 }
 
