@@ -1046,9 +1046,13 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
-				HEADER_SEARCH_PATHS = glm;
+				HEADER_SEARCH_PATHS = (
+					glm,
+					ModelViewer/ViewerFoundation,
+				);
 				INFOPLIST_FILE = ModelViewer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MTL_HEADER_SEARCH_PATHS = ModelViewer/ViewerFoundation;
 				MTL_LANGUAGE_REVISION = Metal20;
 				MTL_PREPROCESSOR_DEFINITIONS = Metal;
 				PRODUCT_BUNDLE_IDENTIFIER = fengdong.model.viewer;
@@ -1063,9 +1067,13 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
-				HEADER_SEARCH_PATHS = glm;
+				HEADER_SEARCH_PATHS = (
+					glm,
+					ModelViewer/ViewerFoundation,
+				);
 				INFOPLIST_FILE = ModelViewer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MTL_HEADER_SEARCH_PATHS = ModelViewer/ViewerFoundation;
 				MTL_LANGUAGE_REVISION = Metal20;
 				MTL_PREPROCESSOR_DEFINITIONS = Metal;
 				PRODUCT_BUNDLE_IDENTIFIER = fengdong.model.viewer;
