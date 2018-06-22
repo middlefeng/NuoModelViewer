@@ -9,13 +9,23 @@
 #import "NuoRayTracingRenderer.h"
 #import "NuoRayAccelerateStructure.h"
 
+#import "NuoTextureMesh.h"
+#import "NuoTextureAverageMesh.h"
+
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
 
 
 @implementation NuoRayTracingRenderer
 {
-    NuoRenderPassTarget* _renderTarget;
+    NuoRenderPassTarget* _rayTracingTarget;
+    NuoRenderPassTarget* _rayTracingAccumulate;
+    NuoTextureAverageMesh* _averageMesh;
+    
+    NuoTextureMesh* _rayTracingOverlay;
+    
+    // TODO: debug
+    id<MTLComputePipelineState> _shadePipeline;
 }
 
 
@@ -29,14 +39,38 @@
     
     if (self)
     {
-        _renderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                          withPixelFormat:MTLPixelFormatRGBA32Float
-                                                          withSampleCount:1];
+        _rayTracingTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
+                                                              withPixelFormat:MTLPixelFormatRGBA32Float
+                                                              withSampleCount:1];
         
-        _renderTarget.computeTarget = YES;
-        _renderTarget.manageTargetTexture = YES;
-        _renderTarget.sharedTargetTexture = NO;
-        _renderTarget.name = @"Ray Emit";
+        _rayTracingTarget.computeTarget = YES;
+        _rayTracingTarget.manageTargetTexture = YES;
+        _rayTracingTarget.sharedTargetTexture = NO;
+        _rayTracingTarget.name = @"Ray Tracing";
+        
+        _rayTracingAccumulate = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
+                                                                  withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                  withSampleCount:1];
+        
+        _rayTracingAccumulate.computeTarget = NO;
+        _rayTracingAccumulate.manageTargetTexture = YES;
+        _rayTracingAccumulate.sharedTargetTexture = NO;
+        _rayTracingAccumulate.name = @"Ray Tracing Accumulate";
+        
+        NSError* error = nil;
+        MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
+        id<MTLLibrary> library = [commandQueue.device newDefaultLibrary];
+        id<MTLFunction> shadeFunction = [library newFunctionWithName:@"shade_function" constantValues:values error:&error];
+        assert(error == nil);
+        
+        _shadePipeline = [commandQueue.device newComputePipelineStateWithFunction:shadeFunction error:&error];
+        assert(error == nil);
+        
+        [self resetResources];
+        
+        _rayTracingOverlay = [[NuoTextureMesh alloc] initWithCommandQueue:commandQueue];
+        _rayTracingOverlay.sampleCount = 1;
+        [_rayTracingOverlay makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
     }
     
     return self;
@@ -44,24 +78,85 @@
 
 
 
+- (void)resetResources
+{
+    _averageMesh = [[NuoTextureAverageMesh alloc] initWithCommandQueue:self.commandQueue];
+    _averageMesh.sampleCount = 1;
+    [_averageMesh makePipelineAndSampler];
+}
+
+
+
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
-    [_renderTarget setDrawableSize:drawableSize];
+    [_rayTracingTarget setDrawableSize:drawableSize];
+    [_rayTracingAccumulate setDrawableSize:drawableSize];
+}
+
+
+
+- (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+{
+    if (!_rayStructure)
+        return NO;
+    
+    [_rayStructure rayTrace:commandBuffer inFlight:inFlight];
+    return [_rayStructure intersectionBuffer] != nil;
+}
+
+
+
+
+- (void)runRayTraceCompute:(id<MTLComputePipelineState>)pipeline
+         withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+         withInFlightIndex:(unsigned int)inFlight
+{
+    id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
+    [computeEncoder setBuffer:[_rayStructure uniformBuffer:inFlight] offset:0 atIndex:0];
+    [computeEncoder setBuffer:[_rayStructure intersectionBuffer] offset:0 atIndex:1];
+    [computeEncoder setTexture:_rayTracingTarget.targetTexture atIndex:0];
+    [computeEncoder setComputePipelineState:pipeline];
+    
+    CGSize drawableSize = [_rayTracingTarget drawableSize];
+    const float w = drawableSize.width;
+    const float h = drawableSize.height;
+    MTLSize threads = MTLSizeMake(8, 8, 1);
+    MTLSize threadgroups = MTLSizeMake((w + threads.width  - 1) / threads.width,
+                                       (h + threads.height - 1) / threads.height, 1);
+    [computeEncoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threads];
+    
+    [computeEncoder endEncoding];
 }
 
 
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    //id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    // clear the ray tracing target
+    //
+    _rayTracingTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
+    [_rayTracingTarget retainRenderPassEndcoder:commandBuffer];
+    [_rayTracingTarget releaseRenderPassEndcoder];
     
-    [_rayStructure rayTrace:commandBuffer inFlight:inFlight toTarget:_renderTarget];
+    if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
+    {
+        [self runRayTraceCompute:_shadePipeline withCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    }
     
-    [self setSourceTexture:_renderTarget.targetTexture];
+    [_averageMesh accumulateTexture:_rayTracingTarget.targetTexture
+                           onTarget:_rayTracingAccumulate
+                       withInFlight:inFlight withCommandBuffer:commandBuffer];
+    
+    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    
     [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
-    //[self releaseDefaultEncoder];
+    
+    [_rayTracingOverlay setModelTexture:_rayTracingAccumulate.targetTexture];
+    [_rayTracingOverlay drawMesh:renderPass indexBuffer:inFlight];
+    
+    [self releaseDefaultEncoder];
 }
 
 

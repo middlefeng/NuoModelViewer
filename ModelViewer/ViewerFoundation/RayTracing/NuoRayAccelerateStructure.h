@@ -28,9 +28,11 @@
 - (void)setMeshes:(NSArray<NuoMesh*>*)meshes;
 - (void)setView:(const NuoMatrixFloat44&)viewTrans;
 
-- (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight
-        toTarget:(NuoRenderPassTarget*)renderTarget;
+- (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight;
 
+
+- (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight;
+- (id<MTLBuffer>)intersectionBuffer;
 
 
 @end

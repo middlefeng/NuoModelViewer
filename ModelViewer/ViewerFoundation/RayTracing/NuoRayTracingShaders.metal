@@ -45,8 +45,7 @@ struct Intersection
 kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
                      constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                      device RayWithMask* rays [[buffer(1)]],
-                     device float2* random [[buffer(2)]],
-                     texture2d<float, access::write> dstTex [[texture(0)]])
+                     device float2* random [[buffer(2)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -67,8 +66,6 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
     
     ray.mask = 0;
     ray.maxDistance = INFINITY;
-    
-    dstTex.write(float4(0.0f, 0.0f, 0.0f, 0.0f), tid);
 }
 
 

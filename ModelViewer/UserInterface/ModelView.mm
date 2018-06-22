@@ -562,6 +562,8 @@ MouseDragMode;
     [_modelRender setRenderTarget:modelRenderTarget];
     lastTarget = modelRenderTarget;
     
+    [_modelRender setRayAccelerating:_modelPanel.rayTracingRecordStatus == kRecord_Start];
+    
     // dissect renderer
     //
     
@@ -624,6 +626,10 @@ MouseDragMode;
         [_rayTracingRenderer setRenderTarget:rayTarget];
         
         lastTarget = rayTarget;
+    }
+    else
+    {
+        [_rayTracingRenderer resetResources];
     }
     
     // selection overlay

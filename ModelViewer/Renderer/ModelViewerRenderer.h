@@ -13,6 +13,7 @@
 @class NuoCubeMesh;
 @class NuoBackdropMesh;
 @class NuoLightSource;
+@class NuoRayAccelerateStructure;
 
 /**
  TERMS:
@@ -78,6 +79,12 @@ class NuoLua;
 @property (nonatomic, assign) float transYDelta;
 
 
+// support to hybrid ray tracing
+//
+@property (nonatomic, assign) BOOL rayAccelerating;
+@property (nonatomic, readonly) NuoRayAccelerateStructure* rayAccelerator;
+
+
 @property (nonatomic, assign) BOOL cullEnabled;
 @property (nonatomic, assign) float fieldOfView;
 @property (nonatomic, assign) float ambientDensity;
@@ -109,6 +116,7 @@ class NuoLua;
 - (void)setResolveDepth:(BOOL)resolveDepth;
 
 - (NSArray<NuoMesh*>*)cloneMeshesFor:(NuoMeshModeShaderParameter)mode;
+- (void)syncMeshPositionBuffer;
 
 
 @end

@@ -29,8 +29,7 @@ extern const uint kRayBufferStrid;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
-- (id<MTLBuffer>)rayBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlight:(uint)inFlight
-                  toTarget:(NuoRenderPassTarget*)renderTarget;
+- (id<MTLBuffer>)rayBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlight:(uint)inFlight;
 
 - (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight;
 

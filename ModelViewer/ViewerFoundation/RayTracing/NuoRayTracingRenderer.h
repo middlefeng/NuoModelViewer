@@ -23,6 +23,9 @@
 @property (nonatomic, weak) NuoRayAccelerateStructure* rayStructure;
 
 
+- (void)resetResources;
+
+
 @end
 
 

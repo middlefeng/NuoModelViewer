@@ -22,6 +22,8 @@
 #include "NuoLua.h"
 
 #import "NuoLightSource.h"
+#import "NuoRayAccelerateStructure.h"
+
 #import "NuoShadowMapRenderer.h"
 #import "NuoDeferredRenderer.h"
 #import "NuoDirectoryUtils.h"
@@ -67,6 +69,8 @@
     NuoShadowMapRenderer* _shadowMapRenderer[2];
     NuoRenderPassTarget* _immediateTarget;
     NuoDeferredRenderer* _deferredRenderer;
+    
+    BOOL _rayAcceleratorSync;
 }
 
 
@@ -100,6 +104,8 @@
         _viewTranslation = NuoMatrixFloat44Identity;
         
         self.paramsProvider = self;
+        
+        _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithQueue:commandQueue];
     }
 
     return self;
@@ -113,6 +119,14 @@
     [_shadowMapRenderer[0] setDrawableSize:drawableSize];
     [_shadowMapRenderer[1] setDrawableSize:drawableSize];
     [_deferredRenderer setDrawableSize:drawableSize];
+    [_rayAccelerator setDrawableSize:drawableSize];
+}
+
+
+- (void)setFieldOfView:(float)fieldOfView
+{
+    _fieldOfView = fieldOfView;
+    [_rayAccelerator setFieldOfView:fieldOfView];
 }
 
 
@@ -184,7 +198,9 @@
     [_mainModelMesh setTransformTranslate:NuoMatrixTranslation(defaultDistanceVec)];
     
     [self caliberateSceneCenter];
+    [self syncMeshPositionBuffer];
 }
+
 
 
 - (BOOL)loadPackage:(NSString*)path withProgress:(NuoProgressFunction)progress
@@ -1001,6 +1017,17 @@
         _backdropTransXDelta = 0.0;
         _backdropTransYDelta = 0.0;
     }
+    
+    if (_rayAccelerating)
+    {
+        if (_rayAcceleratorSync && _transMode == kTransformMode_Model)
+        {
+            _rayAcceleratorSync = NO;
+            [_rayAccelerator setMeshes:_meshes];
+        }
+        
+        [_rayAccelerator setView:[self viewMatrix]];
+    }
 }
 
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
@@ -1109,6 +1136,14 @@
     
     return cloned;
 }
+
+
+
+- (void)syncMeshPositionBuffer
+{
+    _rayAcceleratorSync = YES;
+}
+
 
 
 - (void)setResolveDepth:(BOOL)resolveDepth

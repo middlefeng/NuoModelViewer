@@ -148,9 +148,7 @@ const uint kRayBufferStrid = 48;
 }
 
 
-- (id<MTLBuffer>)rayBuffer:(id<MTLCommandBuffer>)commandBuffer
-              withInFlight:(uint)inFlight
-                  toTarget:(NuoRenderPassTarget*)renderTarget
+- (id<MTLBuffer>)rayBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlight:(uint)inFlight
 {
     [self updateUniform:inFlight];
     
@@ -166,7 +164,6 @@ const uint kRayBufferStrid = 48;
     [computeEncoder setBuffer:_uniformBuffers[inFlight] offset:0 atIndex:0];
     [computeEncoder setBuffer:_rayBuffer offset:0 atIndex:1];
     [computeEncoder setBuffer:_randomBuffers[inFlight] offset:0  atIndex:2];
-    [computeEncoder setTexture:renderTarget.targetTexture atIndex:0];
     
     [computeEncoder setComputePipelineState:_pipeline];
     [computeEncoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threads];

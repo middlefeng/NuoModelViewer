@@ -26,9 +26,6 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
     id<MTLBuffer> _intersectionBuffer;
     
     NuoRayEmittor* _rayEmittor;
-    
-    // TODO: debug
-    id<MTLComputePipelineState> _shadePipeline;
 }
 
 
@@ -46,17 +43,7 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
         // _intersector.rayMaskOptions = MPSRayMaskOptionPrimitive;
         
         _accelerateStructure = [[MPSTriangleAccelerationStructure alloc] initWithDevice:queue.device];
-        
         _rayEmittor = [[NuoRayEmittor alloc] initWithCommandQueue:queue];
-        
-        NSError* error = nil;
-        MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
-        id<MTLLibrary> library = [queue.device newDefaultLibrary];
-        id<MTLFunction> shadeFunction = [library newFunctionWithName:@"shade_function" constantValues:values error:&error];
-        assert(error == nil);
-        
-        _shadePipeline = [queue.device newComputePipelineStateWithFunction:shadeFunction error:&error];
-        assert(error == nil);
         
         _device = queue.device;
     }
@@ -133,12 +120,10 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
 
 
 - (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight
-        toTarget:(NuoRenderPassTarget*)renderTarget
 {
     if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt)
     {
-        id<MTLBuffer> rayBuffer = [_rayEmittor rayBuffer:commandBuffer withInFlight:inFlight
-                                                toTarget:renderTarget];
+        id<MTLBuffer> rayBuffer = [_rayEmittor rayBuffer:commandBuffer withInFlight:inFlight];
         
         [_intersector setIntersectionDataType:MPSIntersectionDataTypeDistancePrimitiveIndexCoordinates];
         [_intersector encodeIntersectionToCommandBuffer:commandBuffer
@@ -149,22 +134,19 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
                                intersectionBufferOffset:0
                                                rayCount:[_rayEmittor rayCount]
                                   accelerationStructure:_accelerateStructure];
-        
-        id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
-        [computeEncoder setBuffer:[_rayEmittor uniformBuffer:inFlight] offset:0 atIndex:0];
-        [computeEncoder setBuffer:_intersectionBuffer offset:0 atIndex:1];
-        [computeEncoder setTexture:renderTarget.targetTexture atIndex:0];
-        [computeEncoder setComputePipelineState:_shadePipeline];
-        
-        const float w = _rayEmittor.drawableSize.width;
-        const float h = _rayEmittor.drawableSize.height;
-        MTLSize threads = MTLSizeMake(8, 8, 1);
-        MTLSize threadgroups = MTLSizeMake((w + threads.width  - 1) / threads.width,
-                                           (h + threads.height - 1) / threads.height, 1);
-        [computeEncoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threads];
-        
-        [computeEncoder endEncoding];
     }
+}
+
+
+- (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight
+{
+    return [_rayEmittor uniformBuffer:inFlight];
+}
+
+
+- (id<MTLBuffer>)intersectionBuffer
+{
+    return _intersectionBuffer;
 }
 
 
