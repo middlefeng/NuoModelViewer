@@ -36,7 +36,7 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
     if (self)
     {
         _intersector = [[MPSRayIntersector alloc] initWithDevice:queue.device];
-        _intersector.rayDataType = MPSRayDataTypeOriginMaskDirectionMaxDistance;
+        _intersector.rayDataType = MPSRayDataTypeOriginMinDistanceDirectionMaxDistance;
         _intersector.rayStride = kRayBufferStrid;
         
         /* not use mask as only mask is cared about for now */

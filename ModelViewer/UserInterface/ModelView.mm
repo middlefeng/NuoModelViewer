@@ -19,11 +19,11 @@
 // pipeline stages
 //
 #import "ModelViewerRenderer.h"
+#import "ModelRayTracingRenderer.h"
 #import "ModelDissectRenderer.h"
 #import "ModelSelectionRenderer.h"
 #import "NotationRenderer.h"
 #import "MotionBlurRenderer.h"
-#import "NuoRayTracingRenderer.h"
 
 #import "NuoLua.h"
 #import "NuoDirectoryUtils.h"
@@ -69,11 +69,11 @@ MouseDragMode;
     // pipeline stages
     //
     ModelRenderer* _modelRender;
+    ModelRayTracingRenderer* _rayTracingRenderer;
     ModelDissectRenderer* _modelDissectRenderer;
     ModelSelectionRenderer* _modelSelectionRenderer;
     NotationRenderer* _notationRenderer;
     MotionBlurRenderer* _motionBlurRenderer;
-    NuoRayTracingRenderer* _rayTracingRenderer;
     
     NSMutableArray<NuoMeshAnimation*>* _animations;
     
@@ -502,9 +502,9 @@ MouseDragMode;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
-    _rayTracingRenderer = [[NuoRayTracingRenderer alloc] initWithCommandQueue:self.commandQueue
-                                                              withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                              withSampleCount:1];
+    _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:self.commandQueue
+                                                                withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                withSampleCount:1];
     
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     

@@ -24,13 +24,9 @@ struct RayWithMask
     // fields that compatible with MPSRayOriginMaskDirectionMaxDistance
     //
     packed_float3 origin;
-    uint mask;
+    float minDistance;
     packed_float3 direction;
     float maxDistance;
-    
-    // additional info
-    //
-    float3 color;
 };
 
 
@@ -64,17 +60,17 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
     ray.direction = (uniforms.viewTrans * rayDirection).xyz;
     ray.origin = (uniforms.viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;
     
-    ray.mask = 0;
+    ray.minDistance = 0.00001;
     ray.maxDistance = INFINITY;
 }
 
 
 
 
-kernel void shade_function(uint2 tid [[thread_position_in_grid]],
-                           constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                           device Intersection *intersections [[buffer(1)]],
-                           texture2d<float, access::write> dstTex [[texture(0)]])
+kernel void intersection_visualize(uint2 tid [[thread_position_in_grid]],
+                                   constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                                   device Intersection *intersections [[buffer(1)]],
+                                   texture2d<float, access::write> dstTex [[texture(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;

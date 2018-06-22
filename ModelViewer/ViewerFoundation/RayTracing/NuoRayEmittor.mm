@@ -15,7 +15,7 @@
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
 
-const uint kRayBufferStrid = 48;
+const uint kRayBufferStrid = 32;
 
 
 @interface NuoRayEmittor()

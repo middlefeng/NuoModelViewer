@@ -23,9 +23,6 @@
     NuoTextureAverageMesh* _averageMesh;
     
     NuoTextureMesh* _rayTracingOverlay;
-    
-    // TODO: debug
-    id<MTLComputePipelineState> _shadePipeline;
 }
 
 
@@ -56,15 +53,6 @@
         _rayTracingAccumulate.manageTargetTexture = YES;
         _rayTracingAccumulate.sharedTargetTexture = NO;
         _rayTracingAccumulate.name = @"Ray Tracing Accumulate";
-        
-        NSError* error = nil;
-        MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
-        id<MTLLibrary> library = [commandQueue.device newDefaultLibrary];
-        id<MTLFunction> shadeFunction = [library newFunctionWithName:@"shade_function" constantValues:values error:&error];
-        assert(error == nil);
-        
-        _shadePipeline = [commandQueue.device newComputePipelineStateWithFunction:shadeFunction error:&error];
-        assert(error == nil);
         
         [self resetResources];
         
@@ -131,6 +119,17 @@
 
 
 
+- (void)runRayTraceShade:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+{
+    /* default behavior is not very useful, meant to be override */
+    if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
+    {
+        [self runRayTraceCompute:/* some shade pipeline */ nil withCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    }
+}
+
+
+
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
     // clear the ray tracing target
@@ -139,10 +138,7 @@
     [_rayTracingTarget retainRenderPassEndcoder:commandBuffer];
     [_rayTracingTarget releaseRenderPassEndcoder];
     
-    if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
-    {
-        [self runRayTraceCompute:_shadePipeline withCommandBuffer:commandBuffer withInFlightIndex:inFlight];
-    }
+    [self runRayTraceShade:commandBuffer withInFlightIndex:inFlight];
     
     [_averageMesh accumulateTexture:_rayTracingTarget.targetTexture
                            onTarget:_rayTracingAccumulate

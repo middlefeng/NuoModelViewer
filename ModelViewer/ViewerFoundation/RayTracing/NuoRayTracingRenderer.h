@@ -25,6 +25,20 @@
 
 - (void)resetResources;
 
+/**
+ *  overridden by subclass, with compute-shader running for ray tracing
+ */
+- (void)runRayTraceShade:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
+
+
+/**
+ *  functions called from within "- (void)runRayTraceShade:..."
+ */
+- (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
+- (void)runRayTraceCompute:(id<MTLComputePipelineState>)pipeline
+         withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+         withInFlightIndex:(unsigned int)inFlight;
+
 
 @end
 
