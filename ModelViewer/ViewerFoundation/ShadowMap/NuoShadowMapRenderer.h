@@ -45,5 +45,10 @@
  */
 - (const NuoMatrixFloat44&)lightCastMatrix;
 
+/**
+ *  The transform matrix which transform vector (0, 0, 1) into the direction of light
+ */
+- (const NuoMatrixFloat44&)lightDirectionMatrix;
+
 
 @end

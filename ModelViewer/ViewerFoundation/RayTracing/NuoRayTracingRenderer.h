@@ -37,6 +37,7 @@
 - (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
 - (void)runRayTraceCompute:(id<MTLComputePipelineState>)pipeline
          withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+             withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
          withInFlightIndex:(unsigned int)inFlight;
 
 

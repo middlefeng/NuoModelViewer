@@ -98,11 +98,19 @@
 
 - (void)runRayTraceCompute:(id<MTLComputePipelineState>)pipeline
          withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+             withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
          withInFlightIndex:(unsigned int)inFlight
 {
     id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setBuffer:[_rayStructure uniformBuffer:inFlight] offset:0 atIndex:0];
     [computeEncoder setBuffer:[_rayStructure intersectionBuffer] offset:0 atIndex:1];
+    
+    if (paramterBuffers)
+    {
+        for (uint i = 0; i < paramterBuffers.count; ++i)
+            [computeEncoder setBuffer:paramterBuffers[i] offset:0 atIndex:2 + i];
+    }
+    
     [computeEncoder setTexture:_rayTracingTarget.targetTexture atIndex:0];
     [computeEncoder setComputePipelineState:pipeline];
     
@@ -124,7 +132,8 @@
     /* default behavior is not very useful, meant to be override */
     if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
     {
-        [self runRayTraceCompute:/* some shade pipeline */ nil withCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        [self runRayTraceCompute:/* some shade pipeline */ nil withCommandBuffer:commandBuffer
+                   withParameter:nil withInFlightIndex:inFlight];
     }
 }
 

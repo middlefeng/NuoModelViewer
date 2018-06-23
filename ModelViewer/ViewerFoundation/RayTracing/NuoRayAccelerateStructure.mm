@@ -125,12 +125,23 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
     {
         id<MTLBuffer> rayBuffer = [_rayEmittor rayBuffer:commandBuffer withInFlight:inFlight];
         
+        [self rayTrace:commandBuffer
+              withRays:rayBuffer withIntersection:_intersectionBuffer];
+    }
+}
+
+
+- (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer
+        withRays:(id<MTLBuffer>)rayBuffer withIntersection:(id<MTLBuffer>)intersection
+{
+    if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt)
+    {
         [_intersector setIntersectionDataType:MPSIntersectionDataTypeDistancePrimitiveIndexCoordinates];
         [_intersector encodeIntersectionToCommandBuffer:commandBuffer
                                        intersectionType:MPSIntersectionTypeNearest
                                               rayBuffer:rayBuffer
                                         rayBufferOffset:0
-                                     intersectionBuffer:_intersectionBuffer
+                                     intersectionBuffer:intersection
                                intersectionBufferOffset:0
                                                rayCount:[_rayEmittor rayCount]
                                   accelerationStructure:_accelerateStructure];

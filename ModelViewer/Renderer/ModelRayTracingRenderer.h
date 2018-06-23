@@ -8,10 +8,17 @@
 
 #import "NuoRayTracingRenderer.h"
 
-NS_ASSUME_NONNULL_BEGIN
+#include "NuoMathVector.h"
+
+
+@protocol NuoMeshSceneParametersProvider;
+
 
 @interface ModelRayTracingRenderer : NuoRayTracingRenderer
 
+@property (nonatomic, weak) id<NuoMeshSceneParametersProvider> paramsProvider;
+
+
 @end
 
-NS_ASSUME_NONNULL_END
+

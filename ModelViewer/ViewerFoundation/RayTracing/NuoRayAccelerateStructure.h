@@ -29,6 +29,8 @@
 - (void)setView:(const NuoMatrixFloat44&)viewTrans;
 
 - (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight;
+- (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer
+        withRays:(id<MTLBuffer>)rayBuffer withIntersection:(id<MTLBuffer>)intersection;
 
 
 - (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight;

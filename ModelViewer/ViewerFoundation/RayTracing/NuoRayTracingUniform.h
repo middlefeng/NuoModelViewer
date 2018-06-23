@@ -15,6 +15,23 @@
 
 typedef struct
 {
+    vector4 center;
+    float span;
+}
+NuoBoundsUniform;
+
+
+
+typedef struct
+{
+    NuoBoundsUniform bounds;
+    matrix44 lightSources[2];
+}
+NuoRayTracingUniforms;
+
+
+typedef struct
+{
     float uRange;
     float vRange;
     

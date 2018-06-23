@@ -83,3 +83,26 @@ kernel void intersection_visualize(uint2 tid [[thread_position_in_grid]],
         dstTex.write(float4(1.0, 0.0, 0.0, 1.0f), tid);
     }
 }
+
+
+
+
+kernel void light_direction_visualize(uint2 tid [[thread_position_in_grid]],
+                                      constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                                      device Intersection *intersections [[buffer(1)]],
+                                      constant NuoRayTracingUniforms& tracingUniforms [[buffer(2)]],
+                                      texture2d<float, access::write> dstTex [[texture(0)]])
+{
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device Intersection & intersection = intersections[rayIdx];
+    
+    if (intersection.distance >= 0.0f)
+    {
+        float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
+        lightVec = tracingUniforms.lightSources[0] * lightVec;
+        dstTex.write(float4(lightVec.x, lightVec.y, 0.0, 1.0f), tid);
+    }
+}

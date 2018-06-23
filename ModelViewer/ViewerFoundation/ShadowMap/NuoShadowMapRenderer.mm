@@ -30,6 +30,7 @@
 @implementation NuoShadowMapRenderer
 {
     NuoMatrixFloat44 _lightCastMatrix;
+    NuoMatrixFloat44 _lightDirectionMatrix;
 }
 
 
@@ -80,9 +81,9 @@
     NuoVectorFloat4 lightAsEye(0, 0, kCameraDistance, 1);
     
     NuoLightSource* lightSource = _lightSource;
-    const NuoMatrixFloat44 lightAsEyeMatrix = NuoMatrixRotation(lightSource.lightingRotationX,
+    _lightDirectionMatrix = NuoMatrixRotation(lightSource.lightingRotationX,
                                                                 lightSource.lightingRotationY);
-    lightAsEye = lightAsEyeMatrix * lightAsEye;
+    lightAsEye = _lightDirectionMatrix * lightAsEye;
     lightAsEye = lightAsEye + center;
     lightAsEye.w(1.0);
     
@@ -157,6 +158,12 @@
 - (const NuoMatrixFloat44&)lightCastMatrix
 {
     return _lightCastMatrix;
+}
+
+
+- (const NuoMatrixFloat44&)lightDirectionMatrix
+{
+    return _lightDirectionMatrix;
 }
 
 

@@ -499,12 +499,15 @@ MouseDragMode;
     _modelRender = [[ModelRenderer alloc] initWithCommandQueue:self.commandQueue];
     _modelDissectRenderer = [[ModelDissectRenderer alloc] initWithCommandQueue:self.commandQueue];
     _modelDissectRenderer.paramsProvider = _modelRender;
+    
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
+    
     _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:self.commandQueue
                                                                 withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                 withSampleCount:1];
+    _rayTracingRenderer.paramsProvider = _modelRender;
     
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
@@ -620,7 +623,7 @@ MouseDragMode;
                                                                            withSampleCount:1];
         
         rayTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
-        rayTarget.manageTargetTexture = NO;
+        rayTarget.manageTargetTexture = YES;
         rayTarget.name = @"Ray";
         
         [_rayTracingRenderer setRenderTarget:rayTarget];
