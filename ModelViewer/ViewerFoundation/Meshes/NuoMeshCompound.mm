@@ -118,7 +118,7 @@
     for (NuoMesh* mesh in _meshes)
     {
         PositionBuffer oneBuffer = [mesh worldPositionBuffer:transformWorld];
-        buffer.insert(buffer.end(), oneBuffer.begin(), oneBuffer.end());
+        buffer.Union(oneBuffer);
     }
     
     return buffer;

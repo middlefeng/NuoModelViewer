@@ -104,7 +104,7 @@
 - (void)makeGPUStates;
 
 
-- (void)setRawModel:(void*)model;
+- (void)setRawModel:(const PNuoModelBase&)model;
 - (NSString*)modelName;
 - (void)smoothWithTolerance:(float)tolerance;
 

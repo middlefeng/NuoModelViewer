@@ -70,6 +70,19 @@ std::shared_ptr<NuoModelBase> CreateModel(const NuoModelOption& options, const N
 
 
 
+void PositionBuffer::Union(const PositionBuffer& other)
+{
+    const size_t prevCount = _vertices.size();
+    _vertices.insert(_vertices.end(), other._vertices.begin(), other._vertices.end());
+    
+    for (uint32_t i = 0; i < other._indices.size(); ++i)
+    {
+        _indices.push_back(other._indices[i] + prevCount);
+    }
+}
+
+
+
 void* NuoModelBase::IndicesPtr()
 {
     return _indices.data();

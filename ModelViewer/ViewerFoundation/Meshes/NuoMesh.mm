@@ -258,9 +258,9 @@
 
 
 
-- (void)setRawModel:(void*)model
+- (void)setRawModel:(const PNuoModelBase&)model
 {
-    _rawModel = ((NuoModelBase*)model)->shared_from_this();
+    _rawModel = model;
 }
 
 
@@ -283,7 +283,7 @@
     
     PositionBuffer buffer = _rawModel->GetPositionBuffer();
     
-    for (auto& vertex : buffer)
+    for (auto& vertex : buffer._vertices)
     {
         NuoVectorFloat4 vertexToTrans = NuoVectorFloat4(vertex.x, vertex.y, vertex.z, 1.0);
         vertexToTrans = transformWorld * vertexToTrans;
@@ -674,7 +674,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         resultMesh = mesh;
     }
     
-    [resultMesh setRawModel:model.get()];
+    [resultMesh setRawModel:model];
     [resultMesh makeGPUStates];
     return resultMesh;
 }

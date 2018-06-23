@@ -83,7 +83,7 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
     for (NuoMesh* mesh in meshes)
     {
         PositionBuffer bufferForOne = [mesh worldPositionBuffer:NuoMatrixFloat44Identity];
-        buffer.insert(buffer.end(), bufferForOne.begin(), bufferForOne.end());
+        buffer.Union(bufferForOne);
     }
     
     return buffer;
@@ -94,13 +94,18 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
 - (void)setMeshes:(NSArray<NuoMesh*>*)meshes
 {
     PositionBuffer buffer = [self positionBuffer:meshes];
-    uint32_t triangleCount = (uint32_t)buffer.size() / 3;
+    uint32_t triangleCount = (uint32_t)buffer._indices.size() / 3;
     
-    id<MTLBuffer> vertexBuffer = [_device newBufferWithBytes:&buffer[0]
-                                                      length:buffer.size() * sizeof(NuoVectorFloat3::_typeTrait::_vectorType)
+    id<MTLBuffer> vertexBuffer = [_device newBufferWithBytes:&buffer._vertices[0]
+                                                      length:buffer._vertices.size() * sizeof(NuoVectorFloat3::_typeTrait::_vectorType)
+                                                     options:MTLResourceStorageModeShared];
+    id<MTLBuffer> indexBuffer = [_device newBufferWithBytes:&buffer._indices[0]
+                                                      length:buffer._indices.size() * sizeof(uint32)
                                                      options:MTLResourceStorageModeShared];
     
     _accelerateStructure.vertexBuffer = vertexBuffer;
+    _accelerateStructure.indexType = MPSDataTypeUInt32;
+    _accelerateStructure.indexBuffer = indexBuffer;
     _accelerateStructure.triangleCount = triangleCount;
     
     [_accelerateStructure rebuild];

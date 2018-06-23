@@ -37,8 +37,12 @@ public:
 
 
 
-std::shared_ptr<NuoModelBase> CreateModel(const NuoModelOption& options, const NuoMaterial& material,
-                                          const std::string& modelItemName);
+typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
+
+
+
+PNuoModelBase CreateModel(const NuoModelOption& options, const NuoMaterial& material,
+                          const std::string& modelItemName);
 
 template <class ItemBase>
 class SmoothItem
@@ -85,7 +89,14 @@ bool ItemTexCoordEequal(const ItemBase& i1, const ItemBase& i2)
 
 
 
-typedef std::vector<NuoVectorFloat3::_typeTrait::_vectorType> PositionBuffer;
+typedef std::vector<NuoVectorFloat3::_typeTrait::_vectorType> PositionBufferVertex;
+struct PositionBuffer
+{
+    PositionBufferVertex _vertices;
+    std::vector<uint32_t> _indices;
+    
+    void Union(const PositionBuffer& other);
+};
 
 
 class NuoModelBase : public std::enable_shared_from_this<NuoModelBase>
@@ -426,8 +437,10 @@ PositionBuffer NuoModelCommon<ItemBase>::GetPositionBuffer()
         vector.x = item._position.x;
         vector.y = item._position.y;
         vector.z = item._position.z;
-        result.push_back(vector);
+        result._vertices.push_back(vector);
     }
+    
+    result._indices = _indices;
 
     return result;
 }
