@@ -22,6 +22,8 @@
 @property (nonatomic, weak) NuoMesh* mesh;
 @property (nonatomic, weak) NuoRayAccelerateStructure* rayStructure;
 
+@property (nonatomic, readonly) id<MTLBuffer> primaryIntersectionBuffer;
+
 
 - (void)resetResources;
 
@@ -35,9 +37,13 @@
  *  functions called from within "- (void)runRayTraceShade:..."
  */
 - (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
+- (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer
+            withRays:(id<MTLBuffer>)rayBuffer withIntersection:(id<MTLBuffer>)intersection;
+
 - (void)runRayTraceCompute:(id<MTLComputePipelineState>)pipeline
          withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
+          withIntersection:(id<MTLBuffer>)intersection
          withInFlightIndex:(unsigned int)inFlight;
 
 

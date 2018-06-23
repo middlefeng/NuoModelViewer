@@ -23,7 +23,6 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
     
     MPSRayIntersector* _intersector;
     MPSTriangleAccelerationStructure* _accelerateStructure;
-    id<MTLBuffer> _intersectionBuffer;
     
     NuoRayEmittor* _rayEmittor;
 }
@@ -68,11 +67,6 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [_rayEmittor setDrawableSize:drawableSize];
-    
-    const uint w = (uint)drawableSize.width;
-    const uint h = (uint)drawableSize.height;
-    const uint intersectionSize = kRayIntersectionStrid * w * h;
-    _intersectionBuffer = [_device newBufferWithLength:intersectionSize options:MTLResourceStorageModePrivate];
 }
 
 
@@ -119,14 +113,15 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
 }
 
 
-- (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight
+- (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer
+        inFlight:(uint32_t)inFlight withIntersection:(id<MTLBuffer>)intersection
 {
     if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt)
     {
-        id<MTLBuffer> rayBuffer = [_rayEmittor rayBuffer:commandBuffer withInFlight:inFlight];
+        _primaryRayBuffer = [_rayEmittor rayBuffer:commandBuffer withInFlight:inFlight];
         
         [self rayTrace:commandBuffer
-              withRays:rayBuffer withIntersection:_intersectionBuffer];
+              withRays:_primaryRayBuffer withIntersection:intersection];
     }
 }
 
@@ -155,10 +150,6 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
 }
 
 
-- (id<MTLBuffer>)intersectionBuffer
-{
-    return _intersectionBuffer;
-}
 
 
 @end

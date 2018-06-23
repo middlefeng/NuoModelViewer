@@ -19,7 +19,7 @@ using namespace metal;
  *  (No reliable way of including the MPS framework headers)
  */
 
-struct RayWithMask
+struct RayBuffer
 {
     // fields that compatible with MPSRayOriginMaskDirectionMaxDistance
     //
@@ -40,14 +40,14 @@ struct Intersection
 
 kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
                      constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                     device RayWithMask* rays [[buffer(1)]],
+                     device RayBuffer* rays [[buffer(1)]],
                      device float2* random [[buffer(2)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    device RayWithMask& ray = rays[rayIdx];
+    device RayBuffer& ray = rays[rayIdx];
     
     float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
     float2 pixelCoord = (float2)tid + r;
@@ -66,10 +66,82 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
 
 
 
+kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
+                            constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                            device RayBuffer* rays [[buffer(1)]],
+                            device Intersection *intersections [[buffer(2)]],
+                            constant NuoRayTracingUniforms& tracingUniforms [[buffer(3)]],
+                            device RayBuffer* shadowRays1 [[buffer(4)]],
+                            device RayBuffer* shadowRays2 [[buffer(5)]],
+                            texture2d<float, access::write> dstTex [[texture(0)]])
+{
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device Intersection & intersection = intersections[rayIdx];
+    device RayBuffer& ray = rays[rayIdx];
+    
+    device RayBuffer* shadowRay[2];
+    shadowRay[0] = &shadowRays1[rayIdx];
+    shadowRay[1] = &shadowRays2[rayIdx];
+    
+    for (uint i = 0; i < 2; ++i)
+    {
+        device RayBuffer* shadowRayCurrent = shadowRay[i];
+        
+        if (intersection.distance >= 0.0f)
+        {
+            float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
+            lightVec = normalize(tracingUniforms.lightSources[i] * lightVec);
+            
+            shadowRayCurrent->maxDistance = INFINITY;
+            shadowRayCurrent->minDistance = 0.0001;
+            
+            float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
+            shadowRayCurrent->origin = intersectionPoint;
+            shadowRayCurrent->direction = lightVec.xyz;
+            
+            //dstTex.write(float4(1.0, 0.0, 0.0, 1.0f), tid);
+        }
+        else
+        {
+            shadowRayCurrent->maxDistance = -1.0;
+        }
+    }
+}
+
+
+
+kernel void shadow_shade(uint2 tid [[thread_position_in_grid]],
+                        constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                        device RayBuffer* rays [[buffer(1)]],
+                        device Intersection *intersections [[buffer(2)]],
+                        texture2d<float, access::write> dstTex [[texture(0)]])
+{
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device Intersection & intersection = intersections[rayIdx];
+    
+    if (intersection.distance >= 0.0f)
+    {
+        dstTex.write(float4(1.0, 0.0, 0.0, 1.0f), tid);
+    }
+}
+
+
+
+
+
+
+
 
 kernel void intersection_visualize(uint2 tid [[thread_position_in_grid]],
                                    constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                                   device Intersection *intersections [[buffer(1)]],
+                                   device RayBuffer* rays [[buffer(1)]],
+                                   device Intersection *intersections [[buffer(2)]],
                                    texture2d<float, access::write> dstTex [[texture(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
@@ -89,8 +161,9 @@ kernel void intersection_visualize(uint2 tid [[thread_position_in_grid]],
 
 kernel void light_direction_visualize(uint2 tid [[thread_position_in_grid]],
                                       constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                                      device Intersection *intersections [[buffer(1)]],
-                                      constant NuoRayTracingUniforms& tracingUniforms [[buffer(2)]],
+                                      device RayBuffer* rays [[buffer(1)]],
+                                      device Intersection *intersections [[buffer(2)]],
+                                      constant NuoRayTracingUniforms& tracingUniforms [[buffer(3)]],
                                       texture2d<float, access::write> dstTex [[texture(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
@@ -106,3 +179,6 @@ kernel void light_direction_visualize(uint2 tid [[thread_position_in_grid]],
         dstTex.write(float4(lightVec.x, lightVec.y, 0.0, 1.0f), tid);
     }
 }
+
+
+

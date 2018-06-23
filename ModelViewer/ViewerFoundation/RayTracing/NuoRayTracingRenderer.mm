@@ -80,6 +80,12 @@
     [super setDrawableSize:drawableSize];
     [_rayTracingTarget setDrawableSize:drawableSize];
     [_rayTracingAccumulate setDrawableSize:drawableSize];
+    
+    const uint w = (uint)drawableSize.width;
+    const uint h = (uint)drawableSize.height;
+    const uint intersectionSize = kRayIntersectionStrid * w * h;
+    _primaryIntersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
+                                                                       options:MTLResourceStorageModePrivate];
 }
 
 
@@ -89,26 +95,37 @@
     if (!_rayStructure)
         return NO;
     
-    [_rayStructure rayTrace:commandBuffer inFlight:inFlight];
-    return [_rayStructure intersectionBuffer] != nil;
+    [_rayStructure rayTrace:commandBuffer inFlight:inFlight withIntersection:_primaryIntersectionBuffer];
+    return YES;
 }
 
 
+- (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer
+            withRays:(id<MTLBuffer>)rayBuffer withIntersection:(id<MTLBuffer>)intersection
+{
+    if (!_rayStructure)
+        return NO;
+    
+    [_rayStructure rayTrace:commandBuffer withRays:rayBuffer withIntersection:intersection];
+    return YES;
+}
 
 
 - (void)runRayTraceCompute:(id<MTLComputePipelineState>)pipeline
          withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
+          withIntersection:(id<MTLBuffer>)intersection
          withInFlightIndex:(unsigned int)inFlight
 {
     id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setBuffer:[_rayStructure uniformBuffer:inFlight] offset:0 atIndex:0];
-    [computeEncoder setBuffer:[_rayStructure intersectionBuffer] offset:0 atIndex:1];
+    [computeEncoder setBuffer:[_rayStructure primaryRayBuffer] offset:0 atIndex:1];
+    [computeEncoder setBuffer:intersection offset:0 atIndex:2];
     
     if (paramterBuffers)
     {
         for (uint i = 0; i < paramterBuffers.count; ++i)
-            [computeEncoder setBuffer:paramterBuffers[i] offset:0 atIndex:2 + i];
+            [computeEncoder setBuffer:paramterBuffers[i] offset:0 atIndex:3 + i];
     }
     
     [computeEncoder setTexture:_rayTracingTarget.targetTexture atIndex:0];
@@ -133,7 +150,7 @@
     if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
     {
         [self runRayTraceCompute:/* some shade pipeline */ nil withCommandBuffer:commandBuffer
-                   withParameter:nil withInFlightIndex:inFlight];
+                   withParameter:nil withIntersection:nil withInFlightIndex:inFlight];
     }
 }
 

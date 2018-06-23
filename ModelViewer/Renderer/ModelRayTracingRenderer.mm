@@ -13,13 +13,21 @@
 //
 #import "NuoMeshSceneRenderPass.h"
 #import "NuoShadowMapRenderer.h"
+#import "NuoRayEmittor.h"
+
+#import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
 
 @implementation ModelRayTracingRenderer
 {
-    id<MTLComputePipelineState> _shadePipeline;
+    id<MTLComputePipelineState> _shadowRayPipeline;
+    id<MTLComputePipelineState> _shadowShadePipeline;
     
     NSArray<id<MTLBuffer>>* _rayTraceUniform;
+    
+    CGSize _shadowBufferSize;
+    NSArray<id<MTLBuffer>>* _shadowRayBuffers;
+    NSArray<id<MTLBuffer>>* _shadowIntersectionBuffers;
 }
 
 
@@ -34,10 +42,15 @@
         NSError* error = nil;
         MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
         id<MTLLibrary> library = [commandQueue.device newDefaultLibrary];
-        id<MTLFunction> shadeFunction = [library newFunctionWithName:@"light_direction_visualize" constantValues:values error:&error];
+        
+        id<MTLFunction> shadowRayFunction = [library newFunctionWithName:@"shadow_ray_emit" constantValues:values error:&error];
+        assert(error == nil);
+        _shadowRayPipeline = [commandQueue.device newComputePipelineStateWithFunction:shadowRayFunction error:&error];
         assert(error == nil);
         
-        _shadePipeline = [commandQueue.device newComputePipelineStateWithFunction:shadeFunction error:&error];
+        id<MTLFunction> shadowShadeFunction = [library newFunctionWithName:@"shadow_shade" constantValues:values error:&error];
+        assert(error == nil);
+        _shadowShadePipeline = [commandQueue.device newComputePipelineStateWithFunction:shadowShadeFunction error:&error];
         assert(error == nil);
         
         id<MTLBuffer> buffers[kInFlightBufferCount];
@@ -53,6 +66,33 @@
 }
 
 
+- (void)setDrawableSize:(CGSize)drawableSize
+{
+    [super setDrawableSize:drawableSize];
+    
+    if (CGSizeEqualToSize(_shadowBufferSize, drawableSize))
+        return;
+    
+    const size_t bufferSize = drawableSize.width * drawableSize.height * kRayBufferStrid;
+    const size_t intersectionSize = drawableSize.width * drawableSize.height *
+                                    sizeof(MPSIntersectionDistancePrimitiveIndexCoordinates);
+    
+    id<MTLBuffer> shadowRayBuffers[2];
+    id<MTLBuffer> shadowIntersections[2];
+    for (uint i = 0; i < 2; ++i)
+    {
+        shadowRayBuffers[i] = [self.commandQueue.device newBufferWithLength:bufferSize
+                                                                    options:MTLResourceStorageModePrivate];
+        shadowIntersections[i] = [self.commandQueue.device newBufferWithLength:intersectionSize
+                                                                       options:MTLResourceStorageModePrivate];
+    }
+    
+    _shadowRayBuffers = [[NSArray alloc] initWithObjects:shadowRayBuffers count:2];
+    _shadowIntersectionBuffers = [[NSArray alloc] initWithObjects:shadowIntersections count:2];
+    _shadowBufferSize = drawableSize;
+}
+
+
 - (void)updateUniforms:(uint32_t)index
 {
     NuoRayTracingUniforms uniforms;
@@ -61,14 +101,7 @@
     {
         const NuoMatrixFloat44& lightDriection = [[_paramsProvider shadowMapRenderer:i] lightDirectionMatrix];
         uniforms.lightSources[i] = lightDriection._m;
-        
-        
     }
-    
-    vector_float4 lightVec =  { 0.0, 0.0, 1.0, 0.0 };
-    lightVec = matrix_multiply(uniforms.lightSources[0], lightVec);
-    
-    printf("Vector, %f, %f, %f.\n", lightVec.x, lightVec.y, lightVec.z);
     
     memcpy(_rayTraceUniform[index].contents, &uniforms, sizeof(NuoRayTracingUniforms));
     [_rayTraceUniform[index] didModifyRange:NSMakeRange(0, sizeof(NuoRayTracingUniforms))];
@@ -81,8 +114,19 @@
     
     if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
     {
-        [self runRayTraceCompute:_shadePipeline withCommandBuffer:commandBuffer
-                   withParameter:@[_rayTraceUniform[inFlight]] withInFlightIndex:inFlight];
+        [self runRayTraceCompute:_shadowRayPipeline withCommandBuffer:commandBuffer
+                   withParameter:@[_rayTraceUniform[inFlight], _shadowRayBuffers[0], _shadowRayBuffers[1]]
+                withIntersection:self.primaryIntersectionBuffer
+               withInFlightIndex:inFlight];
+        
+        for (uint i = 0; i < 2; ++i)
+        {
+            [self rayIntersect:commandBuffer
+                      withRays:_shadowRayBuffers[i] withIntersection:_shadowIntersectionBuffers[i]];
+        }
+        
+        [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
+                   withParameter:nil withIntersection:_shadowIntersectionBuffers[0] withInFlightIndex:inFlight];
     }
 }
 
