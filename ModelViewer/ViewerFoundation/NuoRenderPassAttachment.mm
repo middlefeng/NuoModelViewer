@@ -28,6 +28,8 @@
         sampleCountChanged = true;
     if (_sampleCount != _sampleTexture.sampleCount)
         sampleCountChanged = true;
+    if (_sampleCount == 1 && !(_sampleTexture) && _texture.sampleCount == 1)
+        sampleCountChanged = false;
     
     if (!drawableSizeChanged && !sampleCountChanged)
         return;
@@ -45,11 +47,9 @@
         desc.sampleCount = 1;
         desc.textureType = MTLTextureType2D;
         desc.resourceOptions = _sharedTexture ? MTLResourceStorageModeManaged : MTLResourceStorageModePrivate;
-        
-        MTLTextureUsage usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
-        if (_computeTarget)
-            usage |= MTLTextureUsageShaderWrite;
-        desc.usage = usage;
+        desc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
+        if (_needWrite)
+            desc.usage |= MTLTextureUsageShaderWrite;
         
         _texture = [_device newTextureWithDescriptor:desc];
         [_texture setLabel:_name];

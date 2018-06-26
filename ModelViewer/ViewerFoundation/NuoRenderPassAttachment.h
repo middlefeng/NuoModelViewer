@@ -44,7 +44,7 @@ enum NuoRenderPassAttachmentType
 @property (assign, nonatomic) BOOL needResolve;
 @property (assign, nonatomic) BOOL needStore;
 @property (assign, nonatomic) BOOL needClear;
-@property (assign, nonatomic) BOOL computeTarget;
+@property (assign, nonatomic) BOOL needWrite;
 @property (assign, nonatomic) MTLClearColor clearColor;
 
 @property (assign, nonatomic) NuoRenderPassAttachmentType type;

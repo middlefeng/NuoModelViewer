@@ -128,7 +128,6 @@
     {
         NuoRenderPassAttachment* colorAttachment = _colorAttachments[i];
         colorAttachment.drawableSize = self.drawableSize;
-        colorAttachment.computeTarget = self.computeTarget;
         colorAttachment.manageTexture = self.manageTargetTexture;
         colorAttachment.sharedTexture = self.sharedTargetTexture;
         colorAttachment.needResolve = YES;
