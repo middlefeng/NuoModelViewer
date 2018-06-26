@@ -107,8 +107,6 @@
     pipelineDescriptor.sampleCount = 1;     // backdrop blends with no other fragments on one pixel
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     
-    pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
-    
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];
     vertexDescriptor.attributes[0].format = MTLVertexFormatFloat4;
     vertexDescriptor.attributes[0].offset = 0;
@@ -123,6 +121,8 @@
     pipelineDescriptor.vertexDescriptor = vertexDescriptor;
     
     [self makePipelineState:pipelineDescriptor];
+    
+    pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatInvalid;
     
     MTLDepthStencilDescriptor *depthStencilDescriptor = [MTLDepthStencilDescriptor new];
     depthStencilDescriptor.depthCompareFunction = MTLCompareFunctionAlways;
