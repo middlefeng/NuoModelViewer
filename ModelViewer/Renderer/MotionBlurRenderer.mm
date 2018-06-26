@@ -14,7 +14,7 @@
 @implementation MotionBlurRenderer
 {
     id<MTLTexture> _latestSource;
-    NuoTextureAverageMesh* _averageMesh;
+    NuoTextureAccumulator* _accumulator;
 }
 
 
@@ -31,11 +31,19 @@
 }
 
 
+
+- (void)setDrawableSize:(CGSize)drawableSize
+{
+    [super setDrawableSize:drawableSize];
+    [self resetResources];
+}
+
+
+
 - (void)resetResources
 {
-    _averageMesh = [[NuoTextureAverageMesh alloc] initWithCommandQueue:self.commandQueue];
-    _averageMesh.sampleCount = 1;
-    [_averageMesh makePipelineAndSampler];
+    _accumulator = [[NuoTextureAccumulator alloc] initWithCommandQueue:self.commandQueue];
+    [_accumulator makePipelineAndSampler];
 }
 
 
@@ -59,7 +67,7 @@
             withInFlightIndex:(unsigned int)inFlight
 {
     self.renderTarget.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 0.0);
-    [_averageMesh accumulateTexture:_latestSource onTarget:self.renderTarget
+    [_accumulator accumulateTexture:_latestSource onTarget:self.renderTarget
                        withInFlight:inFlight withCommandBuffer:commandBuffer];
 }
     

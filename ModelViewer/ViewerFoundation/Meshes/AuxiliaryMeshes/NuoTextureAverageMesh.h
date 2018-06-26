@@ -23,3 +23,17 @@
              withInFlight:(NSUInteger)inFlight withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
 
 @end
+
+
+
+
+@interface NuoTextureAccumulator : NSObject
+
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
+
+- (void)makePipelineAndSampler;
+
+- (void)accumulateTexture:(id<MTLTexture>)texture onTarget:(NuoRenderPassTarget*)target
+             withInFlight:(NSUInteger)inFlight withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
+
+@end

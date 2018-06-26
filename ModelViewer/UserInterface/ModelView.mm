@@ -37,6 +37,7 @@
 #import "NuoMeshRotation.h"
 #import "NuoMeshAnimation.h"
 #import "NuoTextureBase.h"
+#import "NuoRenderPassAttachment.h"
 
 #include "NuoOffscreenView.h"
 
@@ -580,6 +581,7 @@ MouseDragMode;
                                                                                   withSampleCount:1];
         motionBlurTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
         motionBlurTarget.manageTargetTexture = YES;
+        motionBlurTarget.colorAttachments[0].needWrite = YES;
         motionBlurTarget.name = @"Motion Blur";
         
         [_motionBlurRenderer setRenderTarget:motionBlurTarget];
