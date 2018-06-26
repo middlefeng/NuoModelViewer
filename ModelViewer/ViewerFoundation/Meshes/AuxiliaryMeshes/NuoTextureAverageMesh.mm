@@ -56,6 +56,7 @@
     
     _texturesAccumulated.clearColor = MTLClearColorMake(0, 0, 0, 0);
     _texturesAccumulated.manageTargetTexture = YES;
+    _texturesAccumulated.depthAttachment = nil;
     _texturesAccumulated.name = @"Average Texture";
     
     _accumulatedMesh = [[NuoTextureMesh alloc] initWithCommandQueue:self.commandQueue];

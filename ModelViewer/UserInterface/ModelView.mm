@@ -543,6 +543,7 @@ MouseDragMode;
                                                                                withSampleCount:1];
     modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
     modelRenderTarget.manageTargetTexture = YES;
+    modelRenderTarget.depthAttachment = nil;
     modelRenderTarget.name = @"Model";
     
     [_modelRender setResolveDepth:(_modelSelectionRenderer != nil)];
@@ -580,6 +581,7 @@ MouseDragMode;
                                                                                   withSampleCount:1];
         motionBlurTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
         motionBlurTarget.manageTargetTexture = YES;
+        motionBlurTarget.depthAttachment = nil;
         motionBlurTarget.name = @"Motion Blur";
         
         [_motionBlurRenderer setRenderTarget:motionBlurTarget];
