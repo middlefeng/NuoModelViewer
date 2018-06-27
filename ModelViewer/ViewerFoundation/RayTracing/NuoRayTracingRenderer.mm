@@ -11,6 +11,7 @@
 
 #import "NuoTextureMesh.h"
 #import "NuoTextureAverageMesh.h"
+#import "NuoRenderPassAttachment.h"
 
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
@@ -20,7 +21,7 @@
 {
     NuoRenderPassTarget* _rayTracingTarget;
     NuoRenderPassTarget* _rayTracingAccumulate;
-    NuoTextureAverageMesh* _averageMesh;
+    NuoTextureAccumulator* _accumulator;
     
     NuoTextureMesh* _rayTracingOverlay;
 }
@@ -40,18 +41,18 @@
                                                               withPixelFormat:MTLPixelFormatRGBA32Float
                                                               withSampleCount:1];
         
-        _rayTracingTarget.computeTarget = YES;
         _rayTracingTarget.manageTargetTexture = YES;
         _rayTracingTarget.sharedTargetTexture = NO;
+        _rayTracingTarget.colorAttachments[0].needWrite = YES;
         _rayTracingTarget.name = @"Ray Tracing";
         
         _rayTracingAccumulate = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                  withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                  withPixelFormat:MTLPixelFormatRGBA32Float
                                                                   withSampleCount:1];
         
-        _rayTracingAccumulate.computeTarget = NO;
         _rayTracingAccumulate.manageTargetTexture = YES;
         _rayTracingAccumulate.sharedTargetTexture = NO;
+        _rayTracingAccumulate.colorAttachments[0].needWrite = YES;
         _rayTracingAccumulate.name = @"Ray Tracing Accumulate";
         
         [self resetResources];
@@ -68,9 +69,8 @@
 
 - (void)resetResources
 {
-    _averageMesh = [[NuoTextureAverageMesh alloc] initWithCommandQueue:self.commandQueue];
-    _averageMesh.sampleCount = 1;
-    [_averageMesh makePipelineAndSampler];
+    _accumulator = [[NuoTextureAccumulator alloc] initWithCommandQueue:self.commandQueue];
+    [_accumulator makePipelineAndSampler];
 }
 
 
@@ -166,14 +166,13 @@
     
     [self runRayTraceShade:commandBuffer withInFlightIndex:inFlight];
     
-    [_averageMesh accumulateTexture:_rayTracingTarget.targetTexture
+    [_accumulator accumulateTexture:_rayTracingTarget.targetTexture
                            onTarget:_rayTracingAccumulate
                        withInFlight:inFlight withCommandBuffer:commandBuffer];
     
     id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
     
     [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
-    
     
     [_rayTracingOverlay setModelTexture:_rayTracingAccumulate.targetTexture];
     [_rayTracingOverlay drawMesh:renderPass indexBuffer:inFlight];

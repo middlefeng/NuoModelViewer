@@ -77,12 +77,12 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
 }
 
 
-- (PositionBuffer)positionBuffer:(NSArray<NuoMesh*>*)meshes
+- (VectorBuffer)positionBuffer:(NSArray<NuoMesh*>*)meshes
 {
-    PositionBuffer buffer;
+    VectorBuffer buffer;
     for (NuoMesh* mesh in meshes)
     {
-        PositionBuffer bufferForOne = [mesh worldPositionBuffer:NuoMatrixFloat44Identity];
+        VectorBuffer bufferForOne = [mesh worldPositionBuffer:NuoMatrixFloat44Identity];
         buffer.Union(bufferForOne);
     }
     
@@ -93,7 +93,7 @@ const uint kRayIntersectionStrid = sizeof(MPSIntersectionDistancePrimitiveIndexC
 
 - (void)setMeshes:(NSArray<NuoMesh*>*)meshes
 {
-    PositionBuffer buffer = [self positionBuffer:meshes];
+    VectorBuffer buffer = [self positionBuffer:meshes];
     uint32_t triangleCount = (uint32_t)buffer._indices.size() / 3;
     
     id<MTLBuffer> vertexBuffer = [_device newBufferWithBytes:&buffer._vertices[0]

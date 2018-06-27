@@ -14,6 +14,14 @@
 
 
 
+struct AccumulateUniform
+{
+    uint32_t frameIndex;
+    uint32_t width;
+    uint32_t height;
+};
+
+
 
 @implementation NuoTextureAverageMesh
 {
@@ -22,7 +30,7 @@
     
     NuoRenderPassTarget* _texturesAccumulated;
     id<MTLTexture> _textureLatest;
-    NSUInteger _textureCount;
+    uint32_t _textureCount;
     
     NSArray<id<MTLBuffer>>* _texCountBuffer;
 }
@@ -36,7 +44,7 @@
     {
         id<MTLBuffer> buffers[kInFlightBufferCount];
         for (size_t i = 0; i < kInFlightBufferCount; ++i)
-            buffers[i] = [commandQueue.device newBufferWithLength:sizeof(int)
+            buffers[i] = [commandQueue.device newBufferWithLength:sizeof(uint32_t)
                                                           options:MTLResourceStorageModeManaged];
         _texCountBuffer = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
         
@@ -52,7 +60,7 @@
     NSString* shaderName = @"fragment_texutre_average";
     
     _texturesAccumulated = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
-                                                             withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                             withPixelFormat:MTLPixelFormatRGBA32Float
                                                              withSampleCount:1];
     
     _texturesAccumulated.clearColor = MTLClearColorMake(0, 0, 0, 0);
@@ -61,9 +69,9 @@
     
     _accumulatedMesh = [[NuoTextureMesh alloc] initWithCommandQueue:self.commandQueue];
     _accumulatedMesh.sampleCount = 1;
-    [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_None];
+    [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatRGBA32Float withBlendMode:kBlend_Alpha];
     
-    [self makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withFragementShader:shaderName
+    [self makePipelineAndSampler:MTLPixelFormatRGBA32Float withFragementShader:shaderName
                    withBlendMode:kBlend_Accumulate];
 }
 
@@ -102,10 +110,10 @@
 {
     [_texturesAccumulated setDrawableSize:CGSizeMake(texture.width, texture.height)];
     
-    id<MTLRenderCommandEncoder> accumulatePass = [_texturesAccumulated retainRenderPassEndcoder:commandBuffer];
+    /*id<MTLRenderCommandEncoder> accumulatePass = [_texturesAccumulated retainRenderPassEndcoder:commandBuffer];
     [_accumulatedMesh setModelTexture:texture];
     [_accumulatedMesh drawMesh:accumulatePass indexBuffer:0];
-    [_texturesAccumulated releaseRenderPassEndcoder];
+    [_texturesAccumulated releaseRenderPassEndcoder];*/
     
     /**
      *  BLIT copy can NOT handle framebuffer-only source texture, nor can it handle texture size change.
@@ -125,21 +133,29 @@
         desc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
 
         _texturesAccumulated = [self.device newTextureWithDescriptor:desc];
-    }
+    } */
     
     MTLOrigin origin = {0, 0, 0};
     MTLSize size = {texture.width, texture.height, 1};
     id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
     [encoder copyFromTexture:texture sourceSlice:0 sourceLevel:0 sourceOrigin:origin sourceSize:size
-                   toTexture:_texturesAccumulated destinationSlice:0 destinationLevel:0 destinationOrigin:origin];
+                   toTexture:_texturesAccumulated.targetTexture destinationSlice:0 destinationLevel:0 destinationOrigin:origin];
     
-    [encoder endEncoding];*/
+    [encoder endEncoding];
 }
 
 
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
 {
+    /*AccumulateUniform uniform;
+    uniform.frameIndex = _textureCount;
+    uniform.width = _texturesAccumulated.drawableSize.width;
+    uniform.height = _texturesAccumulated.drawableSize.height;
+    
+    memcpy(_texCountBuffer[bufferIndex].contents, &uniform, sizeof(AccumulateUniform));
+    [_texCountBuffer[bufferIndex] didModifyRange:NSMakeRange(0, sizeof(AccumulateUniform))];*/
+    
     memcpy(_texCountBuffer[bufferIndex].contents, &_textureCount, sizeof(int));
     [_texCountBuffer[bufferIndex] didModifyRange:NSMakeRange(0, sizeof(int))];
 }

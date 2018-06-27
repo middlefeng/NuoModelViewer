@@ -89,13 +89,16 @@ bool ItemTexCoordEequal(const ItemBase& i1, const ItemBase& i2)
 
 
 
-typedef std::vector<NuoVectorFloat3::_typeTrait::_vectorType> PositionBufferVertex;
-struct PositionBuffer
+typedef std::vector<NuoVectorFloat3::_typeTrait::_vectorType> VectorBufferItem;
+struct VectorBuffer
 {
-    PositionBufferVertex _vertices;
+    VectorBufferItem _vertices;
     std::vector<uint32_t> _indices;
     
-    void Union(const PositionBuffer& other);
+    bool _isPosition;
+    
+    void Union(const VectorBuffer& other);
+    void Transform(const NuoMatrixFloat44& trans);
 };
 
 
@@ -131,7 +134,7 @@ public:
     virtual NuoVectorFloat4 GetPosition(size_t index) = 0;
     virtual NuoBounds GetBoundingBox();
     
-    virtual PositionBuffer GetPositionBuffer() = 0;
+    virtual VectorBuffer GetPositionBuffer() = 0;
     
     virtual void* Ptr() = 0;
     virtual size_t Length() = 0;
@@ -173,7 +176,7 @@ public:
     virtual size_t GetVerticesNumber() override;
     virtual NuoVectorFloat4 GetPosition(size_t index) override;
     
-    virtual PositionBuffer GetPositionBuffer() override;
+    virtual VectorBuffer GetPositionBuffer() override;
     
     virtual void* Ptr() override;
     virtual size_t Length() override;
@@ -427,9 +430,9 @@ NuoVectorFloat4 NuoModelCommon<ItemBase>::GetPosition(size_t index)
 
 
 template <class ItemBase>
-PositionBuffer NuoModelCommon<ItemBase>::GetPositionBuffer()
+VectorBuffer NuoModelCommon<ItemBase>::GetPositionBuffer()
 {
-    PositionBuffer result;
+    VectorBuffer result;
     
     for (const ItemBase& item : _buffer)
     {

@@ -442,6 +442,8 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                              NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
                              metal::depth2d<float> shadowMap, metal::sampler samplr)
 {
+    
+    return 0.0;
     float shadowMapBias = 0.002;
     shadowMapBias += shadowParams.bias * (1 - shadowedSurfaceAngle);
     

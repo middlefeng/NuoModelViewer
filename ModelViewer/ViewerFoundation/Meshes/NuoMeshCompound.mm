@@ -108,16 +108,16 @@
 }
 
 
-- (PositionBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform
+- (VectorBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform
 {
-    PositionBuffer buffer;
+    VectorBuffer buffer;
     
     const NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
     const NuoMatrixFloat44 transformWorld = transform * transformLocal;
     
     for (NuoMesh* mesh in _meshes)
     {
-        PositionBuffer oneBuffer = [mesh worldPositionBuffer:transformWorld];
+        VectorBuffer oneBuffer = [mesh worldPositionBuffer:transformWorld];
         buffer.Union(oneBuffer);
     }
     

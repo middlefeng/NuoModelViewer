@@ -27,6 +27,9 @@ struct RayBuffer
     float minDistance;
     packed_float3 direction;
     float maxDistance;
+    
+    // cosine base strength factor
+    float strength;
 };
 
 
@@ -71,8 +74,9 @@ kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
                             device RayBuffer* rays [[buffer(1)]],
                             device Intersection *intersections [[buffer(2)]],
                             constant NuoRayTracingUniforms& tracingUniforms [[buffer(3)]],
-                            device RayBuffer* shadowRays1 [[buffer(4)]],
-                            device RayBuffer* shadowRays2 [[buffer(5)]],
+                            device float2* random [[buffer(4)]],
+                            device RayBuffer* shadowRays1 [[buffer(5)]],
+                            device RayBuffer* shadowRays2 [[buffer(6)]],
                             texture2d<float, access::write> dstTex [[texture(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
@@ -92,17 +96,44 @@ kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
         
         if (intersection.distance >= 0.0f)
         {
+            float distance = tracingUniforms.bounds.span;
+            float4 center = tracingUniforms.bounds.center;
+            
             float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
             lightVec = normalize(tracingUniforms.lightSources[i] * lightVec);
             
-            shadowRayCurrent->maxDistance = INFINITY;
-            shadowRayCurrent->minDistance = 0.0001;
+            float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
+            float2 r1 = random[(uint)(r1.x * 256)];
+            r = (r * 2.0 - 1.0) * distance * 0.25;
+            r1 = (r1 * 2.0 - 1.0);
+            
+            //if (dot(float3(r1, 1.0),  lightVec.xyz) > 0.9)
+            {
+            //    r1 = float2(0.0072f, 0.0034f);
+            }
+            
+            //r = float2(0, 0);
+            //float3 randomVec = normalize(float3(r.x, r.y, 1.0));
+            
+            float3 lightPosition = (lightVec.xyz * distance);// + center.xyz;
+            float3 lightRight = normalize(cross(lightVec.xyz, float3(r1.x, r1.y, 1.0)));
+            float3 lightForward = cross(lightRight, lightVec.xyz);
+            
+            lightPosition = lightPosition + lightRight * r.x + lightForward * r.y;
             
             float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
-            shadowRayCurrent->origin = intersectionPoint;
-            shadowRayCurrent->direction = lightVec.xyz;
             
-            //dstTex.write(float4(1.0, 0.0, 0.0, 1.0f), tid);
+            //lightVec.xyz = randomVec.x * lightRight + randomVec.y * lightForward + randomVec.z * lightVec.xyz;
+            //lightPosition.xyz = lightPosition.xyz + r.x * distance * 0.1 * lightRight + r.y * distance * 0.1 * lightForward;
+            float3 shadowVec = normalize(lightPosition.xyz);// - intersectionPoint);
+            
+            shadowRayCurrent->maxDistance = distance;
+            shadowRayCurrent->minDistance = 0.001;
+            
+            
+            shadowRayCurrent->origin = intersectionPoint;
+            shadowRayCurrent->direction = shadowVec;
+            shadowRayCurrent->strength = dot(lightVec.xyz, shadowVec);
         }
         else
         {
@@ -117,6 +148,7 @@ kernel void shadow_shade(uint2 tid [[thread_position_in_grid]],
                         constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                         device RayBuffer* rays [[buffer(1)]],
                         device Intersection *intersections [[buffer(2)]],
+                        device RayBuffer* shadowRays [[buffer(3)]],
                         texture2d<float, access::write> dstTex [[texture(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
@@ -124,11 +156,16 @@ kernel void shadow_shade(uint2 tid [[thread_position_in_grid]],
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & intersection = intersections[rayIdx];
+    device RayBuffer& shadowRay = shadowRays[rayIdx];
     
     if (intersection.distance >= 0.0f)
     {
-        dstTex.write(float4(1.0, 0.0, 0.0, 1.0f), tid);
+        dstTex.write(float4(0.0, 0.0, 0.0, 1.0f) * shadowRay.strength, tid);
     }
+    /*else
+    {
+        dstTex.write(float4(1.0, 1.0, 1.0, 1.0f), tid);
+    }*/
 }
 
 

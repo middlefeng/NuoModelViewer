@@ -108,7 +108,7 @@
 - (NSString*)modelName;
 - (void)smoothWithTolerance:(float)tolerance;
 
-- (PositionBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform;
+- (VectorBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform;
 
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform;

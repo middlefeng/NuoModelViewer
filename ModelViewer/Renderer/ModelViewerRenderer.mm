@@ -1190,5 +1190,26 @@
 }
 
 
+- (NuoBounds)sceneBounds
+{
+    NuoBounds bounds;
+    bool head = true;
+    
+    for (NuoMesh* mesh in _meshes)
+    {
+        if (head)
+        {
+            bounds = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox;
+            head = false;
+        }
+        else
+        {
+            bounds = bounds.Union([mesh worldBounds:NuoMatrixFloat44Identity].boundingBox);
+        }
+    }
+    
+    return bounds;
+}
+
 
 @end

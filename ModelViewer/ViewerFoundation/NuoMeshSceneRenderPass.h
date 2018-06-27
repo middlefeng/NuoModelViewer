@@ -10,6 +10,8 @@
 
 #import <Metal/Metal.h>
 
+#include "NuoBounds.h"
+
 
 
 @class NuoShadowMapRenderer;
@@ -27,6 +29,7 @@
 
 - (NuoShadowMapRenderer*)shadowMapRenderer:(NSUInteger)index;
 - (id<MTLTexture>)depthMap;
+- (NuoBounds)sceneBounds;
 
 
 @end

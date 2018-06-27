@@ -138,14 +138,11 @@
         [colorAttachment makeTexture];
     }
     
-    if (!_computeTarget)
-    {
-        _depthAttachment.drawableSize = self.drawableSize;
-        _depthAttachment.needResolve = _resolveDepth;
-        _depthAttachment.sampleCount = _sampleCount;
-        _depthAttachment.name = _name;
-        [_depthAttachment makeTexture];
-    }
+    _depthAttachment.drawableSize = self.drawableSize;
+    _depthAttachment.needResolve = _resolveDepth;
+    _depthAttachment.sampleCount = _sampleCount;
+    _depthAttachment.name = _name;
+    [_depthAttachment makeTexture];
 }
 
 

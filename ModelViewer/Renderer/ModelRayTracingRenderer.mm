@@ -15,7 +15,9 @@
 #import "NuoShadowMapRenderer.h"
 #import "NuoRayEmittor.h"
 
-#import <MetalPerformanceShaders/MetalPerformanceShaders.h>
+#include "NuoRandomBuffer.h"
+
+#include <simd/simd.h>
 
 
 @implementation ModelRayTracingRenderer
@@ -27,6 +29,7 @@
     
     CGSize _shadowBufferSize;
     NSArray<id<MTLBuffer>>* _shadowRayBuffers;
+    NSArray<id<MTLBuffer>>* _randomBuffers;
     NSArray<id<MTLBuffer>>* _shadowIntersectionBuffers;
 }
 
@@ -54,12 +57,17 @@
         assert(error == nil);
         
         id<MTLBuffer> buffers[kInFlightBufferCount];
+        id<MTLBuffer> randoms[kInFlightBufferCount];
+        NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> randomBufferContent(256);
         for (uint i = 0; i < kInFlightBufferCount; ++i)
         {
             buffers[i] = [commandQueue.device newBufferWithLength:sizeof(NuoRayTracingUniforms)
                                                           options:MTLResourceStorageModeManaged];
+            randoms[i] = [commandQueue.device newBufferWithLength:256 * sizeof(simd::float2)
+                                                          options:MTLResourceStorageModeManaged];
         }
         _rayTraceUniform = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
+        _randomBuffers = [[NSArray alloc] initWithObjects:randoms count:kInFlightBufferCount];
     }
     
     return self;
@@ -74,8 +82,7 @@
         return;
     
     const size_t bufferSize = drawableSize.width * drawableSize.height * kRayBufferStrid;
-    const size_t intersectionSize = drawableSize.width * drawableSize.height *
-                                    sizeof(MPSIntersectionDistancePrimitiveIndexCoordinates);
+    const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayBufferStrid;
     
     id<MTLBuffer> shadowRayBuffers[2];
     id<MTLBuffer> shadowIntersections[2];
@@ -103,8 +110,24 @@
         uniforms.lightSources[i] = lightDriection._m;
     }
     
+    NuoBounds bounds = [_paramsProvider sceneBounds];
+    uniforms.bounds.span = bounds.MaxDimension();
+    uniforms.bounds.center = NuoVectorFloat4(bounds._center._vector.x, bounds._center._vector.y, bounds._center._vector.z, 1.0)._vector;
+    
     memcpy(_rayTraceUniform[index].contents, &uniforms, sizeof(NuoRayTracingUniforms));
     [_rayTraceUniform[index] didModifyRange:NSMakeRange(0, sizeof(NuoRayTracingUniforms))];
+    
+    //NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> randomBuffer(256);
+    //memcpy([_randomBuffers[index] contents], randomBuffer.Ptr(), randomBuffer.BytesSize());
+    
+    simd::float2* random = (simd::float2*)[_randomBuffers[index] contents];
+    for (int i = 0; i < 256; i++)
+        random[i] = {
+            /*(float)(index % 3) / 2.0f,*/(float)rand() / (float)RAND_MAX,
+            (float)rand() / (float)RAND_MAX
+        };
+    
+    [_randomBuffers[index] didModifyRange:NSMakeRange(0, 256 * sizeof(simd::float2))];
 }
 
 
@@ -115,7 +138,10 @@
     if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
     {
         [self runRayTraceCompute:_shadowRayPipeline withCommandBuffer:commandBuffer
-                   withParameter:@[_rayTraceUniform[inFlight], _shadowRayBuffers[0], _shadowRayBuffers[1]]
+                   withParameter:@[_rayTraceUniform[inFlight],
+                                   _randomBuffers[inFlight],
+                                   _shadowRayBuffers[0],
+                                   _shadowRayBuffers[1]]
                 withIntersection:self.primaryIntersectionBuffer
                withInFlightIndex:inFlight];
         
@@ -126,7 +152,8 @@
         }
         
         [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
-                   withParameter:nil withIntersection:_shadowIntersectionBuffers[0] withInFlightIndex:inFlight];
+                   withParameter:@[_shadowRayBuffers[0]]
+                withIntersection:_shadowIntersectionBuffers[0] withInFlightIndex:inFlight];
     }
 }
 

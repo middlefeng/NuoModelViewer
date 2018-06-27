@@ -70,14 +70,31 @@ std::shared_ptr<NuoModelBase> CreateModel(const NuoModelOption& options, const N
 
 
 
-void PositionBuffer::Union(const PositionBuffer& other)
+void VectorBuffer::Union(const VectorBuffer& other)
 {
-    const size_t prevCount = _vertices.size();
+    const uint32_t prevCount = (uint32_t)_vertices.size();
     _vertices.insert(_vertices.end(), other._vertices.begin(), other._vertices.end());
     
     for (uint32_t i = 0; i < other._indices.size(); ++i)
     {
         _indices.push_back(other._indices[i] + prevCount);
+    }
+}
+
+
+
+void VectorBuffer::Transform(const NuoMatrixFloat44 &trans)
+{
+    float w = _isPosition ? 1.0 : 0.0;
+    
+    for (auto& vertex : _vertices)
+    {
+        NuoVectorFloat4 vertexToTrans = NuoVectorFloat4(vertex.x, vertex.y, vertex.z, w);
+        vertexToTrans = trans * vertexToTrans;
+        
+        vertex.x = vertexToTrans.x();
+        vertex.y = vertexToTrans.y();
+        vertex.z = vertexToTrans.z();
     }
 }
 

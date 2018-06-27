@@ -276,22 +276,15 @@
 }
 
 
-- (PositionBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform
+- (VectorBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform
 {
     const NuoMatrixFloat44 transformObject = _transformTranslate * _transformPoise;
     const NuoMatrixFloat44 transformWorld = transform * transformObject;
     
-    PositionBuffer buffer = _rawModel->GetPositionBuffer();
+    VectorBuffer buffer = _rawModel->GetPositionBuffer();
     
-    for (auto& vertex : buffer._vertices)
-    {
-        NuoVectorFloat4 vertexToTrans = NuoVectorFloat4(vertex.x, vertex.y, vertex.z, 1.0);
-        vertexToTrans = transformWorld * vertexToTrans;
-        
-        vertex.x = vertexToTrans.x();
-        vertex.y = vertexToTrans.y();
-        vertex.z = vertexToTrans.z();
-    }
+    buffer._isPosition = true;
+    buffer.Transform(transformWorld);
     
     return buffer;
 }
