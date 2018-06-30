@@ -83,14 +83,26 @@ void VectorBuffer::Union(const VectorBuffer& other)
 
 
 
-void VectorBuffer::Transform(const NuoMatrixFloat44 &trans)
+void VectorBuffer::TransformPosition(const NuoMatrixFloat44 &trans)
 {
-    float w = _isPosition ? 1.0 : 0.0;
-    
     for (auto& vertex : _vertices)
     {
-        NuoVectorFloat4 vertexToTrans = NuoVectorFloat4(vertex.x, vertex.y, vertex.z, w);
+        NuoVectorFloat4 vertexToTrans = NuoVectorFloat4(vertex.x, vertex.y, vertex.z, 1.0f);
         vertexToTrans = trans * vertexToTrans;
+        
+        vertex.x = vertexToTrans.x();
+        vertex.y = vertexToTrans.y();
+        vertex.z = vertexToTrans.z();
+    }
+}
+
+
+
+void VectorBuffer::TransformVector(const NuoMatrixFloat33 &trans)
+{
+    for (auto& vertex : _vertices)
+    {
+        NuoVectorFloat3 vertexToTrans = trans * NuoVectorFloat3(vertex);
         
         vertex.x = vertexToTrans.x();
         vertex.y = vertexToTrans.y();

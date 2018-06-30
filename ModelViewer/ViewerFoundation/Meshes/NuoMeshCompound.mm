@@ -125,6 +125,23 @@
 }
 
 
+- (VectorBuffer)worldNormalBuffer:(const NuoMatrixFloat44&)transform
+{
+    VectorBuffer buffer;
+    
+    const NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
+    const NuoMatrixFloat44 transformWorld = transform * transformLocal;
+    
+    for (NuoMesh* mesh in _meshes)
+    {
+        VectorBuffer oneBuffer = [mesh worldNormalBuffer:transformWorld];
+        buffer.Union(oneBuffer);
+    }
+    
+    return buffer;
+}
+
+
 - (NSUInteger)sampleCount
 {
     return _sampleCount;

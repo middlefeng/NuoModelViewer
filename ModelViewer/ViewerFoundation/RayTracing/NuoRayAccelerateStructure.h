@@ -12,7 +12,7 @@
 #include "NuoMathVector.h"
 
 
-extern const uint kRayIntersectionStrid;
+extern const uint kRayIntersectionStride;
 
 
 @class NuoMesh;
@@ -26,9 +26,11 @@ extern const uint kRayIntersectionStrid;
 @property (nonatomic, assign) CGSize drawableSize;
 
 @property (nonatomic, readonly) id<MTLBuffer> primaryRayBuffer;
+@property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
+@property (nonatomic, readonly) id<MTLBuffer> normalBuffer;
 
 
-- (instancetype)initWithQueue:(id<MTLCommandQueue>)queue;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (void)setMeshes:(NSArray<NuoMesh*>*)meshes;
 - (void)setView:(const NuoMatrixFloat44&)viewTrans;

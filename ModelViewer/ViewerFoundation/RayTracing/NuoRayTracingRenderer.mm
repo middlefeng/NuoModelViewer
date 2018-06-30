@@ -83,7 +83,7 @@
     
     const uint w = (uint)drawableSize.width;
     const uint h = (uint)drawableSize.height;
-    const uint intersectionSize = kRayIntersectionStrid * w * h;
+    const uint intersectionSize = kRayIntersectionStride * w * h;
     _primaryIntersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
                                                                        options:MTLResourceStorageModePrivate];
 }
@@ -120,12 +120,14 @@
     id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setBuffer:[_rayStructure uniformBuffer:inFlight] offset:0 atIndex:0];
     [computeEncoder setBuffer:[_rayStructure primaryRayBuffer] offset:0 atIndex:1];
-    [computeEncoder setBuffer:intersection offset:0 atIndex:2];
+    [computeEncoder setBuffer:[_rayStructure indexBuffer] offset:0 atIndex:2];
+    [computeEncoder setBuffer:[_rayStructure normalBuffer] offset:0 atIndex:3];
+    [computeEncoder setBuffer:intersection offset:0 atIndex:4];
     
     if (paramterBuffers)
     {
         for (uint i = 0; i < paramterBuffers.count; ++i)
-            [computeEncoder setBuffer:paramterBuffers[i] offset:0 atIndex:3 + i];
+            [computeEncoder setBuffer:paramterBuffers[i] offset:0 atIndex:5 + i];
     }
     
     [computeEncoder setTexture:_rayTracingTarget.targetTexture atIndex:0];

@@ -282,10 +282,19 @@
     const NuoMatrixFloat44 transformWorld = transform * transformObject;
     
     VectorBuffer buffer = _rawModel->GetPositionBuffer();
+    buffer.TransformPosition(transformWorld);
+    return buffer;
+}
+
+
+
+- (VectorBuffer)worldNormalBuffer:(const NuoMatrixFloat44&)transform
+{
+    const NuoMatrixFloat44 transformObject = _transformTranslate * _transformPoise;
+    const NuoMatrixFloat44 transformWorld = transform * transformObject;
     
-    buffer._isPosition = true;
-    buffer.Transform(transformWorld);
-    
+    VectorBuffer buffer = _rawModel->GetNormalBuffer();
+    buffer.TransformVector(NuoMatrixExtractLinear(transformWorld));
     return buffer;
 }
 

@@ -20,6 +20,10 @@
 #include <simd/simd.h>
 
 
+static const uint32_t kRandomBufferSize = 512;
+
+
+
 @implementation ModelRayTracingRenderer
 {
     id<MTLComputePipelineState> _shadowRayPipeline;
@@ -58,12 +62,12 @@
         
         id<MTLBuffer> buffers[kInFlightBufferCount];
         id<MTLBuffer> randoms[kInFlightBufferCount];
-        NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> randomBufferContent(256);
+        NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> randomBufferContent(kRandomBufferSize);
         for (uint i = 0; i < kInFlightBufferCount; ++i)
         {
             buffers[i] = [commandQueue.device newBufferWithLength:sizeof(NuoRayTracingUniforms)
                                                           options:MTLResourceStorageModeManaged];
-            randoms[i] = [commandQueue.device newBufferWithLength:256 * sizeof(simd::float2)
+            randoms[i] = [commandQueue.device newBufferWithLength:randomBufferContent.BytesSize()
                                                           options:MTLResourceStorageModeManaged];
         }
         _rayTraceUniform = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
@@ -117,17 +121,10 @@
     memcpy(_rayTraceUniform[index].contents, &uniforms, sizeof(NuoRayTracingUniforms));
     [_rayTraceUniform[index] didModifyRange:NSMakeRange(0, sizeof(NuoRayTracingUniforms))];
     
-    //NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> randomBuffer(256);
-    //memcpy([_randomBuffers[index] contents], randomBuffer.Ptr(), randomBuffer.BytesSize());
+    NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> randomBuffer(kRandomBufferSize);
+    memcpy([_randomBuffers[index] contents], randomBuffer.Ptr(), randomBuffer.BytesSize());
     
-    simd::float2* random = (simd::float2*)[_randomBuffers[index] contents];
-    for (int i = 0; i < 256; i++)
-        random[i] = {
-            /*(float)(index % 3) / 2.0f,*/(float)rand() / (float)RAND_MAX,
-            (float)rand() / (float)RAND_MAX
-        };
-    
-    [_randomBuffers[index] didModifyRange:NSMakeRange(0, 256 * sizeof(simd::float2))];
+    [_randomBuffers[index] didModifyRange:NSMakeRange(0, randomBuffer.BytesSize())];
 }
 
 

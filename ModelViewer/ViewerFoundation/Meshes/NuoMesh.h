@@ -109,6 +109,7 @@
 - (void)smoothWithTolerance:(float)tolerance;
 
 - (VectorBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform;
+- (VectorBuffer)worldNormalBuffer:(const NuoMatrixFloat44&)transform;
 
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform;

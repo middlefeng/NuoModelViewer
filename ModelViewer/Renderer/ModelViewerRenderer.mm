@@ -105,7 +105,7 @@
         
         self.paramsProvider = self;
         
-        _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithQueue:commandQueue];
+        _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
     }
 
     return self;

@@ -95,10 +95,9 @@ struct VectorBuffer
     VectorBufferItem _vertices;
     std::vector<uint32_t> _indices;
     
-    bool _isPosition;
-    
     void Union(const VectorBuffer& other);
-    void Transform(const NuoMatrixFloat44& trans);
+    void TransformPosition(const NuoMatrixFloat44& trans);
+    void TransformVector(const NuoMatrixFloat33& trans);
 };
 
 
@@ -135,6 +134,7 @@ public:
     virtual NuoBounds GetBoundingBox();
     
     virtual VectorBuffer GetPositionBuffer() = 0;
+    virtual VectorBuffer GetNormalBuffer() = 0;
     
     virtual void* Ptr() = 0;
     virtual size_t Length() = 0;
@@ -177,6 +177,7 @@ public:
     virtual NuoVectorFloat4 GetPosition(size_t index) override;
     
     virtual VectorBuffer GetPositionBuffer() override;
+    virtual VectorBuffer GetNormalBuffer() override;
     
     virtual void* Ptr() override;
     virtual size_t Length() override;
@@ -445,6 +446,27 @@ VectorBuffer NuoModelCommon<ItemBase>::GetPositionBuffer()
     
     result._indices = _indices;
 
+    return result;
+}
+
+
+
+template <class ItemBase>
+VectorBuffer NuoModelCommon<ItemBase>::GetNormalBuffer()
+{
+    VectorBuffer result;
+    
+    for (const ItemBase& item : _buffer)
+    {
+        NuoVectorFloat3::_typeTrait::_vectorType vector;
+        vector.x = item._normal.x;
+        vector.y = item._normal.y;
+        vector.z = item._normal.z;
+        result._vertices.push_back(vector);
+    }
+    
+    result._indices = _indices;
+    
     return result;
 }
 
