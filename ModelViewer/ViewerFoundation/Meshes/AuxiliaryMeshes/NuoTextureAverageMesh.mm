@@ -271,6 +271,25 @@ struct AccumulateUniform
              withInFlight:(NSUInteger)inFlight
         withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
+    [self accumulateTexture:texture withInFlight:inFlight withCommandBuffer:commandBuffer];
+    [self outputAccumulateToTarget:target withCommandBuffer:commandBuffer];
+}
+
+
+- (void)accumulateTexture:(id<MTLTexture>)texture
+                onTexture:(id<MTLTexture>)targetTexture
+             withInFlight:(NSUInteger)inFlight
+        withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+{
+    [self accumulateTexture:texture withInFlight:inFlight withCommandBuffer:commandBuffer];
+    [self outputAccumulateToTexture:targetTexture withCommandBuffer:commandBuffer];
+}
+
+
+- (void)accumulateTexture:(id<MTLTexture>)texture
+             withInFlight:(NSUInteger)inFlight
+        withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+{
     [self appendTexture:texture];
     [self updateUniform:inFlight];
     
@@ -287,12 +306,10 @@ struct AccumulateUniform
     [encoder setComputePipelineState:_pipelineState];
     [encoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threadsPerThreadgroup];
     [encoder endEncoding];
-    
-    [self setAccumulateTexture:target withCommandBuffer:commandBuffer];
 }
 
 
-- (void)setAccumulateTexture:(NuoRenderPassTarget*)target withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)outputAccumulateToTarget:(NuoRenderPassTarget*)target withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
     if (!target.manageTargetTexture)
     {
@@ -303,19 +320,24 @@ struct AccumulateUniform
     }
     else
     {
-        id<MTLComputeCommandEncoder> encoder = [commandBuffer computeCommandEncoder];
-        
-        [encoder setTexture:target.targetTexture atIndex:0];
-        [encoder setTexture:_texturesAccumulated.targetTexture atIndex:1];
-        
-        MTLSize threadsPerThreadgroup = MTLSizeMake(8, 8, 1);
-        MTLSize threadgroups = MTLSizeMake((target.targetTexture.width  + threadsPerThreadgroup.width  - 1) / threadsPerThreadgroup.width,
-                                           (target.targetTexture.height + threadsPerThreadgroup.height - 1) / threadsPerThreadgroup.height, 1);
-        
-        [encoder setComputePipelineState:_pipelineStateCopy];
-        [encoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threadsPerThreadgroup];
-        [encoder endEncoding];
+        [self outputAccumulateToTexture:target.targetTexture withCommandBuffer:commandBuffer];
     }
+}
+    
+- (void)outputAccumulateToTexture:(id<MTLTexture>)targetTexture withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+{
+    id<MTLComputeCommandEncoder> encoder = [commandBuffer computeCommandEncoder];
+    
+    [encoder setTexture:targetTexture atIndex:0];
+    [encoder setTexture:_texturesAccumulated.targetTexture atIndex:1];
+    
+    MTLSize threadsPerThreadgroup = MTLSizeMake(8, 8, 1);
+    MTLSize threadgroups = MTLSizeMake((targetTexture.width  + threadsPerThreadgroup.width  - 1) / threadsPerThreadgroup.width,
+                                       (targetTexture.height + threadsPerThreadgroup.height - 1) / threadsPerThreadgroup.height, 1);
+    
+    [encoder setComputePipelineState:_pipelineStateCopy];
+    [encoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threadsPerThreadgroup];
+    [encoder endEncoding];
 }
 
 

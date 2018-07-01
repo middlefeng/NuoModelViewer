@@ -33,7 +33,13 @@
 
 - (void)makePipelineAndSampler;
 
+/**
+ *  accumulating onto a render target supports the frame buffer only target.
+ *  accumulating onto a texture supports only regular texture.
+ */
 - (void)accumulateTexture:(id<MTLTexture>)texture onTarget:(NuoRenderPassTarget*)target
+             withInFlight:(NSUInteger)inFlight withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
+- (void)accumulateTexture:(id<MTLTexture>)texture onTexture:(id<MTLTexture>)targetTexture
              withInFlight:(NSUInteger)inFlight withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
 
 @end
