@@ -23,6 +23,7 @@
 @property (nonatomic, weak) NuoRayAccelerateStructure* rayStructure;
 
 @property (nonatomic, readonly) id<MTLBuffer> primaryIntersectionBuffer;
+@property (nonatomic, readonly) id<MTLTexture> targetTexture;
 
 
 - (void)resetResources;

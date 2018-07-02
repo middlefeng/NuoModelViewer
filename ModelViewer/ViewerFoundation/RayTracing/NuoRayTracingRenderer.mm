@@ -9,7 +9,6 @@
 #import "NuoRayTracingRenderer.h"
 #import "NuoRayAccelerateStructure.h"
 
-#import "NuoTextureMesh.h"
 #import "NuoTextureAverageMesh.h"
 #import "NuoRenderPassAttachment.h"
 
@@ -22,8 +21,6 @@
     NuoRenderPassTarget* _rayTracingTarget;
     NuoRenderPassTarget* _rayTracingAccumulate;
     NuoTextureAccumulator* _accumulator;
-    
-    NuoTextureMesh* _rayTracingOverlay;
 }
 
 
@@ -56,10 +53,6 @@
         _rayTracingAccumulate.name = @"Ray Tracing Accumulate";
         
         [self resetResources];
-        
-        _rayTracingOverlay = [[NuoTextureMesh alloc] initWithCommandQueue:commandQueue];
-        _rayTracingOverlay.sampleCount = 1;
-        [_rayTracingOverlay makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
     }
     
     return self;
@@ -149,11 +142,16 @@
 - (void)runRayTraceShade:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
     /* default behavior is not very useful, meant to be override */
+    
+    /*************************************************************/
+    /*************************************************************/
     if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
     {
         [self runRayTraceCompute:/* some shade pipeline */ nil withCommandBuffer:commandBuffer
                    withParameter:nil withIntersection:nil withInFlightIndex:inFlight];
     }
+    /*************************************************************/
+    /*************************************************************/
 }
 
 
@@ -169,17 +167,15 @@
     [self runRayTraceShade:commandBuffer withInFlightIndex:inFlight];
     
     [_accumulator accumulateTexture:_rayTracingTarget.targetTexture
-                           onTarget:_rayTracingAccumulate
+                          onTexture:_rayTracingAccumulate.targetTexture
                        withInFlight:inFlight withCommandBuffer:commandBuffer];
-    
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
-    
-    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
-    
-    [_rayTracingOverlay setModelTexture:_rayTracingAccumulate.targetTexture];
-    [_rayTracingOverlay drawMesh:renderPass indexBuffer:inFlight];
-    
-    [self releaseDefaultEncoder];
+}
+
+
+
+- (id<MTLTexture>)targetTexture
+{
+    return [_rayTracingAccumulate targetTexture];
 }
 
 

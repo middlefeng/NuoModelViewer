@@ -15,6 +15,9 @@
 #import "NuoShadowMapRenderer.h"
 #import "NuoRayEmittor.h"
 
+// TODO: remove
+#import "NuoTextureMesh.h"
+
 #include "NuoRandomBuffer.h"
 
 #include <simd/simd.h>
@@ -24,10 +27,64 @@ static const uint32_t kRandomBufferSize = 512;
 
 
 
+
+@interface ModelRayTracingSubrenderer : NuoRayTracingRenderer
+
+@property (nonatomic, weak) id<MTLBuffer> shadowRayBuffer;
+@property (nonatomic, weak) id<MTLBuffer> shadowIntersectionBuffer;
+
+@end
+
+
+
+
+@implementation ModelRayTracingSubrenderer
+{
+    id<MTLComputePipelineState> _shadowShadePipeline;
+}
+
+
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                     withPixelFormat:(MTLPixelFormat)pixelFormat
+                     withSampleCount:(uint)sampleCount
+{
+    self = [super initWithCommandQueue:commandQueue
+                       withPixelFormat:pixelFormat withSampleCount:1];
+    
+    if (self)
+    {
+        NSError* error = nil;
+        
+        MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
+        id<MTLLibrary> library = [commandQueue.device newDefaultLibrary];
+        
+        id<MTLFunction> shadowShadeFunction = [library newFunctionWithName:@"shadow_shade" constantValues:values error:&error];
+        assert(error == nil);
+        _shadowShadePipeline = [commandQueue.device newComputePipelineStateWithFunction:shadowShadeFunction error:&error];
+        assert(error == nil);
+    }
+    
+    return self;
+}
+
+
+- (void)runRayTraceShade:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+{
+    [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
+                withParameter:@[_shadowRayBuffer]
+            withIntersection:_shadowIntersectionBuffer withInFlightIndex:inFlight];
+}
+
+
+
+@end
+
+
+
+
 @implementation ModelRayTracingRenderer
 {
     id<MTLComputePipelineState> _shadowRayPipeline;
-    id<MTLComputePipelineState> _shadowShadePipeline;
     
     NSArray<id<MTLBuffer>>* _rayTraceUniform;
     
@@ -35,6 +92,11 @@ static const uint32_t kRandomBufferSize = 512;
     NSArray<id<MTLBuffer>>* _shadowRayBuffers;
     NSArray<id<MTLBuffer>>* _randomBuffers;
     NSArray<id<MTLBuffer>>* _shadowIntersectionBuffers;
+    
+    ModelRayTracingSubrenderer* _subRenderers[2];
+    
+    // TODO: remove
+    NuoTextureMesh* _rayTracingOverlay;
 }
 
 
@@ -55,11 +117,6 @@ static const uint32_t kRandomBufferSize = 512;
         _shadowRayPipeline = [commandQueue.device newComputePipelineStateWithFunction:shadowRayFunction error:&error];
         assert(error == nil);
         
-        id<MTLFunction> shadowShadeFunction = [library newFunctionWithName:@"shadow_shade" constantValues:values error:&error];
-        assert(error == nil);
-        _shadowShadePipeline = [commandQueue.device newComputePipelineStateWithFunction:shadowShadeFunction error:&error];
-        assert(error == nil);
-        
         id<MTLBuffer> buffers[kInFlightBufferCount];
         id<MTLBuffer> randoms[kInFlightBufferCount];
         NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> randomBufferContent(kRandomBufferSize);
@@ -72,6 +129,17 @@ static const uint32_t kRandomBufferSize = 512;
         }
         _rayTraceUniform = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
         _randomBuffers = [[NSArray alloc] initWithObjects:randoms count:kInFlightBufferCount];
+        
+        for (uint i = 0; i < 2; ++i)
+        {
+            _subRenderers[i] = [[ModelRayTracingSubrenderer alloc] initWithCommandQueue:commandQueue
+                                                                        withPixelFormat:pixelFormat
+                                                                        withSampleCount:1];
+        }
+        
+        _rayTracingOverlay = [[NuoTextureMesh alloc] initWithCommandQueue:commandQueue];
+        _rayTracingOverlay.sampleCount = 1;
+        [_rayTracingOverlay makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
     }
     
     return self;
@@ -96,11 +164,20 @@ static const uint32_t kRandomBufferSize = 512;
                                                                     options:MTLResourceStorageModePrivate];
         shadowIntersections[i] = [self.commandQueue.device newBufferWithLength:intersectionSize
                                                                        options:MTLResourceStorageModePrivate];
+        
+        [_subRenderers[i] setDrawableSize:drawableSize];
     }
     
     _shadowRayBuffers = [[NSArray alloc] initWithObjects:shadowRayBuffers count:2];
     _shadowIntersectionBuffers = [[NSArray alloc] initWithObjects:shadowIntersections count:2];
     _shadowBufferSize = drawableSize;
+}
+
+
+- (void)resetResources
+{
+    for (uint i = 0; i < 2; ++i)
+        [_subRenderers[i] resetResources];
 }
 
 
@@ -130,10 +207,21 @@ static const uint32_t kRandomBufferSize = 512;
 
 - (void)runRayTraceShade:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
+    // the renderer uses its sub-renderers for shading (in particular the accumulation of the
+    // sampling, so the logic is in the drawWithCommandBuffer.
+}
+
+
+
+
+- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+{
     [self updateUniforms:inFlight];
     
     if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
     {
+        // generate rays for the two light sources
+        //
         [self runRayTraceCompute:_shadowRayPipeline withCommandBuffer:commandBuffer
                    withParameter:@[_rayTraceUniform[inFlight],
                                    _randomBuffers[inFlight],
@@ -144,14 +232,31 @@ static const uint32_t kRandomBufferSize = 512;
         
         for (uint i = 0; i < 2; ++i)
         {
+            // intersection detection for each light sources
+            //
             [self rayIntersect:commandBuffer
                       withRays:_shadowRayBuffers[i] withIntersection:_shadowIntersectionBuffers[i]];
+            
+            // sub renderers accumulates the samplings
+            //
+            _subRenderers[i].rayStructure = self.rayStructure;
+            _subRenderers[i].shadowRayBuffer = _shadowRayBuffers[i];
+            _subRenderers[i].shadowIntersectionBuffer = _shadowIntersectionBuffers[i];
+            [_subRenderers[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
         }
-        
-        [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
-                   withParameter:@[_shadowRayBuffers[0]]
-                withIntersection:_shadowIntersectionBuffers[0] withInFlightIndex:inFlight];
     }
+    
+    // TODO: remove the viusalizing code
+    
+    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    
+    [_rayTracingOverlay setModelTexture:self.sourceTexture];
+    [_rayTracingOverlay drawMesh:renderPass indexBuffer:inFlight];
+    
+    [_rayTracingOverlay setModelTexture:_subRenderers[1].targetTexture];
+    [_rayTracingOverlay drawMesh:renderPass indexBuffer:inFlight];
+    
+    [self releaseDefaultEncoder];
 }
 
 
