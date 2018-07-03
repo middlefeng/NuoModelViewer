@@ -8,15 +8,25 @@
 
 #import "NuoRayTracingRenderer.h"
 
-#include "NuoMathVector.h"
+#import "NuoLightSource.h"
 
 
-@protocol NuoMeshSceneParametersProvider;
+
+@interface ModelRayTracingSubrenderer : NuoRayTracingRenderer
+
+@property (nonatomic, weak) NuoLightSource* lightSource;
+
+@end
+
 
 
 @interface ModelRayTracingRenderer : NuoRayTracingRenderer
 
-@property (nonatomic, weak) id<NuoMeshSceneParametersProvider> paramsProvider;
+
+@property (nonatomic, assign) NuoBounds sceneBounds;
+
+- (void)setLightSource:(NuoLightSource*)lightSource forIndex:(uint)index;
+- (id<MTLTexture>)targetTextureForLightSource:(uint)index;
 
 
 @end

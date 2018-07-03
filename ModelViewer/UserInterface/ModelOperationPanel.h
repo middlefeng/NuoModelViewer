@@ -19,16 +19,6 @@
 
 
 
-typedef enum
-{
-    kRecord_Start,
-    kRecord_Stop,
-    kRecord_Pause
-}
-RecordStatus;
-
-
-
 
 @interface ModelOperationPanel : NuoRoundedView
 

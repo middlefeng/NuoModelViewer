@@ -28,7 +28,7 @@ static const uint32_t kRandomBufferSize = 512;
 
 
 
-@interface ModelRayTracingSubrenderer : NuoRayTracingRenderer
+@interface ModelRayTracingSubrenderer()
 
 @property (nonatomic, weak) id<MTLBuffer> shadowRayBuffer;
 @property (nonatomic, weak) id<MTLBuffer> shadowIntersectionBuffer;
@@ -94,9 +94,6 @@ static const uint32_t kRandomBufferSize = 512;
     NSArray<id<MTLBuffer>>* _shadowIntersectionBuffers;
     
     ModelRayTracingSubrenderer* _subRenderers[2];
-    
-    // TODO: remove
-    NuoTextureMesh* _rayTracingOverlay;
 }
 
 
@@ -136,10 +133,6 @@ static const uint32_t kRandomBufferSize = 512;
                                                                         withPixelFormat:pixelFormat
                                                                         withSampleCount:1];
         }
-        
-        _rayTracingOverlay = [[NuoTextureMesh alloc] initWithCommandQueue:commandQueue];
-        _rayTracingOverlay.sampleCount = 1;
-        [_rayTracingOverlay makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
     }
     
     return self;
@@ -174,6 +167,12 @@ static const uint32_t kRandomBufferSize = 512;
 }
 
 
+- (void)setLightSource:(NuoLightSource*)lightSource forIndex:(uint)index
+{
+    [_subRenderers[index] setLightSource:lightSource];
+}
+
+
 - (void)resetResources
 {
     for (uint i = 0; i < 2; ++i)
@@ -187,13 +186,15 @@ static const uint32_t kRandomBufferSize = 512;
     
     for (uint i = 0; i < 2; ++i)
     {
-        const NuoMatrixFloat44& lightDriection = [[_paramsProvider shadowMapRenderer:i] lightDirectionMatrix];
-        uniforms.lightSources[i] = lightDriection._m;
+        NuoLightSource* lightSource = _subRenderers[i].lightSource;
+        const NuoMatrixFloat44 matrix = NuoMatrixRotation(lightSource.lightingRotationX, lightSource.lightingRotationY);
+        uniforms.lightSources[i] = matrix._m;
     }
     
-    NuoBounds bounds = [_paramsProvider sceneBounds];
-    uniforms.bounds.span = bounds.MaxDimension();
-    uniforms.bounds.center = NuoVectorFloat4(bounds._center._vector.x, bounds._center._vector.y, bounds._center._vector.z, 1.0)._vector;
+    uniforms.bounds.span = _sceneBounds.MaxDimension();
+    uniforms.bounds.center = NuoVectorFloat4(_sceneBounds._center._vector.x,
+                                             _sceneBounds._center._vector.y,
+                                             _sceneBounds._center._vector.z, 1.0)._vector;
     
     memcpy(_rayTraceUniform[index].contents, &uniforms, sizeof(NuoRayTracingUniforms));
     [_rayTraceUniform[index] didModifyRange:NSMakeRange(0, sizeof(NuoRayTracingUniforms))];
@@ -245,18 +246,12 @@ static const uint32_t kRandomBufferSize = 512;
             [_subRenderers[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
         }
     }
-    
-    // TODO: remove the viusalizing code
-    
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
-    
-    [_rayTracingOverlay setModelTexture:self.sourceTexture];
-    [_rayTracingOverlay drawMesh:renderPass indexBuffer:inFlight];
-    
-    [_rayTracingOverlay setModelTexture:_subRenderers[1].targetTexture];
-    [_rayTracingOverlay drawMesh:renderPass indexBuffer:inFlight];
-    
-    [self releaseDefaultEncoder];
+}
+
+
+- (id<MTLTexture>)targetTextureForLightSource:(uint)index
+{
+    return _subRenderers[index].targetTexture;
 }
 
 

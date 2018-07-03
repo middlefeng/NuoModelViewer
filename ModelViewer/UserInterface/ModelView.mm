@@ -70,7 +70,6 @@ MouseDragMode;
     // pipeline stages
     //
     ModelRenderer* _modelRender;
-    ModelRayTracingRenderer* _rayTracingRenderer;
     ModelDissectRenderer* _modelDissectRenderer;
     ModelSelectionRenderer* _modelSelectionRenderer;
     NotationRenderer* _notationRenderer;
@@ -220,12 +219,6 @@ MouseDragMode;
     {
         NSArray<NuoMesh*>* dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
         [_modelDissectRenderer setDissectMeshes:dissectMeshes];
-    }
-    
-    if (_rayTracingRenderer)
-    {
-        NuoRayAccelerateStructure* rayStructure = [_modelRender rayAccelerator];
-        _rayTracingRenderer.rayStructure = rayStructure;
     }
 }
 
@@ -500,16 +493,9 @@ MouseDragMode;
     _modelRender = [[ModelRenderer alloc] initWithCommandQueue:self.commandQueue];
     _modelDissectRenderer = [[ModelDissectRenderer alloc] initWithCommandQueue:self.commandQueue];
     _modelDissectRenderer.paramsProvider = _modelRender;
-    
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
-    
-    _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:self.commandQueue
-                                                                withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                withSampleCount:1];
-    _rayTracingRenderer.paramsProvider = _modelRender;
-    
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
     // sync the model renderer with the initial settings in the model panel
@@ -566,7 +552,7 @@ MouseDragMode;
     [_modelRender setRenderTarget:modelRenderTarget];
     lastTarget = modelRenderTarget;
     
-    [_modelRender setRayAccelerating:_modelPanel.rayTracingRecordStatus == kRecord_Start];
+    [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
     
     // dissect renderer
     //
@@ -609,32 +595,6 @@ MouseDragMode;
     else if (_modelPanel.motionBlurRecordStatus == kRecord_Stop)
     {
         [_motionBlurRenderer resetResources];
-    }
-    
-    // ray tracing blend-in
-    
-    if (_modelPanel.rayTracingRecordStatus == kRecord_Start)
-    {
-        
-        _rayTracingRenderer.fieldOfView = _modelRender.fieldOfView;
-        
-        [renders addObject:_rayTracingRenderer];
-        
-        NuoRenderPassTarget* rayTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
-                                                                           withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                           withSampleCount:1];
-        
-        rayTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
-        rayTarget.manageTargetTexture = YES;
-        rayTarget.name = @"Ray";
-        
-        [_rayTracingRenderer setRenderTarget:rayTarget];
-        
-        lastTarget = rayTarget;
-    }
-    else
-    {
-        [_rayTracingRenderer resetResources];
     }
     
     // selection overlay

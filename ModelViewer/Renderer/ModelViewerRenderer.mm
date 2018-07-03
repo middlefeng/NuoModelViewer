@@ -22,12 +22,20 @@
 #include "NuoLua.h"
 
 #import "NuoLightSource.h"
-#import "NuoRayAccelerateStructure.h"
 
+// sub renderers
+//
 #import "NuoShadowMapRenderer.h"
 #import "NuoDeferredRenderer.h"
+#import "NuoRayAccelerateStructure.h"
+#import "ModelRayTracingRenderer.h"
+
+
 #import "NuoDirectoryUtils.h"
 #import "NuoModelLoaderGPU.h"
+
+// TODO: remove
+#import "NuoTextureMesh.h"
 
 
 @interface ModelRenderer ()
@@ -70,7 +78,13 @@
     NuoRenderPassTarget* _immediateTarget;
     NuoDeferredRenderer* _deferredRenderer;
     
+    NuoRayAccelerateStructure* _rayAccelerator;
+    ModelRayTracingRenderer* _rayTracingRenderer;
+    
     BOOL _rayAcceleratorSync;
+    
+    // TODO: remove
+    NuoTextureMesh* _rayTracingOverlay;
 }
 
 
@@ -106,9 +120,27 @@
         self.paramsProvider = self;
         
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
+        _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:self.commandQueue
+                                                                    withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                    withSampleCount:1];
+        _rayTracingRenderer.rayStructure = _rayAccelerator;
+        
+        _rayTracingOverlay = [[NuoTextureMesh alloc] initWithCommandQueue:commandQueue];
+        _rayTracingOverlay.sampleCount = 8;
+        [_rayTracingOverlay makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
     }
 
     return self;
+}
+
+
+
+- (void)setRayTracingRecordStatus:(RecordStatus)rayTracingRecordStatus
+{
+    _rayTracingRecordStatus = rayTracingRecordStatus;
+    
+    if (rayTracingRecordStatus == kRecord_Stop)
+        [_rayTracingRenderer resetResources];
 }
 
 
@@ -120,6 +152,7 @@
     [_shadowMapRenderer[1] setDrawableSize:drawableSize];
     [_deferredRenderer setDrawableSize:drawableSize];
     [_rayAccelerator setDrawableSize:drawableSize];
+    [_rayTracingRenderer setDrawableSize:drawableSize];
 }
 
 
@@ -1018,7 +1051,7 @@
         _backdropTransYDelta = 0.0;
     }
     
-    if (_rayAccelerating)
+    if (_rayTracingRecordStatus == kRecord_Start)
     {
         if (_rayAcceleratorSync && _transMode == kTransformMode_Model)
         {
@@ -1027,6 +1060,12 @@
         }
         
         [_rayAccelerator setView:[self viewMatrix]];
+        
+        for (uint i = 0; i < 2; ++i)
+            [_rayTracingRenderer setLightSource:_lights[i] forIndex:i];
+        
+        _rayTracingRenderer.sceneBounds = bounds;
+        _rayTracingRenderer.fieldOfView = _fieldOfView;
     }
 }
 
@@ -1034,6 +1073,9 @@
                withInFlightIndex:(unsigned int)inFlight
 {
     [self updateUniformsForView:inFlight];
+    
+    if (_rayTracingRecordStatus == kRecord_Start)
+        [_rayTracingRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
     // generate shadow map
     //
@@ -1076,6 +1118,15 @@
     {
         if (mesh.enabled)
             [mesh drawMesh:renderPass indexBuffer:inFlight];
+    }
+    
+    
+    // TODO: remove debug
+    if (_rayTracingRecordStatus == kRecord_Start)
+    {
+        id<MTLTexture> target = [_rayTracingRenderer targetTextureForLightSource:0];
+        [_rayTracingOverlay setModelTexture:target];
+        [_rayTracingOverlay drawMesh:renderPass indexBuffer:inFlight];
     }
     
     [_immediateTarget releaseRenderPassEndcoder];

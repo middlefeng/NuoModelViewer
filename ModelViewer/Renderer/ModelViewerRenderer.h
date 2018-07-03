@@ -50,6 +50,16 @@ typedef enum
 }
 TransformMode;
 
+
+typedef enum
+{
+    kRecord_Start,
+    kRecord_Stop,
+    kRecord_Pause
+}
+RecordStatus;
+
+
 class NuoLua;
 
 
@@ -81,8 +91,7 @@ class NuoLua;
 
 // support to hybrid ray tracing
 //
-@property (nonatomic, assign) BOOL rayAccelerating;
-@property (nonatomic, readonly) NuoRayAccelerateStructure* rayAccelerator;
+@property (nonatomic, assign) RecordStatus rayTracingRecordStatus;
 
 
 @property (nonatomic, assign) BOOL cullEnabled;

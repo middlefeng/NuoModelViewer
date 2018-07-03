@@ -81,9 +81,9 @@
     NuoVectorFloat4 lightAsEye(0, 0, kCameraDistance, 1);
     
     NuoLightSource* lightSource = _lightSource;
-    _lightDirectionMatrix = NuoMatrixRotation(lightSource.lightingRotationX,
-                                                                lightSource.lightingRotationY);
-    lightAsEye = _lightDirectionMatrix * lightAsEye;
+    const NuoMatrixFloat44 lightDirectionMatrix = NuoMatrixRotation(lightSource.lightingRotationX,
+                                                                    lightSource.lightingRotationY);
+    lightAsEye = lightDirectionMatrix * lightAsEye;
     lightAsEye = lightAsEye + center;
     lightAsEye.w(1.0);
     
@@ -158,12 +158,6 @@
 - (const NuoMatrixFloat44&)lightCastMatrix
 {
     return _lightCastMatrix;
-}
-
-
-- (const NuoMatrixFloat44&)lightDirectionMatrix
-{
-    return _lightDirectionMatrix;
 }
 
 
