@@ -34,7 +34,7 @@
     {
         self.manageTargetTexture = YES;
         self.clearColor = MTLClearColorMake(1.0, 0.0, 0.0, 1.0);
-        self.resolveDepth = YES;
+        self.resolveDepth = NO;
     }
     
     return self;
