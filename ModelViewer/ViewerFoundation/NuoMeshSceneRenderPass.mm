@@ -62,8 +62,8 @@
     
     [renderPass setFragmentBuffer:[provider lightingUniformBuffers][inFlight] offset:0 atIndex:0];
     [renderPass setFragmentBuffer:[provider modelCharacterUnfiromBuffer] offset:0 atIndex:1];
-    [renderPass setFragmentTexture:[provider shadowMapRenderer:0].renderTarget.depthTexture atIndex:0];
-    [renderPass setFragmentTexture:[provider shadowMapRenderer:1].renderTarget.depthTexture atIndex:1];
+    [renderPass setFragmentTexture:[provider shadowMapRenderer:0].renderTarget.targetTexture atIndex:0];
+    [renderPass setFragmentTexture:[provider shadowMapRenderer:1].renderTarget.targetTexture atIndex:1];
     [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
 }
 

@@ -44,6 +44,13 @@ vertex PositionSimple vertex_simple(device Vertex *vertices [[buffer(0)]],
 }
 
 
+fragment float4 depth_simple(PositionSimple vert [[stage_in]])
+{
+    return float4((vert.positionNDC.z / vert.positionNDC.w), 0.0, 0.0, 1.0);
+}
+
+
+
 
 /**
  *  shaders that generate phong result without shadow casting,
@@ -155,8 +162,8 @@ vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)
 fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                       constant NuoLightUniforms &lightUniform [[buffer(0)]],
                                       constant NuoModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
-                                      depth2d<float> shadowMap0 [[texture(0)]],
-                                      depth2d<float> shadowMap1 [[texture(1)]],
+                                      texture2d<float> shadowMap0 [[texture(0)]],
+                                      texture2d<float> shadowMap1 [[texture(1)]],
                                       sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
@@ -165,7 +172,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     float shadowOverlay = 0.0;
     float surfaceBrightness = 0.0;
     
-    depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
     for (unsigned i = 0; i < 4; ++i)
@@ -219,7 +226,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                             float3 normal,
                                             constant NuoLightUniforms &lightingUniform,
                                             float4 diffuseTexel,
-                                            depth2d<float> shadowMap[2],
+                                            texture2d<float> shadowMap[2],
                                             sampler samplr)
 {
     normal = normalize(normal);
@@ -290,13 +297,13 @@ ProjectedVertex vertex_project_common(device Vertex *vertices,
 
 
 float4 diffuse_lighted_selection(float4 vertPositionNDC, float3 normal,
-                                 depth2d<float> depth, sampler depthSamplr)
+                                 texture2d<float> depth, sampler depthSamplr)
 {
     float2 screenPos = vertPositionNDC.xy / vertPositionNDC.w;
     screenPos.x = (screenPos.x + 1) * 0.5;
     screenPos.y = (-screenPos.y + 1) * 0.5;
     
-    float depthSample = depth.sample(depthSamplr, screenPos);
+    float depthSample = depth.sample(depthSamplr, screenPos).r;
     float indicatorDepth = vertPositionNDC.z / vertPositionNDC.w;
     
     // light always comes from the direct front
@@ -377,7 +384,7 @@ float3 specular_common(float3 materialSpecularColor, float materialSpecularPower
 
 float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius, float occluderRadius,
                              float shadowMapBias, float modelDepth, float2 shadowCoord,
-                             metal::depth2d<float> shadowMap, metal::sampler samplr)
+                             metal::texture2d<float> shadowMap, metal::sampler samplr)
 {
     float penumbraFactor = 1.0;
     float blocker = 0;
@@ -398,7 +405,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
         float yCurrentSearch = shadowCoord.y - searchRegion.y;
         for (int j = 0; j < searchDiameter; ++j)
         {
-            float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch));
+            float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch)).r;
             if (shadowDepth < modelDepth - shadowMapBias * length(shadowCoord - float2(xCurrentSearch, yCurrentSearch)) / sampleDiameter)
             {
                 blockerSampleCount += 1;
@@ -440,7 +447,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                              NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
-                             metal::depth2d<float> shadowMap, metal::sampler samplr)
+                             metal::texture2d<float> shadowMap, metal::sampler samplr)
 {
     
     return 0.0;
@@ -503,15 +510,21 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                 //
                 if (kShadowPCSS)
                 {
-                    shadowCoverage += shadowMap.sample_compare(samplr, current,
-                                                               modelDepth + shadowMapBias -
-                                                               shadowMapBias * length(current - shadowCoord) / length(kSampleSizeBase));
+                    if (shadowMap.sample(samplr, current).r <
+                           modelDepth + shadowMapBias -
+                           shadowMapBias * length(current - shadowCoord) / length(kSampleSizeBase))
+                    {
+                        shadowCoverage += 1;
+                    }
                 }
                 else
                 {
-                    shadowCoverage += shadowMap.sample_compare(samplr, current,
-                                                               modelDepth -
-                                                               shadowMapBias * length(current - shadowCoord) / length(kSampleSizeBase));
+                    if (shadowMap.sample(samplr, current).r <
+                           modelDepth -
+                           shadowMapBias * length(current - shadowCoord) / length(kSampleSizeBase))
+                    {
+                        shadowCoverage += 1;
+                    }
                 }
                 
                 yCurrent += sampleSize.y;
@@ -540,7 +553,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     {
         /** simpler shadow without PCF
          */
-        return shadowMap.sample_compare(samplr, shadowCoord, modelDepth);
+        return shadowMap.sample(samplr, shadowCoord).r < modelDepth ? 1 : 0;
     }
 }
 

@@ -97,6 +97,7 @@ struct FragementScreenSpace
 struct PositionSimple
 {
     metal::float4 position [[position]];
+    metal::float4 positionNDC;
 };
 
 
@@ -128,12 +129,12 @@ metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert
                                                    metal::float3 normal,
                                                    constant NuoLightUniforms &lighting,
                                                    metal::float4 diffuseTexel,
-                                                   metal::depth2d<float> shadowMap[2],
+                                                   metal::texture2d<float> shadowMap[2],
                                                    metal::sampler samplr);
 
 metal::float4 diffuse_lighted_selection(metal::float4 vertPositionNDC,
                                         metal::float3 normal,
-                                        metal::depth2d<float> depth,
+                                        metal::texture2d<float> depth,
                                         metal::sampler depthSamplr);
 
 
@@ -147,7 +148,7 @@ metal::float3 specular_common(metal::float3 materialSpecularColor, float materia
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                              NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
-                             metal::depth2d<float> shadowMap, metal::sampler samplr);
+                             metal::texture2d<float> shadowMap, metal::sampler samplr);
 
 metal::float2 rand(metal::float2 co);
 
@@ -165,6 +166,7 @@ PositionSimple vertex_simple(device T *vertices [[buffer(0)]],
     PositionSimple outSimple;
     metal::float4 position = meshUniform.transform * vertices[vid].position;
     outSimple.position = uniforms.viewProjectionMatrix * position;
+    outSimple.positionNDC = outSimple.position;
     return outSimple;
 }
 

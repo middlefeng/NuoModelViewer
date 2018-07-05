@@ -104,8 +104,8 @@ vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(
 
 fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
                                         constant NuoLightUniforms &lightUniform [[buffer(0)]],
-                                        depth2d<float> shadowMap0 [[texture(0)]],
-                                        depth2d<float> shadowMap1 [[texture(1)]],
+                                        texture2d<float> shadowMap0 [[texture(0)]],
+                                        texture2d<float> shadowMap1 [[texture(1)]],
                                         texture2d<float> diffuseTexture [[texture(2)]],
                                         sampler depthSamplr [[sampler(0)]],
                                         sampler samplr [[sampler(1)]])
@@ -116,7 +116,7 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
     
     float3 colorForLights = 0.0;
     
-    depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
     for (unsigned i = 0; i < 4; ++i)
