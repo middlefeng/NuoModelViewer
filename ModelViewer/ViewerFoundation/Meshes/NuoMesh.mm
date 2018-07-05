@@ -419,9 +419,9 @@
     
     MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
     shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShadowShader];
-    shadowPipelineDescriptor.fragmentFunction = nil;
+    shadowPipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"depth_simple"];
     shadowPipelineDescriptor.sampleCount = 1 /*kSampleCount*/;
-    shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
+    shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatR32Float;
     shadowPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     NSError *error = nil;

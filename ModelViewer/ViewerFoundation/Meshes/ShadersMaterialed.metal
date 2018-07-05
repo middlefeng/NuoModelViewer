@@ -71,9 +71,9 @@ vertex ProjectedVertex vertex_project_materialed(device Vertex *vertices [[buffe
 
 fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
                                           constant NuoLightUniforms &lightUniform [[buffer(0)]],
-                                          depth2d<float> shadowMap0 [[texture(0)]],
-                                          depth2d<float> shadowMap1 [[texture(1)]],
-                                          depth2d<float> depth      [[texture(2), function_constant(kDepthPrerenderred)]],
+                                          texture2d<float> shadowMap0 [[texture(0)]],
+                                          texture2d<float> shadowMap1 [[texture(1)]],
+                                          texture2d<float> depth      [[texture(2), function_constant(kDepthPrerenderred)]],
                                           sampler depthSamplr [[sampler(0)]])
 {
     if (kMeshMode == kMeshMode_Selection)
@@ -84,7 +84,7 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
     
     float3 colorForLights = 0.0;
     
-    depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
     float opacity = vert.specularPowerDisolve.y;
