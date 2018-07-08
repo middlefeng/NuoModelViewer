@@ -13,6 +13,7 @@ struct Vertex
 struct ProjectedVertex
 {
     float4 position [[position]];
+    float4 positionNDC;
     float3 eye;
     float3 normal;
     float2 texCoord;
@@ -91,6 +92,7 @@ vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(
     
     float4 meshPosition = meshUniforms.transform * vertices[vid].position;
     outVert.position = uniforms.viewProjectionMatrix * meshPosition;
+    outVert.positionNDC = outVert.position;
     outVert.eye =  -(uniforms.viewMatrix * meshPosition).xyz;
     outVert.normal = meshUniforms.normalTransform * vertices[vid].normal.xyz;
     outVert.texCoord = vertices[vid].texCoord;
@@ -138,8 +140,9 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
         float shadowPercent = 0.0;
         if (i < 2)
         {
+            float4 shadowPositionCurrent = kShadowOverlay ? vert.positionNDC : shadowPosition[i];
             const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
-            shadowPercent = shadow_coverage_common(shadowPosition[i],
+            shadowPercent = shadow_coverage_common(shadowPositionCurrent,
                                                    shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], depthSamplr);
         }

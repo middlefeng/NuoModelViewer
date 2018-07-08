@@ -1075,24 +1075,29 @@
     [self updateUniformsForView:inFlight];
     
     if (_rayTracingRecordStatus == kRecord_Start)
-        [_rayTracingRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
-    
-    // generate shadow map
-    //
-    for (unsigned int i = 0; i < 2 /* for two light sources only */; ++i)
     {
-        _shadowMapRenderer[i].meshes = _meshes;
-        _shadowMapRenderer[i].lightSource = _lights[i];
-        [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        [_rayTracingRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     }
     
-    // store the light view point projection for shadow map detection in the scene
-    //
-    NuoLightVertexUniforms lightUniforms;
-    lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix._m;
-    lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix._m;
-    memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
-    [_lightCastBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(lightUniforms))];
+    if (_rayTracingRecordStatus == kRecord_Stop)
+    {
+        // generate shadow map
+        //
+        for (unsigned int i = 0; i < 2 /* for two light sources only */; ++i)
+        {
+            _shadowMapRenderer[i].meshes = _meshes;
+            _shadowMapRenderer[i].lightSource = _lights[i];
+            [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        }
+        
+        // store the light view point projection for shadow map detection in the scene
+        //
+        NuoLightVertexUniforms lightUniforms;
+        lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix._m;
+        lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix._m;
+        memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
+        [_lightCastBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(lightUniforms))];
+    }
     
     [_deferredRenderer setMeshes:_meshes];
     [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];

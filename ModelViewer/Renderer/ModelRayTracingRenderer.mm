@@ -33,8 +33,7 @@ static const uint32_t kRandomBufferSize = 512;
 @property (nonatomic, weak) id<MTLBuffer> shadowRayBuffer;
 @property (nonatomic, weak) id<MTLBuffer> shadowIntersectionBuffer;
 
-- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
-                     withPixelFormat:(MTLPixelFormat)pixelFormat;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 @end
 

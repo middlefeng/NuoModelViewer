@@ -186,22 +186,11 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         float shadowPercent = 0.0;
         if (i < 2)
         {
-            if (!kShadowRayTracing)
-            {
-                const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
-                shadowPercent = shadow_coverage_common(shadowPosition[i],
-                                                       shadowParams, diffuseIntensity, 3,
-                                                       shadowMap[i], samplr);
-            }
-            else
-            {
-                float4 projectedNDC = vert.positionNDC;
-                projectedNDC.xy = projectedNDC.xy / projectedNDC.w;
-                projectedNDC.x = (projectedNDC.x + 1) * 0.5;
-                projectedNDC.y = (-projectedNDC.y + 1) * 0.5;
-                shadowPercent = shadowMap[i].sample(samplr, projectedNDC.xy).a;
-                //shadowPercent = shadowPercent * 0.90 - 0.10;
-            }
+            float4 shadowPostionCurrent = kShadowRayTracing ? vert.positionNDC : shadowPosition[i];
+            const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
+            shadowPercent = shadow_coverage_common(shadowPostionCurrent,
+                                                   shadowParams, diffuseIntensity, 3,
+                                                   shadowMap[i], samplr);
         }
         
         if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
@@ -275,21 +264,12 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         float shadowPercent = 0.0;
         if (i < 2)
         {
-            if (!kShadowRayTracing)
-            {
-                const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
-                shadowPercent = shadow_coverage_common(vert.shadowPosition[i],
-                                                       shadowParams, diffuseIntensity, 3,
-                                                       shadowMap[i], samplr);
-            }
-            else
-            {
-                float4 projectedNDC = vert.projectedNDC;
-                projectedNDC.xy = projectedNDC.xy / projectedNDC.w;
-                projectedNDC.x = (projectedNDC.x + 1) * 0.5;
-                projectedNDC.y = (-projectedNDC.y + 1) * 0.5;
-                shadowPercent = shadowMap[i].sample(samplr, projectedNDC.xy).a;
-            }
+            const float4 shadowPositionCurrent = kShadowRayTracing ?
+                                                    vert.projectedNDC : vert.shadowPosition[i];
+            const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
+            shadowPercent = shadow_coverage_common(shadowPositionCurrent,
+                                                   shadowParams, diffuseIntensity, 3,
+                                                   shadowMap[i], samplr);
             
             if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
                 return float4(shadowPercent, 0.0, 0.0, 1.0);
@@ -313,8 +293,8 @@ ProjectedVertex vertex_project_common(device Vertex *vertices,
     float4 meshPosition = meshUniform.transform * vertices[vid].position;
     float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
     
-    outVert.positionNDC = uniforms.viewProjectionMatrix * meshPosition;
     outVert.position = uniforms.viewProjectionMatrix * meshPosition;
+    outVert.positionNDC = outVert.position;
     outVert.eye =  -(uniforms.viewMatrix * meshPosition).xyz;
     outVert.normal = meshNormal;
     
@@ -476,8 +456,18 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                              NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
                              metal::texture2d<float> shadowMap, metal::sampler samplr)
 {
+    if (kShadowRayTracing)
+    {
+        // for ray tracing based mechanism, the shadowCastModelPostion conveys the NDC space coordinate
+        //
+        float4 projectedNDC = shadowCastModelPostion;
+        
+        projectedNDC.xy = projectedNDC.xy / projectedNDC.w;
+        projectedNDC.x = (projectedNDC.x + 1) * 0.5;
+        projectedNDC.y = (-projectedNDC.y + 1) * 0.5;
+        return shadowMap.sample(samplr, projectedNDC.xy).a;
+    }
     
-    //return 0.0;
     float shadowMapBias = 0.002;
     shadowMapBias += shadowParams.bias * (1 - shadowedSurfaceAngle);
     
