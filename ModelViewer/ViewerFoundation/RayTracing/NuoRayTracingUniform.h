@@ -24,8 +24,16 @@ NuoBoundsUniform;
 
 typedef struct
 {
+    matrix44 direction;
+    float radius;
+}
+NuoRayTracingLightSource;
+
+
+typedef struct
+{
     NuoBoundsUniform bounds;
-    matrix44 lightSources[2];
+    NuoRayTracingLightSource lightSources[2];
 }
 NuoRayTracingUniforms;
 

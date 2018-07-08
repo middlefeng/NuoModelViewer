@@ -45,6 +45,8 @@ constant Light light = {
 
 struct VertexFragmentCharacters
 {
+    metal::float4 projectedNDC;
+    
     metal::float3 eye;
     
     metal::float3 diffuseColor;
@@ -118,7 +120,7 @@ constant bool kShadowOverlay                    [[ function_constant(3) ]];
 
 constant bool kShadowPCSS                       [[ function_constant(4) ]];
 constant bool kShadowPCF                        [[ function_constant(5) ]];
-
+constant bool kShadowRayTracing                 [[ function_constant(7) ]];
 constant int  kMeshMode                         [[ function_constant(6) ]];
 
 constant bool kDepthPrerenderred = kMeshMode == kMeshMode_Selection;

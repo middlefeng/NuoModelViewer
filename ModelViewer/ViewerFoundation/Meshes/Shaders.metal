@@ -12,6 +12,8 @@ struct Vertex
 
 struct ProjectedVertex
 {
+    float4 positionNDC;
+    
     float4 position [[position]];
     float3 eye;
     float3 normal;
@@ -153,6 +155,7 @@ vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)
 {
     ProjectedVertex outVert = vertex_project_common(vertices, uniforms, meshUniform, vid);
     float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    outVert.positionNDC = outVert.position;
     outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * meshPosition;
     outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * meshPosition;
     return outVert;
@@ -183,10 +186,22 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         float shadowPercent = 0.0;
         if (i < 2)
         {
-            const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
-            shadowPercent = shadow_coverage_common(shadowPosition[i],
-                                                   shadowParams, diffuseIntensity, 3,
-                                                   shadowMap[i], samplr);
+            if (!kShadowRayTracing)
+            {
+                const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
+                shadowPercent = shadow_coverage_common(shadowPosition[i],
+                                                       shadowParams, diffuseIntensity, 3,
+                                                       shadowMap[i], samplr);
+            }
+            else
+            {
+                float4 projectedNDC = vert.positionNDC;
+                projectedNDC.xy = projectedNDC.xy / projectedNDC.w;
+                projectedNDC.x = (projectedNDC.x + 1) * 0.5;
+                projectedNDC.y = (-projectedNDC.y + 1) * 0.5;
+                shadowPercent = shadowMap[i].sample(samplr, projectedNDC.xy).a;
+                //shadowPercent = shadowPercent * 0.90 - 0.10;
+            }
         }
         
         if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
@@ -260,10 +275,21 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         float shadowPercent = 0.0;
         if (i < 2)
         {
-            const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
-            shadowPercent = shadow_coverage_common(vert.shadowPosition[i],
-                                                   shadowParams, diffuseIntensity, 3,
-                                                   shadowMap[i], samplr);
+            if (!kShadowRayTracing)
+            {
+                const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
+                shadowPercent = shadow_coverage_common(vert.shadowPosition[i],
+                                                       shadowParams, diffuseIntensity, 3,
+                                                       shadowMap[i], samplr);
+            }
+            else
+            {
+                float4 projectedNDC = vert.projectedNDC;
+                projectedNDC.xy = projectedNDC.xy / projectedNDC.w;
+                projectedNDC.x = (projectedNDC.x + 1) * 0.5;
+                projectedNDC.y = (-projectedNDC.y + 1) * 0.5;
+                shadowPercent = shadowMap[i].sample(samplr, projectedNDC.xy).a;
+            }
             
             if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
                 return float4(shadowPercent, 0.0, 0.0, 1.0);
@@ -287,6 +313,7 @@ ProjectedVertex vertex_project_common(device Vertex *vertices,
     float4 meshPosition = meshUniform.transform * vertices[vid].position;
     float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
     
+    outVert.positionNDC = uniforms.viewProjectionMatrix * meshPosition;
     outVert.position = uniforms.viewProjectionMatrix * meshPosition;
     outVert.eye =  -(uniforms.viewMatrix * meshPosition).xyz;
     outVert.normal = meshNormal;
@@ -450,7 +477,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                              metal::texture2d<float> shadowMap, metal::sampler samplr)
 {
     
-    return 0.0;
+    //return 0.0;
     float shadowMapBias = 0.002;
     shadowMapBias += shadowParams.bias * (1 - shadowedSurfaceAngle);
     

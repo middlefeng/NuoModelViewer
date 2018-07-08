@@ -108,6 +108,22 @@
 }
 
 
+- (void)setShadowOptionRayTracing:(BOOL)shadowOptionRayTracing
+{
+    for (NuoMesh* mesh in _meshes)
+        mesh.shadowOptionRayTracing = shadowOptionRayTracing;
+}
+
+
+
+- (void)makeGPUStates
+{
+    for (NuoMesh* mesh in _meshes)
+        [mesh makeGPUStates];
+}
+
+
+
 - (VectorBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform
 {
     VectorBuffer buffer;

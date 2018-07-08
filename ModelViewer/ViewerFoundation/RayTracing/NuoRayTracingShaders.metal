@@ -28,7 +28,7 @@ struct RayBuffer
     packed_float3 direction;
     float maxDistance;
     
-    // cosine base strength factor
+    // cosine base strength factor (reserved, unused)
     float strength;
 };
 
@@ -103,8 +103,7 @@ kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
                             constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
                             device float2* random [[buffer(6)]],
                             device RayBuffer* shadowRays1 [[buffer(7)]],
-                            device RayBuffer* shadowRays2 [[buffer(8)]],
-                            texture2d<float, access::write> dstTex [[texture(0)]])
+                            device RayBuffer* shadowRays2 [[buffer(8)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -126,7 +125,7 @@ kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
             float distance = tracingUniforms.bounds.span;
             
             float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
-            lightVec = normalize(tracingUniforms.lightSources[i] * lightVec);
+            lightVec = normalize(tracingUniforms.lightSources[i].direction * lightVec);
             
             float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
             float2 r1 = random[(tid.y % 16) * 16 + (tid.x % 16) + 256];
@@ -137,18 +136,20 @@ kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
             float3 lightRight = normalize(cross(lightVec.xyz, float3(r1.x, r1.y, 1.0)));
             float3 lightForward = cross(lightRight, lightVec.xyz);
             
-            lightPosition = lightPosition + lightRight * r.x + lightForward * r.y;
+            float radius = tracingUniforms.lightSources[i].radius / 2.0;
+            lightPosition = lightPosition + lightRight * r.x * radius + lightForward * r.y * radius;
             
             float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
             float3 shadowVec = normalize(lightPosition.xyz);
-            float3 normal = interpolateNormal(normals, index, intersection);
             
             shadowRayCurrent->maxDistance = distance;
             shadowRayCurrent->minDistance = 0.001;
             
             shadowRayCurrent->origin = intersectionPoint;
             shadowRayCurrent->direction = shadowVec;
-            shadowRayCurrent->strength = 1.0;//dot(normal, shadowVec);
+            
+            float3 normal = interpolateNormal(normals, index, intersection);
+            shadowRayCurrent->strength = dot(normal, shadowVec);
         }
         else
         {
@@ -173,16 +174,11 @@ kernel void shadow_shade(uint2 tid [[thread_position_in_grid]],
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & intersection = intersections[rayIdx];
-    device RayBuffer& shadowRay = shadowRays[rayIdx];
     
     if (intersection.distance >= 0.0f)
     {
-        dstTex.write(float4(0.0, 0.0, 0.0, 1.0f) * shadowRay.strength, tid);
+        dstTex.write(float4(0.0, 0.0, 0.0, 1.0f), tid);
     }
-    /*else
-    {
-        dstTex.write(float4(1.0, 1.0, 1.0, 1.0f), tid);
-    }*/
 }
 
 
@@ -229,7 +225,7 @@ kernel void light_direction_visualize(uint2 tid [[thread_position_in_grid]],
     if (intersection.distance >= 0.0f)
     {
         float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
-        lightVec = tracingUniforms.lightSources[0] * lightVec;
+        lightVec = tracingUniforms.lightSources[0].direction * lightVec;
         dstTex.write(float4(lightVec.x, lightVec.y, 0.0, 1.0f), tid);
     }
 }

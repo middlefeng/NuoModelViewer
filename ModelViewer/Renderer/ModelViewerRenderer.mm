@@ -34,9 +34,6 @@
 #import "NuoDirectoryUtils.h"
 #import "NuoModelLoaderGPU.h"
 
-// TODO: remove
-#import "NuoTextureMesh.h"
-
 
 @interface ModelRenderer ()
 
@@ -82,9 +79,6 @@
     ModelRayTracingRenderer* _rayTracingRenderer;
     
     BOOL _rayAcceleratorSync;
-    
-    // TODO: remove
-    NuoTextureMesh* _rayTracingOverlay;
 }
 
 
@@ -120,14 +114,8 @@
         self.paramsProvider = self;
         
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
-        _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:self.commandQueue
-                                                                    withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                    withSampleCount:1];
+        _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:self.commandQueue];
         _rayTracingRenderer.rayStructure = _rayAccelerator;
-        
-        _rayTracingOverlay = [[NuoTextureMesh alloc] initWithCommandQueue:commandQueue];
-        _rayTracingOverlay.sampleCount = 8;
-        [_rayTracingOverlay makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
     }
 
     return self;
@@ -137,10 +125,22 @@
 
 - (void)setRayTracingRecordStatus:(RecordStatus)rayTracingRecordStatus
 {
+    BOOL changed = (_rayTracingRecordStatus != rayTracingRecordStatus);
+    
     _rayTracingRecordStatus = rayTracingRecordStatus;
     
     if (rayTracingRecordStatus == kRecord_Stop)
         [_rayTracingRenderer resetResources];
+    
+    
+    if (changed)
+    {
+        for (NuoMesh* mesh in _meshes)
+        {
+            [mesh setShadowOptionRayTracing:_rayTracingRecordStatus == kRecord_Start];
+            [mesh makeGPUStates];
+        }
+    }
 }
 
 
@@ -1120,15 +1120,6 @@
             [mesh drawMesh:renderPass indexBuffer:inFlight];
     }
     
-    
-    // TODO: remove debug
-    if (_rayTracingRecordStatus == kRecord_Start)
-    {
-        id<MTLTexture> target = [_rayTracingRenderer targetTextureForLightSource:0];
-        [_rayTracingOverlay setModelTexture:target];
-        [_rayTracingOverlay drawMesh:renderPass indexBuffer:inFlight];
-    }
-    
     [_immediateTarget releaseRenderPassEndcoder];
     
     BOOL drawBackdrop = _backdropMesh && _backdropMesh.enabled;
@@ -1206,9 +1197,12 @@
 
 #pragma mark -- Protocol NuoMeshSceneParametersProvider
 
-- (NuoShadowMapRenderer*)shadowMapRenderer:(NSUInteger)index
+- (id<MTLTexture>)shadowMap:(NSUInteger)index;
 {
-    return _shadowMapRenderer[index];
+    if (_rayTracingRecordStatus == kRecord_Start)
+        return [_rayTracingRenderer targetTextureForLightSource:(uint)index];
+    else
+        return _shadowMapRenderer[index].renderTarget.depthTexture;
 }
 
 - (NSArray<id<MTLBuffer>>*)lightCastBuffers

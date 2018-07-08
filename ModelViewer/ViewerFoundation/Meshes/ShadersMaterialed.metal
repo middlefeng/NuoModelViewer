@@ -111,10 +111,21 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
         float shadowPercent = 0.0;
         if (i < 2)
         {
-            const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
-            shadowPercent = shadow_coverage_common(shadowPosition[i],
-                                                   shadowParams, diffuseIntensity, 3,
-                                                   shadowMap[i], depthSamplr);
+            if (!kShadowRayTracing)
+            {
+                const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
+                shadowPercent = shadow_coverage_common(shadowPosition[i],
+                                                       shadowParams, diffuseIntensity, 3,
+                                                       shadowMap[i], depthSamplr);
+            }
+            /*else
+            {
+                float4 projectedNDC = vert.projectedNDC;
+                projectedNDC.xy = projectedNDC.xy / projectedNDC.w;
+                projectedNDC.x = (projectedNDC.x + 1) * 0.5;
+                projectedNDC.y = (-projectedNDC.y + 1) * 0.5;
+                shadowPercent = shadowMap[i].sample(samplr, projectedNDC.xy).a;
+            }*/
             
             if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
                 return float4(shadowPercent, 0.0f, 0.0f, 1.0f);

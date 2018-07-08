@@ -9,6 +9,7 @@
 #import "NuoRayTracingRenderer.h"
 #import "NuoRayAccelerateStructure.h"
 
+#import "NuoComputeEncoder.h"
 #import "NuoTextureAverageMesh.h"
 #import "NuoRenderPassAttachment.h"
 
@@ -21,6 +22,8 @@
     NuoRenderPassTarget* _rayTracingTarget;
     NuoRenderPassTarget* _rayTracingAccumulate;
     NuoTextureAccumulator* _accumulator;
+    
+    CGSize _drawableSize;
 }
 
 
@@ -29,10 +32,18 @@
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                      withSampleCount:(uint)sampleCount
 {
+    assert(false);
+}
+
+
+
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+               withAccumulatedResult:(BOOL)accumulateResult
+{
     self = [super initWithCommandQueue:commandQueue
-                       withPixelFormat:pixelFormat withSampleCount:1];
+                       withPixelFormat:MTLPixelFormatInvalid withSampleCount:1];
     
-    if (self)
+    if (self && accumulateResult)
     {
         _rayTracingTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
                                                               withPixelFormat:MTLPixelFormatRGBA32Float
@@ -79,6 +90,8 @@
     const uint intersectionSize = kRayIntersectionStride * w * h;
     _primaryIntersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
                                                                        options:MTLResourceStorageModePrivate];
+    
+    _drawableSize = drawableSize;
 }
 
 
@@ -110,7 +123,9 @@
           withIntersection:(id<MTLBuffer>)intersection
          withInFlightIndex:(unsigned int)inFlight
 {
-    id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
+    NuoComputeEncoder* computeEncoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
+                                                                            withPipeline:pipeline];
+    
     [computeEncoder setBuffer:[_rayStructure uniformBuffer:inFlight] offset:0 atIndex:0];
     [computeEncoder setBuffer:[_rayStructure primaryRayBuffer] offset:0 atIndex:1];
     [computeEncoder setBuffer:[_rayStructure indexBuffer] offset:0 atIndex:2];
@@ -123,18 +138,11 @@
             [computeEncoder setBuffer:paramterBuffers[i] offset:0 atIndex:5 + i];
     }
     
-    [computeEncoder setTexture:_rayTracingTarget.targetTexture atIndex:0];
-    [computeEncoder setComputePipelineState:pipeline];
+    if (_rayTracingTarget)
+        [computeEncoder setTexture:_rayTracingTarget.targetTexture atIndex:0];
     
-    CGSize drawableSize = [_rayTracingTarget drawableSize];
-    const float w = drawableSize.width;
-    const float h = drawableSize.height;
-    MTLSize threads = MTLSizeMake(8, 8, 1);
-    MTLSize threadgroups = MTLSizeMake((w + threads.width  - 1) / threads.width,
-                                       (h + threads.height - 1) / threads.height, 1);
-    [computeEncoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threads];
-    
-    [computeEncoder endEncoding];
+    [computeEncoder setDataSize:_drawableSize];
+    [computeEncoder dispatch];
 }
 
 

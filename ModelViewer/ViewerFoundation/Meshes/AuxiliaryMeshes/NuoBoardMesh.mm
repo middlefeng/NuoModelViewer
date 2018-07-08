@@ -96,7 +96,9 @@
 {
     MTLFunctionConstantValues* constants = [MTLFunctionConstantValues new];
     BOOL shadowOverlay = YES;
+    BOOL rayTracing = self.shadowOptionRayTracing;
     [constants setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
+    [constants setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
     
     [super makePipelineScreenSpaceStateWithVertexShader:@"vertex_project_screen_space"
                                      withFragemtnShader:@"fragement_screen_space"

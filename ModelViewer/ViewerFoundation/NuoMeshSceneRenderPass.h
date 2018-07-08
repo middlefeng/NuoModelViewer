@@ -27,7 +27,7 @@
 - (id<MTLBuffer>)modelCharacterUnfiromBuffer;
 - (BOOL)cullEnabled;
 
-- (NuoShadowMapRenderer*)shadowMapRenderer:(NSUInteger)index;
+- (id<MTLTexture>)shadowMap:(NSUInteger)index;
 - (id<MTLTexture>)depthMap;
 - (NuoBounds)sceneBounds;
 

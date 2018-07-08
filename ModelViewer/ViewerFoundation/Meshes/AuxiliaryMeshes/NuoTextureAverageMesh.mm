@@ -8,6 +8,7 @@
 
 #import "NuoTextureAverageMesh.h"
 
+#import "NuoComputeEncoder.h"
 #import "NuoRenderPassTarget.h"
 #import "NuoTextureMesh.h"
 #import "NuoRenderPassAttachment.h"
@@ -293,19 +294,14 @@ struct AccumulateUniform
     [self appendTexture:texture];
     [self updateUniform:inFlight];
     
-    id<MTLComputeCommandEncoder> encoder = [commandBuffer computeCommandEncoder];
+    NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
+                                                                     withPipeline:_pipelineState];
     
     [encoder setTexture:_texturesAccumulated.targetTexture atIndex:0];
     [encoder setTexture:_textureLatest atIndex:1];
     [encoder setBuffer:_texCountBuffer[inFlight] offset:0 atIndex:0];
     
-    MTLSize threadsPerThreadgroup = MTLSizeMake(8, 8, 1);
-    MTLSize threadgroups = MTLSizeMake((texture.width  + threadsPerThreadgroup.width  - 1) / threadsPerThreadgroup.width,
-                                       (texture.height + threadsPerThreadgroup.height - 1) / threadsPerThreadgroup.height, 1);
-    
-    [encoder setComputePipelineState:_pipelineState];
-    [encoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threadsPerThreadgroup];
-    [encoder endEncoding];
+    [encoder dispatch];
 }
 
 
@@ -326,18 +322,12 @@ struct AccumulateUniform
     
 - (void)outputAccumulateToTexture:(id<MTLTexture>)targetTexture withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
-    id<MTLComputeCommandEncoder> encoder = [commandBuffer computeCommandEncoder];
+    NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
+                                                                     withPipeline:_pipelineStateCopy];
     
     [encoder setTexture:targetTexture atIndex:0];
     [encoder setTexture:_texturesAccumulated.targetTexture atIndex:1];
-    
-    MTLSize threadsPerThreadgroup = MTLSizeMake(8, 8, 1);
-    MTLSize threadgroups = MTLSizeMake((targetTexture.width  + threadsPerThreadgroup.width  - 1) / threadsPerThreadgroup.width,
-                                       (targetTexture.height + threadsPerThreadgroup.height - 1) / threadsPerThreadgroup.height, 1);
-    
-    [encoder setComputePipelineState:_pipelineStateCopy];
-    [encoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threadsPerThreadgroup];
-    [encoder endEncoding];
+    [encoder dispatch];
 }
 
 

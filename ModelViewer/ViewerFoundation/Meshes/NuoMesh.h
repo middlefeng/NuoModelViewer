@@ -48,6 +48,7 @@
 @property (nonatomic, assign) NSUInteger sampleCount;
 @property (nonatomic, assign) BOOL shadowOptionPCSS;
 @property (nonatomic, assign) BOOL shadowOptionPCF;
+@property (nonatomic, assign) BOOL shadowOptionRayTracing;
 
 
 

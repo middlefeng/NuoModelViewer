@@ -26,6 +26,9 @@
 @property (nonatomic, readonly) id<MTLTexture> targetTexture;
 
 
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+               withAccumulatedResult:(BOOL)accumulateResult;
+
 - (void)resetResources;
 
 /**

@@ -106,11 +106,13 @@ static CIContext* sCIContext = nil;
     
     BOOL pcss = self.shadowOptionPCSS;
     BOOL pcf = self.shadowOptionPCF;
+    BOOL rayTracing = self.shadowOptionRayTracing;
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     NuoMeshModeShaderParameter meshMode = kMeshMode_Normal;
     [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
     [funcConstant setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];

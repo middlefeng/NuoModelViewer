@@ -73,6 +73,7 @@
         
         _shadowOptionPCSS = YES;
         _shadowOptionPCF = YES;
+        _shadowOptionRayTracing = NO;
         
         _rotation = NuoMeshRotation();
         
@@ -332,10 +333,12 @@
 {
     BOOL pcss = self.shadowOptionPCSS;
     BOOL pcf = self.shadowOptionPCF;
+    BOOL rayTracing = self.shadowOptionRayTracing;
     NuoMeshModeShaderParameter meshMode = self.meshMode;
     
     [constants setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
     [constants setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
+    [constants setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
     [constants setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
 }
 
@@ -354,11 +357,13 @@
     
     BOOL pcss = self.shadowOptionPCSS;
     BOOL pcf = self.shadowOptionPCF;
+    BOOL rayTracing = self.shadowOptionRayTracing;
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
     [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
     [funcConstant setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];

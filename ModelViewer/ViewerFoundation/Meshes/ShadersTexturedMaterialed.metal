@@ -117,6 +117,7 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
 {
     VertexFragmentCharacters outVert;
     
+    outVert.projectedNDC = vert.positionNDC;
     outVert.eye = vert.eye;
     outVert.diffuseColor = vert.diffuseColor;
     outVert.ambientColor = vert.ambientColor;

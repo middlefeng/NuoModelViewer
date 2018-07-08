@@ -25,6 +25,9 @@
 
 @property (nonatomic, assign) NuoBounds sceneBounds;
 
+
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
+
 - (void)setLightSource:(NuoLightSource*)lightSource forIndex:(uint)index;
 - (id<MTLTexture>)targetTextureForLightSource:(uint)index;
 

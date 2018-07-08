@@ -33,6 +33,9 @@ static const uint32_t kRandomBufferSize = 512;
 @property (nonatomic, weak) id<MTLBuffer> shadowRayBuffer;
 @property (nonatomic, weak) id<MTLBuffer> shadowIntersectionBuffer;
 
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                     withPixelFormat:(MTLPixelFormat)pixelFormat;
+
 @end
 
 
@@ -45,11 +48,8 @@ static const uint32_t kRandomBufferSize = 512;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
-                     withPixelFormat:(MTLPixelFormat)pixelFormat
-                     withSampleCount:(uint)sampleCount
 {
-    self = [super initWithCommandQueue:commandQueue
-                       withPixelFormat:pixelFormat withSampleCount:1];
+    self = [super initWithCommandQueue:commandQueue withAccumulatedResult:YES];
     
     if (self)
     {
@@ -98,11 +98,9 @@ static const uint32_t kRandomBufferSize = 512;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
-                     withPixelFormat:(MTLPixelFormat)pixelFormat
-                     withSampleCount:(uint)sampleCount
 {
-    self = [super initWithCommandQueue:commandQueue
-                       withPixelFormat:pixelFormat withSampleCount:1];
+    self = [super initWithCommandQueue:commandQueue withAccumulatedResult:NO];
+    
     if (self)
     {
         NSError* error = nil;
@@ -129,9 +127,7 @@ static const uint32_t kRandomBufferSize = 512;
         
         for (uint i = 0; i < 2; ++i)
         {
-            _subRenderers[i] = [[ModelRayTracingSubrenderer alloc] initWithCommandQueue:commandQueue
-                                                                        withPixelFormat:pixelFormat
-                                                                        withSampleCount:1];
+            _subRenderers[i] = [[ModelRayTracingSubrenderer alloc] initWithCommandQueue:commandQueue];
         }
     }
     
@@ -188,7 +184,8 @@ static const uint32_t kRandomBufferSize = 512;
     {
         NuoLightSource* lightSource = _subRenderers[i].lightSource;
         const NuoMatrixFloat44 matrix = NuoMatrixRotation(lightSource.lightingRotationX, lightSource.lightingRotationY);
-        uniforms.lightSources[i] = matrix._m;
+        uniforms.lightSources[i].direction = matrix._m;
+        uniforms.lightSources[i].radius = lightSource.shadowSoften;
     }
     
     uniforms.bounds.span = _sceneBounds.MaxDimension();

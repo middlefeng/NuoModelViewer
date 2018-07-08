@@ -8,6 +8,7 @@
 
 #import "NuoRayEmittor.h"
 #import "NuoTypes.h"
+#import "NuoComputeEncoder.h"
 
 #include "NuoRandomBuffer.h"
 #include "NuoRayTracingUniform.h"
@@ -152,23 +153,14 @@ const uint kRayBufferStrid = 36;
 {
     [self updateUniform:inFlight];
     
-    CGSize drawableSize = [self drawableSize];
-    const float w = drawableSize.width;
-    const float h = drawableSize.height;
+    NuoComputeEncoder* computeEncoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
+                                                                            withPipeline:_pipeline];
     
-    MTLSize threads = MTLSizeMake(8, 8, 1);
-    MTLSize threadgroups = MTLSizeMake((w + threads.width  - 1) / threads.width,
-                                       (h + threads.height - 1) / threads.height, 1);
-    
-    id<MTLComputeCommandEncoder> computeEncoder = [commandBuffer computeCommandEncoder];
     [computeEncoder setBuffer:_uniformBuffers[inFlight] offset:0 atIndex:0];
     [computeEncoder setBuffer:_rayBuffer offset:0 atIndex:1];
     [computeEncoder setBuffer:_randomBuffers[inFlight] offset:0  atIndex:2];
-    
-    [computeEncoder setComputePipelineState:_pipeline];
-    [computeEncoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threads];
-    
-    [computeEncoder endEncoding];
+    [computeEncoder setDataSize:[self drawableSize]];
+    [computeEncoder dispatch];
     
     return _rayBuffer;
 }
