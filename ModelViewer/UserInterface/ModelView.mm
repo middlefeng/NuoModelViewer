@@ -273,6 +273,8 @@ MouseDragMode;
         [_modelRender setTransMode:[panel transformMode]];
         [self setupPipelineSettings];
         
+        [self accumulatingRecord:(_modelPanel.rayTracingRecordStatus == kRecord_Start)];
+        
         for (NuoMeshAnimation* animation in _animations)
             [animation setProgress:panel.animationProgress];
         
@@ -326,18 +328,15 @@ MouseDragMode;
     [_frameRateView setHidden:!show];
     
     [self setMeasureFrameRate:show];
+    [self accumulatingRecord:show];
     
     if (show)
     {
-        if (!_frameRateMeasuringTimer && !_frameRateDisplayTimer)
+        if (_frameRateDisplayTimer)
         {
             __weak ModelView* weakSelf = self;
             __weak FrameRateView* frameRateView = _frameRateView;
             
-            _frameRateMeasuringTimer = [NSTimer scheduledTimerWithTimeInterval:1 / 60.0 repeats:YES block:^(NSTimer* timer)
-                                         {
-                                             [weakSelf render];
-                                         }];
             _frameRateDisplayTimer = [NSTimer scheduledTimerWithTimeInterval:2.0 repeats:YES block:^(NSTimer* timer)
                                         {
                                             [frameRateView showFrameRate:[weakSelf frameRate]];
@@ -346,11 +345,31 @@ MouseDragMode;
     }
     else
     {
-        [_frameRateMeasuringTimer invalidate];
         [_frameRateDisplayTimer invalidate];
-        
-        _frameRateMeasuringTimer = nil;
         _frameRateDisplayTimer = nil;
+    }
+}
+
+
+
+- (void)accumulatingRecord:(BOOL)record
+{
+    if (record)
+    {
+        if (!_frameRateMeasuringTimer)
+        {
+            __weak ModelView* weakSelf = self;
+            
+            _frameRateMeasuringTimer = [NSTimer scheduledTimerWithTimeInterval:1 / 60.0 repeats:YES block:^(NSTimer* timer)
+                                        {
+                                            [weakSelf render];
+                                        }];
+        }
+    }
+    else
+    {
+        [_frameRateMeasuringTimer invalidate];
+        _frameRateMeasuringTimer = nil;
     }
 }
 

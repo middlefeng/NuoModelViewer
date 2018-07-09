@@ -78,7 +78,7 @@
     NuoRayAccelerateStructure* _rayAccelerator;
     ModelRayTracingRenderer* _rayTracingRenderer;
     
-    BOOL _rayAcceleratorSync;
+    BOOL _rayAcceleratorOutOfSync;
 }
 
 
@@ -137,7 +137,7 @@
     {
         for (NuoMesh* mesh in _meshes)
         {
-            [mesh setShadowOptionRayTracing:_rayTracingRecordStatus == kRecord_Start];
+            [mesh setShadowOptionRayTracing:_rayTracingRecordStatus != kRecord_Stop];
             [mesh makeGPUStates];
         }
     }
@@ -1051,11 +1051,11 @@
         _backdropTransYDelta = 0.0;
     }
     
-    if (_rayTracingRecordStatus == kRecord_Start)
+    if (_rayTracingRecordStatus != kRecord_Stop)
     {
-        if (_rayAcceleratorSync && _transMode == kTransformMode_Model)
+        if (_rayAcceleratorOutOfSync && _transMode == kTransformMode_Model)
         {
-            _rayAcceleratorSync = NO;
+            _rayAcceleratorOutOfSync = NO;
             [_rayAccelerator setMeshes:_meshes];
         }
         
@@ -1188,7 +1188,10 @@
 
 - (void)syncMeshPositionBuffer
 {
-    _rayAcceleratorSync = YES;
+    // mark this "dirty" mark as the BHV accelerator need to be synced at the time of
+    // uniforms update
+    //
+    _rayAcceleratorOutOfSync = YES;
 }
 
 
@@ -1204,7 +1207,7 @@
 
 - (id<MTLTexture>)shadowMap:(NSUInteger)index;
 {
-    if (_rayTracingRecordStatus == kRecord_Start)
+    if (_rayTracingRecordStatus != kRecord_Stop)
         return [_rayTracingRenderer targetTextureForLightSource:(uint)index];
     else
         return _shadowMapRenderer[index].renderTarget.depthTexture;
