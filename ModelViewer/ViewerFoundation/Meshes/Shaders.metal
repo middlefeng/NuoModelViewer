@@ -46,6 +46,9 @@ vertex PositionSimple vertex_simple(device Vertex *vertices [[buffer(0)]],
 }
 
 
+/**
+ *  generate depth map as red-channel color texture (for Metal's forbiding type check)
+ */
 fragment float4 depth_simple(PositionSimple vert [[stage_in]])
 {
     return float4((vert.positionNDC.z / vert.positionNDC.w), 0.0, 0.0, 1.0);

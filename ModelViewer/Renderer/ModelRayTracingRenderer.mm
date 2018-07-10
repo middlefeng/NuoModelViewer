@@ -26,12 +26,11 @@
 static const uint32_t kRandomBufferSize = 512;
 
 
+@interface ModelRayTracingSubrenderer : NuoRayTracingRenderer
 
-
-@interface ModelRayTracingSubrenderer()
-
-@property (nonatomic, weak) id<MTLBuffer> shadowRayBuffer;
-@property (nonatomic, weak) id<MTLBuffer> shadowIntersectionBuffer;
+@property (nonatomic, readonly) id<MTLBuffer> shadowRayBuffer;
+@property (nonatomic, readonly) id<MTLBuffer> shadowIntersectionBuffer;
+@property (nonatomic, weak) NuoLightSource* lightSource;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
@@ -43,6 +42,7 @@ static const uint32_t kRandomBufferSize = 512;
 @implementation ModelRayTracingSubrenderer
 {
     id<MTLComputePipelineState> _shadowShadePipeline;
+    CGSize _drawableSize;
 }
 
 
@@ -67,8 +67,28 @@ static const uint32_t kRandomBufferSize = 512;
 }
 
 
+- (void)setDrawableSize:(CGSize)drawableSize
+{
+    [super setDrawableSize:drawableSize];
+    
+    if (CGSizeEqualToSize(_drawableSize, drawableSize))
+        return;
+    
+    _drawableSize = drawableSize;
+    
+    const size_t bufferSize = drawableSize.width * drawableSize.height * kRayBufferStrid;
+    const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayBufferStrid;
+    
+    _shadowRayBuffer = [self.commandQueue.device newBufferWithLength:bufferSize
+                                                             options:MTLResourceStorageModePrivate];
+    _shadowIntersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
+                                                                      options:MTLResourceStorageModePrivate];
+}
+
+
 - (void)runRayTraceShade:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
+    [self rayIntersect:commandBuffer withRays:_shadowRayBuffer withIntersection:_shadowIntersectionBuffer];
     [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
                 withParameter:@[_shadowRayBuffer]
             withIntersection:_shadowIntersectionBuffer withInFlightIndex:inFlight];
@@ -86,11 +106,7 @@ static const uint32_t kRandomBufferSize = 512;
     id<MTLComputePipelineState> _shadowRayPipeline;
     
     NSArray<id<MTLBuffer>>* _rayTraceUniform;
-    
-    CGSize _shadowBufferSize;
-    NSArray<id<MTLBuffer>>* _shadowRayBuffers;
     NSArray<id<MTLBuffer>>* _randomBuffers;
-    NSArray<id<MTLBuffer>>* _shadowIntersectionBuffers;
     
     ModelRayTracingSubrenderer* _subRenderers[2];
 }
@@ -125,9 +141,7 @@ static const uint32_t kRandomBufferSize = 512;
         _randomBuffers = [[NSArray alloc] initWithObjects:randoms count:kInFlightBufferCount];
         
         for (uint i = 0; i < 2; ++i)
-        {
             _subRenderers[i] = [[ModelRayTracingSubrenderer alloc] initWithCommandQueue:commandQueue];
-        }
     }
     
     return self;
@@ -138,27 +152,8 @@ static const uint32_t kRandomBufferSize = 512;
 {
     [super setDrawableSize:drawableSize];
     
-    if (CGSizeEqualToSize(_shadowBufferSize, drawableSize))
-        return;
-    
-    const size_t bufferSize = drawableSize.width * drawableSize.height * kRayBufferStrid;
-    const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayBufferStrid;
-    
-    id<MTLBuffer> shadowRayBuffers[2];
-    id<MTLBuffer> shadowIntersections[2];
     for (uint i = 0; i < 2; ++i)
-    {
-        shadowRayBuffers[i] = [self.commandQueue.device newBufferWithLength:bufferSize
-                                                                    options:MTLResourceStorageModePrivate];
-        shadowIntersections[i] = [self.commandQueue.device newBufferWithLength:intersectionSize
-                                                                       options:MTLResourceStorageModePrivate];
-        
         [_subRenderers[i] setDrawableSize:drawableSize];
-    }
-    
-    _shadowRayBuffers = [[NSArray alloc] initWithObjects:shadowRayBuffers count:2];
-    _shadowIntersectionBuffers = [[NSArray alloc] initWithObjects:shadowIntersections count:2];
-    _shadowBufferSize = drawableSize;
 }
 
 
@@ -213,6 +208,9 @@ static const uint32_t kRandomBufferSize = 512;
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
+    // there is no accumulation done by the master ray tracing renderer, which is the reason
+    // the "drawWithCommandBuffer:..." is overriden to not calling the "runRayTraceShade:..."
+    
     [self updateUniforms:inFlight];
     
     if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
@@ -222,23 +220,17 @@ static const uint32_t kRandomBufferSize = 512;
         [self runRayTraceCompute:_shadowRayPipeline withCommandBuffer:commandBuffer
                    withParameter:@[_rayTraceUniform[inFlight],
                                    _randomBuffers[inFlight],
-                                   _shadowRayBuffers[0],
-                                   _shadowRayBuffers[1]]
+                                   _subRenderers[0].shadowRayBuffer,
+                                   _subRenderers[1].shadowRayBuffer]
                 withIntersection:self.primaryIntersectionBuffer
                withInFlightIndex:inFlight];
         
         for (uint i = 0; i < 2; ++i)
         {
-            // intersection detection for each light sources
+            // sub renderers detect intersection for each light source
+            // and accumulates the samplings
             //
-            [self rayIntersect:commandBuffer
-                      withRays:_shadowRayBuffers[i] withIntersection:_shadowIntersectionBuffers[i]];
-            
-            // sub renderers accumulates the samplings
-            //
-            _subRenderers[i].rayStructure = self.rayStructure;
-            _subRenderers[i].shadowRayBuffer = _shadowRayBuffers[i];
-            _subRenderers[i].shadowIntersectionBuffer = _shadowIntersectionBuffers[i];
+            [_subRenderers[i] setRayStructure:self.rayStructure];
             [_subRenderers[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
         }
     }

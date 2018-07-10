@@ -12,14 +12,6 @@
 
 
 
-@interface ModelRayTracingSubrenderer : NuoRayTracingRenderer
-
-@property (nonatomic, weak) NuoLightSource* lightSource;
-
-@end
-
-
-
 @interface ModelRayTracingRenderer : NuoRayTracingRenderer
 
 
