@@ -55,13 +55,13 @@
 - (void)setObjectValue:(id)value
 {
     bool enabled = [value integerValue] != 0;
-    [self setState:enabled ? NSOnState : NSOffState];
+    [self setState:enabled ? NSControlStateValueOn : NSControlStateValueOff];
 }
 
 
 - (id)objectValue
 {
-    return @(self.state == NSOnState);
+    return @(self.state == NSControlStateValueOn);
 }
 
 - (void)mouseDown:(NSEvent *)event
@@ -219,7 +219,7 @@
 {
     NSInteger row = [self rowForView:sender];
     ModelBoolView* enableButton = (ModelBoolView*)sender;
-    _mesh[row].enabled = enableButton.state == NSOnState;
+    _mesh[row].enabled = enableButton.state == NSControlStateValueOn;
     
     [_updateDelegate modelOptionUpdate:nil];
 }

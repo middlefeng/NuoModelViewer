@@ -137,9 +137,9 @@ MouseDragMode;
 - (void)handleDraggingQuality
 {
     NSEvent *event = [[NSApplication sharedApplication] currentEvent];
-    BOOL startingDrag = event.type == NSLeftMouseDown;
-    BOOL endingDrag = event.type == NSLeftMouseUp;
-    BOOL dragging = event.type == NSLeftMouseDragged;
+    BOOL startingDrag = event.type == NSEventTypeLeftMouseDown;
+    BOOL endingDrag = event.type == NSEventTypeLeftMouseUp;
+    BOOL dragging = event.type == NSEventTypeLeftMouseDragged;
     
     if (startingDrag || dragging)
         [_modelRender setSampleCount:1];
@@ -273,7 +273,8 @@ MouseDragMode;
         [_modelRender setTransMode:[panel transformMode]];
         [self setupPipelineSettings];
         
-        [self accumulatingRecord:(_modelPanel.rayTracingRecordStatus == kRecord_Start)];
+        if (![panel showFrameRate])
+            [self accumulatingRecord:(_modelPanel.rayTracingRecordStatus == kRecord_Start)];
         
         for (NuoMeshAnimation* animation in _animations)
             [animation setProgress:panel.animationProgress];
@@ -332,7 +333,7 @@ MouseDragMode;
     
     if (show)
     {
-        if (_frameRateDisplayTimer)
+        if (!_frameRateDisplayTimer)
         {
             __weak ModelView* weakSelf = self;
             __weak FrameRateView* frameRateView = _frameRateView;
@@ -388,7 +389,7 @@ MouseDragMode;
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
-             if (result == NSFileHandlingPanelOKButton)
+             if (result == NSModalResponseOK)
              {
                  NuoLua* lua = [self lua];
                  lua->LoadFile(openPanel.URL.path.UTF8String);
@@ -868,11 +869,11 @@ MouseDragMode;
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender
 {
     NSPasteboard* paste = [sender draggingPasteboard];
-    NSArray *draggedFilePaths = [paste propertyListForType:NSFilenamesPboardType];
+    NSURL* url = [NSURL URLFromPasteboard:paste];
     
-    if (draggedFilePaths.count > 0)
+    if (url && url.isFileURL)
     {
-        NSString* path = draggedFilePaths[0];
+        NSString* path = url.path;
         if ([path hasSuffix:@".obj"] || [path hasSuffix:@".jpg"] || [path hasSuffix:@".png"])
         {
             NSLog(@"Enterred.");
@@ -912,8 +913,8 @@ MouseDragMode;
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender
 {
     NSPasteboard* paste = [sender draggingPasteboard];
-    NSArray *draggedFilePaths = [paste propertyListForType:NSFilenamesPboardType];
-    NSString* path = draggedFilePaths[0];
+    NSURL* url = [NSURL URLFromPasteboard:paste];
+    NSString* path = url.path;
     
     if ([path hasSuffix:@".jpg"] || [path hasSuffix:@".png"])
     {
@@ -1053,7 +1054,7 @@ MouseDragMode;
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
             {
-                if (result == NSFileHandlingPanelOKButton)
+                if (result == NSModalResponseOK)
                 {
                     NSString* path = openPanel.URL.path;
                     NSString* ext = path.pathExtension;
@@ -1092,7 +1093,7 @@ MouseDragMode;
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
-                 if (result == NSFileHandlingPanelOKButton)
+                 if (result == NSModalResponseOK)
                  {
                      NSString* path = openPanel.URL.path;
                      
@@ -1117,7 +1118,7 @@ MouseDragMode;
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
-                 if (result == NSFileHandlingPanelOKButton)
+                 if (result == NSModalResponseOK)
                  {
                      NSString* path = openPanel.URL.path;
                      
@@ -1144,7 +1145,7 @@ MouseDragMode;
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
-                 if (result == NSFileHandlingPanelOKButton)
+                 if (result == NSModalResponseOK)
                  {
                      NSString* path = savePanel.URL.path;
                      NSString* result = [renderer exportSceneAsString:[self.window contentView].frame.size];
@@ -1176,7 +1177,7 @@ MouseDragMode;
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
-             if (result == NSFileHandlingPanelOKButton)
+             if (result == NSModalResponseOK)
              {
                  CGFloat previewSize = fmax(modelRenderer.renderTarget.drawableSize.height,
                                             modelRenderer.renderTarget.drawableSize.width);
@@ -1222,7 +1223,7 @@ MouseDragMode;
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
-             if (result == NSFileHandlingPanelOKButton)
+             if (result == NSModalResponseOK)
              {
                  CGFloat previewSize = fmax(modelRenderer.renderTarget.drawableSize.height,
                                             modelRenderer.renderTarget.drawableSize.width);

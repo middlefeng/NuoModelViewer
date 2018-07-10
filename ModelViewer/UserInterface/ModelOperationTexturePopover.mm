@@ -57,7 +57,7 @@
     labelFrame.origin.y = rowCoord;
     
     NSButton* checkTextureEmbedTrans = [NSButton new];
-    [checkTextureEmbedTrans setButtonType:NSSwitchButton];
+    [checkTextureEmbedTrans setButtonType:NSButtonTypeSwitch];
     [checkTextureEmbedTrans setTitle:@"Texture Alpha as Transparency"];
     [checkTextureEmbedTrans setFrame:labelFrame];
     [checkTextureEmbedTrans setTarget:self];
@@ -67,7 +67,7 @@
     labelFrame.origin.y -= rowHeight;
 
     NSButton* checkTextureBump = [NSButton new];
-    [checkTextureBump setButtonType:NSSwitchButton];
+    [checkTextureBump setButtonType:NSButtonTypeSwitch];
     [checkTextureBump setTitle:@"Texture Bump"];
     [checkTextureBump setFrame:labelFrame];
     [checkTextureBump setTarget:self];
@@ -75,16 +75,16 @@
     [self.view addSubview:checkTextureBump];
 
     if (_sourcePanel.meshOptions.textureEmbeddingMaterialTransparency)
-        checkTextureEmbedTrans.state = NSOnState;
+        checkTextureEmbedTrans.state = NSControlStateValueOn;
     if (_sourcePanel.meshOptions.texturedBump)
-        checkTextureBump.state = NSOnState;
+        checkTextureBump.state = NSControlStateValueOn;
 }
 
 
 - (void)textureEmbedTransChanged:(id)sender
 {
     NSButton* btn = (NSButton*)sender;
-    _sourcePanel.meshOptions.textureEmbeddingMaterialTransparency = ([btn state] == NSOnState);
+    _sourcePanel.meshOptions.textureEmbeddingMaterialTransparency = ([btn state] == NSControlStateValueOn);
     
     [_updateDelegate modelUpdate:_sourcePanel.meshOptions];
 }
@@ -93,7 +93,7 @@
 - (void)textureBumpChanged:(id)sender
 {
     NSButton* btn = (NSButton*)sender;
-    _sourcePanel.meshOptions.texturedBump = ([btn state] == NSOnState);
+    _sourcePanel.meshOptions.texturedBump = ([btn state] == NSControlStateValueOn);
     
     [_updateDelegate modelUpdate:_sourcePanel.meshOptions];
 }

@@ -114,7 +114,7 @@
         self.paramsProvider = self;
         
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
-        _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:self.commandQueue];
+        _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:commandQueue];
         _rayTracingRenderer.rayStructure = _rayAccelerator;
     }
 
