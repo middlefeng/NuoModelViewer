@@ -133,6 +133,9 @@
     
     for (NuoMesh* mesh in _meshes)
     {
+        if (!mesh.enabled || mesh.hasTransparency)
+            continue;
+        
         VectorBuffer oneBuffer = [mesh worldPositionBuffer:transformWorld];
         buffer.Union(oneBuffer);
     }
@@ -150,6 +153,9 @@
     
     for (NuoMesh* mesh in _meshes)
     {
+        if (!mesh.enabled || mesh.hasTransparency)
+            continue;
+        
         VectorBuffer oneBuffer = [mesh worldNormalBuffer:transformWorld];
         buffer.Union(oneBuffer);
     }

@@ -82,6 +82,9 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     VectorBuffer buffer;
     for (NuoMesh* mesh in meshes)
     {
+        if (!mesh.enabled || mesh.hasTransparency)
+            continue;
+        
         VectorBuffer bufferForOne = [mesh worldPositionBuffer:NuoMatrixFloat44Identity];
         buffer.Union(bufferForOne);
     }
@@ -96,6 +99,9 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     VectorBuffer buffer;
     for (NuoMesh* mesh in meshes)
     {
+        if (!mesh.enabled || mesh.hasTransparency)
+            continue;
+        
         VectorBuffer bufferForOne = [mesh worldNormalBuffer:NuoMatrixFloat44Identity];
         buffer.Union(bufferForOne);
     }
