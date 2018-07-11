@@ -29,7 +29,7 @@
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                withAccumulatedResult:(BOOL)accumulateResult;
 
-- (void)resetResources;
+- (void)resetResources:(id<MTLCommandBuffer>)commandBuffer;
 
 /**
  *  overridden by subclass, with compute-shader running for ray tracing

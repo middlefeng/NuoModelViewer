@@ -163,10 +163,14 @@ static const uint32_t kRandomBufferSize = 512;
 }
 
 
-- (void)resetResources
+- (void)resetResources:(id<MTLCommandBuffer>)commandBuffer
 {
+    commandBuffer = commandBuffer ? commandBuffer : [self.commandQueue commandBuffer];
+    
     for (uint i = 0; i < 2; ++i)
-        [_subRenderers[i] resetResources];
+        [_subRenderers[i] resetResources:commandBuffer];
+    
+    [commandBuffer commit];
 }
 
 

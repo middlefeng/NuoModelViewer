@@ -142,9 +142,16 @@ MouseDragMode;
     BOOL dragging = event.type == NSEventTypeLeftMouseDragged;
     
     if (startingDrag || dragging)
+    {
         [_modelRender setSampleCount:1];
+        [_modelRender setRayTracingRecordStatus:kRecord_Stop];
+    }
+    
     if (endingDrag)
+    {
+        [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
         [_modelRender setSampleCount:kSampleCount];
+    }
 }
 
 
@@ -734,6 +741,7 @@ MouseDragMode;
     if (!_trackingLighting && _modelPanel.motionBlurRecordStatus == kRecord_Stop)
         [_modelRender setAdvancedShaowEnabled:NO];
     
+    [_modelRender setRayTracingRecordStatus:kRecord_Stop];
     [_modelRender setSampleCount:1];
     _mouseMoved = NO;
 }
@@ -743,6 +751,7 @@ MouseDragMode;
 {
     [_modelRender setAdvancedShaowEnabled:YES];
     [_modelRender setSampleCount:kSampleCount];
+    [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
     
     _trackingLighting = NO;
     _trackingSplitView = NO;
@@ -833,7 +842,9 @@ MouseDragMode;
     else
         _modelRender.zoomDelta = 10 * event.magnification;
     
+    [_modelRender setRayTracingRecordStatus:kRecord_Stop];
     [_modelRender syncMeshPositionBuffer];
+    [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
     [self render];
 }
 
@@ -861,7 +872,9 @@ MouseDragMode;
         _modelRender.transYDelta = deltaY;
     }
     
+    [_modelRender setRayTracingRecordStatus:kRecord_Stop];
     [_modelRender syncMeshPositionBuffer];
+    [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
     [self render];
 }
 

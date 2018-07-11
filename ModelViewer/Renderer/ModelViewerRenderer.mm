@@ -130,8 +130,7 @@
     _rayTracingRecordStatus = rayTracingRecordStatus;
     
     if (rayTracingRecordStatus == kRecord_Stop)
-        [_rayTracingRenderer resetResources];
-    
+        [_rayTracingRenderer resetResources:nil];
     
     if (changed)
     {
@@ -1053,7 +1052,7 @@
     
     if (_rayTracingRecordStatus != kRecord_Stop)
     {
-        if (_rayAcceleratorOutOfSync && _transMode == kTransformMode_Model)
+        if (_rayAcceleratorOutOfSync)
         {
             _rayAcceleratorOutOfSync = NO;
             [_rayAccelerator setMeshes:_meshes];

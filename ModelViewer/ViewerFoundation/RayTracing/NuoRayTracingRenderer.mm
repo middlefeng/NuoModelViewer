@@ -63,7 +63,7 @@
         _rayTracingAccumulate.colorAttachments[0].needWrite = YES;
         _rayTracingAccumulate.name = @"Ray Tracing Accumulate";
         
-        [self resetResources];
+        [self resetResources:nil];
     }
     
     return self;
@@ -71,10 +71,16 @@
 
 
 
-- (void)resetResources
+- (void)resetResources:(id<MTLCommandBuffer>)commandBuffer
 {
     _accumulator = [[NuoTextureAccumulator alloc] initWithCommandQueue:self.commandQueue];
     [_accumulator makePipelineAndSampler];
+    
+    if (commandBuffer && _rayTracingAccumulate.targetTexture)
+    {
+        [_rayTracingAccumulate retainRenderPassEndcoder:commandBuffer];
+        [_rayTracingAccumulate releaseRenderPassEndcoder];
+    }
 }
 
 
