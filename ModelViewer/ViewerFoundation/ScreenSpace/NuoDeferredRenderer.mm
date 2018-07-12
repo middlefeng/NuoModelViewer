@@ -59,9 +59,9 @@
 }
 
 
-- (void)setMeshes:(NSArray<NuoMesh*>*)meshes
+- (void)setRoot:(NuoMeshSceneRoot*)root
 {
-    [_screenSpaceRenderer setMeshes:meshes];
+    [_screenSpaceRenderer setSceneRoot:root];
 }
 
 

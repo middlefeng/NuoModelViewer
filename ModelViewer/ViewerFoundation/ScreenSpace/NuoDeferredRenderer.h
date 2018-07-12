@@ -11,7 +11,7 @@
 
 
 @protocol NuoMeshSceneParametersProvider;
-@class NuoMesh;
+@class NuoMeshSceneRoot;
 
 
 @interface NuoDeferredRenderer : NuoRenderPass
@@ -26,7 +26,7 @@
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                   withSceneParameter:(id<NuoMeshSceneParametersProvider>)sceneParameter;
 
-- (void)setMeshes:(NSArray<NuoMesh*>*)meshes;
+- (void)setRoot:(NuoMeshSceneRoot*)root;
 
 - (void)setParameters:(NuoDeferredRenderUniforms*)params;
 

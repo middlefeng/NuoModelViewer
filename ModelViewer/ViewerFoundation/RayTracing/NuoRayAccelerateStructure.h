@@ -15,7 +15,7 @@
 extern const uint kRayIntersectionStride;
 
 
-@class NuoMesh;
+@class NuoMeshSceneRoot;
 @class NuoRenderPassTarget;
 
 
@@ -32,7 +32,7 @@ extern const uint kRayIntersectionStride;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
-- (void)setMeshes:(NSArray<NuoMesh*>*)meshes;
+- (void)setRoot:(NuoMeshSceneRoot*)root;
 - (void)setView:(const NuoMatrixFloat44&)viewTrans;
 
 - (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer

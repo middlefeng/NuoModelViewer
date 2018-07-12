@@ -220,12 +220,12 @@ MouseDragMode;
     
     if (_modelPanel.meshMode == kMeshMode_Normal)
     {
-        [_modelDissectRenderer setDissectMeshes:nil];
+        [_modelDissectRenderer setDissectScene:nil];
     }
     else
     {
-        NSArray<NuoMesh*>* dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
-        [_modelDissectRenderer setDissectMeshes:dissectMeshes];
+        NuoMeshSceneRoot* dissectScene = [_modelRender cloneSceneFor:_modelPanel.meshMode];
+        [_modelDissectRenderer setDissectScene:dissectScene];
     }
 }
 
@@ -587,7 +587,7 @@ MouseDragMode;
     if (_modelPanel.meshMode != kMeshMode_Normal)
     {
         [renders addObject:_modelDissectRenderer];
-        _modelDissectRenderer.dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
+        _modelDissectRenderer.dissectScene = [_modelRender cloneSceneFor:_modelPanel.meshMode];
         
         NuoRenderPassTarget* modelDissectTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
                                                                                     withPixelFormat:MTLPixelFormatBGRA8Unorm

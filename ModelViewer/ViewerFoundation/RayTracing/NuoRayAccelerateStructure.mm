@@ -10,7 +10,7 @@
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
 #import "NuoRayEmittor.h"
-#import "NuoMesh.h"
+#import "NuoMeshSceneRoot.h"
 
 
 const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndexCoordinates);
@@ -77,43 +77,10 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
-- (VectorBuffer)positionBuffer:(NSArray<NuoMesh*>*)meshes
+
+- (void)setRoot:(NuoMeshSceneRoot*)root
 {
-    VectorBuffer buffer;
-    for (NuoMesh* mesh in meshes)
-    {
-        if (!mesh.enabled || mesh.hasTransparency)
-            continue;
-        
-        VectorBuffer bufferForOne = [mesh worldPositionBuffer:NuoMatrixFloat44Identity];
-        buffer.Union(bufferForOne);
-    }
-    
-    return buffer;
-}
-
-
-
-- (VectorBuffer)normalBuffer:(NSArray<NuoMesh*>*)meshes
-{
-    VectorBuffer buffer;
-    for (NuoMesh* mesh in meshes)
-    {
-        if (!mesh.enabled || mesh.hasTransparency)
-            continue;
-        
-        VectorBuffer bufferForOne = [mesh worldNormalBuffer:NuoMatrixFloat44Identity];
-        buffer.Union(bufferForOne);
-    }
-    
-    return buffer;
-}
-
-
-
-- (void)setMeshes:(NSArray<NuoMesh*>*)meshes
-{
-    VectorBuffer buffer = [self positionBuffer:meshes];
+    VectorBuffer buffer = [root worldPositionBuffer:NuoMatrixFloat44Identity];
     uint32_t triangleCount = (uint32_t)buffer._indices.size() / 3;
     uint32_t vertexBufferSize = (uint32_t)(buffer._vertices.size() * sizeof(NuoVectorFloat3::_typeTrait::_vectorType));
     uint32_t indexBufferSize = (uint32_t)(buffer._indices.size() * sizeof(uint32));
@@ -143,7 +110,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     _accelerateStructure.indexBuffer = _indexBuffer;
     _accelerateStructure.triangleCount = triangleCount;
     
-    VectorBuffer normalBufferContent = [self normalBuffer:meshes];
+    VectorBuffer normalBufferContent = [root worldNormalBuffer:NuoMatrixFloat44Identity];
     id<MTLBuffer> normalBuffer = [_commandQueue.device newBufferWithBytes:&normalBufferContent._vertices[0]
                                                                    length:vertexBufferSize
                                                                   options:MTLResourceStorageModeShared];

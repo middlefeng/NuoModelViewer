@@ -29,7 +29,6 @@
 
 - (id<MTLTexture>)shadowMap:(NSUInteger)index;
 - (id<MTLTexture>)depthMap;
-- (NuoBounds)sceneBounds;
 
 
 @end

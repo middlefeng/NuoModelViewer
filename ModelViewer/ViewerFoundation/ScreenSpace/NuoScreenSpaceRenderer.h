@@ -9,7 +9,7 @@
 #import "NuoMeshSceneRenderPass.h"
 
 
-@class NuoMesh;
+@class NuoMeshSceneRoot;
 
 
 @interface NuoScreenSpaceRenderer : NuoMeshSceneRenderPass
@@ -18,7 +18,7 @@
 /**
  *  Scene model. Be weak reference because the owner should be the model render.
  */
-@property (nonatomic, weak) NSArray<NuoMesh*>* meshes;
+@property (nonatomic, weak) NuoMeshSceneRoot* sceneRoot;
 
 @property (nonatomic, readonly) id<MTLTexture> positionBuffer;
 @property (nonatomic, readonly) id<MTLTexture> normalBuffer;

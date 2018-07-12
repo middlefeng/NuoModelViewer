@@ -6,9 +6,9 @@
 #import "NuoMeshSceneRenderPass.h"
 
 
-@class NuoMesh;
 @class NuoMeshOption;
 @class NuoMeshCompound;
+@class NuoMeshSceneRoot;
 @class NuoBoardMesh;
 @class NuoCubeMesh;
 @class NuoBackdropMesh;
@@ -124,7 +124,7 @@ class NuoLua;
 
 - (void)setResolveDepth:(BOOL)resolveDepth;
 
-- (NSArray<NuoMesh*>*)cloneMeshesFor:(NuoMeshModeShaderParameter)mode;
+- (NuoMeshSceneRoot*)cloneSceneFor:(NuoMeshModeShaderParameter)mode;
 - (void)syncMeshPositionBuffer;
 
 

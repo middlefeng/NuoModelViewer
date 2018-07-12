@@ -51,6 +51,9 @@
 {
     _meshes = meshes;
     
+    if (!meshes.count)
+        return;
+    
     NuoBounds bounds = meshes[0].boundsLocal.boundingBox;
     NuoSphere sphere = meshes[0].boundsLocal.boundingSphere;
     for (size_t i = 1; i < meshes.count; ++i)
@@ -66,6 +69,9 @@
 
 - (NuoMeshBounds)worldBounds:(const NuoMatrixFloat44&)transform
 {
+    if (!_meshes.count)
+        return { NuoBounds(), NuoSphere() };
+    
     NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
     NuoMatrixFloat44 transformWorld = transform * transformLocal;
     

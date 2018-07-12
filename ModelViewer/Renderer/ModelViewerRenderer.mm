@@ -7,7 +7,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "NuoTypes.h"
-#include "NuoMeshCompound.h"
+#include "NuoMeshSceneRoot.h"
 #include "NuoBoardMesh.h"
 #include "NuoCubeMesh.h"
 #include "NuoBackdropMesh.h"
@@ -42,7 +42,7 @@
 @property (nonatomic, strong) NSMutableArray<NuoBoardMesh*>* boardMeshes;
 
 @property (nonatomic, weak) NuoMesh* selectedMesh;
-@property (nonatomic, strong) NSMutableArray<NuoMesh*>* meshes;
+@property (nonatomic, strong) NuoMeshSceneRoot* sceneRoot;
 
 // transform data. "viewRotation" is relative to the scene's center
 //
@@ -105,7 +105,7 @@
         
         _deferredRenderer = [[NuoDeferredRenderer alloc] initWithCommandQueue:commandQueue withSceneParameter:self];
         
-        _meshes = [NSMutableArray new];
+        _sceneRoot = [[NuoMeshSceneRoot alloc] init];
         _boardMeshes = [NSMutableArray new];
         
         _viewRotation = NuoMatrixFloat44Identity;
@@ -134,11 +134,8 @@
     
     if (changed)
     {
-        for (NuoMesh* mesh in _meshes)
-        {
-            [mesh setShadowOptionRayTracing:_rayTracingRecordStatus != kRecord_Stop];
-            [mesh makeGPUStates];
-        }
+        [_sceneRoot setShadowOptionRayTracing:_rayTracingRecordStatus != kRecord_Stop];
+        [_sceneRoot makeGPUStates];
     }
 }
 
@@ -164,11 +161,8 @@
 
 - (void)setAdvancedShaowEnabled:(BOOL)enabled
 {
-    for (NuoMesh* mesh in _meshes)
-    {
-        [mesh setShadowOptionPCSS:enabled];
-        [mesh setShadowOptionPCF:enabled];
-    }
+    [_sceneRoot setShadowOptionPCSS:enabled];
+    [_sceneRoot setShadowOptionPCF:enabled];
 }
 
 
@@ -181,10 +175,7 @@
     
     [_immediateTarget setSampleCount:sampleCount];
     [_deferredRenderer setSampleCount:sampleCount];
-    
-    for (NuoMesh* mesh in _meshes)
-        [mesh setSampleCount:sampleCount];
-    
+    [_sceneRoot setSampleCount:sampleCount];
     [_cubeMesh setSampleCount:sampleCount];
 }
 
@@ -332,7 +323,7 @@
 
 - (BOOL)hasMeshes
 {
-    return [_meshes count] != 0;
+    return [_sceneRoot.meshes count] != 0;
 }
 
 
@@ -349,22 +340,7 @@
                                                 withCommandQueue:self.commandQueue
                                                     withProgress:progress];
 
-    // put the main model at the end of the draw queue,
-    // for now it is the only one has transparency
-    //
-    
-    BOOL haveReplaced = NO;
-    for (NSUInteger i = 0; i < _meshes.count; ++i)
-    {
-        if (_meshes[i] == _mainModelMesh)
-        {
-            _meshes[i] = mesh;
-            haveReplaced = YES;
-        }
-    }
-    
-    if (!haveReplaced)
-        [_meshes addObject:mesh];
+    [_sceneRoot replaceMesh:_mainModelMesh with:mesh];
     
     _mainModelMesh = mesh;
     _selectedMesh = mesh;
@@ -393,7 +369,7 @@
     
     // boards are all opaque so they are drawn first
     //
-    [_meshes insertObject:boardMesh atIndex:0];
+    [_sceneRoot addBoardObject:boardMesh];
     
     return boardMesh;
 }
@@ -401,9 +377,9 @@
 
 - (void)removeMesh:(NuoMesh*)mesh
 {
-    if (_meshes.count > 0)
+    if (_sceneRoot.meshes.count > 0)
     {
-        [_meshes removeObject:mesh];
+        [_sceneRoot removeMesh:mesh];
         
         if ([mesh isKindOfClass:[NuoBoardMesh class]])
         {
@@ -417,8 +393,8 @@
             _modelLoader = nil;
         }
         
-        if (_meshes.count > 0 && mesh == _selectedMesh)
-            _selectedMesh = _meshes[0];
+        if (_sceneRoot.meshes.count > 0 && mesh == _selectedMesh)
+            _selectedMesh = _sceneRoot.meshes[0];
         else
             _selectedMesh = nil;
     }
@@ -435,7 +411,7 @@
 - (void)removeAllBoards
 {
     for (NuoMesh* mesh in _boardMeshes)
-        [_meshes removeObject:mesh];
+        [_sceneRoot removeMesh:mesh];
 
     [_boardMeshes removeAllObjects];
 }
@@ -924,22 +900,7 @@
 
 - (void)caliberateSceneCenter
 {
-    NuoBounds bounds;
-    bool head = true;
-    
-    for (NuoMesh* mesh in _meshes)
-    {
-        if (head)
-        {
-            bounds = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox;
-            head = false;
-        }
-        else
-        {
-            bounds = bounds.Union([mesh worldBounds:NuoMatrixFloat44Identity].boundingBox);
-        }
-    }
-    
+    NuoBounds bounds = [_sceneRoot worldBounds:NuoMatrixFloat44Identity].boundingBox;
     _sceneCenter = bounds._center;
 }
 
@@ -969,20 +930,7 @@
     
     // bounding box transform and determining the near/far
     //
-    NuoBounds bounds;
-    bool head = true;
-    for (NuoMesh* mesh in _meshes)
-    {
-        if (head)
-        {
-            bounds = [mesh worldBounds:viewTrans].boundingBox;
-            head = false;
-        }
-        else
-        {
-            bounds = bounds.Union([mesh worldBounds:viewTrans].boundingBox);
-        }
-    }
+    NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
 
     float near = -bounds._center.z() - bounds._span.z() / 2.0 + 0.01;
     float far = near + bounds._span.z() + 0.02;
@@ -1021,11 +969,8 @@
     memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(NuoLightUniforms));
     [self.lightingUniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(NuoLightUniforms))];
     
-    for (NuoMesh* mesh in _meshes)
-    {
-        [mesh updateUniform:inFlight withTransform:NuoMatrixFloat44Identity];
-        [mesh setCullEnabled:_cullEnabled];
-    }
+    [_sceneRoot updateUniform:inFlight withTransform:NuoMatrixFloat44Identity];
+    [_sceneRoot setCullEnabled:_cullEnabled];
     
     if (_cubeMesh)
     {
@@ -1055,7 +1000,7 @@
         if (_rayAcceleratorOutOfSync)
         {
             _rayAcceleratorOutOfSync = NO;
-            [_rayAccelerator setMeshes:_meshes];
+            [_rayAccelerator setRoot:_sceneRoot];
         }
         
         [_rayAccelerator setView:[self viewMatrix]];
@@ -1084,7 +1029,7 @@
         //
         for (unsigned int i = 0; i < 2 /* for two light sources only */; ++i)
         {
-            _shadowMapRenderer[i].meshes = _meshes;
+            _shadowMapRenderer[i].sceneRoot = _sceneRoot;
             _shadowMapRenderer[i].lightSource = _lights[i];
             [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
         }
@@ -1098,7 +1043,7 @@
         [_lightCastBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(lightUniforms))];
     }
     
-    [_deferredRenderer setMeshes:_meshes];
+    [_deferredRenderer setRoot:_sceneRoot];
     [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
 }
 
@@ -1118,11 +1063,7 @@
     
     [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
     
-    for (NuoMesh* mesh in _meshes)
-    {
-        if (mesh.enabled)
-            [mesh drawMesh:renderPass indexBuffer:inFlight];
-    }
+    [_sceneRoot drawMesh:renderPass indexBuffer:inFlight];
     
     [_immediateTarget releaseRenderPassEndcoder];
     
@@ -1148,7 +1089,7 @@
 {
     float distance = CGFLOAT_MAX;
     
-    for (NuoMesh* mesh in _meshes)
+    for (NuoMesh* mesh in _sceneRoot.meshes)
     {
         const NuoVectorFloat3 center = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox._center;
         const NuoVectorFloat4 centerVec(center.x(), center.y(), center.z(), 1.0);
@@ -1170,17 +1111,10 @@
 }
 
 
-- (NSArray<NuoMesh*>*)cloneMeshesFor:(NuoMeshModeShaderParameter)mode
+- (NuoMeshSceneRoot*)cloneSceneFor:(NuoMeshModeShaderParameter)mode
 {
-    NSMutableArray<NuoMesh*>* cloned = [NSMutableArray new];
-    
-    for (NuoMesh* mesh in _meshes)
-    {
-        NuoMesh* newMesh = [mesh cloneForMode:mode];
-        [cloned addObject:newMesh];
-    }
-    
-    return cloned;
+    NuoMeshSceneRoot* newScene = [_sceneRoot cloneForMode:mode];
+    return newScene;
 }
 
 
@@ -1241,27 +1175,6 @@
     return _immediateTarget.depthTexture;
 }
 
-
-- (NuoBounds)sceneBounds
-{
-    NuoBounds bounds;
-    bool head = true;
-    
-    for (NuoMesh* mesh in _meshes)
-    {
-        if (head)
-        {
-            bounds = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox;
-            head = false;
-        }
-        else
-        {
-            bounds = bounds.Union([mesh worldBounds:NuoMatrixFloat44Identity].boundingBox);
-        }
-    }
-    
-    return bounds;
-}
 
 
 @end

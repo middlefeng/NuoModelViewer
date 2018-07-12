@@ -8,7 +8,7 @@
 
 #import "NuoScreenSpaceRenderer.h"
 #import "NuoScreenSpaceTarget.h"
-#import "NuoMesh.h"
+#import "NuoMeshSceneRoot.h"
 
 
 @implementation NuoScreenSpaceRenderer
@@ -39,9 +39,7 @@
     renderPass.label = @"Screen Render Pass";
     
     [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
-    
-    for (NuoMesh* mesh in _meshes)
-        [mesh drawScreenSpace:renderPass indexBuffer:inFlight];
+    [_sceneRoot drawScreenSpace:renderPass indexBuffer:inFlight];
     
     [self releaseDefaultEncoder];
 }
