@@ -333,7 +333,7 @@
 {
     BOOL pcss = self.shadowOptionPCSS;
     BOOL pcf = self.shadowOptionPCF;
-    BOOL rayTracing = self.shadowOptionRayTracing;
+    BOOL rayTracing = self.shadowOptionRayTracing && (!self.hasTransparency);
     NuoMeshModeShaderParameter meshMode = self.meshMode;
     
     [constants setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
@@ -357,7 +357,7 @@
     
     BOOL pcss = self.shadowOptionPCSS;
     BOOL pcf = self.shadowOptionPCF;
-    BOOL rayTracing = self.shadowOptionRayTracing;
+    BOOL rayTracing = self.shadowOptionRayTracing && (!self.hasTransparency);
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
