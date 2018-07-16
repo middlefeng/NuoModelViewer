@@ -468,7 +468,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
         projectedNDC.xy = projectedNDC.xy / projectedNDC.w;
         projectedNDC.x = (projectedNDC.x + 1) * 0.5;
         projectedNDC.y = (-projectedNDC.y + 1) * 0.5;
-        return shadowMap.sample(samplr, projectedNDC.xy).a;
+        return shadowMap.sample(samplr, projectedNDC.xy).r;
     }
     
     float shadowMapBias = 0.002;
