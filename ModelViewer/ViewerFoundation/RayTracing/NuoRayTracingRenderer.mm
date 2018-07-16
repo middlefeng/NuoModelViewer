@@ -46,7 +46,7 @@
     if (self && accumulateResult)
     {
         _rayTracingTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                              withPixelFormat:MTLPixelFormatRGBA32Float
+                                                              withPixelFormat:MTLPixelFormatR32Float
                                                               withSampleCount:1];
         
         _rayTracingTarget.manageTargetTexture = YES;
@@ -55,7 +55,7 @@
         _rayTracingTarget.name = @"Ray Tracing";
         
         _rayTracingAccumulate = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                  withPixelFormat:MTLPixelFormatRGBA32Float
+                                                                  withPixelFormat:MTLPixelFormatR32Float
                                                                   withSampleCount:1];
         
         _rayTracingAccumulate.manageTargetTexture = YES;

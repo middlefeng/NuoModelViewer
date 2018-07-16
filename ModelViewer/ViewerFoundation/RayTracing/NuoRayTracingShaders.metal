@@ -177,7 +177,7 @@ kernel void shadow_shade(uint2 tid [[thread_position_in_grid]],
     
     if (intersection.distance >= 0.0f)
     {
-        dstTex.write(float4(0.0, 0.0, 0.0, 1.0f), tid);
+        dstTex.write(float4(1.0, 0.0, 0.0, 1.0f), tid);
     }
 }
 
