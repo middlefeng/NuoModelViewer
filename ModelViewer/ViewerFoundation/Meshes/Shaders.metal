@@ -283,10 +283,14 @@ float4 fragment_light_color_opacity_common(VertexFragmentCharacters vert,
         {
             const float4 shadowPositionCurrent = kShadowRayTracing ?
                                                     vert.projectedNDC : vert.shadowPosition[i];
+            
             const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(shadowPositionCurrent,
                                                    shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], samplr);
+            
+            if (!kShadowRayTracing)
+                if (opacity < 1.0) shadowPercent = 0.0;
             
             if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
                 return float4(shadowPercent, 0.0, 0.0, 1.0);
