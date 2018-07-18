@@ -97,17 +97,6 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
         float diffuseIntensity = saturate(dot(normal, normalize(lightParams.direction.xyz)));
         float3 diffuseTerm = diffuseColor * diffuseIntensity;
         
-        float3 specularTerm(0);
-        if (diffuseIntensity > 0)
-        {
-            float3 eyeDirection = normalize(vert.eye);
-            float3 halfway = normalize(normalize(lightParams.direction.xyz) + eyeDirection);
-            
-            specularTerm = specular_common(vert.specularColor, vert.specularPowerDisolve.x,
-                                           lightParams, normal, halfway, diffuseIntensity);
-            transparency *= ((1 - saturate(pow(length(specularTerm), 1.0))));
-        }
-        
         float shadowPercent = 0.0;
         if (i < 2)
         {
@@ -118,6 +107,17 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
             
             if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
                 return float4(shadowPercent, 0.0f, 0.0f, 1.0f);
+        }
+        
+        float3 specularTerm(0);
+        if (diffuseIntensity > 0)
+        {
+            float3 eyeDirection = normalize(vert.eye);
+            float3 halfway = normalize(normalize(lightParams.direction.xyz) + eyeDirection);
+            
+            specularTerm = specular_common(vert.specularColor, vert.specularPowerDisolve.x,
+                                           lightParams, normal, halfway, diffuseIntensity);
+            transparency *= ((1 - saturate(pow(length(specularTerm), 1.0) * (1 - shadowPercent))));
         }
         
         colorForLights += (diffuseTerm * lightParams.density + specularTerm) *
