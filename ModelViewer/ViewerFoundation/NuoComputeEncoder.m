@@ -17,12 +17,15 @@
 
 - (instancetype)initWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                          withPipeline:(id<MTLComputePipelineState>)pipeline
+                             withName:(NSString*)name
 {
     self = [super init];
     
     if (self)
     {
         _encoder = [commandBuffer computeCommandEncoder];
+        
+        [_encoder setLabel:name];
         [_encoder setComputePipelineState:pipeline];
         
         _dataSize = CGSizeZero;
@@ -58,6 +61,7 @@
     MTLSize threads = MTLSizeMake(8, 8, 1);
     MTLSize threadgroups = MTLSizeMake((w + threads.width  - 1) / threads.width,
                                        (h + threads.height - 1) / threads.height, 1);
+    
     [_encoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threads];
     [_encoder endEncoding];
 }

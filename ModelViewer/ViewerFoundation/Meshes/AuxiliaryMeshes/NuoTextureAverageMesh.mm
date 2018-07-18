@@ -295,7 +295,8 @@ struct AccumulateUniform
     [self updateUniform:inFlight];
     
     NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
-                                                                     withPipeline:_pipelineState];
+                                                                     withPipeline:_pipelineState
+                                                                         withName:@"Average Accumulation"];
     
     [encoder setTexture:_texturesAccumulated.targetTexture atIndex:0];
     [encoder setTexture:_textureLatest atIndex:1];
@@ -323,7 +324,8 @@ struct AccumulateUniform
 - (void)outputAccumulateToTexture:(id<MTLTexture>)targetTexture withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
     NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
-                                                                     withPipeline:_pipelineStateCopy];
+                                                                     withPipeline:_pipelineStateCopy
+                                                                         withName:@"Texture Copy"];
     
     [encoder setTexture:targetTexture atIndex:0];
     [encoder setTexture:_texturesAccumulated.targetTexture atIndex:1];

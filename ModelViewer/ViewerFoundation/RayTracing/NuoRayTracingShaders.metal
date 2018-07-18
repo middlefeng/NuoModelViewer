@@ -160,29 +160,58 @@ kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
 
 
 
-kernel void shadow_shade(uint2 tid [[thread_position_in_grid]],
-                         constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                         device RayBuffer* rays [[buffer(1)]],
-                         device uint* index [[buffer(2)]],
-                         device float3* normals [[buffer(3)]],
-                         device Intersection *intersections [[buffer(4)]],
-                         device RayBuffer* shadowRays [[buffer(5)]],
-                         texture2d<float, access::write> dstTex [[texture(0)]])
+kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
+                              constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                              device RayBuffer* rays [[buffer(1)]],
+                              device uint* index [[buffer(2)]],
+                              device float3* normals [[buffer(3)]],
+                              device Intersection *intersections [[buffer(4)]],
+                              device RayBuffer* shadowRays [[buffer(5)]],
+                              texture2d<float, access::write> light [[texture(0)]],
+                              texture2d<float, access::write> lightWithBlock [[texture(1)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & intersection = intersections[rayIdx];
+    device RayBuffer & shadowRay = shadowRays[rayIdx];
     
-    if (intersection.distance >= 0.0f)
+    if (shadowRay.strength > 0)
     {
-        dstTex.write(float4(1.0, 0.0, 0.0, 1.0f), tid);
+        /**
+         *  the total diffuse (with all blockers virtually removed) and the amount that considers
+         *  blockers are recorded, and therefore accumulated by a subsequent accumulator.
+         */
+        
+        light.write(float4(shadowRay.strength, 0.0, 0.0, 1.0), tid);
+    
+        if (intersection.distance < 0.0f)
+            lightWithBlock.write(float4(shadowRay.strength, 0.0, 0.0, 1.0), tid);
     }
 }
 
 
 
+kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
+                              texture2d<float, access::read> light [[texture(0)]],
+                              texture2d<float, access::read> lightWithBlock [[texture(1)]],
+                              texture2d<float, access::write> dstTex [[texture(2)]])
+{
+    if (!(tid.x < dstTex.get_width() && tid.y < dstTex.get_height()))
+        return;
+    
+    float illuminate = light.read(tid).r;
+    float illuminateWithBlock = lightWithBlock.read(tid).r;
+    float illuminatePercent = 0.0;
+    
+    if (illuminate > 0.00001)   // avoid divided by zero
+    {
+        illuminatePercent = saturate(illuminateWithBlock / illuminate);
+    }
+    
+    dstTex.write(float4(1 - illuminatePercent, 0.0, 0.0, 1.0), tid);
+}
 
 
 

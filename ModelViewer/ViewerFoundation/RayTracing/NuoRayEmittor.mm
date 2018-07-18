@@ -55,6 +55,9 @@ const uint kRayBufferStrid = 36;
                                                     options:MTLResourceStorageModeManaged];
             randomBuffer[i] = [_device newBufferWithLength:randomBufferContent.BytesSize()
                                                    options:MTLResourceStorageModeManaged];
+            
+            uniformBuffer[i].label = @"Ray Uniform";
+            randomBuffer[i].label = @"Random";
         }
         
         _uniformBuffers = [[NSArray alloc] initWithObjects:uniformBuffer count:kInFlightBufferCount];
@@ -154,7 +157,8 @@ const uint kRayBufferStrid = 36;
     [self updateUniform:inFlight];
     
     NuoComputeEncoder* computeEncoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
-                                                                            withPipeline:_pipeline];
+                                                                            withPipeline:_pipeline
+                                                                                withName:@"Ray Emit"];
     
     [computeEncoder setBuffer:_uniformBuffers[inFlight] offset:0 atIndex:0];
     [computeEncoder setBuffer:_rayBuffer offset:0 atIndex:1];

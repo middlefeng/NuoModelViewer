@@ -15,10 +15,9 @@
 #import "NuoShadowMapRenderer.h"
 #import "NuoRayEmittor.h"
 
-// TODO: remove
-#import "NuoTextureMesh.h"
-
 #include "NuoRandomBuffer.h"
+#include "NuoComputeEncoder.h"
+#include "NuoRenderPassAttachment.h"
 
 #include <simd/simd.h>
 
@@ -32,6 +31,8 @@ static const uint32_t kRandomBufferSize = 512;
 @property (nonatomic, readonly) id<MTLBuffer> shadowIntersectionBuffer;
 @property (nonatomic, weak) NuoLightSource* lightSource;
 
+@property (nonatomic, readonly) NuoRenderPassTarget* normalizedIllumination;
+
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 @end
@@ -42,13 +43,14 @@ static const uint32_t kRandomBufferSize = 512;
 @implementation ModelRayTracingSubrenderer
 {
     id<MTLComputePipelineState> _shadowShadePipeline;
+    id<MTLComputePipelineState> _differentialPipeline;
     CGSize _drawableSize;
 }
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    self = [super initWithCommandQueue:commandQueue withAccumulatedResult:YES];
+    self = [super initWithCommandQueue:commandQueue withAccumulatedResult:YES withTargetCount:2];
     
     if (self)
     {
@@ -57,10 +59,25 @@ static const uint32_t kRandomBufferSize = 512;
         MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
         id<MTLLibrary> library = [commandQueue.device newDefaultLibrary];
         
-        id<MTLFunction> shadowShadeFunction = [library newFunctionWithName:@"shadow_shade" constantValues:values error:&error];
+        id<MTLFunction> shadowShadeFunction = [library newFunctionWithName:@"shadow_contribute" constantValues:values error:&error];
         assert(error == nil);
         _shadowShadePipeline = [commandQueue.device newComputePipelineStateWithFunction:shadowShadeFunction error:&error];
         assert(error == nil);
+        
+        id<MTLFunction> differentialFunction = [library newFunctionWithName:@"shadow_illuminate" constantValues:values error:&error];
+        assert(error == nil);
+        _differentialPipeline = [commandQueue.device newComputePipelineStateWithFunction:differentialFunction error:&error];
+        assert(error == nil);
+        
+        _normalizedIllumination = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
+                                                                    withPixelFormat:MTLPixelFormatR32Float
+                                                                    withSampleCount:1];
+        
+        _normalizedIllumination.manageTargetTexture = YES;
+        _normalizedIllumination.sharedTargetTexture = NO;
+        _normalizedIllumination.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
+        _normalizedIllumination.colorAttachments[0].needWrite = YES;
+        _normalizedIllumination.name = @"Ray Tracing Normalized";
     }
     
     return self;
@@ -75,6 +92,7 @@ static const uint32_t kRandomBufferSize = 512;
         return;
     
     _drawableSize = drawableSize;
+    _normalizedIllumination.drawableSize = drawableSize;
     
     const size_t bufferSize = drawableSize.width * drawableSize.height * kRayBufferStrid;
     const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayBufferStrid;
@@ -92,6 +110,27 @@ static const uint32_t kRandomBufferSize = 512;
     [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
                 withParameter:@[_shadowRayBuffer]
             withIntersection:_shadowIntersectionBuffer withInFlightIndex:inFlight];
+}
+
+
+
+- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+{
+    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    
+    [_normalizedIllumination retainRenderPassEndcoder:commandBuffer];
+    [_normalizedIllumination releaseRenderPassEndcoder];
+    
+    NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
+                                                                     withPipeline:_differentialPipeline
+                                                                         withName:@"Illumination Normalizing"];
+    
+    NSArray<id<MTLTexture>>* textures = self.targetTextures;
+    [encoder setTexture:textures[0] atIndex:0];
+    [encoder setTexture:textures[1] atIndex:1];
+    [encoder setTexture:_normalizedIllumination.targetTexture atIndex:2];
+    
+    [encoder dispatch];
 }
 
 
@@ -114,7 +153,7 @@ static const uint32_t kRandomBufferSize = 512;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    self = [super initWithCommandQueue:commandQueue withAccumulatedResult:NO];
+    self = [super initWithCommandQueue:commandQueue withAccumulatedResult:NO withTargetCount:0];
     
     if (self)
     {
@@ -243,7 +282,7 @@ static const uint32_t kRandomBufferSize = 512;
 
 - (id<MTLTexture>)targetTextureForLightSource:(uint)index
 {
-    return _subRenderers[index].targetTexture;
+    return _subRenderers[index].normalizedIllumination.targetTexture;
 }
 
 

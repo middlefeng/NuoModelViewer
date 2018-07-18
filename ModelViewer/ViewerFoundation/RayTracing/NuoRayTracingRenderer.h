@@ -23,11 +23,12 @@
 @property (nonatomic, weak) NuoRayAccelerateStructure* rayStructure;
 
 @property (nonatomic, readonly) id<MTLBuffer> primaryIntersectionBuffer;
-@property (nonatomic, readonly) id<MTLTexture> targetTexture;
+@property (nonatomic, readonly) NSArray<id<MTLTexture>>* targetTextures;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
-               withAccumulatedResult:(BOOL)accumulateResult;
+               withAccumulatedResult:(BOOL)accumulateResult
+                     withTargetCount:(uint)targetCount;
 
 - (void)resetResources:(id<MTLCommandBuffer>)commandBuffer;
 

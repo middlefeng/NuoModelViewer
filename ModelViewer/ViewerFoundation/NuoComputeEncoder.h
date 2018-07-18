@@ -17,7 +17,8 @@
 
 
 - (instancetype)initWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                         withPipeline:(id<MTLComputePipelineState>)pipeline;
+                         withPipeline:(id<MTLComputePipelineState>)pipeline
+                             withName:(NSString*)name;
 
 - (void)setTexture:(id<MTLTexture>)texture atIndex:(uint)index;
 - (void)setBuffer:(id<MTLBuffer>)buffer offset:(uint)offset atIndex:(uint)index;
