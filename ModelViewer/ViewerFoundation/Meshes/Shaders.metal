@@ -241,6 +241,20 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
     float3 diffuseColor = diffuseTexel.rgb * vert.diffuseColor;
     float opacity = diffuseTexel.a * vert.opacity;
     
+    return fragment_light_color_opacity_common(vert, normal, lightingUniform, diffuseColor,
+                                               opacity, shadowMap, samplr);
+}
+
+
+
+float4 fragment_light_color_opacity_common(VertexFragmentCharacters vert,
+                                           float3 normal,
+                                           constant NuoLightUniforms &lightingUniform,
+                                           float3 diffuseColor,
+                                           float opacity,
+                                           texture2d<float> shadowMap[2],
+                                           sampler samplr)
+{
     float3 colorForLights = 0.0;
     
     float transparency = (1 - opacity);

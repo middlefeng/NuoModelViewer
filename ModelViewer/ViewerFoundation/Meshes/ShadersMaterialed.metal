@@ -31,6 +31,10 @@ struct ProjectedVertex
 };
 
 
+
+static VertexFragmentCharacters vertex_characters(ProjectedVertex vert);
+
+
 vertex PositionSimple vertex_simple_materialed(device Vertex *vertices [[buffer(0)]],
                                                constant NuoUniforms &uniforms [[buffer(1)]],
                                                constant NuoMeshUniforms &meshUniforms [[buffer(2)]],
@@ -82,50 +86,33 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
     float3 normal = normalize(vert.normal);
     float3 diffuseColor = vert.diffuseColor;
     
-    float3 colorForLights = 0.0;
-    
     texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
-    const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
-    
     float opacity = vert.specularPowerDisolve.y;
-    float transparency = (1 - opacity);
     
-    for (unsigned i = 0; i < 4; ++i)
-    {
-        const NuoLightParameterUniformField lightParams = lightUniform.lightParams[i];
-        
-        float diffuseIntensity = saturate(dot(normal, normalize(lightParams.direction.xyz)));
-        float3 diffuseTerm = diffuseColor * diffuseIntensity;
-        
-        float3 specularTerm(0);
-        if (diffuseIntensity > 0)
-        {
-            float3 eyeDirection = normalize(vert.eye);
-            float3 halfway = normalize(normalize(lightParams.direction.xyz) + eyeDirection);
-            
-            specularTerm = specular_common(vert.specularColor, vert.specularPowerDisolve.x,
-                                           lightParams, normal, halfway, diffuseIntensity);
-            transparency *= ((1 - saturate(pow(length(specularTerm), 1.0))));
-        }
-        
-        float shadowPercent = 0.0;
-        if (i < 2)
-        {
-            float4 shadowPositionCurrent = kShadowRayTracing ? vert.positionNDC : shadowPosition[i];
-            const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
-            shadowPercent = shadow_coverage_common(shadowPositionCurrent,
-                                                   shadowParams, diffuseIntensity, 3,
-                                                   shadowMap[i], depthSamplr);
-            
-            if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
-                return float4(shadowPercent, 0.0f, 0.0f, 1.0f);
-        }
-        
-        colorForLights += (diffuseTerm * lightParams.density + specularTerm) *
-                          (1 - shadowPercent);
-    }
+    VertexFragmentCharacters vertFrag = vertex_characters(vert);
     
-    return float4(colorForLights, 1.0 - transparency);
+    return fragment_light_color_opacity_common(vertFrag, normal, lightUniform, diffuseColor,
+                                               opacity, shadowMap, depthSamplr);
+}
+
+
+
+VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
+{
+    VertexFragmentCharacters outVert;
+    
+    outVert.projectedNDC = vert.positionNDC;
+    outVert.eye = vert.eye;
+    outVert.diffuseColor = vert.diffuseColor;
+    outVert.ambientColor = vert.ambientColor;
+    outVert.specularColor = vert.specularColor;
+    outVert.specularPower = vert.specularPowerDisolve.x;
+    outVert.opacity = vert.specularPowerDisolve.y;
+    
+    outVert.shadowPosition[0] = vert.shadowPosition0;
+    outVert.shadowPosition[1] = vert.shadowPosition1;
+    
+    return outVert;
 }
 
 
