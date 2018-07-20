@@ -80,6 +80,7 @@
 		2CCD521B20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CCD521A20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm */; };
 		2CCF9C771E5B4F77006EF8C4 /* NuoOffscreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CCF9C761E5B4F77006EF8C4 /* NuoOffscreenView.m */; };
 		2CCF9C801E5B7A43006EF8C4 /* NuoRenderPipeline.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CCF9C7F1E5B7A43006EF8C4 /* NuoRenderPipeline.mm */; };
+		2CD183792102544A00980510 /* NuoRayBuffer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CD183782102544A00980510 /* NuoRayBuffer.mm */; };
 		2CD6249F1F016B820058CCB7 /* libluad.dylib in Copy Dylibs */ = {isa = PBXBuildFile; fileRef = 2C4DE7851DFB55E100199F1D /* libluad.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		2CDCDAF31DC185A800ECFE39 /* NuoModelArrow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CDCDAF11DC185A800ECFE39 /* NuoModelArrow.cpp */; };
 		2CDD3ACB20CEC84D00158212 /* NuoRayEmittor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CDD3ACA20CEC84D00158212 /* NuoRayEmittor.mm */; };
@@ -306,6 +307,8 @@
 		2CCF9C761E5B4F77006EF8C4 /* NuoOffscreenView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoOffscreenView.m; sourceTree = "<group>"; };
 		2CCF9C7E1E5B7A43006EF8C4 /* NuoRenderPipeline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRenderPipeline.h; sourceTree = "<group>"; };
 		2CCF9C7F1E5B7A43006EF8C4 /* NuoRenderPipeline.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoRenderPipeline.mm; sourceTree = "<group>"; };
+		2CD183772102544A00980510 /* NuoRayBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoRayBuffer.h; sourceTree = "<group>"; };
+		2CD183782102544A00980510 /* NuoRayBuffer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoRayBuffer.mm; sourceTree = "<group>"; };
 		2CDCDAF11DC185A800ECFE39 /* NuoModelArrow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoModelArrow.cpp; sourceTree = "<group>"; };
 		2CDCDAF21DC185A800ECFE39 /* NuoModelArrow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoModelArrow.h; sourceTree = "<group>"; };
 		2CDD3AC920CEC84D00158212 /* NuoRayEmittor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoRayEmittor.h; sourceTree = "<group>"; };
@@ -691,6 +694,8 @@
 			children = (
 				2CDD3AC920CEC84D00158212 /* NuoRayEmittor.h */,
 				2CDD3ACA20CEC84D00158212 /* NuoRayEmittor.mm */,
+				2CD183772102544A00980510 /* NuoRayBuffer.h */,
+				2CD183782102544A00980510 /* NuoRayBuffer.mm */,
 				2CFDD1ED20D5B59F00F2E218 /* NuoRayAccelerateStructure.h */,
 				2CFDD1EE20D5B59F00F2E218 /* NuoRayAccelerateStructure.mm */,
 				2CB355B520CEF44900065B96 /* NuoRayTracingUniform.h */,
@@ -895,6 +900,7 @@
 				2CCF9C771E5B4F77006EF8C4 /* NuoOffscreenView.m in Sources */,
 				2C6A8E5A1F7FE8BB0007551F /* ShadersDeferred.metal in Sources */,
 				2CA65F88206AA87400C4A313 /* ModelSelectionRenderer.mm in Sources */,
+				2CD183792102544A00980510 /* NuoRayBuffer.mm in Sources */,
 				2CF62A721EEF7CD0003E23EF /* NuoShadowMapRenderer.mm in Sources */,
 				2C723AA91E43A83600484992 /* NuoMeshRotation.cpp in Sources */,
 				2C5B92C31D73F51E00722936 /* NuoMaterial.cpp in Sources */,

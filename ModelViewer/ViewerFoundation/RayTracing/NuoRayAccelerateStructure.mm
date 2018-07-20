@@ -9,6 +9,7 @@
 #import "NuoRayAccelerateStructure.h"
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
+#import "NuoRayBuffer.h"
 #import "NuoRayEmittor.h"
 #import "NuoMeshSceneRoot.h"
 
@@ -41,6 +42,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
         
         _accelerateStructure = [[MPSTriangleAccelerationStructure alloc] initWithDevice:commandQueue.device];
         _rayEmittor = [[NuoRayEmittor alloc] initWithCommandQueue:commandQueue];
+        _primaryRayBuffer = [[NuoRayBuffer alloc] initWithDevice:commandQueue.device];
         
         _commandQueue = commandQueue;
     }
@@ -64,14 +66,14 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 
 - (void)setDrawableSize:(CGSize)drawableSize
 {
-    [_rayEmittor setDrawableSize:drawableSize];
+    [_primaryRayBuffer setDimension:drawableSize];
 }
 
 
 
 - (CGSize)drawableSize
 {
-    return [_rayEmittor drawableSize];
+    return [_primaryRayBuffer dimension];
 }
 
 
@@ -146,13 +148,14 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 - (void)updateRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
          withInFlight:(uint)inFlight
 {
-    [_rayEmittor updateRayMask:mask withCommandBuffer:commandBuffer withInFlight:inFlight];
+    [_primaryRayBuffer updateRayMask:mask withUniform:[self uniformBuffer:inFlight]
+                                    withCommandBuffer:commandBuffer];
 }
 
 
 - (void)rayEmit:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight
 {
-    _primaryRayBuffer = [_rayEmittor rayBuffer:commandBuffer withInFlight:inFlight];
+    [_rayEmittor rayEmitToBuffer:_primaryRayBuffer withCommandBuffer:commandBuffer withInFlight:inFlight];
 }
 
 
@@ -168,18 +171,18 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 
 
 - (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer
-        withRays:(id<MTLBuffer>)rayBuffer withIntersection:(id<MTLBuffer>)intersection
+        withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection
 {
     if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt)
     {
         [_intersector setIntersectionDataType:MPSIntersectionDataTypeDistancePrimitiveIndexCoordinates];
         [_intersector encodeIntersectionToCommandBuffer:commandBuffer
                                        intersectionType:MPSIntersectionTypeNearest
-                                              rayBuffer:rayBuffer
+                                              rayBuffer:rayBuffer.buffer
                                         rayBufferOffset:0
                                      intersectionBuffer:intersection
                                intersectionBufferOffset:0
-                                               rayCount:[_rayEmittor rayCount]
+                                               rayCount:rayBuffer.rayCount
                                   accelerationStructure:_accelerateStructure];
     }
 }

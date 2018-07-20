@@ -13,7 +13,10 @@
 //
 #import "NuoMeshSceneRenderPass.h"
 #import "NuoShadowMapRenderer.h"
+
+#import "NuoRayBuffer.h"
 #import "NuoRayEmittor.h"
+#import "NuoRayAccelerateStructure.h"
 
 #include "NuoRandomBuffer.h"
 #include "NuoComputeEncoder.h"
@@ -29,8 +32,8 @@ static const uint32_t kRandomBufferSize = 512;
 
 @property (nonatomic, assign) BOOL shadowOnTranslucent;
 
-@property (nonatomic, readonly) id<MTLBuffer> shadowRayBuffer;
-@property (nonatomic, readonly) id<MTLBuffer> shadowRayBufferOnTranslucent;
+@property (nonatomic, readonly) NuoRayBuffer* shadowRayBuffer;
+@property (nonatomic, readonly) NuoRayBuffer* shadowRayBufferOnTranslucent;
 
 @property (nonatomic, readonly) id<MTLBuffer> shadowIntersectionBuffer;
 @property (nonatomic, weak) NuoLightSource* lightSource;
@@ -116,13 +119,14 @@ static const uint32_t kRandomBufferSize = 512;
     _drawableSize = drawableSize;
     _normalizedIllumination.drawableSize = drawableSize;
     
-    const size_t bufferSize = drawableSize.width * drawableSize.height * kRayBufferStrid;
-    const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayBufferStrid;
+    const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayIntersectionStride;
     
-    _shadowRayBuffer = [self.commandQueue.device newBufferWithLength:bufferSize
-                                                             options:MTLResourceStorageModePrivate];
-    _shadowRayBufferOnTranslucent = [self.commandQueue.device newBufferWithLength:bufferSize
-                                                                          options:MTLResourceStorageModePrivate];
+    _shadowRayBuffer = [[NuoRayBuffer alloc] initWithDevice:self.commandQueue.device];
+    _shadowRayBuffer.dimension = _drawableSize;
+    
+    _shadowRayBufferOnTranslucent = [[NuoRayBuffer alloc] initWithDevice:self.commandQueue.device];
+    _shadowRayBufferOnTranslucent.dimension = _drawableSize;
+    
     _shadowIntersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
                                                                       options:MTLResourceStorageModePrivate];
 }
@@ -133,13 +137,13 @@ static const uint32_t kRandomBufferSize = 512;
     [self rayIntersect:commandBuffer withRays:_shadowRayBuffer withIntersection:_shadowIntersectionBuffer];
     
     [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
-                withParameter:@[_shadowRayBuffer]
+                withParameter:@[_shadowRayBuffer.buffer]
             withIntersection:_shadowIntersectionBuffer withInFlightIndex:inFlight];
     
     [self rayIntersect:commandBuffer withRays:_shadowRayBufferOnTranslucent withIntersection:_shadowIntersectionBuffer];
     
     [self runRayTraceCompute:_shadowShadePipelineOnTranslucent withCommandBuffer:commandBuffer
-               withParameter:@[_shadowRayBufferOnTranslucent]
+               withParameter:@[_shadowRayBufferOnTranslucent.buffer]
             withIntersection:_shadowIntersectionBuffer withInFlightIndex:inFlight];
 }
 
@@ -297,8 +301,8 @@ static const uint32_t kRandomBufferSize = 512;
         [self runRayTraceCompute:_shadowRayPipeline withCommandBuffer:commandBuffer
                    withParameter:@[_rayTraceUniform[inFlight],
                                    _randomBuffers[inFlight],
-                                   _subRenderers[0].shadowRayBuffer,
-                                   _subRenderers[1].shadowRayBuffer]
+                                   _subRenderers[0].shadowRayBuffer.buffer,
+                                   _subRenderers[1].shadowRayBuffer.buffer]
                 withIntersection:self.primaryIntersectionBuffer
                withInFlightIndex:inFlight];
     }
@@ -312,8 +316,8 @@ static const uint32_t kRandomBufferSize = 512;
         [self runRayTraceCompute:_shadowRayPipeline withCommandBuffer:commandBuffer
                    withParameter:@[_rayTraceUniform[inFlight],
                                    _randomBuffers[inFlight],
-                                   _subRenderers[0].shadowRayBufferOnTranslucent,
-                                   _subRenderers[1].shadowRayBufferOnTranslucent]
+                                   _subRenderers[0].shadowRayBufferOnTranslucent.buffer,
+                                   _subRenderers[1].shadowRayBufferOnTranslucent.buffer]
                 withIntersection:self.primaryIntersectionBuffer
                withInFlightIndex:inFlight];
     }

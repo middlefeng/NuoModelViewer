@@ -14,26 +14,26 @@
 #include "NuoMathVector.h"
 
 
-extern const uint kRayBufferStrid;
+@class NuoRayBuffer;
 
 
 @interface NuoRayEmittor : NSObject
 
 
+/**
+ *  ray emittor holds only information regarding the volumn's shape. it holds no
+ *  information regarding how large the film is. the file is determined by the ray
+ *  buffer taken by the emitting function
+ *
+ *  that implies the same emittor could be adapt to different sizes of films
+ */
 @property (nonatomic, assign) CGFloat fieldOfView;
-@property (nonatomic, assign) CGSize drawableSize;
 @property (nonatomic, assign) NuoMatrixFloat44 viewTrans;
-
-@property (nonatomic, readonly) uint rayCount;
-@property (nonatomic, assign) uint rayMask;
-
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
-- (id<MTLBuffer>)rayBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlight:(uint)inFlight;
-- (void)updateRayMask:(uint32)rayMask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-         withInFlight:(uint)inFlight;
-
+- (void)rayEmitToBuffer:(NuoRayBuffer*)rayBuffer withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+                                                      withInFlight:(uint)inFlight;
 - (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight;
 
 

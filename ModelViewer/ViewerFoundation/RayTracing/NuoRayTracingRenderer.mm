@@ -9,6 +9,7 @@
 #import "NuoRayTracingRenderer.h"
 #import "NuoRayAccelerateStructure.h"
 
+#import "NuoRayBuffer.h"
 #import "NuoComputeEncoder.h"
 #import "NuoTextureAverageMesh.h"
 #import "NuoRenderPassAttachment.h"
@@ -148,7 +149,7 @@
 
 
 - (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer
-            withRays:(id<MTLBuffer>)rayBuffer withIntersection:(id<MTLBuffer>)intersection
+            withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection
 {
     if (!_rayStructure)
         return NO;
@@ -169,7 +170,7 @@
                                                                                 withName:@"Ray Trace"];
     
     [computeEncoder setBuffer:[_rayStructure uniformBuffer:inFlight] offset:0 atIndex:0];
-    [computeEncoder setBuffer:[_rayStructure primaryRayBuffer] offset:0 atIndex:1];
+    [computeEncoder setBuffer:[_rayStructure primaryRayBuffer].buffer offset:0 atIndex:1];
     [computeEncoder setBuffer:[_rayStructure indexBuffer] offset:0 atIndex:2];
     [computeEncoder setBuffer:[_rayStructure normalBuffer] offset:0 atIndex:3];
     [computeEncoder setBuffer:intersection offset:0 atIndex:4];

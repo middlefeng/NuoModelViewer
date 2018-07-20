@@ -9,14 +9,12 @@
 #import "NuoRayEmittor.h"
 #import "NuoTypes.h"
 #import "NuoComputeEncoder.h"
+#import "NuoRayBuffer.h"
 
 #include "NuoRandomBuffer.h"
 #include "NuoRayTracingUniform.h"
 
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
-
-
-const uint kRayBufferStrid = 36;
 
 
 @interface NuoRayEmittor()
@@ -32,11 +30,6 @@ const uint kRayBufferStrid = 36;
     NSArray<id<MTLBuffer>>* _randomBuffers;
     
     id<MTLComputePipelineState> _pipeline;
-    
-    id<MTLComputePipelineState> _pipelineMaskOpaque;
-    id<MTLComputePipelineState> _pipelineMaskTranslucent;
-    
-    id<MTLBuffer> _rayBuffer;
 }
 
 
@@ -80,54 +73,6 @@ const uint kRayBufferStrid = 36;
 }
 
 
-
-- (uint)rayCount
-{
-    CGSize drawableSize = [self drawableSize];
-    
-    const uint w = (uint)drawableSize.width;
-    const uint h = (uint)drawableSize.height;
-    
-    return w * h;
-}
-
-
-
-- (void)setDrawableSize:(CGSize)drawableSize
-{
-    _drawableSize = drawableSize;
-    
-    const uint rayCount = [self rayCount];
-    const uint rayBufferSize = kRayBufferStrid * rayCount;
-    _rayBuffer = [_device newBufferWithLength:rayBufferSize options:MTLResourceStorageModePrivate];
-}
-
-
-
-- (void)updateRayMask:(uint32_t)rayMask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-         withInFlight:(uint)inFlight
-{
-    // rays must be emitted already, which also implies the _uniformBuffers[inFlight] is valid
-    //
-    assert(_rayBuffer != nil);
-    
-    id<MTLComputePipelineState> pipeline;
-    if (rayMask | kNuoRayMask_Translucent)
-        pipeline = _pipelineMaskTranslucent;
-    else
-        pipeline = _pipelineMaskOpaque;
-    
-    NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
-                                                                     withPipeline:pipeline
-                                                                         withName:@"Ray Mask"];
-    
-    [encoder setDataSize:_drawableSize];
-    [encoder setBuffer:_uniformBuffers[inFlight] offset:0 atIndex:0];
-    [encoder setBuffer:_rayBuffer offset:0 atIndex:1];
-    [encoder dispatch];
-}
-
-
 - (void)setupPipeline
 {
     NSError* error = nil;
@@ -139,21 +84,6 @@ const uint kRayBufferStrid = 36;
     id<MTLLibrary> library = [_device newDefaultLibrary];
     descriptor.computeFunction = [library newFunctionWithName:@"ray_emit"];
     _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
-    assert(error == nil);
-    
-    MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
-    BOOL onTranslucent = NO;
-    [values setConstantValue:&onTranslucent type:MTLDataTypeBool atIndex:0];
-    descriptor.computeFunction = [library newFunctionWithName:@"ray_set_mask" constantValues:values error:&error];
-    assert(error == nil);
-    _pipelineMaskOpaque = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
-    assert(error == nil);
-    
-    onTranslucent = YES;
-    [values setConstantValue:&onTranslucent type:MTLDataTypeBool atIndex:0];
-    descriptor.computeFunction = [library newFunctionWithName:@"ray_set_mask" constantValues:values error:&error];
-    assert(error == nil);
-    _pipelineMaskTranslucent = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
     assert(error == nil);
 }
 
@@ -167,9 +97,9 @@ const uint kRayBufferStrid = 36;
 }
 
 
-- (void)updateUniform:(uint)inFlight
+- (void)updateUniform:(uint)inFlight widthRayBuffer:(NuoRayBuffer*)buffer
 {
-    CGSize drawableSize = [self drawableSize];
+    CGSize drawableSize = [buffer dimension];
     
     const uint width = (uint)drawableSize.width;
     const uint height = (uint)drawableSize.height;
@@ -193,21 +123,20 @@ const uint kRayBufferStrid = 36;
 }
 
 
-- (id<MTLBuffer>)rayBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlight:(uint)inFlight
+- (void)rayEmitToBuffer:(NuoRayBuffer*)rayBuffer withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+                                                   withInFlight:(uint)inFlight
 {
-    [self updateUniform:inFlight];
+    [self updateUniform:inFlight widthRayBuffer:rayBuffer];
     
     NuoComputeEncoder* computeEncoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
                                                                             withPipeline:_pipeline
                                                                                 withName:@"Ray Emit"];
     
     [computeEncoder setBuffer:_uniformBuffers[inFlight] offset:0 atIndex:0];
-    [computeEncoder setBuffer:_rayBuffer offset:0 atIndex:1];
+    [computeEncoder setBuffer:rayBuffer.buffer offset:0 atIndex:1];
     [computeEncoder setBuffer:_randomBuffers[inFlight] offset:0  atIndex:2];
-    [computeEncoder setDataSize:[self drawableSize]];
+    [computeEncoder setDataSize:rayBuffer.dimension];
     [computeEncoder dispatch];
-    
-    return _rayBuffer;
 }
 
 

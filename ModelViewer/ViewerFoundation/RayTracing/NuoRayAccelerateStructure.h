@@ -15,6 +15,7 @@
 extern const uint kRayIntersectionStride;
 
 
+@class NuoRayBuffer;
 @class NuoMeshSceneRoot;
 @class NuoRenderPassTarget;
 
@@ -25,7 +26,7 @@ extern const uint kRayIntersectionStride;
 @property (nonatomic, assign) CGFloat fieldOfView;
 @property (nonatomic, assign) CGSize drawableSize;
 
-@property (nonatomic, readonly) id<MTLBuffer> primaryRayBuffer;
+@property (nonatomic, readonly) NuoRayBuffer* primaryRayBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> normalBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> maskBuffer;
@@ -44,7 +45,7 @@ extern const uint kRayIntersectionStride;
 - (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer
         inFlight:(uint32_t)inFlight withIntersection:(id<MTLBuffer>)intersection;
 - (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer
-        withRays:(id<MTLBuffer>)rayBuffer withIntersection:(id<MTLBuffer>)intersection;
+        withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection;
 
 
 - (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight;

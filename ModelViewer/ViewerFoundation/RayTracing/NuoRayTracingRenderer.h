@@ -11,6 +11,7 @@
 
 
 
+@class NuoRayBuffer;
 @class NuoRayAccelerateStructure;
 
 
@@ -48,7 +49,7 @@
  */
 - (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
 - (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer
-            withRays:(id<MTLBuffer>)rayBuffer withIntersection:(id<MTLBuffer>)intersection;
+            withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection;
 
 
 - (void)rayEmit:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
