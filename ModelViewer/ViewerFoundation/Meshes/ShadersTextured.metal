@@ -142,7 +142,7 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
         {
             float4 shadowPositionCurrent = kShadowRayTracing ? vert.positionNDC : shadowPosition[i];
             const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
-            shadowPercent = shadow_coverage_common(shadowPositionCurrent,
+            shadowPercent = shadow_coverage_common(shadowPositionCurrent, false,
                                                    shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], depthSamplr);
         }

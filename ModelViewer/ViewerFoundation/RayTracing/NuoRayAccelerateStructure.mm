@@ -35,11 +35,9 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     if (self)
     {
         _intersector = [[MPSRayIntersector alloc] initWithDevice:commandQueue.device];
-        _intersector.rayDataType = MPSRayDataTypeOriginMinDistanceDirectionMaxDistance;
+        _intersector.rayDataType = MPSRayDataTypeOriginMaskDirectionMaxDistance;
         _intersector.rayStride = kRayBufferStrid;
-        
-        /* not use mask as only mask is cared about for now */
-        // _intersector.rayMaskOptions = MPSRayMaskOptionPrimitive;
+        _intersector.rayMaskOptions = MPSRayMaskOptionPrimitive;
         
         _accelerateStructure = [[MPSTriangleAccelerationStructure alloc] initWithDevice:commandQueue.device];
         _rayEmittor = [[NuoRayEmittor alloc] initWithCommandQueue:commandQueue];
@@ -105,11 +103,6 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     [encoder copyFromBuffer:indexBuffer sourceOffset:0
                    toBuffer:_indexBuffer destinationOffset:0 size:indexBufferSize];
     
-    _accelerateStructure.vertexBuffer = vertexBufferPrivate;
-    _accelerateStructure.indexType = MPSDataTypeUInt32;
-    _accelerateStructure.indexBuffer = _indexBuffer;
-    _accelerateStructure.triangleCount = triangleCount;
-    
     VectorBuffer normalBufferContent = [root worldNormalBuffer:NuoMatrixFloat44Identity];
     id<MTLBuffer> normalBuffer = [_commandQueue.device newBufferWithBytes:&normalBufferContent._vertices[0]
                                                                    length:vertexBufferSize
@@ -120,8 +113,25 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     [encoder copyFromBuffer:normalBuffer sourceOffset:0
                    toBuffer:_normalBuffer destinationOffset:0 size:vertexBufferSize];
     
+    std::vector<uint32_t> mask = [root maskBuffer];
+    uint32_t maskBufferSize =(uint32_t)(mask.size() * sizeof(uint32_t));
+    id<MTLBuffer> maskBuffer = [_commandQueue.device newBufferWithBytes:&mask[0]
+                                                                 length:maskBufferSize
+                                                                options:MTLResourceStorageModeShared];
+    _maskBuffer = [_commandQueue.device newBufferWithLength:maskBufferSize
+                                                    options:MTLResourceStorageModePrivate];
+    
+    [encoder copyFromBuffer:maskBuffer sourceOffset:0
+                   toBuffer:_maskBuffer destinationOffset:0 size:maskBufferSize];
+    
     [encoder endEncoding];
     [commandBuffer commit];
+    
+    _accelerateStructure.vertexBuffer = vertexBufferPrivate;
+    _accelerateStructure.indexType = MPSDataTypeUInt32;
+    _accelerateStructure.indexBuffer = _indexBuffer;
+    _accelerateStructure.triangleCount = triangleCount;
+    _accelerateStructure.maskBuffer = _maskBuffer;
     
     [_accelerateStructure rebuild];
 }
@@ -133,13 +143,24 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
+- (void)updateRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+         withInFlight:(uint)inFlight
+{
+    [_rayEmittor updateRayMask:mask withCommandBuffer:commandBuffer withInFlight:inFlight];
+}
+
+
+- (void)rayEmit:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight
+{
+    _primaryRayBuffer = [_rayEmittor rayBuffer:commandBuffer withInFlight:inFlight];
+}
+
+
 - (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer
         inFlight:(uint32_t)inFlight withIntersection:(id<MTLBuffer>)intersection
 {
     if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt)
     {
-        _primaryRayBuffer = [_rayEmittor rayBuffer:commandBuffer withInFlight:inFlight];
-        
         [self rayTrace:commandBuffer
               withRays:_primaryRayBuffer withIntersection:intersection];
     }

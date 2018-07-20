@@ -25,11 +25,14 @@ extern const uint kRayBufferStrid;
 @property (nonatomic, assign) NuoMatrixFloat44 viewTrans;
 
 @property (nonatomic, readonly) uint rayCount;
+@property (nonatomic, assign) uint rayMask;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (id<MTLBuffer>)rayBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlight:(uint)inFlight;
+- (void)updateRayMask:(uint32)rayMask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+         withInFlight:(uint)inFlight;
 
 - (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight;
 

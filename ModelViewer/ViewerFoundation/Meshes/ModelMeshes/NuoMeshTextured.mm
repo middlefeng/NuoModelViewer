@@ -106,7 +106,7 @@ static CIContext* sCIContext = nil;
     
     BOOL pcss = self.shadowOptionPCSS;
     BOOL pcf = self.shadowOptionPCF;
-    BOOL rayTracing = self.shadowOptionRayTracing && (!self.hasTransparency);
+    BOOL rayTracing = self.shadowOptionRayTracing;
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     NuoMeshModeShaderParameter meshMode = kMeshMode_Normal;

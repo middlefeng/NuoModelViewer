@@ -191,7 +191,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         {
             float4 shadowPostionCurrent = kShadowRayTracing ? vert.positionNDC : shadowPosition[i];
             const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
-            shadowPercent = shadow_coverage_common(shadowPostionCurrent,
+            shadowPercent = shadow_coverage_common(shadowPostionCurrent, false,
                                                    shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], samplr);
         }
@@ -274,7 +274,7 @@ float4 fragment_light_color_opacity_common(VertexFragmentCharacters vert,
                                                     vert.projectedNDC : vert.shadowPosition[i];
             
             const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
-            shadowPercent = shadow_coverage_common(shadowPositionCurrent,
+            shadowPercent = shadow_coverage_common(shadowPositionCurrent, opacity < 1.0,
                                                    shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], samplr);
             
@@ -470,7 +470,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
 
 
 
-float shadow_coverage_common(metal::float4 shadowCastModelPostion,
+float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
                              NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
                              metal::texture2d<float> shadowMap, metal::sampler samplr)
 {
@@ -483,7 +483,11 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
         projectedNDC.xy = projectedNDC.xy / projectedNDC.w;
         projectedNDC.x = (projectedNDC.x + 1) * 0.5;
         projectedNDC.y = (-projectedNDC.y + 1) * 0.5;
-        return shadowMap.sample(samplr, projectedNDC.xy).r;
+        
+        if (translucent)
+            return shadowMap.sample(samplr, projectedNDC.xy).g;
+        else
+            return shadowMap.sample(samplr, projectedNDC.xy).r;
     }
     
     float shadowMapBias = 0.002;

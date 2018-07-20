@@ -45,6 +45,11 @@
 - (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer
             withRays:(id<MTLBuffer>)rayBuffer withIntersection:(id<MTLBuffer>)intersection;
 
+
+- (void)rayEmit:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
+- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+                withInFlight:(uint)inFlight;
+
 - (void)runRayTraceCompute:(id<MTLComputePipelineState>)pipeline
          withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers

@@ -156,7 +156,7 @@ metal::float3 specular_common(metal::float3 materialSpecularColor, float materia
                               metal::float3 normal, metal::float3 halfway, float dotNL);
 
 
-float shadow_coverage_common(metal::float4 shadowCastModelPostion,
+float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
                              NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
                              metal::texture2d<float> shadowMap, metal::sampler samplr);
 

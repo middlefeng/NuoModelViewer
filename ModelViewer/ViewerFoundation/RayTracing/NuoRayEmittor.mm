@@ -31,7 +31,12 @@ const uint kRayBufferStrid = 36;
     NSArray<id<MTLBuffer>>* _uniformBuffers;
     NSArray<id<MTLBuffer>>* _randomBuffers;
     
+    id<MTLBuffer> _rayMaskUniform;
+    
     id<MTLComputePipelineState> _pipeline;
+    
+    id<MTLComputePipelineState> _pipelineMaskOpaque;
+    id<MTLComputePipelineState> _pipelineMaskAll;
     
     id<MTLBuffer> _rayBuffer;
 }
@@ -101,6 +106,26 @@ const uint kRayBufferStrid = 36;
 
 
 
+- (void)updateRayMask:(uint32_t)rayMask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+         withInFlight:(uint)inFlight
+{
+    id<MTLComputePipelineState> pipeline;
+    if (rayMask | kNuoRayMask_Translucent)
+        pipeline = _pipelineMaskAll;
+    else
+        pipeline = _pipelineMaskOpaque;
+    
+    NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
+                                                                     withPipeline:pipeline
+                                                                         withName:@"Ray Mask"];
+    
+    [encoder setDataSize:_drawableSize];
+    [encoder setBuffer:_uniformBuffers[inFlight] offset:0 atIndex:0];
+    [encoder setBuffer:_rayBuffer offset:0 atIndex:1];
+    [encoder dispatch];
+}
+
+
 - (void)setupPipeline
 {
     NSError* error = nil;
@@ -112,7 +137,14 @@ const uint kRayBufferStrid = 36;
     id<MTLLibrary> library = [_device newDefaultLibrary];
     descriptor.computeFunction = [library newFunctionWithName:@"ray_emit"];
     _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
+    assert(error == nil);
     
+    descriptor.computeFunction = [library newFunctionWithName:@"ray_mask_opaque"];
+    _pipelineMaskOpaque = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
+    assert(error == nil);
+    
+    descriptor.computeFunction = [library newFunctionWithName:@"ray_mask_all"];
+    _pipelineMaskAll = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
     assert(error == nil);
 }
 

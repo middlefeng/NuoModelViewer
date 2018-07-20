@@ -24,7 +24,7 @@ struct RayBuffer
     // fields that compatible with MPSRayOriginMaskDirectionMaxDistance
     //
     packed_float3 origin;
-    float minDistance;
+    unsigned int mask;
     packed_float3 direction;
     float maxDistance;
     
@@ -88,8 +88,36 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
     ray.direction = (uniforms.viewTrans * rayDirection).xyz;
     ray.origin = (uniforms.viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;
     
-    ray.minDistance = 0.00001;
+    ray.mask = kNuoRayMask_Opaue;
     ray.maxDistance = INFINITY;
+}
+
+
+
+kernel void ray_mask_opaque(uint2 tid [[thread_position_in_grid]],
+                            constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                            device RayBuffer* rays [[buffer(1)]])
+{
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device RayBuffer& ray = rays[rayIdx];
+    
+    ray.mask = kNuoRayMask_Opaue;
+}
+
+kernel void ray_mask_all(uint2 tid [[thread_position_in_grid]],
+                         constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                         device RayBuffer* rays [[buffer(1)]])
+{
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device RayBuffer& ray = rays[rayIdx];
+    
+    ray.mask = kNuoRayMask_Translucent | kNuoRayMask_Opaue;
 }
 
 
@@ -143,12 +171,13 @@ kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
             float3 shadowVec = normalize(lightPosition.xyz);
             
             shadowRayCurrent->maxDistance = distance;
-            shadowRayCurrent->minDistance = 0.001;
-            
-            shadowRayCurrent->origin = intersectionPoint;
-            shadowRayCurrent->direction = shadowVec;
+            shadowRayCurrent->mask = kNuoRayMask_Opaue;
             
             float3 normal = interpolateNormal(normals, index, intersection);
+            
+            shadowRayCurrent->origin = intersectionPoint + normalize(normal) * 0.001;
+            shadowRayCurrent->direction = shadowVec;
+            
             shadowRayCurrent->strength = dot(normal, shadowVec);
         }
         else
@@ -160,6 +189,10 @@ kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
 
 
 
+static constant bool kShadowOnTranslucent  [[ function_constant(0) ]];
+
+
+
 kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
                               constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                               device RayBuffer* rays [[buffer(1)]],
@@ -167,8 +200,8 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
                               device float3* normals [[buffer(3)]],
                               device Intersection *intersections [[buffer(4)]],
                               device RayBuffer* shadowRays [[buffer(5)]],
-                              texture2d<float, access::write> light [[texture(0)]],
-                              texture2d<float, access::write> lightWithBlock [[texture(1)]])
+                              texture2d<float, access::read_write> light [[texture(0)]],
+                              texture2d<float, access::read_write> lightWithBlock [[texture(1)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -184,10 +217,30 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
          *  blockers are recorded, and therefore accumulated by a subsequent accumulator.
          */
         
-        light.write(float4(shadowRay.strength, 0.0, 0.0, 1.0), tid);
+        if (kShadowOnTranslucent)
+        {
+            float r = light.read(tid).r;
+            light.write(float4(r, shadowRay.strength, 0.0, 1.0), tid);
+        }
+        else
+        {
+            float g = light.read(tid).g;
+            light.write(float4(shadowRay.strength, g, 0.0, 1.0), tid);
+        }
     
         if (intersection.distance < 0.0f)
-            lightWithBlock.write(float4(shadowRay.strength, 0.0, 0.0, 1.0), tid);
+        {
+            if (kShadowOnTranslucent)
+            {
+                float r = lightWithBlock.read(tid).r;
+                lightWithBlock.write(float4(r, shadowRay.strength, 0.0, 1.0), tid);
+            }
+            else
+            {
+                float g = lightWithBlock.read(tid).g;
+                lightWithBlock.write(float4(shadowRay.strength, g, 0.0, 1.0), tid);
+            }
+        }
     }
 }
 
@@ -210,7 +263,16 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
         illuminatePercent = saturate(illuminateWithBlock / illuminate);
     }
     
-    dstTex.write(float4(1 - illuminatePercent, 0.0, 0.0, 1.0), tid);
+    illuminate = light.read(tid).g;
+    illuminateWithBlock = lightWithBlock.read(tid).g;
+    float illuminatePercentTranslucent = 0.0;
+    
+    if (illuminate > 0.00001)   // avoid divided by zero
+    {
+        illuminatePercentTranslucent = saturate(illuminateWithBlock / illuminate);
+    }
+    
+    dstTex.write(float4(1 - illuminatePercent, 1 - illuminatePercentTranslucent, 0.0, 1.0), tid);
 }
 
 

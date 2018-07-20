@@ -52,7 +52,7 @@
         for (uint i = 0; i < targetCount; ++i)
         {
             rayTracingTargets[i] = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                     withPixelFormat:MTLPixelFormatR32Float
+                                                                     withPixelFormat:MTLPixelFormatRG32Float
                                                                      withSampleCount:1];
         
             rayTracingTargets[i].manageTargetTexture = YES;
@@ -61,7 +61,7 @@
             rayTracingTargets[i].name = @"Ray Tracing";
         
             rayTracingAccumulates[i] = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                         withPixelFormat:MTLPixelFormatR32Float
+                                                                         withPixelFormat:MTLPixelFormatRG32Float
                                                                          withSampleCount:1];
             
             rayTracingAccumulates[i].manageTargetTexture = YES;
@@ -121,6 +121,19 @@
     _drawableSize = drawableSize;
 }
 
+
+
+- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+                withInFlight:(uint)inFlight
+{
+    [_rayStructure updateRayMask:mask withCommandBuffer:commandBuffer withInFlight:inFlight];
+}
+
+
+- (void)rayEmit:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+{
+    [_rayStructure rayEmit:commandBuffer inFlight:inFlight];
+}
 
 
 - (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight

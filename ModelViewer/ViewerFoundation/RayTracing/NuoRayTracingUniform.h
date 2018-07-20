@@ -13,6 +13,14 @@
 #include "Meshes/NuoMatrixTypes.h"
 
 
+typedef enum
+{
+    kNuoRayMask_Opaue           = 1,
+    kNuoRayMask_Translucent     = 2
+}
+NuoRayMask;
+
+
 typedef struct
 {
     vector4 center;
@@ -49,6 +57,17 @@ typedef struct
     matrix44 viewTrans;
 }
 NuoRayVolumeUniform;
+
+
+
+typedef struct
+{
+    uint wViewPort;
+    uint hViewPort;
+    
+    uint rayMask;
+}
+NuoRayMaskUniform;
 
 
 

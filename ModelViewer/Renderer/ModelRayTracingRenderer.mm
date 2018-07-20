@@ -27,7 +27,11 @@ static const uint32_t kRandomBufferSize = 512;
 
 @interface ModelRayTracingSubrenderer : NuoRayTracingRenderer
 
+@property (nonatomic, assign) BOOL shadowOnTranslucent;
+
 @property (nonatomic, readonly) id<MTLBuffer> shadowRayBuffer;
+@property (nonatomic, readonly) id<MTLBuffer> shadowRayBufferOnTranslucent;
+
 @property (nonatomic, readonly) id<MTLBuffer> shadowIntersectionBuffer;
 @property (nonatomic, weak) NuoLightSource* lightSource;
 
@@ -43,6 +47,8 @@ static const uint32_t kRandomBufferSize = 512;
 @implementation ModelRayTracingSubrenderer
 {
     id<MTLComputePipelineState> _shadowShadePipeline;
+    id<MTLComputePipelineState> _shadowShadeOnTranslucentPipeline;
+    
     id<MTLComputePipelineState> _differentialPipeline;
     CGSize _drawableSize;
 }
@@ -59,9 +65,18 @@ static const uint32_t kRandomBufferSize = 512;
         MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
         id<MTLLibrary> library = [commandQueue.device newDefaultLibrary];
         
+        bool shadowOnTranslucent = NO;
+        [values setConstantValue:&shadowOnTranslucent type:MTLDataTypeBool atIndex:0];
         id<MTLFunction> shadowShadeFunction = [library newFunctionWithName:@"shadow_contribute" constantValues:values error:&error];
         assert(error == nil);
         _shadowShadePipeline = [commandQueue.device newComputePipelineStateWithFunction:shadowShadeFunction error:&error];
+        assert(error == nil);
+        
+        shadowOnTranslucent = YES;
+        [values setConstantValue:&shadowOnTranslucent type:MTLDataTypeBool atIndex:0];
+        shadowShadeFunction = [library newFunctionWithName:@"shadow_contribute" constantValues:values error:&error];
+        assert(error == nil);
+        _shadowShadeOnTranslucentPipeline = [commandQueue.device newComputePipelineStateWithFunction:shadowShadeFunction error:&error];
         assert(error == nil);
         
         id<MTLFunction> differentialFunction = [library newFunctionWithName:@"shadow_illuminate" constantValues:values error:&error];
@@ -70,7 +85,7 @@ static const uint32_t kRandomBufferSize = 512;
         assert(error == nil);
         
         _normalizedIllumination = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                    withPixelFormat:MTLPixelFormatR32Float
+                                                                    withPixelFormat:MTLPixelFormatRG32Float
                                                                     withSampleCount:1];
         
         _normalizedIllumination.manageTargetTexture = YES;
@@ -78,6 +93,8 @@ static const uint32_t kRandomBufferSize = 512;
         _normalizedIllumination.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
         _normalizedIllumination.colorAttachments[0].needWrite = YES;
         _normalizedIllumination.name = @"Ray Tracing Normalized";
+        
+        _shadowOnTranslucent = NO;
     }
     
     return self;
@@ -99,6 +116,8 @@ static const uint32_t kRandomBufferSize = 512;
     
     _shadowRayBuffer = [self.commandQueue.device newBufferWithLength:bufferSize
                                                              options:MTLResourceStorageModePrivate];
+    _shadowRayBufferOnTranslucent = [self.commandQueue.device newBufferWithLength:bufferSize
+                                                                          options:MTLResourceStorageModePrivate];
     _shadowIntersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
                                                                       options:MTLResourceStorageModePrivate];
 }
@@ -107,8 +126,15 @@ static const uint32_t kRandomBufferSize = 512;
 - (void)runRayTraceShade:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
     [self rayIntersect:commandBuffer withRays:_shadowRayBuffer withIntersection:_shadowIntersectionBuffer];
+    
     [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
                 withParameter:@[_shadowRayBuffer]
+            withIntersection:_shadowIntersectionBuffer withInFlightIndex:inFlight];
+    
+    [self rayIntersect:commandBuffer withRays:_shadowRayBufferOnTranslucent withIntersection:_shadowIntersectionBuffer];
+    
+    [self runRayTraceCompute:_shadowShadeOnTranslucentPipeline withCommandBuffer:commandBuffer
+               withParameter:@[_shadowRayBufferOnTranslucent]
             withIntersection:_shadowIntersectionBuffer withInFlightIndex:inFlight];
 }
 
@@ -256,7 +282,48 @@ static const uint32_t kRandomBufferSize = 512;
     
     [self updateUniforms:inFlight];
     
+    [self rayEmit:commandBuffer withInFlightIndex:inFlight];
+    
     if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
+    {
+        // generate rays for the two light sources
+        //
+        [self runRayTraceCompute:_shadowRayPipeline withCommandBuffer:commandBuffer
+                   withParameter:@[_rayTraceUniform[inFlight],
+                                   _randomBuffers[inFlight],
+                                   _subRenderers[0].shadowRayBuffer,
+                                   _subRenderers[1].shadowRayBuffer]
+                withIntersection:self.primaryIntersectionBuffer
+               withInFlightIndex:inFlight];
+    }
+    
+    [self updatePrimaryRayMask:kNuoRayMask_Translucent withCommandBuffer:commandBuffer withInFlight:inFlight];
+    
+    if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
+    {
+        [self runRayTraceCompute:_shadowRayPipeline withCommandBuffer:commandBuffer
+                   withParameter:@[_rayTraceUniform[inFlight],
+                                   _randomBuffers[inFlight],
+                                   _subRenderers[0].shadowRayBufferOnTranslucent,
+                                   _subRenderers[1].shadowRayBufferOnTranslucent]
+                withIntersection:self.primaryIntersectionBuffer
+               withInFlightIndex:inFlight];
+    }
+        
+    for (uint i = 0; i < 2; ++i)
+    {
+        // sub renderers detect intersection for each light source
+        // and accumulates the samplings
+        //
+        [_subRenderers[i] setShadowOnTranslucent:NO];
+        [_subRenderers[i] setRayStructure:self.rayStructure];
+        [_subRenderers[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    }
+    
+    
+
+    
+    /*if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
     {
         // generate rays for the two light sources
         //
@@ -273,10 +340,11 @@ static const uint32_t kRandomBufferSize = 512;
             // sub renderers detect intersection for each light source
             // and accumulates the samplings
             //
+            [_subRenderers[i] setShadowOnTranslucent:YES];
             [_subRenderers[i] setRayStructure:self.rayStructure];
             [_subRenderers[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
         }
-    }
+    }*/
 }
 
 
