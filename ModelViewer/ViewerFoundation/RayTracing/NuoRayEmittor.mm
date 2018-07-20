@@ -31,12 +31,10 @@ const uint kRayBufferStrid = 36;
     NSArray<id<MTLBuffer>>* _uniformBuffers;
     NSArray<id<MTLBuffer>>* _randomBuffers;
     
-    id<MTLBuffer> _rayMaskUniform;
-    
     id<MTLComputePipelineState> _pipeline;
     
     id<MTLComputePipelineState> _pipelineMaskOpaque;
-    id<MTLComputePipelineState> _pipelineMaskAll;
+    id<MTLComputePipelineState> _pipelineMaskTranslucent;
     
     id<MTLBuffer> _rayBuffer;
 }
@@ -109,9 +107,13 @@ const uint kRayBufferStrid = 36;
 - (void)updateRayMask:(uint32_t)rayMask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
          withInFlight:(uint)inFlight
 {
+    // rays must be emitted already, which also implies the _uniformBuffers[inFlight] is valid
+    //
+    assert(_rayBuffer != nil);
+    
     id<MTLComputePipelineState> pipeline;
     if (rayMask | kNuoRayMask_Translucent)
-        pipeline = _pipelineMaskAll;
+        pipeline = _pipelineMaskTranslucent;
     else
         pipeline = _pipelineMaskOpaque;
     
@@ -139,12 +141,19 @@ const uint kRayBufferStrid = 36;
     _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
     assert(error == nil);
     
-    descriptor.computeFunction = [library newFunctionWithName:@"ray_mask_opaque"];
+    MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
+    BOOL onTranslucent = NO;
+    [values setConstantValue:&onTranslucent type:MTLDataTypeBool atIndex:0];
+    descriptor.computeFunction = [library newFunctionWithName:@"ray_set_mask" constantValues:values error:&error];
+    assert(error == nil);
     _pipelineMaskOpaque = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
     assert(error == nil);
     
-    descriptor.computeFunction = [library newFunctionWithName:@"ray_mask_all"];
-    _pipelineMaskAll = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
+    onTranslucent = YES;
+    [values setConstantValue:&onTranslucent type:MTLDataTypeBool atIndex:0];
+    descriptor.computeFunction = [library newFunctionWithName:@"ray_set_mask" constantValues:values error:&error];
+    assert(error == nil);
+    _pipelineMaskTranslucent = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
     assert(error == nil);
 }
 

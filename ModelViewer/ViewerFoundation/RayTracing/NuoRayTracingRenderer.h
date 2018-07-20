@@ -26,8 +26,13 @@
 @property (nonatomic, readonly) NSArray<id<MTLTexture>>* targetTextures;
 
 
+/**
+ *  pixelFormat - one channel per kind of objects (e.g. opaque, translucent ...)
+ *  targetCount - one target per light source
+ */
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                withAccumulatedResult:(BOOL)accumulateResult
+                     withPixelFormat:(MTLPixelFormat)pixelFormat
                      withTargetCount:(uint)targetCount;
 
 - (void)resetResources:(id<MTLCommandBuffer>)commandBuffer;

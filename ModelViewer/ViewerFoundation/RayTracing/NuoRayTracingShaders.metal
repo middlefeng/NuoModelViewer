@@ -88,26 +88,20 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
     ray.direction = (uniforms.viewTrans * rayDirection).xyz;
     ray.origin = (uniforms.viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;
     
+    // primary rays are generated with mask as opaque. rays for translucent mask are got by
+    // set the mask later by "ray_set_mask"
+    //
     ray.mask = kNuoRayMask_Opaue;
+    
     ray.maxDistance = INFINITY;
 }
 
 
+static constant bool kShadowOnTranslucent  [[ function_constant(0) ]];
 
-kernel void ray_mask_opaque(uint2 tid [[thread_position_in_grid]],
-                            constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                            device RayBuffer* rays [[buffer(1)]])
-{
-    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
-        return;
-    
-    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    device RayBuffer& ray = rays[rayIdx];
-    
-    ray.mask = kNuoRayMask_Opaue;
-}
 
-kernel void ray_mask_all(uint2 tid [[thread_position_in_grid]],
+
+kernel void ray_set_mask(uint2 tid [[thread_position_in_grid]],
                          constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                          device RayBuffer* rays [[buffer(1)]])
 {
@@ -117,7 +111,10 @@ kernel void ray_mask_all(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device RayBuffer& ray = rays[rayIdx];
     
-    ray.mask = kNuoRayMask_Translucent | kNuoRayMask_Opaue;
+    if (kShadowOnTranslucent)
+        ray.mask = kNuoRayMask_Translucent;
+    else
+        ray.mask = kNuoRayMask_Opaue;
 }
 
 
@@ -186,10 +183,6 @@ kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
         }
     }
 }
-
-
-
-static constant bool kShadowOnTranslucent  [[ function_constant(0) ]];
 
 
 

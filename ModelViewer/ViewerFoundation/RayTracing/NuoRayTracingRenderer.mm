@@ -39,6 +39,7 @@
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                withAccumulatedResult:(BOOL)accumulateResult
+                     withPixelFormat:(MTLPixelFormat)pixelFormat
                      withTargetCount:(uint)targetCount
 {
     self = [super initWithCommandQueue:commandQueue
@@ -52,7 +53,7 @@
         for (uint i = 0; i < targetCount; ++i)
         {
             rayTracingTargets[i] = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                     withPixelFormat:MTLPixelFormatRG32Float
+                                                                     withPixelFormat:pixelFormat
                                                                      withSampleCount:1];
         
             rayTracingTargets[i].manageTargetTexture = YES;
@@ -61,7 +62,7 @@
             rayTracingTargets[i].name = @"Ray Tracing";
         
             rayTracingAccumulates[i] = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                         withPixelFormat:MTLPixelFormatRG32Float
+                                                                         withPixelFormat:pixelFormat
                                                                          withSampleCount:1];
             
             rayTracingAccumulates[i].manageTargetTexture = YES;

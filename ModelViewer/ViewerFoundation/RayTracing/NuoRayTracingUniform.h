@@ -60,17 +60,6 @@ NuoRayVolumeUniform;
 
 
 
-typedef struct
-{
-    uint wViewPort;
-    uint hViewPort;
-    
-    uint rayMask;
-}
-NuoRayMaskUniform;
-
-
-
 
 
 #endif /* NuoRayTracingShadersCommon_h */

@@ -47,7 +47,7 @@ static const uint32_t kRandomBufferSize = 512;
 @implementation ModelRayTracingSubrenderer
 {
     id<MTLComputePipelineState> _shadowShadePipeline;
-    id<MTLComputePipelineState> _shadowShadeOnTranslucentPipeline;
+    id<MTLComputePipelineState> _shadowShadePipelineOnTranslucent;
     
     id<MTLComputePipelineState> _differentialPipeline;
     CGSize _drawableSize;
@@ -56,7 +56,12 @@ static const uint32_t kRandomBufferSize = 512;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    self = [super initWithCommandQueue:commandQueue withAccumulatedResult:YES withTargetCount:2];
+    // use two channels for the opaque and translucent objects, respectivey
+    //
+    MTLPixelFormat format = MTLPixelFormatRG32Float;
+    
+    self = [super initWithCommandQueue:commandQueue withAccumulatedResult:YES
+                       withPixelFormat:format withTargetCount:2];
     
     if (self)
     {
@@ -76,7 +81,7 @@ static const uint32_t kRandomBufferSize = 512;
         [values setConstantValue:&shadowOnTranslucent type:MTLDataTypeBool atIndex:0];
         shadowShadeFunction = [library newFunctionWithName:@"shadow_contribute" constantValues:values error:&error];
         assert(error == nil);
-        _shadowShadeOnTranslucentPipeline = [commandQueue.device newComputePipelineStateWithFunction:shadowShadeFunction error:&error];
+        _shadowShadePipelineOnTranslucent = [commandQueue.device newComputePipelineStateWithFunction:shadowShadeFunction error:&error];
         assert(error == nil);
         
         id<MTLFunction> differentialFunction = [library newFunctionWithName:@"shadow_illuminate" constantValues:values error:&error];
@@ -85,7 +90,7 @@ static const uint32_t kRandomBufferSize = 512;
         assert(error == nil);
         
         _normalizedIllumination = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                    withPixelFormat:MTLPixelFormatRG32Float
+                                                                    withPixelFormat:format
                                                                     withSampleCount:1];
         
         _normalizedIllumination.manageTargetTexture = YES;
@@ -133,7 +138,7 @@ static const uint32_t kRandomBufferSize = 512;
     
     [self rayIntersect:commandBuffer withRays:_shadowRayBufferOnTranslucent withIntersection:_shadowIntersectionBuffer];
     
-    [self runRayTraceCompute:_shadowShadeOnTranslucentPipeline withCommandBuffer:commandBuffer
+    [self runRayTraceCompute:_shadowShadePipelineOnTranslucent withCommandBuffer:commandBuffer
                withParameter:@[_shadowRayBufferOnTranslucent]
             withIntersection:_shadowIntersectionBuffer withInFlightIndex:inFlight];
 }
@@ -179,7 +184,8 @@ static const uint32_t kRandomBufferSize = 512;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    self = [super initWithCommandQueue:commandQueue withAccumulatedResult:NO withTargetCount:0];
+    self = [super initWithCommandQueue:commandQueue withAccumulatedResult:NO
+                       withPixelFormat:MTLPixelFormatInvalid withTargetCount:0];
     
     if (self)
     {
@@ -286,7 +292,7 @@ static const uint32_t kRandomBufferSize = 512;
     
     if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
     {
-        // generate rays for the two light sources
+        // generate rays for the two light sources, from opaque objects
         //
         [self runRayTraceCompute:_shadowRayPipeline withCommandBuffer:commandBuffer
                    withParameter:@[_rayTraceUniform[inFlight],
@@ -301,6 +307,8 @@ static const uint32_t kRandomBufferSize = 512;
     
     if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
     {
+        // generate rays for the two light sources, from translucent objects
+        //
         [self runRayTraceCompute:_shadowRayPipeline withCommandBuffer:commandBuffer
                    withParameter:@[_rayTraceUniform[inFlight],
                                    _randomBuffers[inFlight],
@@ -319,32 +327,6 @@ static const uint32_t kRandomBufferSize = 512;
         [_subRenderers[i] setRayStructure:self.rayStructure];
         [_subRenderers[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     }
-    
-    
-
-    
-    /*if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
-    {
-        // generate rays for the two light sources
-        //
-        [self runRayTraceCompute:_shadowRayPipeline withCommandBuffer:commandBuffer
-                   withParameter:@[_rayTraceUniform[inFlight],
-                                   _randomBuffers[inFlight],
-                                   _subRenderers[0].shadowRayBuffer,
-                                   _subRenderers[1].shadowRayBuffer]
-                withIntersection:self.primaryIntersectionBuffer
-               withInFlightIndex:inFlight];
-        
-        for (uint i = 0; i < 2; ++i)
-        {
-            // sub renderers detect intersection for each light source
-            // and accumulates the samplings
-            //
-            [_subRenderers[i] setShadowOnTranslucent:YES];
-            [_subRenderers[i] setRayStructure:self.rayStructure];
-            [_subRenderers[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
-        }
-    }*/
 }
 
 
