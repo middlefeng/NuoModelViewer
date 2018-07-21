@@ -49,10 +49,10 @@ static const uint32_t kRandomBufferSize = 512;
 
 @implementation ModelRayTracingSubrenderer
 {
-    id<MTLComputePipelineState> _shadowShadePipeline;
-    id<MTLComputePipelineState> _shadowShadePipelineOnTranslucent;
+    NuoComputePipeline* _shadowShadePipeline;
+    NuoComputePipeline* _shadowShadePipelineOnTranslucent;
     
-    id<MTLComputePipelineState> _differentialPipeline;
+    NuoComputePipeline* _differentialPipeline;
     CGSize _drawableSize;
 }
 
@@ -68,29 +68,19 @@ static const uint32_t kRandomBufferSize = 512;
     
     if (self)
     {
-        NSError* error = nil;
+        _shadowShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
+                                                             withFunction:@"shadow_contribute"
+                                                            withParameter:NO];
+        _shadowShadePipelineOnTranslucent = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
+                                                                          withFunction:@"shadow_contribute"
+                                                                         withParameter:YES];
+        _differentialPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
+                                                              withFunction:@"shadow_illuminate"
+                                                             withParameter:YES];
         
-        MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
-        id<MTLLibrary> library = [commandQueue.device newDefaultLibrary];
-        
-        bool shadowOnTranslucent = NO;
-        [values setConstantValue:&shadowOnTranslucent type:MTLDataTypeBool atIndex:0];
-        id<MTLFunction> shadowShadeFunction = [library newFunctionWithName:@"shadow_contribute" constantValues:values error:&error];
-        assert(error == nil);
-        _shadowShadePipeline = [commandQueue.device newComputePipelineStateWithFunction:shadowShadeFunction error:&error];
-        assert(error == nil);
-        
-        shadowOnTranslucent = YES;
-        [values setConstantValue:&shadowOnTranslucent type:MTLDataTypeBool atIndex:0];
-        shadowShadeFunction = [library newFunctionWithName:@"shadow_contribute" constantValues:values error:&error];
-        assert(error == nil);
-        _shadowShadePipelineOnTranslucent = [commandQueue.device newComputePipelineStateWithFunction:shadowShadeFunction error:&error];
-        assert(error == nil);
-        
-        id<MTLFunction> differentialFunction = [library newFunctionWithName:@"shadow_illuminate" constantValues:values error:&error];
-        assert(error == nil);
-        _differentialPipeline = [commandQueue.device newComputePipelineStateWithFunction:differentialFunction error:&error];
-        assert(error == nil);
+        _shadowShadePipeline.name = @"Shadow Shade (Opaque)";
+        _shadowShadePipelineOnTranslucent.name = @"Shadow Shade (Translucent)";
+        _differentialPipeline.name = @"Illumination Normalizing";
         
         _normalizedIllumination = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
                                                                     withPixelFormat:format
@@ -156,9 +146,7 @@ static const uint32_t kRandomBufferSize = 512;
     [_normalizedIllumination retainRenderPassEndcoder:commandBuffer];
     [_normalizedIllumination releaseRenderPassEndcoder];
     
-    NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
-                                                                     withPipeline:_differentialPipeline
-                                                                         withName:@"Illumination Normalizing"];
+    NuoComputeEncoder* encoder = [_differentialPipeline encoderWithCommandBuffer:commandBuffer];
     
     NSArray<id<MTLTexture>>* textures = self.targetTextures;
     [encoder setTexture:textures[0] atIndex:0];
@@ -177,7 +165,7 @@ static const uint32_t kRandomBufferSize = 512;
 
 @implementation ModelRayTracingRenderer
 {
-    id<MTLComputePipelineState> _shadowRayPipeline;
+    NuoComputePipeline* _shadowRayPipeline;
     
     NSArray<id<MTLBuffer>>* _rayTraceUniform;
     NSArray<id<MTLBuffer>>* _randomBuffers;
@@ -193,14 +181,10 @@ static const uint32_t kRandomBufferSize = 512;
     
     if (self)
     {
-        NSError* error = nil;
-        MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
-        id<MTLLibrary> library = [commandQueue.device newDefaultLibrary];
-        
-        id<MTLFunction> shadowRayFunction = [library newFunctionWithName:@"shadow_ray_emit" constantValues:values error:&error];
-        assert(error == nil);
-        _shadowRayPipeline = [commandQueue.device newComputePipelineStateWithFunction:shadowRayFunction error:&error];
-        assert(error == nil);
+        _shadowRayPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
+                                                           withFunction:@"shadow_ray_emit"
+                                                          withParameter:NO];
+        _shadowRayPipeline.name = @"Shadow Ray Emit";
         
         id<MTLBuffer> buffers[kInFlightBufferCount];
         id<MTLBuffer> randoms[kInFlightBufferCount];

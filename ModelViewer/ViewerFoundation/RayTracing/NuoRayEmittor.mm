@@ -29,7 +29,7 @@
     NSArray<id<MTLBuffer>>* _uniformBuffers;
     NSArray<id<MTLBuffer>>* _randomBuffers;
     
-    id<MTLComputePipelineState> _pipeline;
+    NuoComputePipeline* _pipeline;
 }
 
 
@@ -75,16 +75,10 @@
 
 - (void)setupPipeline
 {
-    NSError* error = nil;
-    
-    MTLComputePipelineDescriptor *descriptor = [[MTLComputePipelineDescriptor alloc] init];
-    descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
-    
     // Generates rays according to view/projection matrices
-    id<MTLLibrary> library = [_device newDefaultLibrary];
-    descriptor.computeFunction = [library newFunctionWithName:@"ray_emit"];
-    _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
-    assert(error == nil);
+    _pipeline = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"ray_emit"
+                                             withParameter:NO];
+    _pipeline.name = @"Ray Emit";
 }
 
 
@@ -128,9 +122,7 @@
 {
     [self updateUniform:inFlight widthRayBuffer:rayBuffer];
     
-    NuoComputeEncoder* computeEncoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
-                                                                            withPipeline:_pipeline
-                                                                                withName:@"Ray Emit"];
+    NuoComputeEncoder* computeEncoder = [_pipeline encoderWithCommandBuffer:commandBuffer];
     
     [computeEncoder setBuffer:_uniformBuffers[inFlight] offset:0 atIndex:0];
     [computeEncoder setBuffer:rayBuffer.buffer offset:0 atIndex:1];

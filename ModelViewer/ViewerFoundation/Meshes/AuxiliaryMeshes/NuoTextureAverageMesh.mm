@@ -190,8 +190,8 @@ struct AccumulateUniform
     NuoRenderPassTarget* _texturesAccumulated;
     
     id<MTLCommandQueue> _commandQueue;
-    id<MTLComputePipelineState> _pipelineState;
-    id<MTLComputePipelineState> _pipelineStateCopy;
+    NuoComputePipeline* _pipelineState;
+    NuoComputePipeline* _pipelineStateCopy;
     
     id<MTLTexture> _textureLatest;
     uint32_t _textureCount;
@@ -238,21 +238,13 @@ struct AccumulateUniform
     _accumulatedMesh.sampleCount = 1;
     [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_None];
     
-    id<MTLLibrary> library = [_commandQueue.device newDefaultLibrary];
+    _pipelineState = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:shaderName
+                                                  withParameter:NO];
+    _pipelineStateCopy = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"compute_texture_copy"
+                                                      withParameter:NO];
     
-    MTLComputePipelineDescriptor *pipelineDescriptor = [MTLComputePipelineDescriptor new];
-    pipelineDescriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
-    
-    NSError* error = nil;
-    pipelineDescriptor.computeFunction = [library newFunctionWithName:shaderName];
-    _pipelineState = [_commandQueue.device newComputePipelineStateWithDescriptor:pipelineDescriptor options:0
-                                                                      reflection:nil error:&error];
-    
-    pipelineDescriptor.computeFunction = [library newFunctionWithName:@"compute_texture_copy"];
-    _pipelineStateCopy = [_commandQueue.device newComputePipelineStateWithDescriptor:pipelineDescriptor options:0
-                                                                          reflection:nil error:&error];
-    
-    assert(error == nil);
+    _pipelineState.name = @"Average Accumulation";
+    _pipelineStateCopy.name = @"Texture Copy";
 }
 
 
@@ -294,9 +286,7 @@ struct AccumulateUniform
     [self appendTexture:texture];
     [self updateUniform:inFlight];
     
-    NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
-                                                                     withPipeline:_pipelineState
-                                                                         withName:@"Average Accumulation"];
+    NuoComputeEncoder* encoder = [_pipelineState encoderWithCommandBuffer:commandBuffer];
     
     [encoder setTexture:_texturesAccumulated.targetTexture atIndex:0];
     [encoder setTexture:_textureLatest atIndex:1];
@@ -323,9 +313,7 @@ struct AccumulateUniform
     
 - (void)outputAccumulateToTexture:(id<MTLTexture>)targetTexture withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
-    NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
-                                                                     withPipeline:_pipelineStateCopy
-                                                                         withName:@"Texture Copy"];
+    NuoComputeEncoder* encoder = [_pipelineStateCopy encoderWithCommandBuffer:commandBuffer];
     
     [encoder setTexture:targetTexture atIndex:0];
     [encoder setTexture:_texturesAccumulated.targetTexture atIndex:1];

@@ -9,6 +9,66 @@
 #import "NuoComputeEncoder.h"
 
 
+
+@interface NuoComputeEncoder()
+
+- (instancetype)initWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+                         withPipeline:(id<MTLComputePipelineState>)pipeline
+                             withName:(NSString*)name;
+
+
+@end
+
+
+
+
+@implementation NuoComputePipeline
+{
+    id<MTLComputePipelineState> _pipeline;
+}
+
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device withFunction:(NSString*)function
+                 withParameter:(BOOL)param
+{
+    self = [super init];
+    
+    if (self)
+    {
+        id<MTLLibrary> library = [device newDefaultLibrary];
+        
+        MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
+        [values setConstantValue:&param type:MTLDataTypeBool atIndex:0];
+        
+        MTLComputePipelineDescriptor *descriptor = [MTLComputePipelineDescriptor new];
+        descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
+        
+        NSError* error;
+        descriptor.computeFunction = [library newFunctionWithName:function constantValues:values error:&error];
+        assert(error == nil);
+        _pipeline = [device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
+        assert(error == nil);
+    }
+    
+    return self;
+}
+
+
+- (NuoComputeEncoder*)encoderWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+{
+    NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
+                                                                     withPipeline:_pipeline
+                                                                         withName:_name];
+    
+    return encoder;
+}
+
+
+@end
+
+
+
+
 @implementation NuoComputeEncoder
 {
     id<MTLComputeCommandEncoder> _encoder;

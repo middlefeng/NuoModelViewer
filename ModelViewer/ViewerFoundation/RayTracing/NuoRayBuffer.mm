@@ -26,8 +26,8 @@ const uint kRayBufferStrid = 36;
 
 @implementation NuoRayBuffer
 {
-    id<MTLComputePipelineState> _pipelineMaskOpaque;
-    id<MTLComputePipelineState> _pipelineMaskTranslucent;
+    NuoComputePipeline* _pipelineMaskOpaque;
+    NuoComputePipeline* _pipelineMaskTranslucent;
 }
 
 
@@ -48,27 +48,11 @@ const uint kRayBufferStrid = 36;
 
 - (void)setupPipeline
 {
-    NSError* error = nil;
+    _pipelineMaskOpaque = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"ray_set_mask" withParameter:NO];
+    _pipelineMaskTranslucent = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"ray_set_mask" withParameter:YES];
     
-    MTLComputePipelineDescriptor *descriptor = [[MTLComputePipelineDescriptor alloc] init];
-    descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
-    
-    id<MTLLibrary> library = [_device newDefaultLibrary];
-    MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
-    
-    BOOL onTranslucent = NO;
-    [values setConstantValue:&onTranslucent type:MTLDataTypeBool atIndex:0];
-    descriptor.computeFunction = [library newFunctionWithName:@"ray_set_mask" constantValues:values error:&error];
-    assert(error == nil);
-    _pipelineMaskOpaque = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
-    assert(error == nil);
-    
-    onTranslucent = YES;
-    [values setConstantValue:&onTranslucent type:MTLDataTypeBool atIndex:0];
-    descriptor.computeFunction = [library newFunctionWithName:@"ray_set_mask" constantValues:values error:&error];
-    assert(error == nil);
-    _pipelineMaskTranslucent = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
-    assert(error == nil);
+    _pipelineMaskOpaque.name = @"Ray Mask (Opaque)";
+    _pipelineMaskTranslucent.name = @"Ray Mask (Translucent)";
 }
 
 
@@ -95,15 +79,13 @@ const uint kRayBufferStrid = 36;
 - (void)updateRayMask:(uint32_t)rayMask withUniform:(id<MTLBuffer>)uniforms
                                   withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
-    id<MTLComputePipelineState> pipeline;
+    NuoComputePipeline* pipeline;
     if (rayMask | kNuoRayMask_Translucent)
         pipeline = _pipelineMaskTranslucent;
     else
         pipeline = _pipelineMaskOpaque;
     
-    NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
-                                                                     withPipeline:pipeline
-                                                                         withName:@"Ray Mask"];
+    NuoComputeEncoder* encoder = [pipeline encoderWithCommandBuffer:commandBuffer];
     
     [encoder setDataSize:_dimension];
     [encoder setBuffer:uniforms offset:0 atIndex:0];

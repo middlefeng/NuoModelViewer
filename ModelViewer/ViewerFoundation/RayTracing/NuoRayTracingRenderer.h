@@ -12,6 +12,7 @@
 
 
 @class NuoRayBuffer;
+@class NuoComputePipeline;
 @class NuoRayAccelerateStructure;
 
 
@@ -56,7 +57,7 @@
 - (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                 withInFlight:(uint)inFlight;
 
-- (void)runRayTraceCompute:(id<MTLComputePipelineState>)pipeline
+- (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
           withIntersection:(id<MTLBuffer>)intersection

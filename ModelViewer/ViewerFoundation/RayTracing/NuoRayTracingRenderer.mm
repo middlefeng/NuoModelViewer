@@ -159,15 +159,13 @@
 }
 
 
-- (void)runRayTraceCompute:(id<MTLComputePipelineState>)pipeline
+- (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
           withIntersection:(id<MTLBuffer>)intersection
          withInFlightIndex:(unsigned int)inFlight
 {
-    NuoComputeEncoder* computeEncoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
-                                                                            withPipeline:pipeline
-                                                                                withName:@"Ray Trace"];
+    NuoComputeEncoder* computeEncoder = [pipeline encoderWithCommandBuffer:commandBuffer];
     
     [computeEncoder setBuffer:[_rayStructure uniformBuffer:inFlight] offset:0 atIndex:0];
     [computeEncoder setBuffer:[_rayStructure primaryRayBuffer].buffer offset:0 atIndex:1];
