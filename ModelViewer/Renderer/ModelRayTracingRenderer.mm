@@ -9,11 +9,6 @@
 #import "ModelRayTracingRenderer.h"
 #import "NuoRayTracingUniform.h"
 
-// headers to pass light source info
-//
-#import "NuoMeshSceneRenderPass.h"
-#import "NuoShadowMapRenderer.h"
-
 #import "NuoRayBuffer.h"
 #import "NuoRayEmittor.h"
 #import "NuoRayAccelerateStructure.h"
