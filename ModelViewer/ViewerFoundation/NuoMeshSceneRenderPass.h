@@ -10,8 +10,6 @@
 
 #import <Metal/Metal.h>
 
-#include "NuoBounds.h"
-
 
 
 @class NuoShadowMapRenderer;
