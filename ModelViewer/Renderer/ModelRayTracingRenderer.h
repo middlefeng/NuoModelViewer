@@ -8,7 +8,7 @@
 
 #import "NuoRayTracingRenderer.h"
 
-#import "NuoLightSource.h"
+@class NuoLightSource;
 
 
 

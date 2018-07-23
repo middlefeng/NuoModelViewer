@@ -9,6 +9,8 @@
 #import "ModelRayTracingRenderer.h"
 #import "NuoRayTracingUniform.h"
 
+#import "NuoLightSource.h"
+
 #import "NuoRayBuffer.h"
 #import "NuoRayEmittor.h"
 #import "NuoRayAccelerateStructure.h"
@@ -17,7 +19,6 @@
 #include "NuoComputeEncoder.h"
 #include "NuoRenderPassAttachment.h"
 
-#include <simd/simd.h>
 
 
 static const uint32_t kRandomBufferSize = 512;
@@ -206,8 +207,8 @@ static const uint32_t kRandomBufferSize = 512;
 {
     [super setDrawableSize:drawableSize];
     
-    for (uint i = 0; i < 2; ++i)
-        [_subRenderers[i] setDrawableSize:drawableSize];
+    for (ModelRayTracingSubrenderer* renderer : _subRenderers)
+        [renderer setDrawableSize:drawableSize];
 }
 
 
@@ -221,8 +222,8 @@ static const uint32_t kRandomBufferSize = 512;
 {
     commandBuffer = commandBuffer ? commandBuffer : [self.commandQueue commandBuffer];
     
-    for (uint i = 0; i < 2; ++i)
-        [_subRenderers[i] resetResources:commandBuffer];
+    for (ModelRayTracingSubrenderer* renderer : _subRenderers)
+        [renderer resetResources:commandBuffer];
     
     [commandBuffer commit];
 }
