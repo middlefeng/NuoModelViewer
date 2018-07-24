@@ -9,8 +9,6 @@
 #include "NuoMeshBounds.h"
 #include "NuoModelBase.h"
 
-#include <vector>
-
 
 
 

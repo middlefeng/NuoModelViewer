@@ -294,6 +294,14 @@ MouseDragMode;
     
     [_modelComponentPanels updatePanels];
     
+    if (_modelPanel.rayTracingRecordStatus == kRecord_Start)
+    {
+        [_modelRender setRayTracingRecordStatus:kRecord_Stop];
+        [_modelRender setRayTracingRecordStatus:kRecord_Start];
+    }
+    [_modelRender syncMeshPositionBuffer];
+    
+    
     [self render];
 }
 

@@ -16,7 +16,8 @@
 typedef enum
 {
     kNuoRayMask_Opaue           = 1,
-    kNuoRayMask_Translucent     = 2
+    kNuoRayMask_Translucent     = 2,
+    kNuoRayMask_Disabled        = 4
 }
 NuoRayMask;
 

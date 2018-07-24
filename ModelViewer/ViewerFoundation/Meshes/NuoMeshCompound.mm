@@ -141,9 +141,6 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        if (!mesh.enabled)
-            continue;
-        
         VectorBuffer oneBuffer = [mesh worldPositionBuffer:transformWorld];
         buffer.Union(oneBuffer);
     }
@@ -161,9 +158,6 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        if (!mesh.enabled)
-            continue;
-        
         VectorBuffer oneBuffer = [mesh worldNormalBuffer:transformWorld];
         buffer.Union(oneBuffer);
     }
@@ -178,28 +172,30 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        if (!mesh.enabled)
-            continue;
-        
         if ([mesh isKindOfClass:NuoMeshCompound.class])
         {
             NuoMeshCompound* compoundOne = (NuoMeshCompound*)mesh;
             std::vector<uint32_t> oneBuffer = [compoundOne maskBuffer];
             buffer.insert(buffer.end(), oneBuffer.begin(), oneBuffer.end());
+            
+            continue;
         }
-        else
+        
+        NuoRayMask mask = kNuoRayMask_Disabled;
+        if (mesh.enabled)
         {
-            NuoRayMask mask = mesh.hasTransparency ? kNuoRayMask_Translucent :
-                                                     kNuoRayMask_Opaue;
-            VectorBuffer vectorBuffer = [mesh worldPositionBuffer:NuoMatrixFloat44Identity];
-            size_t bufferSize = vectorBuffer._indices.size() / 3;
-            
-            std::vector<uint32_t> oneBuffer;
-            oneBuffer.resize(bufferSize);
-            std::fill(oneBuffer.begin(), oneBuffer.end(), mask);
-            
-            buffer.insert(buffer.end(), oneBuffer.begin(), oneBuffer.end());
+            mask = mesh.hasTransparency ? kNuoRayMask_Translucent :
+                                          kNuoRayMask_Opaue;
         }
+        
+        VectorBuffer vectorBuffer = [mesh worldPositionBuffer:NuoMatrixFloat44Identity];
+        size_t bufferSize = vectorBuffer._indices.size() / 3;
+        
+        std::vector<uint32_t> oneBuffer;
+        oneBuffer.resize(bufferSize);
+        std::fill(oneBuffer.begin(), oneBuffer.end(), mask);
+        
+        buffer.insert(buffer.end(), oneBuffer.begin(), oneBuffer.end());
     }
     
     return buffer;

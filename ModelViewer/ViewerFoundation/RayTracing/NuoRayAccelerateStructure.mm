@@ -115,16 +115,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     [encoder copyFromBuffer:normalBuffer sourceOffset:0
                    toBuffer:_normalBuffer destinationOffset:0 size:vertexBufferSize];
     
-    std::vector<uint32_t> mask = [root maskBuffer];
-    uint32_t maskBufferSize =(uint32_t)(mask.size() * sizeof(uint32_t));
-    id<MTLBuffer> maskBuffer = [_commandQueue.device newBufferWithBytes:&mask[0]
-                                                                 length:maskBufferSize
-                                                                options:MTLResourceStorageModeShared];
-    _maskBuffer = [_commandQueue.device newBufferWithLength:maskBufferSize
-                                                    options:MTLResourceStorageModePrivate];
-    
-    [encoder copyFromBuffer:maskBuffer sourceOffset:0
-                   toBuffer:_maskBuffer destinationOffset:0 size:maskBufferSize];
+    [self setMask:root withEncoder:encoder];
     
     [encoder endEncoding];
     [commandBuffer commit];
@@ -136,6 +127,37 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     _accelerateStructure.maskBuffer = _maskBuffer;
     
     [_accelerateStructure rebuild];
+}
+
+
+- (void)setMask:(NuoMeshSceneRoot *)root
+{
+    id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
+    id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
+    
+    [self setMask:root withEncoder:encoder];
+    
+    [encoder endEncoding];
+    [commandBuffer commit];
+    
+    _accelerateStructure.maskBuffer = _maskBuffer;
+    
+    [_accelerateStructure rebuild];
+}
+
+    
+- (void)setMask:(NuoMeshSceneRoot *)root withEncoder:(id<MTLBlitCommandEncoder>)encoder
+{
+    std::vector<uint32_t> mask = [root maskBuffer];
+    uint32_t maskBufferSize =(uint32_t)(mask.size() * sizeof(uint32_t));
+    id<MTLBuffer> maskBuffer = [_commandQueue.device newBufferWithBytes:&mask[0]
+                                                                 length:maskBufferSize
+                                                                options:MTLResourceStorageModeShared];
+    _maskBuffer = [_commandQueue.device newBufferWithLength:maskBufferSize
+                                                    options:MTLResourceStorageModePrivate];
+    
+    [encoder copyFromBuffer:maskBuffer sourceOffset:0
+                   toBuffer:_maskBuffer destinationOffset:0 size:maskBufferSize];
 }
 
 
