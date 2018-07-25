@@ -27,7 +27,9 @@ extern const uint kRayIntersectionStride;
 @property (nonatomic, assign) CGSize drawableSize;
 
 @property (nonatomic, readonly) NuoRayBuffer* primaryRayBuffer;
+
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
+@property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> normalBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> maskBuffer;
 
@@ -35,7 +37,7 @@ extern const uint kRayIntersectionStride;
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (void)setRoot:(NuoMeshSceneRoot*)root;
-- (void)setMask:(NuoMeshSceneRoot*)root;
+- (void)setRoot:(NuoMeshSceneRoot *)root withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
 - (void)setView:(const NuoMatrixFloat44&)viewTrans;
 
 - (void)updateRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer

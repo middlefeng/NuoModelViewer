@@ -227,6 +227,8 @@ MouseDragMode;
         NuoMeshSceneRoot* dissectScene = [_modelRender cloneSceneFor:_modelPanel.meshMode];
         [_modelDissectRenderer setDissectScene:dissectScene];
     }
+    
+    [_modelRender rebuildRayTracingBuffers];
 }
 
 
@@ -299,7 +301,7 @@ MouseDragMode;
         [_modelRender setRayTracingRecordStatus:kRecord_Stop];
         [_modelRender setRayTracingRecordStatus:kRecord_Start];
     }
-    [_modelRender syncMeshPositionBuffer];
+    [_modelRender syncRayTracingBuffers];
     
     
     [self render];
@@ -838,7 +840,7 @@ MouseDragMode;
         }
     }
     
-    [_modelRender syncMeshPositionBuffer];
+    [_modelRender syncRayTracingBuffers];
     [self render];
 }
 
@@ -851,7 +853,7 @@ MouseDragMode;
         _modelRender.zoomDelta = 10 * event.magnification;
     
     [_modelRender setRayTracingRecordStatus:kRecord_Stop];
-    [_modelRender syncMeshPositionBuffer];
+    [_modelRender syncRayTracingBuffers];
     [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
     [self render];
 }
@@ -881,7 +883,7 @@ MouseDragMode;
     }
     
     [_modelRender setRayTracingRecordStatus:kRecord_Stop];
-    [_modelRender syncMeshPositionBuffer];
+    [_modelRender syncRayTracingBuffers];
     [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
     [self render];
 }

@@ -79,6 +79,7 @@
     ModelRayTracingRenderer* _rayTracingRenderer;
     
     BOOL _rayAcceleratorOutOfSync;
+    BOOL _rayAcceleratorNeedRebuild;
 }
 
 
@@ -221,7 +222,6 @@
     [_mainModelMesh setTransformTranslate:NuoMatrixTranslation(defaultDistanceVec)];
     
     [self caliberateSceneCenter];
-    [self syncMeshPositionBuffer];
 }
 
 
@@ -371,6 +371,8 @@
     //
     [_sceneRoot addBoardObject:boardMesh];
     
+    [self rebuildRayTracingBuffers];
+    
     return boardMesh;
 }
 
@@ -397,6 +399,8 @@
             _selectedMesh = _sceneRoot.meshes[0];
         else
             _selectedMesh = nil;
+        
+        [self rebuildRayTracingBuffers];
     }
 }
 
@@ -994,29 +998,37 @@
         _backdropTransXDelta = 0.0;
         _backdropTransYDelta = 0.0;
     }
-    
-    if (_rayTracingRecordStatus != kRecord_Stop)
-    {
-        if (_rayAcceleratorOutOfSync)
-        {
-            _rayAcceleratorOutOfSync = NO;
-            [_rayAccelerator setRoot:_sceneRoot];
-        }
-        
-        [_rayAccelerator setView:[self viewMatrix]];
-        
-        for (uint i = 0; i < 2; ++i)
-            [_rayTracingRenderer setLightSource:_lights[i] forIndex:i];
-        
-        _rayTracingRenderer.sceneBounds = bounds;
-        _rayTracingRenderer.fieldOfView = _fieldOfView;
-    }
 }
 
 - (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                withInFlightIndex:(unsigned int)inFlight
 {
     [self updateUniformsForView:inFlight];
+    
+    if (_rayTracingRecordStatus != kRecord_Stop)
+    {
+        if (_rayAcceleratorNeedRebuild)
+            [_rayAccelerator setRoot:_sceneRoot];
+        else if (_rayAcceleratorOutOfSync)
+            [_rayAccelerator setRoot:_sceneRoot withCommandBuffer:commandBuffer];
+        
+        [_rayAccelerator setView:[self viewMatrix]];
+        
+        for (uint i = 0; i < 2; ++i)
+            [_rayTracingRenderer setLightSource:_lights[i] forIndex:i];
+        
+        if (_rayTracingRecordStatus || _rayAcceleratorOutOfSync)
+        {
+            const NuoMatrixFloat44 viewTrans = [self viewMatrix];
+            const NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
+
+            _rayTracingRenderer.sceneBounds = bounds;
+            _rayTracingRenderer.fieldOfView = _fieldOfView;
+        }
+        
+        _rayAcceleratorNeedRebuild = NO;
+        _rayAcceleratorOutOfSync = NO;
+    }
     
     if (_rayTracingRecordStatus == kRecord_Start)
     {
@@ -1119,7 +1131,13 @@
 
 
 
-- (void)syncMeshPositionBuffer
+- (void)rebuildRayTracingBuffers
+{
+    _rayAcceleratorNeedRebuild = YES;
+}
+
+
+- (void)syncRayTracingBuffers
 {
     // mark this "dirty" mark as the BHV accelerator need to be synced at the time of
     // uniforms update

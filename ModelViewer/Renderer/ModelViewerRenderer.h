@@ -125,7 +125,8 @@ class NuoLua;
 - (void)setResolveDepth:(BOOL)resolveDepth;
 
 - (NuoMeshSceneRoot*)cloneSceneFor:(NuoMeshModeShaderParameter)mode;
-- (void)syncMeshPositionBuffer;
+- (void)rebuildRayTracingBuffers;
+- (void)syncRayTracingBuffers;
 
 
 @end

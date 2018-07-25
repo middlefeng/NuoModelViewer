@@ -41,6 +41,8 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
         _intersector.rayMaskOptions = MPSRayMaskOptionPrimitive;
         
         _accelerateStructure = [[MPSTriangleAccelerationStructure alloc] initWithDevice:commandQueue.device];
+        _accelerateStructure.usage = MPSAccelerationStructureUsageRefit;
+        
         _rayEmittor = [[NuoRayEmittor alloc] initWithCommandQueue:commandQueue];
         _primaryRayBuffer = [[NuoRayBuffer alloc] initWithDevice:commandQueue.device];
         
@@ -82,45 +84,35 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 {
     VectorBuffer buffer = [root worldPositionBuffer:NuoMatrixFloat44Identity];
     uint32_t triangleCount = (uint32_t)buffer._indices.size() / 3;
-    uint32_t vertexBufferSize = (uint32_t)(buffer._vertices.size() * sizeof(NuoVectorFloat3::_typeTrait::_vectorType));
     uint32_t indexBufferSize = (uint32_t)(buffer._indices.size() * sizeof(uint32));
     
-    id<MTLBuffer> vertexBuffer = [_commandQueue.device newBufferWithBytes:&buffer._vertices[0]
-                                                                   length:vertexBufferSize
-                                                                  options:MTLResourceStorageModeShared];
     id<MTLBuffer> indexBuffer = [_commandQueue.device newBufferWithBytes:&buffer._indices[0]
                                                                   length:indexBufferSize
                                                                  options:MTLResourceStorageModeShared];
     
-    id<MTLBuffer> vertexBufferPrivate = [_commandQueue.device newBufferWithLength:vertexBufferSize
-                                                                          options:MTLResourceStorageModePrivate];
     _indexBuffer = [_commandQueue.device newBufferWithLength:indexBufferSize
                                                      options:MTLResourceStorageModePrivate];
     
     id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
     id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
     
-    [encoder copyFromBuffer:vertexBuffer sourceOffset:0
-                   toBuffer:vertexBufferPrivate destinationOffset:0 size:vertexBufferSize];
     [encoder copyFromBuffer:indexBuffer sourceOffset:0
                    toBuffer:_indexBuffer destinationOffset:0 size:indexBufferSize];
     
     VectorBuffer normalBufferContent = [root worldNormalBuffer:NuoMatrixFloat44Identity];
-    id<MTLBuffer> normalBuffer = [_commandQueue.device newBufferWithBytes:&normalBufferContent._vertices[0]
-                                                                   length:vertexBufferSize
-                                                                  options:MTLResourceStorageModeShared];
-    _normalBuffer = [_commandQueue.device newBufferWithLength:vertexBufferSize
-                                                      options:MTLResourceStorageModePrivate];
     
-    [encoder copyFromBuffer:normalBuffer sourceOffset:0
-                   toBuffer:_normalBuffer destinationOffset:0 size:vertexBufferSize];
+    _normalBuffer = nil;
+    _vertexBuffer = nil;
+    _maskBuffer = nil;
     
-    [self setMask:root withEncoder:encoder];
+    [self setVertexBuffer:buffer normalBuffer:normalBufferContent];
+    [self setMaskBuffer:root];
     
     [encoder endEncoding];
     [commandBuffer commit];
+    [commandBuffer waitUntilCompleted];
     
-    _accelerateStructure.vertexBuffer = vertexBufferPrivate;
+    _accelerateStructure.vertexBuffer = _vertexBuffer;
     _accelerateStructure.indexType = MPSDataTypeUInt32;
     _accelerateStructure.indexBuffer = _indexBuffer;
     _accelerateStructure.triangleCount = triangleCount;
@@ -130,34 +122,60 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
-- (void)setMask:(NuoMeshSceneRoot *)root
+- (void)setRoot:(NuoMeshSceneRoot *)root withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
-    id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
-    id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
+    assert(_maskBuffer != nil);
+    assert(_vertexBuffer != nil);
+    assert(_normalBuffer != nil);
     
-    [self setMask:root withEncoder:encoder];
+    VectorBuffer buffer = [root worldPositionBuffer:NuoMatrixFloat44Identity];
+    VectorBuffer normalBufferContent = [root worldNormalBuffer:NuoMatrixFloat44Identity];
     
-    [encoder endEncoding];
-    [commandBuffer commit];
+    [self setVertexBuffer:buffer normalBuffer:normalBufferContent];
+    [self setMaskBuffer:root];
+    [_accelerateStructure encodeRefitToCommandBuffer:commandBuffer];
+}
+
+
+
+- (void)setVertexBuffer:(const VectorBuffer&)vertexBuffer normalBuffer:(const VectorBuffer&)normalBuffer
+{
+    uint32_t vertexBufferSize = (uint32_t)(vertexBuffer._vertices.size() *
+                                           sizeof(NuoVectorFloat3::_typeTrait::_vectorType));
     
-    _accelerateStructure.maskBuffer = _maskBuffer;
+    if (!_normalBuffer)
+    {
+        _normalBuffer = [_commandQueue.device newBufferWithLength:vertexBufferSize
+                                                          options:MTLResourceStorageModeManaged];
+    }
     
-    [_accelerateStructure rebuild];
+    memcpy(_normalBuffer.contents, &normalBuffer._vertices[0], vertexBufferSize);
+    [_normalBuffer didModifyRange:NSMakeRange(0, vertexBufferSize)];
+     
+     if (!_vertexBuffer)
+     {
+         _vertexBuffer = [_commandQueue.device newBufferWithLength:vertexBufferSize
+                                                           options:MTLResourceStorageModeManaged];
+     }
+     
+     memcpy(_vertexBuffer.contents, &vertexBuffer._vertices[0], vertexBufferSize);
+     [_vertexBuffer didModifyRange:NSMakeRange(0, vertexBufferSize)];
 }
 
     
-- (void)setMask:(NuoMeshSceneRoot *)root withEncoder:(id<MTLBlitCommandEncoder>)encoder
+- (void)setMaskBuffer:(NuoMeshSceneRoot*)root
 {
     std::vector<uint32_t> mask = [root maskBuffer];
-    uint32_t maskBufferSize =(uint32_t)(mask.size() * sizeof(uint32_t));
-    id<MTLBuffer> maskBuffer = [_commandQueue.device newBufferWithBytes:&mask[0]
-                                                                 length:maskBufferSize
-                                                                options:MTLResourceStorageModeShared];
-    _maskBuffer = [_commandQueue.device newBufferWithLength:maskBufferSize
-                                                    options:MTLResourceStorageModePrivate];
+    uint32_t maskBufferSize = (uint32_t)(mask.size() * sizeof(uint32_t));
     
-    [encoder copyFromBuffer:maskBuffer sourceOffset:0
-                   toBuffer:_maskBuffer destinationOffset:0 size:maskBufferSize];
+    if (!_maskBuffer)
+    {
+        _maskBuffer = [_commandQueue.device newBufferWithLength:maskBufferSize
+                                                      options:MTLResourceStorageModeManaged];
+    }
+    
+    memcpy(_maskBuffer.contents, &mask[0], maskBufferSize);
+    [_maskBuffer didModifyRange:NSMakeRange(0, maskBufferSize)];
 }
 
 
