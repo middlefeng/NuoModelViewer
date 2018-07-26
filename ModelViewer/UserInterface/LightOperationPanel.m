@@ -217,7 +217,7 @@
 
 - (void)lightSettingsChange:(id)sender
 {
-    [_optionUpdateDelegate lightOptionUpdate:self];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
 
 

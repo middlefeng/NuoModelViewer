@@ -25,7 +25,6 @@ enum UpdateOptions
 
 - (void)modelUpdate:(NuoMeshOption*)meshOptions;
 - (void)modelOptionUpdate:(uint32_t)options;
-- (void)lightOptionUpdate:(LightOperationPanel*)panel;
 - (void)animationLoad;
 
 - (void)modelPartsSelectionChanged:(NSArray<NuoMesh*>*)selected;

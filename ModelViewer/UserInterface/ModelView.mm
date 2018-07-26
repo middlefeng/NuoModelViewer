@@ -286,6 +286,15 @@ MouseDragMode;
     
     [_modelComponentPanels updatePanels];
     
+    if (!_lightPanel.hidden)
+    {
+        _notationRenderer.density = _lightPanel.lightDensity;
+        _notationRenderer.spacular = _lightPanel.lightSpacular;
+        _notationRenderer.shadowSoften = _lightPanel.shadowSoften;
+        _notationRenderer.shadowOccluderRadius = _lightPanel.shadowOccluderRadius;
+        _notationRenderer.shadowBias = _lightPanel.shadowBias;
+    }
+    
     [self render];
 }
 
@@ -393,20 +402,6 @@ MouseDragMode;
                  [panel setModelPartAnimations:animations];
              }
          }];
-}
-
-
-
-- (void)lightOptionUpdate:(LightOperationPanel*)panel;
-{
-    [self handleDraggingQuality];
-    
-    _notationRenderer.density = [panel lightDensity];
-    _notationRenderer.spacular = [panel lightSpacular];
-    _notationRenderer.shadowSoften = [panel shadowSoften];
-    _notationRenderer.shadowOccluderRadius = [panel shadowOccluderRadius];
-    _notationRenderer.shadowBias = [panel shadowBias];
-    [self render];
 }
 
 
