@@ -9,15 +9,22 @@
 
 @class NuoMesh;
 @class NuoMeshOption;
-@class ModelOperationPanel;
 @class LightOperationPanel;
+
+
+
+enum UpdateOptions
+{
+    kUpdateOption_DecreaseQuality = 1,
+    kUpdateOption_RebuildPipeline = 2,
+};
 
 
 
 @protocol ModelOptionUpdate
 
 - (void)modelUpdate:(NuoMeshOption*)meshOptions;
-- (void)modelOptionUpdate:(ModelOperationPanel*)panel;
+- (void)modelOptionUpdate:(uint32_t)options;
 - (void)lightOptionUpdate:(LightOperationPanel*)panel;
 - (void)animationLoad;
 
