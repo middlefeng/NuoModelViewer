@@ -273,7 +273,7 @@
             [mesh smoothWithTolerance:smoothTolerance];
     }
 
-    [_optionUpdateDelegate modelOptionUpdate:nil];
+    [_optionUpdateDelegate modelOptionUpdate:0];
 }
 
 

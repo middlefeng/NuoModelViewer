@@ -279,7 +279,7 @@
 
 - (VectorBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform
 {
-    const NuoMatrixFloat44 transformObject = _transformTranslate * _transformPoise;
+    const NuoMatrixFloat44 transformObject = _rotation.RotationMatrix() * _transformTranslate * _transformPoise;
     const NuoMatrixFloat44 transformWorld = transform * transformObject;
     
     VectorBuffer buffer = _rawModel->GetPositionBuffer();
@@ -291,7 +291,7 @@
 
 - (VectorBuffer)worldNormalBuffer:(const NuoMatrixFloat44&)transform
 {
-    const NuoMatrixFloat44 transformObject = _transformTranslate * _transformPoise;
+    const NuoMatrixFloat44 transformObject = _rotation.RotationMatrix() * _transformTranslate * _transformPoise;
     const NuoMatrixFloat44 transformWorld = transform * transformObject;
     
     VectorBuffer buffer = _rawModel->GetNormalBuffer();

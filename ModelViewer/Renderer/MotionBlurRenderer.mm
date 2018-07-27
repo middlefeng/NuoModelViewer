@@ -15,6 +15,8 @@
 {
     id<MTLTexture> _latestSource;
     NuoTextureAccumulator* _accumulator;
+    
+    CGSize _drawableSize;
 }
 
 
@@ -35,6 +37,11 @@
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
+    
+    if (CGSizeEqualToSize(_drawableSize, drawableSize))
+        return;
+    
+    _drawableSize = drawableSize;
     [self resetResources];
 }
 

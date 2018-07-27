@@ -560,7 +560,7 @@
     _showModelParts = [_checkModelParts state] == NSControlStateValueOn;
     [self updateControls];
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelOptionUpdate:0];
 }
 
 
@@ -569,7 +569,7 @@
 {
     _showFrameRate = [_checkFrameRate state] == NSControlStateValueOn;
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelOptionUpdate:0];
 }
 
 
@@ -596,7 +596,7 @@
 {
     _cullEnabled = [_cull state] == NSControlStateValueOn;
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelOptionUpdate:0];
 }
 
 
@@ -612,7 +612,7 @@
 {
     _fieldOfViewRadian = [_fieldOfView floatValue];
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
 
 
@@ -620,7 +620,7 @@
 {
     _ambientDensity = [_ambientDensitySlider floatValue];
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
 
 
@@ -628,7 +628,7 @@
 {
     _showLightSettings = [_lightSettings state] == NSControlStateValueOn;
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
 }
 
 - (void)brdfModeChanged:(id)sender
@@ -655,7 +655,7 @@
             break;
     }
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
 }
 
 
@@ -675,7 +675,7 @@
             break;
     }
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelOptionUpdate:0];
 }
 
 
@@ -683,7 +683,7 @@
 {
     _deviceSelected = _deviceList.selectedItem.title;
 
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelOptionUpdate:0];
 }
 
 
@@ -697,7 +697,7 @@
 {
     _animationProgress = _animationSlider.floatValue;
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelOptionUpdate:0];
 }
 
 
@@ -712,7 +712,7 @@
     else
         _motionBlurRecordStatus = kRecord_Stop;
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
 }
 
 
@@ -728,7 +728,7 @@
     else
         _rayTracingRecordStatus = kRecord_Stop;
     
-    [_optionUpdateDelegate modelOptionUpdate:self];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
 }
                                                  
 
