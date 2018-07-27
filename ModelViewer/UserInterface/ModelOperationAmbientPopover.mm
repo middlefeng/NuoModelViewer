@@ -187,7 +187,7 @@
     newParams.clearColor = NuoVectorFloat4(0.0, 0.0, 0.0, 0.0)._vector;
     
     [_sourcePanel setDeferredRenderParameters:newParams];
-    [_updateDelegate modelOptionUpdate:_sourcePanel];
+    [_updateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
 
 

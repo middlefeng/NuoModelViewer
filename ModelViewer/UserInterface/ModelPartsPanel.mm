@@ -221,7 +221,7 @@
     ModelBoolView* enableButton = (ModelBoolView*)sender;
     _mesh[row].enabled = enableButton.state == NSOnState;
     
-    [_updateDelegate modelOptionUpdate:nil];
+    [_updateDelegate modelOptionUpdate:0];
 }
 
 
@@ -238,7 +238,7 @@
     if ([scanner isAtEnd])
     {
         [_mesh[row] smoothWithTolerance:value];
-        [_updateDelegate modelOptionUpdate:nil];
+        [_updateDelegate modelOptionUpdate:0];
     }
 }
 

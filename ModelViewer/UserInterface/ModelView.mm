@@ -245,10 +245,10 @@ MouseDragMode;
 }
 
 
-- (void)modelOptionUpdate:(ModelOperationPanel *)panel
+- (void)modelOptionUpdate:(uint32_t)options
 {
     NSString* currentDevice = _configuration.deviceName;
-    NSString* deviceSelected = panel.deviceSelected;
+    NSString* deviceSelected = _modelPanel.deviceSelected;
     
     if (deviceSelected && currentDevice && ![currentDevice isEqualToString:deviceSelected])
     {
@@ -256,31 +256,44 @@ MouseDragMode;
         [_configuration save];
     }
     
-    if (panel)
+    if (options & kUpdateOption_DecreaseQuality)
     {
         [self handleDraggingQuality];
-        
-        [_modelSelectionRenderer setEnabled:[panel showModelParts]];
-        [_modelComponentPanels setHidden:![panel showModelParts]];
-        [self showHideFrameRate:[panel showFrameRate]];
-        
-        [_modelRender setDeferredParameters:[panel deferredRenderParameters]];
-        [_modelRender setCullEnabled:[panel cullEnabled]];
-        [_modelRender setFieldOfView:[panel fieldOfViewRadian]];
-        [_modelRender setAmbientDensity:[panel ambientDensity]];
-        [_modelRender setTransMode:[panel transformMode]];
-        [self setupPipelineSettings];
-        
-        for (NuoMeshAnimation* animation in _animations)
-            [animation setProgress:panel.animationProgress];
-        
-        if (panel.meshMode == kMeshMode_Normal)
-            [self.window setAcceptsMouseMovedEvents:NO];
-        else
-            [self.window setAcceptsMouseMovedEvents:YES];
     }
     
+    [self showHideFrameRate:_modelPanel.showFrameRate];
+    [_modelRender setDeferredParameters:_modelPanel.deferredRenderParameters];
+    [_modelRender setCullEnabled:_modelPanel.cullEnabled];
+    [_modelRender setFieldOfView:_modelPanel.fieldOfViewRadian];
+    [_modelRender setAmbientDensity:_modelPanel.ambientDensity];
+    [_modelRender setTransMode:_modelPanel.transformMode];
+    
+    if (options & kUpdateOption_RebuildPipeline)
+    {
+        [_modelSelectionRenderer setEnabled:_modelPanel.showModelParts];
+        [_modelComponentPanels setHidden:!_modelPanel.showModelParts];
+        
+        [self setupPipelineSettings];
+    }
+        
+    for (NuoMeshAnimation* animation in _animations)
+        [animation setProgress:_modelPanel.animationProgress];
+        
+    if (_modelPanel.meshMode == kMeshMode_Normal)
+        [self.window setAcceptsMouseMovedEvents:NO];
+    else
+        [self.window setAcceptsMouseMovedEvents:YES];
+    
     [_modelComponentPanels updatePanels];
+    
+    if (!_lightPanel.hidden)
+    {
+        _notationRenderer.density = _lightPanel.lightDensity;
+        _notationRenderer.spacular = _lightPanel.lightSpacular;
+        _notationRenderer.shadowSoften = _lightPanel.shadowSoften;
+        _notationRenderer.shadowOccluderRadius = _lightPanel.shadowOccluderRadius;
+        _notationRenderer.shadowBias = _lightPanel.shadowBias;
+    }
     
     [self render];
 }
@@ -393,20 +406,6 @@ MouseDragMode;
 
 
 
-- (void)lightOptionUpdate:(LightOperationPanel*)panel;
-{
-    [self handleDraggingQuality];
-    
-    _notationRenderer.density = [panel lightDensity];
-    _notationRenderer.spacular = [panel lightSpacular];
-    _notationRenderer.shadowSoften = [panel shadowSoften];
-    _notationRenderer.shadowOccluderRadius = [panel shadowOccluderRadius];
-    _notationRenderer.shadowBias = [panel shadowBias];
-    [self render];
-}
-
-
-
 // awakeFromNib should be the last step of initialization. here set some properties
 // to the objects which are created in viewResizing
 //
@@ -498,7 +497,7 @@ MouseDragMode;
     
     // sync the model renderer with the initial settings in the model panel
     //
-    [self modelOptionUpdate:_modelPanel];
+    [self modelOptionUpdate:kUpdateOption_RebuildPipeline];
     [self modelUpdate:_modelPanel.meshOptions];
     
     // sync the light panel with the current initial light vector in the
