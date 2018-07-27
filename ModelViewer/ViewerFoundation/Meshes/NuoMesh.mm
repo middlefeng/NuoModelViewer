@@ -133,6 +133,12 @@
 }
 
 
+- (NuoMatrixFloat44)meshTransform
+{
+    return _rotation.RotationMatrix() * _transformTranslate * _transformPoise;
+}
+
+
 - (void)shareResourcesFrom:(NuoMesh*)mesh
 {
     _commandQueue = mesh.commandQueue;
@@ -155,8 +161,7 @@
     const NuoBounds& boundsLocal = _boundsLocal.boundingBox;
     const NuoSphere& sphereLocal = _boundsLocal.boundingSphere;
     
-    const NuoMatrixFloat44 transformObject = _transformTranslate * _transformPoise;
-    const NuoMatrixFloat44 transformWorld = transform * transformObject;
+    const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
     NuoMeshBounds worldMeshBounds =
     {
@@ -279,8 +284,7 @@
 
 - (VectorBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform
 {
-    const NuoMatrixFloat44 transformObject = _rotation.RotationMatrix() * _transformTranslate * _transformPoise;
-    const NuoMatrixFloat44 transformWorld = transform * transformObject;
+    const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
     VectorBuffer buffer = _rawModel->GetPositionBuffer();
     buffer.TransformPosition(transformWorld);
@@ -291,8 +295,7 @@
 
 - (VectorBuffer)worldNormalBuffer:(const NuoMatrixFloat44&)transform
 {
-    const NuoMatrixFloat44 transformObject = _rotation.RotationMatrix() * _transformTranslate * _transformPoise;
-    const NuoMatrixFloat44 transformWorld = transform * transformObject;
+    const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
     VectorBuffer buffer = _rawModel->GetNormalBuffer();
     buffer.TransformVector(NuoMatrixExtractLinear(transformWorld));
@@ -487,9 +490,7 @@
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
 {
-    NuoMatrixFloat44 localTransform = _transformTranslate * _transformPoise;
-    localTransform = localTransform * _rotation.RotationMatrix();
-    NuoMatrixFloat44 transformWorld = transform * localTransform;
+    NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
     NuoMeshUniforms uniforms;
     uniforms.transform = transformWorld._m;
