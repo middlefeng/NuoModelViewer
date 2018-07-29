@@ -82,6 +82,14 @@ static CIContext* sCIContext = nil;
 }
 
 
+- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+{
+    [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
+    [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
+    
+    [super drawScreenSpace:renderPass indexBuffer:index];
+}
+
 
 
 - (void)makeTexture:(NSString*)texPath checkTransparency:(BOOL)check
