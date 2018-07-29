@@ -278,12 +278,11 @@ MouseDragMode;
     [_modelRender setFieldOfView:_modelPanel.fieldOfViewRadian];
     [_modelRender setAmbientDensity:_modelPanel.ambientDensity];
     [_modelRender setTransMode:_modelPanel.transformMode];
+    [_modelSelectionRenderer setEnabled:_modelPanel.showModelParts];
+    [_modelComponentPanels setHidden:!_modelPanel.showModelParts];
     
     if (options & kUpdateOption_RebuildPipeline)
     {
-        [_modelSelectionRenderer setEnabled:_modelPanel.showModelParts];
-        [_modelComponentPanels setHidden:!_modelPanel.showModelParts];
-        
         [self setupPipelineSettings];
     }
         
