@@ -141,23 +141,23 @@ kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
     shadowRay[0] = &shadowRays1[rayIdx];
     shadowRay[1] = &shadowRays2[rayIdx];
     
+    float maxDistance = tracingUniforms.bounds.span;
+    
+    float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
+    float2 r1 = random[(tid.y % 16) * 16 + (tid.x % 16) + 256];
+    r = (r * 2.0 - 1.0) * maxDistance * 0.25;
+    r1 = (r1 * 2.0 - 1.0);
+    
     for (uint i = 0; i < 2; ++i)
     {
         device RayBuffer* shadowRayCurrent = shadowRay[i];
         
         if (intersection.distance >= 0.0f)
         {
-            float distance = tracingUniforms.bounds.span;
-            
             float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
             lightVec = normalize(tracingUniforms.lightSources[i].direction * lightVec);
             
-            float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
-            float2 r1 = random[(tid.y % 16) * 16 + (tid.x % 16) + 256];
-            r = (r * 2.0 - 1.0) * distance * 0.25;
-            r1 = (r1 * 2.0 - 1.0);
-            
-            float3 lightPosition = (lightVec.xyz * distance);// + center.xyz;
+            float3 lightPosition = (lightVec.xyz * maxDistance);
             float3 lightRight = normalize(cross(lightVec.xyz, float3(r1.x, r1.y, 1.0)));
             float3 lightForward = cross(lightRight, lightVec.xyz);
             
@@ -167,12 +167,12 @@ kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
             float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
             float3 shadowVec = normalize(lightPosition.xyz);
             
-            shadowRayCurrent->maxDistance = distance;
+            shadowRayCurrent->maxDistance = maxDistance;
             shadowRayCurrent->mask = kNuoRayMask_Opaue;
             
             float3 normal = interpolateNormal(normals, index, intersection);
             
-            shadowRayCurrent->origin = intersectionPoint + normalize(normal) * 0.001;
+            shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             shadowRayCurrent->direction = shadowVec;
             
             shadowRayCurrent->strength = dot(normal, shadowVec);
