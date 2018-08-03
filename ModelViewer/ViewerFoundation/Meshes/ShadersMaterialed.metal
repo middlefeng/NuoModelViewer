@@ -52,10 +52,11 @@ vertex ProjectedVertex vertex_project_materialed(device Vertex *vertices [[buffe
     ProjectedVertex outVert;
     
     float4 meshPosition = meshUniforms.transform * vertices[vid].position;
+    float4 eyePosition = uniforms.viewMatrixInverse * float4(0.0, 0.0, 0.0, 1.0);
     
     outVert.position = uniforms.viewProjectionMatrix * meshPosition;
     outVert.positionNDC = uniforms.viewProjectionMatrix * meshPosition;
-    outVert.eye =  -(uniforms.viewMatrix * meshPosition).xyz;
+    outVert.eye = eyePosition.xyz - meshPosition.xyz;
     outVert.normal = meshUniforms.normalTransform * vertices[vid].normal.xyz;
     
     outVert.ambientColor = vertices[vid].ambientColor;

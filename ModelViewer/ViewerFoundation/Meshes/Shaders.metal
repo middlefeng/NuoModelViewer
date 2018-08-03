@@ -278,10 +278,11 @@ ProjectedVertex vertex_project_common(device Vertex *vertices,
 {
     ProjectedVertex outVert;
     float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    float4 eyePosition = uniforms.viewMatrixInverse * float4(0.0, 0.0, 0.0, 1.0);
     float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
     
     outVert.position = uniforms.viewProjectionMatrix * meshPosition;
-    outVert.eye =  -(uniforms.viewMatrix * meshPosition).xyz;
+    outVert.eye =  eyePosition.xyz - meshPosition.xyz;
     outVert.normal = meshNormal;
     
     return outVert;

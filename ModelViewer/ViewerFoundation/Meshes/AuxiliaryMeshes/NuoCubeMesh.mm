@@ -122,6 +122,7 @@ static uint16_t kIndices[] =
     
     uniforms.viewProjectionMatrix = (_projectMatrix * _cubeMatrix)._m;
     uniforms.viewMatrix = _cubeMatrix._m;
+    uniforms.viewMatrixInverse = _cubeMatrix.Inverse()._m;
     
     memcpy([_cubeMatrixBuffer[bufferIndex] contents], &uniforms, sizeof(uniforms));
 }
