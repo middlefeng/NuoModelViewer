@@ -123,6 +123,7 @@
     
     NuoUniforms uniforms;
     uniforms.viewMatrix = viewMatrix._m;
+    uniforms.viewMatrixInverse = viewMatrix.Inverse()._m;
     uniforms.viewProjectionMatrix = (projectionMatrix * viewMatrix)._m;
     
     memcpy([_transforms[inFlight] contents], &uniforms, sizeof(NuoUniforms));

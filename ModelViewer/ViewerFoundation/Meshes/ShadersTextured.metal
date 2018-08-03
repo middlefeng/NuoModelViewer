@@ -92,9 +92,11 @@ vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(
     ProjectedVertex outVert;
     
     float4 meshPosition = meshUniforms.transform * vertices[vid].position;
+    float4 eyePosition = uniforms.viewMatrixInverse * float4(0.0, 0.0, 0.0, 1.0);
+    
     outVert.position = uniforms.viewProjectionMatrix * meshPosition;
     outVert.positionNDC = outVert.position;
-    outVert.eye =  -(uniforms.viewMatrix * meshPosition).xyz;
+    outVert.eye = eyePosition.xyz - meshPosition.xyz;
     outVert.normal = meshUniforms.normalTransform * vertices[vid].normal.xyz;
     outVert.texCoord = vertices[vid].texCoord;
     

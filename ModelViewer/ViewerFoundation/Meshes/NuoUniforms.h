@@ -13,11 +13,21 @@
  *  example: cube (skybox) mesh
  *
  *  otherwise, the view-projection matrix has to be separated vith the model transform.
+ *
+ *  vertices are transformed to the camera coordinates (eye is always at (0, 0, 0)) before passed
+ *  into the fragement shader. other info required by shading (e.g. normals, light vectors) are in
+ *  the world coordinate (i.e. eye being transformed through the inverse of the view matrix)
  */
 typedef struct
 {
     matrix44 viewProjectionMatrix;
     matrix44 viewMatrix;
+    
+    /**
+     *  required by eye vector. light vectors and normals are pre-view-transform, so
+     *  eye vectors must be transformed by the inverse of the view transform.
+     */
+    matrix44 viewMatrixInverse;
 }
 NuoUniforms;
 

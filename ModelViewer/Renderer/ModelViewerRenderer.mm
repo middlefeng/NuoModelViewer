@@ -945,6 +945,7 @@
 
     NuoUniforms uniforms;
     uniforms.viewMatrix = viewTrans._m;
+    uniforms.viewMatrixInverse = viewTrans.Inverse()._m;
     uniforms.viewProjectionMatrix = (_projection * viewTrans)._m;
 
     memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));

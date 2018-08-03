@@ -48,11 +48,12 @@ vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[b
     ProjectedVertex outVert;
     
     float4 meshPosition = meshUniforms.transform * vertices[vid].position;
+    float4 eyePosition = uniforms.viewMatrixInverse * float4(0.0, 0.0, 0.0, 1.0);
     float3x3 normalMatrix = meshUniforms.normalTransform;
     
     outVert.position = uniforms.viewProjectionMatrix * meshPosition;
     outVert.positionNDC = uniforms.viewProjectionMatrix * meshPosition;
-    outVert.eye =  -(uniforms.viewMatrix * meshPosition).xyz;
+    outVert.eye = eyePosition.xyz - meshPosition.xyz;
     outVert.normal = normalMatrix * vertices[vid].normal.xyz;
     outVert.tangent = normalMatrix * (vertices[vid].tangent.xyz);
     outVert.bitangent = normalMatrix * (vertices[vid].bitangent.xyz);
