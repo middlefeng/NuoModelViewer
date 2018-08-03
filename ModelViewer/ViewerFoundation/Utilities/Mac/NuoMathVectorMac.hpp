@@ -97,6 +97,13 @@ inline NuoMatrix<float, 3>::NuoMatrix()
 
 
 template <>
+inline NuoMatrix<float, 4> NuoMatrix<float, 4>::Inverse() const
+{
+    return simd::inverse(_m);
+}
+
+
+template <>
 inline bool NuoMatrix<float, 4>::IsIdentity() const
 {
     return matrix_equal(_m, matrix_identity_float4x4);
