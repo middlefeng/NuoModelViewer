@@ -378,7 +378,7 @@ float4 diffuse_common(float4 diffuseTexel, float extraOpacity)
 
 
 
-// see p233 real-time rendering
+// see p233 real-time rendering, 3rd
 // see https://seblagarde.wordpress.com/2011/08/17/hello-world/
 //
 float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
@@ -387,6 +387,10 @@ float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
 }
 
 
+// see p257, (7.49) real-time rendering, 3rd
+// the code embodies the half-vector based specular which is ((m + 2) / (8 * pi)) * Cspecular * power(cos(theta), m)
+//               p253 (7.47) the reflection based version is ((m + 2) / (2 * pi)) * Cspecular * power(cos(reflection), m)
+//
 float3 specular_common(float3 materialSpecularColor, float materialSpecularPower,
                        NuoLightParameterUniformField lightParams,
                        float3 normal, float3 halfway, float dotNL)
