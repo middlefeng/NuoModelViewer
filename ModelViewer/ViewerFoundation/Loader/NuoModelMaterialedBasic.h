@@ -54,7 +54,7 @@ struct NuoItemMaterialedTexturedBasic
     NuoVectorFloat3::_typeTrait::_vectorType _diffuse;
     NuoVectorFloat3::_typeTrait::_vectorType _ambient;
     NuoVectorFloat3::_typeTrait::_vectorType _specular;
-    NuoVectorFloat2::_typeTrait::_vectorType _shinessDisolve;
+    NuoVectorFloat3::_typeTrait::_vectorType _shinessDisolveIllum;
     
     NuoItemMaterialedTexturedBasic();
     
@@ -90,7 +90,7 @@ struct NuoItermMaterialedBumpedTextured
     NuoVectorFloat3::_typeTrait::_vectorType _diffuse;
     NuoVectorFloat3::_typeTrait::_vectorType _ambient;
     NuoVectorFloat3::_typeTrait::_vectorType _specular;
-    NuoVectorFloat2::_typeTrait::_vectorType _shinessDisolve;
+    NuoVectorFloat3::_typeTrait::_vectorType _shinessDisolveIllum;
     
     NuoItermMaterialedBumpedTextured();
     
@@ -118,7 +118,7 @@ struct NuoItemMaterialedBasic
     NuoVectorFloat3::_typeTrait::_vectorType _diffuse;
     NuoVectorFloat3::_typeTrait::_vectorType _ambient;
     NuoVectorFloat3::_typeTrait::_vectorType _specular;
-    NuoVectorFloat2::_typeTrait::_vectorType _shinessDisolve;
+    NuoVectorFloat3::_typeTrait::_vectorType _shinessDisolveIllum;
     
     NuoItemMaterialedBasic();
     
@@ -169,8 +169,9 @@ void NuoModelMaterialedBasicBase<ItemBase>::AddMaterial(const NuoMaterial& mater
     NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.y = material.specular[1];
     NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.z = material.specular[2];
     
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.x = material.shininess;
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.y = material.dissolve;
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.x = material.shininess;
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.y = material.dissolve;
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.z = material.illum;
     
     if (!_material)
         _material.reset(new NuoMaterial(material));
@@ -216,8 +217,9 @@ void NuoModelMaterialedBasicBase<ItemBase>::UpdateBufferWithUnifiedMaterial()
         NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.y = material.specular[1];
         NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.z = material.specular[2];
         
-        NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.x = material.shininess;
-        NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.y = material.dissolve;
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.x = material.shininess;
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.y = material.dissolve;
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.z = material.illum;
     }
     
 }
