@@ -16,6 +16,5 @@
 
 @property (nonatomic, strong) NSArray<NuoMesh*>* meshes;
 
-- (std::vector<uint32_t>)maskBuffer;
 
 @end

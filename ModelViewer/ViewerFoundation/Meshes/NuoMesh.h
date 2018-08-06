@@ -103,6 +103,9 @@
 - (void)makeGPUStates;
 
 
+- (std::vector<uint32_t>)maskBuffer;
+
+
 - (void)setRawModel:(const PNuoModelBase&)model;
 - (NSString*)modelName;
 - (void)smoothWithTolerance:(float)tolerance;

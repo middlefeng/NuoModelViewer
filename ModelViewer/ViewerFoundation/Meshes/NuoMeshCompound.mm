@@ -9,7 +9,6 @@
 #import "NuoMeshCompound.h"
 #import "NuoMeshBounds.h"
 
-#import "NuoRayTracingUniform.h"
 
 
 @implementation NuoMeshCompound
@@ -172,29 +171,8 @@
     
     for (NuoMesh* mesh in _meshes)
     {
-        if ([mesh isKindOfClass:NuoMeshCompound.class])
-        {
-            NuoMeshCompound* compoundOne = (NuoMeshCompound*)mesh;
-            std::vector<uint32_t> oneBuffer = [compoundOne maskBuffer];
-            buffer.insert(buffer.end(), oneBuffer.begin(), oneBuffer.end());
-            
-            continue;
-        }
-        
-        NuoRayMask mask = kNuoRayMask_Disabled;
-        if (mesh.enabled)
-        {
-            mask = mesh.hasTransparency ? kNuoRayMask_Translucent :
-                                          kNuoRayMask_Opaue;
-        }
-        
-        VectorBuffer vectorBuffer = [mesh worldPositionBuffer:NuoMatrixFloat44Identity];
-        size_t bufferSize = vectorBuffer._indices.size() / 3;
-        
-        std::vector<uint32_t> oneBuffer;
-        oneBuffer.resize(bufferSize);
-        std::fill(oneBuffer.begin(), oneBuffer.end(), mask);
-        
+        NuoMeshCompound* compoundOne = (NuoMeshCompound*)mesh;
+        std::vector<uint32_t> oneBuffer = [compoundOne maskBuffer];
         buffer.insert(buffer.end(), oneBuffer.begin(), oneBuffer.end());
     }
     

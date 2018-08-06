@@ -12,6 +12,7 @@
 #import "NuoMeshTextured.h"
 #import "NuoMeshTexMatieraled.h"
 #import "NuoMeshUniform.h"
+#import "NuoRayTracingUniform.h"
 
 
 
@@ -484,6 +485,26 @@
     [self makePipelineShadowState];
     [self makePipelineState];
     [self makeDepthStencilState];
+}
+
+
+- (std::vector<uint32_t>)maskBuffer
+{
+    NuoRayMask mask = kNuoRayMask_Disabled;
+    if (_enabled)
+    {
+        mask = _hasTransparency ? kNuoRayMask_Translucent :
+                                  kNuoRayMask_Opaue;
+    }
+    
+    VectorBuffer vectorBuffer = [self worldPositionBuffer:NuoMatrixFloat44Identity];
+    size_t bufferSize = vectorBuffer._indices.size() / 3;
+    
+    std::vector<uint32_t> oneBuffer;
+    oneBuffer.resize(bufferSize);
+    std::fill(oneBuffer.begin(), oneBuffer.end(), mask);
+    
+    return oneBuffer;
 }
 
 
