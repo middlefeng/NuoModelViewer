@@ -118,6 +118,20 @@ kernel void ray_set_mask(uint2 tid [[thread_position_in_grid]],
 }
 
 
+kernel void ray_set_mask_illuminating(uint2 tid [[thread_position_in_grid]],
+                                      constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                                      device RayBuffer* rays [[buffer(1)]])
+{
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device RayBuffer& ray = rays[rayIdx];
+    
+    ray.mask = kNuoRayMask_Illuminating;
+}
+
+
 
 kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
                             constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
