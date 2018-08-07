@@ -1162,7 +1162,7 @@
     if (_rayTracingRecordStatus != kRecord_Stop)
         return [_rayTracingRenderer targetTextureForLightSource:(uint)index];
     else
-        return _shadowMapRenderer[index].renderTarget.depthTexture;
+        return _shadowMapRenderer[index].renderTarget.targetTexture;
 }
 
 - (NSArray<id<MTLBuffer>>*)lightCastBuffers
