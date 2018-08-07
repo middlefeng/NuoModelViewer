@@ -230,6 +230,13 @@ std::string NuoModelSimple::GetTexturePathBump()
 
 
 
+NuoMaterial NuoModelSimple::GetMaterial(size_t primtiveIndex) const
+{
+    return NuoMaterial();
+}
+
+
+
 bool NuoModelSimple::HasTransparent()
 {
     return false;

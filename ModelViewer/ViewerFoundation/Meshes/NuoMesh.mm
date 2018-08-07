@@ -504,6 +504,13 @@
     oneBuffer.resize(bufferSize);
     std::fill(oneBuffer.begin(), oneBuffer.end(), mask);
     
+    for (size_t i = 0; i < bufferSize; ++i)
+    {
+        NuoMaterial material = _rawModel->GetMaterial(i);
+        if (material.id != -1 && material.illum == 0)
+            oneBuffer[i] |= kNuoRayMask_Illuminating;
+    }
+    
     return oneBuffer;
 }
 

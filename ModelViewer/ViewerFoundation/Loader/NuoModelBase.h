@@ -131,6 +131,7 @@ public:
     
     virtual size_t GetVerticesNumber() = 0;
     virtual NuoVectorFloat4 GetPosition(size_t index) = 0;
+    virtual NuoMaterial GetMaterial(size_t primtiveIndex) const = 0;
     virtual NuoBounds GetBoundingBox();
     
     virtual VectorBuffer GetPositionBuffer() = 0;
@@ -232,6 +233,7 @@ public:
     virtual void SetTexturePathBump(const std::string texPath) override;
     virtual std::string GetTexturePathBump() override;
     
+    virtual NuoMaterial GetMaterial(size_t primtiveIndex) const override;
     virtual bool HasTransparent() override;
     virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
     virtual void UpdateBufferWithUnifiedMaterial() override;

@@ -37,6 +37,8 @@ private:
 public:
     
     virtual void AddMaterial(const NuoMaterial& material) override;
+    virtual NuoMaterial GetMaterial(size_t primtiveIndex) const override;
+    
     virtual bool HasTransparent() override;
     virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
     virtual void UpdateBufferWithUnifiedMaterial() override;
@@ -221,7 +223,28 @@ void NuoModelMaterialedBasicBase<ItemBase>::UpdateBufferWithUnifiedMaterial()
         NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.y = material.dissolve;
         NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.z = material.illum;
     }
+}
+
+
+template <class ItemBase>
+NuoMaterial NuoModelMaterialedBasicBase<ItemBase>::GetMaterial(size_t primtiveIndex) const
+{
+    size_t index = primtiveIndex * 3;
     
+    // so far assuming the primitive material represented by its first vertex
+    //
+    const auto& item0 = NuoModelCommon<ItemBase>::_buffer[NuoModelCommon<ItemBase>::_indices[index]];
+    
+    uint32_t illumMode = (uint32_t)item0._shinessDisolveIllum.z;
+    auto& color = item0._diffuse;
+    
+    NuoMaterial material;
+    material.diffuse[0] = color.x;
+    material.diffuse[1] = color.y;
+    material.diffuse[2] = color.z;
+    material.illum = illumMode;
+    
+    return material;
 }
 
 

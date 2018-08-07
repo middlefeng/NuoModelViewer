@@ -7,6 +7,7 @@
 //
 
 #include "NuoModelTextured.h"
+#include "NuoMaterial.h"
 
 
 
@@ -86,3 +87,8 @@ void NuoModelTextured::UpdateBufferWithUnifiedMaterial()
 }
 
 
+
+NuoMaterial NuoModelTextured::GetMaterial(size_t primtiveIndex) const
+{
+    return NuoMaterial();
+}
