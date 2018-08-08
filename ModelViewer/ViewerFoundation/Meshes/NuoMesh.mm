@@ -493,8 +493,8 @@
     NuoRayMask mask = kNuoRayMask_Disabled;
     if (_enabled)
     {
-        mask = _hasTransparency ? kNuoRayMask_Translucent :
-                                  kNuoRayMask_Opaue;
+        mask = self.hasTransparency ? kNuoRayMask_Translucent :
+                                      kNuoRayMask_Opaue;
     }
     
     VectorBuffer vectorBuffer = [self worldPositionBuffer:NuoMatrixFloat44Identity];

@@ -85,9 +85,9 @@ const uint kRayBufferStrid = 36;
                                   withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
     NuoComputePipeline* pipeline;
-    if (rayMask | kNuoRayMask_Illuminating)
+    if (rayMask & kNuoRayMask_Illuminating)
         pipeline = _pipelineMaskIllum;
-    else if (rayMask | kNuoRayMask_Translucent)
+    else if (rayMask & kNuoRayMask_Translucent)
         pipeline = _pipelineMaskTranslucent;
     else
         pipeline = _pipelineMaskOpaque;
