@@ -30,7 +30,7 @@
 
 /**
  *  pixelFormat - one channel per kind of objects (e.g. opaque, translucent ...)
- *  targetCount - one target per light source
+ *  targetCount - one target which is accumulated by monte carlo method
  */
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                withAccumulatedResult:(BOOL)accumulateResult
