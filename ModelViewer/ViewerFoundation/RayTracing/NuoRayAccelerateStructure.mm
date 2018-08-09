@@ -82,6 +82,9 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 
 - (void)setRoot:(NuoMeshSceneRoot*)root
 {
+    // all coordinates are in the world system, with primary rays following the same rule as
+    // they are transformed through the inverse of the view matrix
+    
     VectorBuffer buffer = [root worldPositionBuffer:NuoMatrixFloat44Identity];
     uint32_t triangleCount = (uint32_t)buffer._indices.size() / 3;
     uint32_t indexBufferSize = (uint32_t)(buffer._indices.size() * sizeof(uint32));
