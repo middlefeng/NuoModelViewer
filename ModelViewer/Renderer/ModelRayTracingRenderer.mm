@@ -161,7 +161,7 @@ static const uint32_t kRandomBufferSize = 512;
 
 @implementation ModelRayTracingRenderer
 {
-    NuoComputePipeline* _shadowRayPipeline;
+    NuoComputePipeline* _secondaryRaysPipeline;
     
     NSArray<id<MTLBuffer>>* _rayTraceUniform;
     NSArray<id<MTLBuffer>>* _randomBuffers;
@@ -173,14 +173,14 @@ static const uint32_t kRandomBufferSize = 512;
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
     self = [super initWithCommandQueue:commandQueue withAccumulatedResult:NO
-                       withPixelFormat:MTLPixelFormatInvalid withTargetCount:0];
+                       withPixelFormat:MTLPixelFormatRGBA32Float withTargetCount:1];
     
     if (self)
     {
-        _shadowRayPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                           withFunction:@"shadow_ray_emit"
-                                                          withParameter:NO];
-        _shadowRayPipeline.name = @"Shadow Ray Emit";
+        _secondaryRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
+                                                               withFunction:@"primary_ray_process"
+                                                              withParameter:NO];
+        _secondaryRaysPipeline.name = @"Secondary Ray Emit";
         
         id<MTLBuffer> buffers[kInFlightBufferCount];
         id<MTLBuffer> randoms[kInFlightBufferCount];
@@ -278,7 +278,7 @@ static const uint32_t kRandomBufferSize = 512;
     {
         // generate rays for the two light sources, from opaque objects
         //
-        [self runRayTraceCompute:_shadowRayPipeline withCommandBuffer:commandBuffer
+        [self runRayTraceCompute:_secondaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[_rayTraceUniform[inFlight],
                                    _randomBuffers[inFlight],
                                    _subRenderers[0].shadowRayBuffer.buffer,
@@ -293,7 +293,7 @@ static const uint32_t kRandomBufferSize = 512;
     {
         // generate rays for the two light sources, from translucent objects
         //
-        [self runRayTraceCompute:_shadowRayPipeline withCommandBuffer:commandBuffer
+        [self runRayTraceCompute:_secondaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[_rayTraceUniform[inFlight],
                                    _randomBuffers[inFlight],
                                    _subRenderers[0].shadowRayBufferOnTranslucent.buffer,

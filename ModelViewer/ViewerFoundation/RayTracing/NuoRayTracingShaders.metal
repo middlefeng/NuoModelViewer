@@ -132,8 +132,7 @@ kernel void ray_set_mask_illuminating(uint2 tid [[thread_position_in_grid]],
 }
 
 
-
-kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
+static void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
                             constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                             device RayBuffer* rays [[buffer(1)]],
                             device uint* index [[buffer(2)]],
@@ -142,7 +141,42 @@ kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
                             constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
                             device float2* random [[buffer(6)]],
                             device RayBuffer* shadowRays1 [[buffer(7)]],
-                            device RayBuffer* shadowRays2 [[buffer(8)]])
+                            device RayBuffer* shadowRays2 [[buffer(8)]]);
+
+
+
+kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
+                                constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                                device RayBuffer* rays [[buffer(1)]],
+                                device uint* index [[buffer(2)]],
+                                device float3* normals [[buffer(3)]],
+                                device Intersection *intersections [[buffer(4)]],
+                                constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
+                                device float2* random [[buffer(6)]],
+                                device RayBuffer* shadowRays1 [[buffer(7)]],
+                                device RayBuffer* shadowRays2 [[buffer(8)]])
+{
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    shadow_ray_emit(tid, uniforms, rays, index, normals, intersections,
+                    tracingUniforms, random,
+                    shadowRays1,
+                    shadowRays2);
+}
+
+
+
+void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
+                     constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                     device RayBuffer* rays [[buffer(1)]],
+                     device uint* index [[buffer(2)]],
+                     device float3* normals [[buffer(3)]],
+                     device Intersection *intersections [[buffer(4)]],
+                     constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
+                     device float2* random [[buffer(6)]],
+                     device RayBuffer* shadowRays1 [[buffer(7)]],
+                     device RayBuffer* shadowRays2 [[buffer(8)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
