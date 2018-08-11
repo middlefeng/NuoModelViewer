@@ -28,6 +28,15 @@
 }
 
 
+- (void)setCullEnabled:(BOOL)cullEnabled
+{
+    [super setCullEnabled:cullEnabled];
+    
+    for (NuoMesh* mesh in self.meshes)
+         [mesh setCullEnabled:cullEnabled];
+}
+
+
 - (void)addBoardObject:(NuoBoardMesh*)board
 {
     NSMutableArray<NuoMesh*>* meshes = (NSMutableArray<NuoMesh*>*)self.meshes;
