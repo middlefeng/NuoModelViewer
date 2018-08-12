@@ -281,6 +281,11 @@ MouseDragMode;
     [_modelSelectionRenderer setEnabled:_modelPanel.showModelParts];
     [_modelComponentPanels setHidden:!_modelPanel.showModelParts];
     
+    // mark the ray tracing dirty flag before all substantial work, in order not to
+    // cause duplicated waste work
+    //
+    [_modelRender syncRayTracingBuffers];
+    
     if (options & kUpdateOption_RebuildPipeline)
     {
         [self setupPipelineSettings];
@@ -305,7 +310,6 @@ MouseDragMode;
         [_modelRender setRayTracingRecordStatus:kRecord_Stop];
         [_modelRender setRayTracingRecordStatus:kRecord_Start];
     }
-    [_modelRender syncRayTracingBuffers];
     
     if (!_lightPanel.hidden)
     {
