@@ -231,8 +231,8 @@
 - (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)bufferIndex
 {
     NSArray* cullModes = self.cullEnabled ?
-    @[@(MTLCullModeBack), @(MTLCullModeNone)] :
-    @[@(MTLCullModeNone), @(MTLCullModeBack)];
+                            @[@(MTLCullModeBack), @(MTLCullModeNone)] :
+                            @[@(MTLCullModeNone), @(MTLCullModeBack)];
     NSUInteger cullMode = [cullModes[0] unsignedLongValue];
     [renderPass setCullMode:(MTLCullMode)cullMode];
     
