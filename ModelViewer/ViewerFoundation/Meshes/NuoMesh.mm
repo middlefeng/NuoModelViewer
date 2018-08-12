@@ -283,22 +283,12 @@
 }
 
 
-- (VectorBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform
+- (GlobalBuffers)worldBuffers:(const NuoMatrixFloat44&)transform
 {
     const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
-    VectorBuffer buffer = _rawModel->GetPositionBuffer();
+    GlobalBuffers buffer = _rawModel->GetGlobalBuffers();
     buffer.TransformPosition(transformWorld);
-    return buffer;
-}
-
-
-
-- (VectorBuffer)worldNormalBuffer:(const NuoMatrixFloat44&)transform
-{
-    const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
-    
-    VectorBuffer buffer = _rawModel->GetNormalBuffer();
     buffer.TransformVector(NuoMatrixExtractLinear(transformWorld));
     return buffer;
 }
@@ -497,8 +487,8 @@
                                       kNuoRayMask_Opaue;
     }
     
-    VectorBuffer vectorBuffer = [self worldPositionBuffer:NuoMatrixFloat44Identity];
-    size_t bufferSize = vectorBuffer._indices.size() / 3;
+    const size_t indicesNumber = _rawModel->GetIndicesNumber();
+    const size_t bufferSize = indicesNumber / 3;
     
     std::vector<uint32_t> oneBuffer;
     oneBuffer.resize(bufferSize);

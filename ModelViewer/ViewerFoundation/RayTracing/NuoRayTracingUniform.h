@@ -50,6 +50,15 @@ NuoRayTracingUniforms;
 
 typedef struct
 {
+    vector3 normal;
+    vector3 diffuseColor;
+    int illuminate;
+}
+NuoRayTracingMaterial;
+
+
+typedef struct
+{
     float uRange;
     float vRange;
     

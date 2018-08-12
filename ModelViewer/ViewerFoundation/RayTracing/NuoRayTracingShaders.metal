@@ -43,7 +43,7 @@ struct Intersection
 
 
 
-float3 interpolateNormal(device float3 *normals, device uint* index, Intersection intersection)
+float3 interpolateNormal(device NuoRayTracingMaterial *materials, device uint* index, Intersection intersection)
 {
     // barycentric coordinates sum to one
     float3 uvw;
@@ -54,9 +54,9 @@ float3 interpolateNormal(device float3 *normals, device uint* index, Intersectio
     index = index + triangleIndex * 3;
     
     // Lookup value for each vertex
-    float3 n0 = normals[*(index + 0)];
-    float3 n1 = normals[*(index + 1)];
-    float3 n2 = normals[*(index + 2)];
+    float3 n0 = materials[*(index + 0)].normal;
+    float3 n1 = materials[*(index + 1)].normal;
+    float3 n2 = materials[*(index + 2)].normal;
     
     // Compute sum of vertex attributes weighted by barycentric coordinates
     return uvw.x * n0 + uvw.y * n1 + uvw.z * n2;
@@ -136,7 +136,7 @@ static void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
                             constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                             device RayBuffer* rays [[buffer(1)]],
                             device uint* index [[buffer(2)]],
-                            device float3* normals [[buffer(3)]],
+                            device NuoRayTracingMaterial* materials [[buffer(3)]],
                             device Intersection *intersections [[buffer(4)]],
                             constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
                             device float2* random [[buffer(6)]],
@@ -149,7 +149,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                                 device RayBuffer* rays [[buffer(1)]],
                                 device uint* index [[buffer(2)]],
-                                device float3* normals [[buffer(3)]],
+                                device NuoRayTracingMaterial* materials [[buffer(3)]],
                                 device Intersection *intersections [[buffer(4)]],
                                 constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
                                 device float2* random [[buffer(6)]],
@@ -159,7 +159,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
     
-    shadow_ray_emit(tid, uniforms, rays, index, normals, intersections,
+    shadow_ray_emit(tid, uniforms, rays, index, materials, intersections,
                     tracingUniforms, random,
                     shadowRays1,
                     shadowRays2);
@@ -171,7 +171,7 @@ void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
                      constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                      device RayBuffer* rays [[buffer(1)]],
                      device uint* index [[buffer(2)]],
-                     device float3* normals [[buffer(3)]],
+                     device NuoRayTracingMaterial* materials [[buffer(3)]],
                      device Intersection *intersections [[buffer(4)]],
                      constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
                      device float2* random [[buffer(6)]],
@@ -218,7 +218,7 @@ void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
             shadowRayCurrent->maxDistance = maxDistance;
             shadowRayCurrent->mask = kNuoRayMask_Opaue;
             
-            float3 normal = interpolateNormal(normals, index, intersection);
+            float3 normal = interpolateNormal(materials, index, intersection);
             
             shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             shadowRayCurrent->direction = shadowVec;
@@ -238,7 +238,7 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
                               constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                               device RayBuffer* rays [[buffer(1)]],
                               device uint* index [[buffer(2)]],
-                              device float3* normals [[buffer(3)]],
+                              device NuoRayTracingMaterial* materials [[buffer(3)]],
                               device Intersection *intersections [[buffer(4)]],
                               device RayBuffer* shadowRays [[buffer(5)]],
                               texture2d<float, access::read_write> light [[texture(0)]],

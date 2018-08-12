@@ -70,10 +70,11 @@ std::shared_ptr<NuoModelBase> CreateModel(const NuoModelOption& options, const N
 
 
 
-void VectorBuffer::Union(const VectorBuffer& other)
+void GlobalBuffers::Union(const GlobalBuffers& other)
 {
     const uint32_t prevCount = (uint32_t)_vertices.size();
     _vertices.insert(_vertices.end(), other._vertices.begin(), other._vertices.end());
+    _materials.insert(_materials.end(), other._materials.begin(), other._materials.end());
     
     for (uint32_t i = 0; i < other._indices.size(); ++i)
     {
@@ -83,7 +84,7 @@ void VectorBuffer::Union(const VectorBuffer& other)
 
 
 
-void VectorBuffer::TransformPosition(const NuoMatrixFloat44 &trans)
+void GlobalBuffers::TransformPosition(const NuoMatrixFloat44 &trans)
 {
     for (auto& vertex : _vertices)
     {
@@ -98,15 +99,15 @@ void VectorBuffer::TransformPosition(const NuoMatrixFloat44 &trans)
 
 
 
-void VectorBuffer::TransformVector(const NuoMatrixFloat33 &trans)
+void GlobalBuffers::TransformVector(const NuoMatrixFloat33 &trans)
 {
-    for (auto& vertex : _vertices)
+    for (auto& material : _materials)
     {
-        NuoVectorFloat3 vertexToTrans = trans * NuoVectorFloat3(vertex);
+        NuoVectorFloat3 vertexToTrans = trans * NuoVectorFloat3(material.normal);
         
-        vertex.x = vertexToTrans.x();
-        vertex.y = vertexToTrans.y();
-        vertex.z = vertexToTrans.z();
+        material.normal.x = vertexToTrans.x();
+        material.normal.y = vertexToTrans.y();
+        material.normal.z = vertexToTrans.z();
     }
 }
 

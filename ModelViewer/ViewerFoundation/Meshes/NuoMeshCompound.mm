@@ -131,33 +131,16 @@
 
 
 
-- (VectorBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform
+- (GlobalBuffers)worldBuffers:(const NuoMatrixFloat44&)transform
 {
-    VectorBuffer buffer;
+    GlobalBuffers buffer;
     
     const NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
     const NuoMatrixFloat44 transformWorld = transform * transformLocal;
     
     for (NuoMesh* mesh in _meshes)
     {
-        VectorBuffer oneBuffer = [mesh worldPositionBuffer:transformWorld];
-        buffer.Union(oneBuffer);
-    }
-    
-    return buffer;
-}
-
-
-- (VectorBuffer)worldNormalBuffer:(const NuoMatrixFloat44&)transform
-{
-    VectorBuffer buffer;
-    
-    const NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
-    const NuoMatrixFloat44 transformWorld = transform * transformLocal;
-    
-    for (NuoMesh* mesh in _meshes)
-    {
-        VectorBuffer oneBuffer = [mesh worldNormalBuffer:transformWorld];
+        GlobalBuffers oneBuffer = [mesh worldBuffers:transformWorld];
         buffer.Union(oneBuffer);
     }
     
