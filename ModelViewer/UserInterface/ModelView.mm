@@ -304,13 +304,6 @@ MouseDragMode;
     
     [_modelComponentPanels updatePanels];
     
-    if (_modelPanel.rayTracingRecordStatus == kRecord_Start &&
-        _modelPanel.motionBlurRecordStatus != kRecord_Start)
-    {
-        [_modelRender setRayTracingRecordStatus:kRecord_Stop];
-        [_modelRender setRayTracingRecordStatus:kRecord_Start];
-    }
-    
     if (!_lightPanel.hidden)
     {
         _notationRenderer.density = _lightPanel.lightDensity;
@@ -591,7 +584,20 @@ MouseDragMode;
     [_modelRender setRenderTarget:modelRenderTarget];
     lastTarget = modelRenderTarget;
     
-    [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
+    if (_modelPanel.rayTracingRecordStatus == kRecord_Start &&
+        _modelPanel.motionBlurRecordStatus != kRecord_Start)
+    {
+        // when the panel indicates the recording to be "start",
+        //   1. if the render's flag is "start" as well, the accumulation need to be reset becuase some render property
+        //      other than the recording status is changed
+        //   2. if the render's flag is not "start", it is either "stop" or "pause", none of which need reset the
+        //      accumulation since either it is already stop, or a pasued accumulation should be resumed
+        
+        if (_modelRender.rayTracingRecordStatus == kRecord_Start)
+            _modelRender.rayTracingRecordStatus = kRecord_Stop;
+    }
+    
+    _modelRender.rayTracingRecordStatus = _modelPanel.rayTracingRecordStatus;
     
     // dissect renderer
     //

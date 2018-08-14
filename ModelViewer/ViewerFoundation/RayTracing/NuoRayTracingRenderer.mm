@@ -211,7 +211,7 @@
     //
     for (NuoRenderPassTarget* tracingTarget in _rayTracingTargets)
     {
-        tracingTarget.clearColor = MTLClearColorMake(0, 0, 0, 1.0);
+        tracingTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
         [tracingTarget retainRenderPassEndcoder:commandBuffer];
         [tracingTarget releaseRenderPassEndcoder];
     }
