@@ -39,14 +39,13 @@
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
-               withAccumulatedResult:(BOOL)accumulateResult
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                      withTargetCount:(uint)targetCount
 {
     self = [super initWithCommandQueue:commandQueue
                        withPixelFormat:MTLPixelFormatInvalid withSampleCount:1];
     
-    if (self && accumulateResult)
+    if (self && targetCount > 0)
     {
         NuoRenderPassTarget* rayTracingTargets[targetCount];
         NuoRenderPassTarget* rayTracingAccumulates[targetCount];
@@ -70,6 +69,7 @@
             rayTracingAccumulates[i].sharedTargetTexture = NO;
             rayTracingAccumulates[i].colorAttachments[0].needWrite = YES;
             rayTracingAccumulates[i].name = @"Ray Tracing Accumulate";
+            rayTracingAccumulates[i].clearColor = MTLClearColorMake(0, 0, 0, 0);
         }
         
         _rayTracingTargets = [[NSArray alloc] initWithObjects:rayTracingTargets count:targetCount];

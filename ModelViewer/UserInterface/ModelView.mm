@@ -19,7 +19,7 @@
 // pipeline stages
 //
 #import "ModelViewerRenderer.h"
-#import "ModelRayTracingRenderer.h"
+#import "NuoOverlayPass.h"
 #import "ModelDissectRenderer.h"
 #import "ModelSelectionRenderer.h"
 #import "NotationRenderer.h"
@@ -74,6 +74,7 @@ MouseDragMode;
     ModelSelectionRenderer* _modelSelectionRenderer;
     NotationRenderer* _notationRenderer;
     MotionBlurRenderer* _motionBlurRenderer;
+    NuoOverlayPass* _rayTracingOverlay;
     
     NSMutableArray<NuoMeshAnimation*>* _animations;
     
@@ -528,6 +529,10 @@ MouseDragMode;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
+    _rayTracingOverlay = [[NuoOverlayPass alloc] initWithCommandQueue:self.commandQueue
+                                                      withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                      withSampleCount:1];
+    
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
     // sync the model renderer with the initial settings in the model panel
@@ -616,6 +621,28 @@ MouseDragMode;
         
         [_modelDissectRenderer setRenderTarget:modelDissectTarget];
         lastTarget = modelDissectTarget;
+    }
+    
+    // ray tracing overlay
+    // (TODO: Debug)
+    
+    if (_modelPanel.rayTracingRecordStatus != kRecord_Stop)
+    {
+        [renders addObject:_rayTracingOverlay];
+        
+        NuoRenderPassTarget* rayTracingTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
+                                                                                  withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                                  withSampleCount:kSampleCount];
+        rayTracingTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
+        rayTracingTarget.manageTargetTexture = YES;
+        rayTracingTarget.name = @"Ray-Tracing Overlay";
+        rayTracingTarget.sampleCount = 1;
+        
+        [_rayTracingOverlay setOverlay:[_modelRender rayTracingOverlay]];
+        [_rayTracingOverlay setRenderTarget:rayTracingTarget];
+        
+        lastTarget = rayTracingTarget;
+        
     }
     
     // motion blur renderer

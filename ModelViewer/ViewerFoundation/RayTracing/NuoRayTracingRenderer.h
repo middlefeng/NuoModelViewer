@@ -33,7 +33,6 @@
  *  targetCount - one target which is accumulated by monte carlo method
  */
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
-               withAccumulatedResult:(BOOL)accumulateResult
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                      withTargetCount:(uint)targetCount;
 

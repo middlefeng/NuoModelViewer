@@ -26,8 +26,6 @@ static const uint32_t kRandomBufferSize = 512;
 
 @interface ModelRayTracingSubrenderer : NuoRayTracingRenderer
 
-@property (nonatomic, assign) BOOL shadowOnTranslucent;
-
 @property (nonatomic, readonly) NuoRayBuffer* shadowRayBuffer;
 @property (nonatomic, readonly) NuoRayBuffer* shadowRayBufferOnTranslucent;
 
@@ -59,7 +57,7 @@ static const uint32_t kRandomBufferSize = 512;
     //
     MTLPixelFormat format = MTLPixelFormatRG32Float;
     
-    self = [super initWithCommandQueue:commandQueue withAccumulatedResult:YES
+    self = [super initWithCommandQueue:commandQueue
                        withPixelFormat:format withTargetCount:2];
     
     if (self)
@@ -87,8 +85,6 @@ static const uint32_t kRandomBufferSize = 512;
         _normalizedIllumination.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
         _normalizedIllumination.colorAttachments[0].needWrite = YES;
         _normalizedIllumination.name = @"Ray Tracing Normalized";
-        
-        _shadowOnTranslucent = NO;
     }
     
     return self;
@@ -172,7 +168,7 @@ static const uint32_t kRandomBufferSize = 512;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    self = [super initWithCommandQueue:commandQueue withAccumulatedResult:NO
+    self = [super initWithCommandQueue:commandQueue
                        withPixelFormat:MTLPixelFormatRGBA32Float withTargetCount:1];
     
     if (self)
@@ -220,12 +216,15 @@ static const uint32_t kRandomBufferSize = 512;
 
 - (void)resetResources:(id<MTLCommandBuffer>)commandBuffer
 {
-    commandBuffer = commandBuffer ? commandBuffer : [self.commandQueue commandBuffer];
+    id<MTLCommandBuffer> localCommandBuffer = commandBuffer ? commandBuffer : [self.commandQueue commandBuffer];
     
     for (ModelRayTracingSubrenderer* renderer : _subRenderers)
-        [renderer resetResources:commandBuffer];
+        [renderer resetResources:localCommandBuffer];
     
-    [commandBuffer commit];
+    [super resetResources:commandBuffer];
+    
+    if (!commandBuffer)
+        [localCommandBuffer commit];
 }
 
 
@@ -258,17 +257,8 @@ static const uint32_t kRandomBufferSize = 512;
 
 - (void)runRayTraceShade:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    // the renderer uses its sub-renderers for shading (in particular the accumulation of the
-    // sampling, so the logic is in the drawWithCommandBuffer.
-}
-
-
-
-
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
-{
-    // there is no accumulation done by the master ray tracing renderer, which is the reason
-    // the "drawWithCommandBuffer:..." is overriden to not calling the "runRayTraceShade:..."
+    // the shadow maps in the screen space are integrated by the sub renderers.
+    // the master ray tracing renderer integrates the overlay result, e.g. self-illumination
     
     [self updateUniforms:inFlight];
     
@@ -307,7 +297,6 @@ static const uint32_t kRandomBufferSize = 512;
         // sub renderers detect intersection for each light source
         // and accumulates the samplings
         //
-        [_subRenderers[i] setShadowOnTranslucent:NO];
         [_subRenderers[i] setRayStructure:self.rayStructure];
         [_subRenderers[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     }

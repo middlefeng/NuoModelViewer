@@ -38,6 +38,7 @@ public:
     
     virtual void AddMaterial(const NuoMaterial& material) override;
     virtual NuoMaterial GetMaterial(size_t primtiveIndex) const override;
+    virtual GlobalBuffers GetGlobalBuffers() const override;
     
     virtual bool HasTransparent() override;
     virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
@@ -245,6 +246,41 @@ NuoMaterial NuoModelMaterialedBasicBase<ItemBase>::GetMaterial(size_t primtiveIn
     material.illum = illumMode;
     
     return material;
+}
+
+
+template <class ItemBase>
+GlobalBuffers NuoModelMaterialedBasicBase<ItemBase>::GetGlobalBuffers() const
+{
+    GlobalBuffers result;
+    
+    for (const ItemBase& item : NuoModelCommon<ItemBase>::_buffer)
+    {
+        {
+            NuoVectorFloat3::_typeTrait::_vectorType vector;
+            vector.x = item._position.x;
+            vector.y = item._position.y;
+            vector.z = item._position.z;
+            result._vertices.push_back(vector);
+        }
+        
+        {
+            NuoRayTracingMaterial material;
+            
+            material.normal.x = item._normal.x;
+            material.normal.y = item._normal.y;
+            material.normal.z = item._normal.z;
+            
+            material.diffuseColor = item._diffuse;
+            material.illuminate = (int)item._shinessDisolveIllum[2];
+            
+            result._materials.push_back(material);
+        }
+    }
+    
+    result._indices = NuoModelCommon<ItemBase>::_indices;
+    
+    return result;
 }
 
 

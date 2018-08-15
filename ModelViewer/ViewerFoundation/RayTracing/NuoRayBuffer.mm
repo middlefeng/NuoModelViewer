@@ -12,7 +12,7 @@
 
 
 
-const uint kRayBufferStrid = 36;
+const uint kRayBufferStrid = 48;
 
 
 

@@ -1154,6 +1154,11 @@
 }
 
 
+- (id<MTLTexture>)rayTracingOverlay
+{
+    return _rayTracingRenderer.targetTextures[0];
+}
+
 
 #pragma mark -- Protocol NuoMeshSceneParametersProvider
 

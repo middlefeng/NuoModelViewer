@@ -477,6 +477,9 @@ GlobalBuffers NuoModelCommon<ItemBase>::GetGlobalBuffers() const
             material.normal.x = item._normal.x;
             material.normal.y = item._normal.y;
             material.normal.z = item._normal.z;
+            
+            material.illuminate = 2;
+            
             result._materials.push_back(material);
         }
     }

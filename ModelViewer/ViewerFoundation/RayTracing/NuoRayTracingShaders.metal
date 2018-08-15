@@ -30,6 +30,7 @@ struct RayBuffer
     
     // cosine base strength factor (reserved, unused)
     float strength;
+    packed_float3 color;
 };
 
 
@@ -57,6 +58,26 @@ float3 interpolateNormal(device NuoRayTracingMaterial *materials, device uint* i
     float3 n0 = materials[*(index + 0)].normal;
     float3 n1 = materials[*(index + 1)].normal;
     float3 n2 = materials[*(index + 2)].normal;
+    
+    // Compute sum of vertex attributes weighted by barycentric coordinates
+    return uvw.x * n0 + uvw.y * n1 + uvw.z * n2;
+}
+
+
+float3 interpolateColor(device NuoRayTracingMaterial *materials, device uint* index, Intersection intersection)
+{
+    // barycentric coordinates sum to one
+    float3 uvw;
+    uvw.xy = intersection.coordinates;
+    uvw.z = 1.0f - uvw.x - uvw.y;
+    
+    unsigned int triangleIndex = intersection.primitiveIndex;
+    index = index + triangleIndex * 3;
+    
+    // Lookup value for each vertex
+    float3 n0 = materials[*(index + 0)].diffuseColor;
+    float3 n1 = materials[*(index + 1)].diffuseColor;
+    float3 n2 = materials[*(index + 2)].diffuseColor;
     
     // Compute sum of vertex attributes weighted by barycentric coordinates
     return uvw.x * n0 + uvw.y * n1 + uvw.z * n2;
@@ -99,6 +120,12 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
 
 static constant bool kShadowOnTranslucent  [[ function_constant(0) ]];
 
+static void self_illumination(uint2 tid,
+                              device uint* index,
+                              device NuoRayTracingMaterial* materials,
+                              device Intersection& intersection,
+                              texture2d<float, access::read_write> overlayResult);
+
 
 
 kernel void ray_set_mask(uint2 tid [[thread_position_in_grid]],
@@ -132,16 +159,16 @@ kernel void ray_set_mask_illuminating(uint2 tid [[thread_position_in_grid]],
 }
 
 
-static void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
-                            constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                            device RayBuffer& ray [[buffer(1)]],
-                            device uint* index [[buffer(2)]],
-                            device NuoRayTracingMaterial* materials [[buffer(3)]],
-                            device Intersection& intersection [[buffer(4)]],
-                            constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
-                            device float2* random [[buffer(6)]],
-                            device RayBuffer* shadowRays1 [[buffer(7)]],
-                            device RayBuffer* shadowRays2 [[buffer(8)]]);
+static void shadow_ray_emit(uint2 tid,
+                            constant NuoRayVolumeUniform& uniforms,
+                            device RayBuffer& ray,
+                            device uint* index,
+                            device NuoRayTracingMaterial* materials,
+                            device Intersection& intersection,
+                            constant NuoRayTracingUniforms& tracingUniforms,
+                            device float2* random,
+                            device RayBuffer* shadowRays1,
+                            device RayBuffer* shadowRays2);
 
 
 
@@ -154,7 +181,8 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
                                 device float2* random [[buffer(6)]],
                                 device RayBuffer* shadowRays1 [[buffer(7)]],
-                                device RayBuffer* shadowRays2 [[buffer(8)]])
+                                device RayBuffer* shadowRays2 [[buffer(8)]],
+                                texture2d<float, access::read_write> overlayResult [[texture(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -167,20 +195,22 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                     tracingUniforms, random,
                     shadowRays1,
                     shadowRays2);
+    
+    self_illumination(tid, index, materials, intersection, overlayResult);
 }
 
 
 
-void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
-                     constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                     device RayBuffer& ray [[buffer(1)]],
-                     device uint* index [[buffer(2)]],
-                     device NuoRayTracingMaterial* materials [[buffer(3)]],
-                     device Intersection& intersection [[buffer(4)]],
-                     constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
-                     device float2* random [[buffer(6)]],
-                     device RayBuffer* shadowRays1 [[buffer(7)]],
-                     device RayBuffer* shadowRays2 [[buffer(8)]])
+void shadow_ray_emit(uint2 tid,
+                     constant NuoRayVolumeUniform& uniforms,
+                     device RayBuffer& ray,
+                     device uint* index,
+                     device NuoRayTracingMaterial* materials,
+                     device Intersection& intersection,
+                     constant NuoRayTracingUniforms& tracingUniforms,
+                     device float2* random,
+                     device RayBuffer* shadowRays1,
+                     device RayBuffer* shadowRays2)
 {
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     
@@ -316,8 +346,31 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
 }
 
 
+void self_illumination(uint2 tid,
+                       device uint* index,
+                       device NuoRayTracingMaterial* materials,
+                       device Intersection& intersection,
+                       texture2d<float, access::read_write> overlayResult)
+{
+    if (intersection.distance >= 0.0f)
+    {
+        unsigned int triangleIndex = intersection.primitiveIndex;
+        device uint* vertexIndex = index + triangleIndex * 3;
+        
+        int illuminate = materials[*(vertexIndex)].illuminate;
+        if (illuminate == 0)
+        {
+            float3 color = interpolateColor(materials, index, intersection);
+            overlayResult.write(float4(color, 1.0), tid);
+        }
+    }
+}
 
 
+
+/**
+ *  debug tools
+ */
 
 kernel void intersection_visualize(uint2 tid [[thread_position_in_grid]],
                                    constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
