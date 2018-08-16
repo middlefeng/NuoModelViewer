@@ -108,7 +108,7 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
     
     ray.direction = (uniforms.viewTrans * rayDirection).xyz;
     ray.origin = (uniforms.viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;
-    ray.color = float3(1.0, 1.0, 1.0);
+    ray.color = float3(1.0, 1.0, 1.0) * 5.0;
     
     // primary rays are generated with mask as opaque. rays for translucent mask are got by
     // set the mask later by "ray_set_mask"
@@ -218,7 +218,7 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  device Intersection *intersections [[buffer(4)]],
                                  constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
                                  device float2* random [[buffer(6)]],
-                                 device RayBuffer* incidentRaysBuffer [[buffer(9)]],
+                                 device RayBuffer* incidentRaysBuffer [[buffer(7)]],
                                  texture2d<float, access::read_write> overlayResult [[texture(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
@@ -457,6 +457,7 @@ void self_illumination(uint2 tid,
             incidentRay.direction = align_hemisphere_normal(sampleVec, normal, r1);
             incidentRay.origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             incidentRay.maxDistance = maxDistance;
+            incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
             
             incidentRay.color = color * ray.color;
         }
