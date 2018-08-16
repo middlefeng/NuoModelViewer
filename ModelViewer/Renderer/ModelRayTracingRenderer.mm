@@ -163,6 +163,8 @@ static const uint32_t kRandomBufferSize = 512;
     NSArray<id<MTLBuffer>>* _randomBuffers;
     
     ModelRayTracingSubrenderer* _subRenderers[2];
+    
+    NuoRayBuffer* _incidentRaysBuffer;
 }
 
 
@@ -205,6 +207,9 @@ static const uint32_t kRandomBufferSize = 512;
     
     for (ModelRayTracingSubrenderer* renderer : _subRenderers)
         [renderer setDrawableSize:drawableSize];
+    
+    _incidentRaysBuffer = [[NuoRayBuffer alloc] initWithDevice:self.commandQueue.device];
+    _incidentRaysBuffer.dimension = drawableSize;
 }
 
 
@@ -272,7 +277,8 @@ static const uint32_t kRandomBufferSize = 512;
                    withParameter:@[_rayTraceUniform[inFlight],
                                    _randomBuffers[inFlight],
                                    _subRenderers[0].shadowRayBuffer.buffer,
-                                   _subRenderers[1].shadowRayBuffer.buffer]
+                                   _subRenderers[1].shadowRayBuffer.buffer,
+                                   _incidentRaysBuffer.buffer]
                 withIntersection:self.primaryIntersectionBuffer
                withInFlightIndex:inFlight];
     }
@@ -287,7 +293,8 @@ static const uint32_t kRandomBufferSize = 512;
                    withParameter:@[_rayTraceUniform[inFlight],
                                    _randomBuffers[inFlight],
                                    _subRenderers[0].shadowRayBufferOnTranslucent.buffer,
-                                   _subRenderers[1].shadowRayBufferOnTranslucent.buffer]
+                                   _subRenderers[1].shadowRayBufferOnTranslucent.buffer,
+                                   _incidentRaysBuffer.buffer]
                 withIntersection:self.primaryIntersectionBuffer
                withInFlightIndex:inFlight];
     }

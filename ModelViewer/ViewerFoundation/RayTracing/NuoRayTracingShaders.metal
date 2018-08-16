@@ -108,6 +108,7 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
     
     ray.direction = (uniforms.viewTrans * rayDirection).xyz;
     ray.origin = (uniforms.viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;
+    ray.color = float3(1.0, 1.0, 1.0);
     
     // primary rays are generated with mask as opaque. rays for translucent mask are got by
     // set the mask later by "ray_set_mask"
@@ -124,6 +125,10 @@ static void self_illumination(uint2 tid,
                               device uint* index,
                               device NuoRayTracingMaterial* materials,
                               device Intersection& intersection,
+                              constant NuoRayTracingUniforms& tracingUniforms,
+                              device RayBuffer& ray,
+                              device RayBuffer& incidentRay,
+                              device float2* random,
                               texture2d<float, access::read_write> overlayResult);
 
 
@@ -182,6 +187,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 device float2* random [[buffer(6)]],
                                 device RayBuffer* shadowRays1 [[buffer(7)]],
                                 device RayBuffer* shadowRays2 [[buffer(8)]],
+                                device RayBuffer* incidentRaysBuffer [[buffer(9)]],
                                 texture2d<float, access::read_write> overlayResult [[texture(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
@@ -190,13 +196,41 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & intersection = intersections[rayIdx];
     device RayBuffer& ray = rays[rayIdx];
+    device RayBuffer& incidentRay = incidentRaysBuffer[rayIdx];
     
     shadow_ray_emit(tid, uniforms, ray, index, materials, intersection,
                     tracingUniforms, random,
                     shadowRays1,
                     shadowRays2);
     
-    self_illumination(tid, index, materials, intersection, overlayResult);
+    self_illumination(tid, index, materials, intersection,
+                      tracingUniforms, ray, incidentRay,
+                      random, overlayResult);
+}
+
+
+
+kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
+                                 constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                                 device RayBuffer* rays [[buffer(1)]],
+                                 device uint* index [[buffer(2)]],
+                                 device NuoRayTracingMaterial* materials [[buffer(3)]],
+                                 device Intersection *intersections [[buffer(4)]],
+                                 constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
+                                 device float2* random [[buffer(6)]],
+                                 device RayBuffer* incidentRaysBuffer [[buffer(9)]],
+                                 texture2d<float, access::read_write> overlayResult [[texture(0)]])
+{
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device Intersection & intersection = intersections[rayIdx];
+    device RayBuffer& incidentRay = incidentRaysBuffer[rayIdx];
+    
+    self_illumination(tid, index, materials, intersection,
+                      tracingUniforms, incidentRay, incidentRay,
+                      random, overlayResult);
 }
 
 
@@ -218,7 +252,7 @@ void shadow_ray_emit(uint2 tid,
     shadowRay[0] = &shadowRays1[rayIdx];
     shadowRay[1] = &shadowRays2[rayIdx];
     
-    float maxDistance = tracingUniforms.bounds.span;
+    const float maxDistance = tracingUniforms.bounds.span;
     
     float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
     float2 r1 = random[(tid.y % 16) * 16 + (tid.x % 16) + 256];
@@ -346,10 +380,52 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
 }
 
 
+// uses the inversion method to map two uniformly random numbers to a three dimensional
+// unit hemisphere where the probability of a given sample is proportional to the cosine
+// of the angle between the sample direction and the "up" direction (0, 1, 0)
+inline float3 sample_cosine_weighted_hemisphere(float2 u)
+{
+    float phi = 2.0f * M_PI_F * u.x;
+    
+    float cos_phi;
+    float sin_phi = sincos(phi, cos_phi);
+    
+    float cos_theta = sqrt(u.y);
+    float sin_theta = sqrt(1.0f - cos_theta * cos_theta);
+    
+    return float3(sin_theta * cos_phi, cos_theta, sin_theta * sin_phi);
+}
+
+
+// Aligns a direction on the unit hemisphere such that the hemisphere's "up" direction
+// (0, 1, 0) maps to the given surface normal direction
+inline float3 align_hemisphere_normal(float3 sample, float3 normal, float2 random)
+{
+    // Set the "up" vector to the normal
+    float3 up = normal;
+    
+    // Find an arbitrary direction perpendicular to the normal. This will become the
+    // "right" vector.
+    float3 right = normalize(cross(normal, float3(random.y, 1.0f, random.x)));
+    
+    // Find a third vector perpendicular to the previous two. This will be the
+    // "forward" vector.
+    float3 forward = cross(right, up);
+    
+    // Map the direction on the unit hemisphere to the coordinate system aligned
+    // with the normal.
+    return sample.x * right + sample.y * up + sample.z * forward;
+}
+
+
 void self_illumination(uint2 tid,
                        device uint* index,
                        device NuoRayTracingMaterial* materials,
                        device Intersection& intersection,
+                       constant NuoRayTracingUniforms& tracingUniforms,
+                       device RayBuffer& ray,
+                       device RayBuffer& incidentRay,
+                       device float2* random,
                        texture2d<float, access::read_write> overlayResult)
 {
     if (intersection.distance >= 0.0f)
@@ -357,11 +433,32 @@ void self_illumination(uint2 tid,
         unsigned int triangleIndex = intersection.primitiveIndex;
         device uint* vertexIndex = index + triangleIndex * 3;
         
+        float3 color = interpolateColor(materials, index, intersection);
+        
         int illuminate = materials[*(vertexIndex)].illuminate;
         if (illuminate == 0)
         {
-            float3 color = interpolateColor(materials, index, intersection);
-            overlayResult.write(float4(color, 1.0), tid);
+            overlayResult.write(float4(color * ray.color, 1.0), tid);
+            
+            incidentRay.maxDistance = -1;
+        }
+        else
+        {
+            float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
+            float2 r1 = random[(tid.y % 16) * 16 + (tid.x % 16) + 256];
+            r1 = (r1 * 2.0 - 1.0);
+            
+            float3 normal = interpolateNormal(materials, index, intersection);
+            float3 sampleVec = sample_cosine_weighted_hemisphere(r);
+            
+            const float maxDistance = tracingUniforms.bounds.span;
+            
+            float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
+            incidentRay.direction = align_hemisphere_normal(sampleVec, normal, r1);
+            incidentRay.origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
+            incidentRay.maxDistance = maxDistance;
+            
+            incidentRay.color = color * ray.color;
         }
     }
 }
