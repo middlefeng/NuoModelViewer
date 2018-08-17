@@ -44,6 +44,8 @@ typedef struct
 {
     NuoBoundsUniform bounds;
     NuoRayTracingLightSource lightSources[2];
+    
+    float ambient;
 }
 NuoRayTracingUniforms;
 

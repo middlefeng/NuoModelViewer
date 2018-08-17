@@ -624,9 +624,6 @@ MouseDragMode;
         lastTarget = modelDissectTarget;
     }
     
-    // ray tracing overlay
-    // (TODO: Debug)
-    
     if (_modelPanel.rayTracingRecordStatus != kRecord_Stop)
     {
         [renders addObject:_rayTracingOverlay];

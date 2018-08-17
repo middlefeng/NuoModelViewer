@@ -31,6 +31,7 @@ struct RayBuffer
     // cosine base strength factor (reserved, unused)
     float strength;
     packed_float3 color;
+    int bounce;
 };
 
 
@@ -114,6 +115,7 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
     // set the mask later by "ray_set_mask"
     //
     ray.mask = kNuoRayMask_Opaue;
+    ray.bounce = 0;
     
     ray.maxDistance = INFINITY;
 }
@@ -446,7 +448,7 @@ void self_illumination(uint2 tid,
         }
         else
         {
-            float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
+            float2 r = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
             
             float3 normal = interpolateNormal(materials, index, intersection);
             float3 sampleVec = sample_cosine_weighted_hemisphere(r);
@@ -458,6 +460,7 @@ void self_illumination(uint2 tid,
             incidentRay.origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             incidentRay.maxDistance = maxDistance;
             incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
+            incidentRay.bounce = ray.bounce + 1;
             
             incidentRay.color = color * ray.color;
         }

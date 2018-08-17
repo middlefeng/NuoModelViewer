@@ -287,7 +287,7 @@ static const uint32_t kRandomBufferSize = 512;
                 withIntersection:self.primaryIntersectionBuffer
                withInFlightIndex:inFlight];
         
-        for (uint i = 0; i < 1; ++i)
+        for (uint i = 0; i < 2; ++i)
         {
             [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.primaryIntersectionBuffer];
             
