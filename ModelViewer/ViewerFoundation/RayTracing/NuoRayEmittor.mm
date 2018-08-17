@@ -67,12 +67,6 @@
 
 
 
-- (void)setFieldOfView:(CGFloat)fieldOfView
-{
-    _fieldOfView = fieldOfView;
-}
-
-
 - (void)setupPipeline
 {
     // Generates rays according to view/projection matrices
@@ -108,6 +102,7 @@
     uniform.vRange = tan(_fieldOfView / 2.0) * 2.0;
     uniform.uRange = uniform.vRange * aspectRatio;
     uniform.viewTrans = _viewTrans._m;
+    uniform.illuminationStrength = _illuminationStrength;
     
     memcpy([_uniformBuffers[inFlight] contents], &uniform, sizeof(uniform));
     

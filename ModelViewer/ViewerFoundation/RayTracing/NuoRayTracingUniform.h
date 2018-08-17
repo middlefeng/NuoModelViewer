@@ -66,6 +66,8 @@ typedef struct
     uint hViewPort;
     
     matrix44 viewTrans;
+    
+    float illuminationStrength;
 }
 NuoRayVolumeUniform;
 

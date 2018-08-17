@@ -27,23 +27,20 @@
 @property (nonatomic, readonly) BOOL showFrameRate;
 @property (nonatomic, strong) NSArray<NSString*>* deviceNames;
 
+
+/**
+ *  user-adjustable properties
+ */
 @property (nonatomic, strong) NSString* deviceSelected;
-
 @property (nonatomic, assign) TransformMode transformMode;
-
 @property (nonatomic, strong) NuoMeshOption* meshOptions;
-
 @property (nonatomic, assign) NuoDeferredRenderUniforms deferredRenderParameters;
-
 @property (nonatomic, assign) BOOL cullEnabled;
-
 @property (nonatomic, assign) float fieldOfViewRadian;
-
 @property (nonatomic, assign) float ambientDensity;
-
 @property (nonatomic, assign) BOOL showLightSettings;
-
 @property (nonatomic, assign) NuoMeshModeShaderParameter meshMode;
+
 
 @property (nonatomic, weak) id<ModelOptionUpdate> optionUpdateDelegate;
 
@@ -51,6 +48,7 @@
 
 @property (nonatomic, assign) RecordStatus motionBlurRecordStatus;
 @property (nonatomic, assign) RecordStatus rayTracingRecordStatus;
+@property (nonatomic, assign) float illumination;
 
 
 - (void)addSubviews;

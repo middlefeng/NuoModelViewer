@@ -28,6 +28,7 @@
  *  that implies the same emittor could be adapt to different sizes of films
  */
 @property (nonatomic, assign) CGFloat fieldOfView;
+@property (nonatomic, assign) CGFloat illuminationStrength;
 @property (nonatomic, assign) NuoMatrixFloat44 viewTrans;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;

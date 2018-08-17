@@ -108,7 +108,7 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
     
     ray.direction = (uniforms.viewTrans * rayDirection).xyz;
     ray.origin = (uniforms.viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;
-    ray.color = float3(1.0, 1.0, 1.0) * 5.0;
+    ray.color = float3(1.0, 1.0, 1.0) * uniforms.illuminationStrength;
     
     // primary rays are generated with mask as opaque. rays for translucent mask are got by
     // set the mask later by "ray_set_mask"
@@ -399,14 +399,16 @@ inline float3 sample_cosine_weighted_hemisphere(float2 u)
 
 // Aligns a direction on the unit hemisphere such that the hemisphere's "up" direction
 // (0, 1, 0) maps to the given surface normal direction
-inline float3 align_hemisphere_normal(float3 sample, float3 normal, float2 random)
+inline float3 align_hemisphere_normal(float3 sample, float3 normal)
 {
     // Set the "up" vector to the normal
     float3 up = normal;
     
     // Find an arbitrary direction perpendicular to the normal. This will become the
     // "right" vector.
-    float3 right = normalize(cross(normal, float3(random.y, 1.0f, random.x)));
+    float3 right = normalize(cross(normal, float3(0.0072f, 1.0f, 0.0034f)));
+    if (length(right) < 1e-3)
+        right = normalize(cross(normal, float3(0.0072f, 0.0034f, 1.0f)));
     
     // Find a third vector perpendicular to the previous two. This will be the
     // "forward" vector.
@@ -445,8 +447,6 @@ void self_illumination(uint2 tid,
         else
         {
             float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
-            float2 r1 = random[(tid.y % 16) * 16 + (tid.x % 16) + 256];
-            r1 = (r1 * 2.0 - 1.0);
             
             float3 normal = interpolateNormal(materials, index, intersection);
             float3 sampleVec = sample_cosine_weighted_hemisphere(r);
@@ -454,7 +454,7 @@ void self_illumination(uint2 tid,
             const float maxDistance = tracingUniforms.bounds.span;
             
             float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
-            incidentRay.direction = align_hemisphere_normal(sampleVec, normal, r1);
+            incidentRay.direction = align_hemisphere_normal(sampleVec, normal);
             incidentRay.origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             incidentRay.maxDistance = maxDistance;
             incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;

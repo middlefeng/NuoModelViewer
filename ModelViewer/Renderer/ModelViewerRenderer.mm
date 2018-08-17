@@ -160,6 +160,14 @@
 }
 
 
+
+- (void)setIlluminationStrength:(float)illuminationStrength
+{
+    _illuminationStrength = illuminationStrength;
+    [_rayAccelerator setIlluminationStrength:illuminationStrength];
+}
+
+
 - (void)setAdvancedShaowEnabled:(BOOL)enabled
 {
     [_sceneRoot setShadowOptionPCSS:enabled];

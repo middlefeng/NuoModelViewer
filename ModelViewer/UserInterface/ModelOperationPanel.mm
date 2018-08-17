@@ -42,6 +42,7 @@
 
 @property (nonatomic, strong) NSButton* motionBlurRecord;
 @property (nonatomic, strong) NSButton* motionBlurPause;
+@property (nonatomic, strong) NSSlider* illuminationSlider;
 
 @property (nonatomic, strong) NSButton* rayTracingRecord;
 @property (nonatomic, strong) NSButton* rayTracingPause;
@@ -86,6 +87,7 @@
         
         _motionBlurRecordStatus = kRecord_Stop;
         _rayTracingRecordStatus = kRecord_Stop;
+        _illumination = 3.0;
     }
     
     return self;
@@ -147,7 +149,7 @@
     
     CGRect docViewFrame = CGRectMake(0, 0, 0, 0);
     docViewFrame.size = rootViewFrame.size;
-    docViewFrame.size.height += 290.0;
+    docViewFrame.size.height += 305.0;
     
     rootScroll.frame = rootViewFrame;
     scrollDocumentView.frame = docViewFrame;
@@ -467,7 +469,7 @@
     [scrollDocumentView addSubview:pauseButton];
     _motionBlurPause = pauseButton;
     
-    // motion blur recording
+    // ray tracing integration
     
     rowCoord += 1.0;
     
@@ -502,9 +504,34 @@
     [scrollDocumentView addSubview:pauseButtonRayTracing];
     _rayTracingPause = pauseButtonRayTracing;
     
+    // ray tracing illumination stregth
+    
+    rowCoord += 1.0;
+    
+    NSTextField* illumStregthLabel = [NSTextField new];
+    [illumStregthLabel setEditable:NO];
+    [illumStregthLabel setSelectable:NO];
+    [illumStregthLabel setBordered:NO];
+    [illumStregthLabel setStringValue:@"Illumination:"];
+    [illumStregthLabel setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
+    [scrollDocumentView addSubview:illumStregthLabel];
+    
+    NSSlider* illumination = [NSSlider new];
+    CGRect frame = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    frame.origin.x += 80;
+    frame.size.width -= 80;
+    [illumination setFrame:frame];
+    [illumination setMaxValue:10.0];
+    [illumination setMinValue:0.0];
+    [illumination setFloatValue:_illumination];
+    [illumination setTarget:self];
+    [illumination setAction:@selector(illuminationChanged:)];
+    [scrollDocumentView addSubview:illumination];
+    _illuminationSlider = illumination;
+    
     // device select
     
-    rowCoord += 1.8;
+    rowCoord += 1.5;
     
     NSTextField* labelDevices = [NSTextField new];
     NSRect labelDevicesRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
@@ -729,6 +756,14 @@
         _rayTracingRecordStatus = kRecord_Stop;
     
     [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
+}
+
+
+- (void)illuminationChanged:(id)sender
+{
+    _illumination = _illuminationSlider.floatValue;
+    
+    [_optionUpdateDelegate modelOptionUpdate:0];
 }
                                                  
 

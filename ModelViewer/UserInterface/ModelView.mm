@@ -279,6 +279,7 @@ MouseDragMode;
     [_modelRender setFieldOfView:_modelPanel.fieldOfViewRadian];
     [_modelRender setAmbientDensity:_modelPanel.ambientDensity];
     [_modelRender setTransMode:_modelPanel.transformMode];
+    [_modelRender setIlluminationStrength:_modelPanel.illumination];
     [_modelSelectionRenderer setEnabled:_modelPanel.showModelParts];
     [_modelComponentPanels setHidden:!_modelPanel.showModelParts];
     
@@ -1217,6 +1218,23 @@ MouseDragMode;
         }
 
 
+
+- (NSArray*)exportRenders
+{
+    NSMutableArray* result = [NSMutableArray new];
+    
+    [result addObject:_modelRender];
+    
+    if (_modelPanel.rayTracingRecordStatus != kRecord_Stop)
+        [result addObject:_rayTracingOverlay];
+    
+    if (_modelPanel.motionBlurRecordStatus == kRecord_Start)
+        [result addObject:_motionBlurRenderer];
+    
+    return result;
+}
+
+
 - (IBAction)exportPNG:(id)sender
 {
     NSString* defaultName = _documentName;
@@ -1229,21 +1247,16 @@ MouseDragMode;
     [savePanel setAllowedFileTypes:@[@"png"]];
     
     __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
-    __weak ModelRenderer* modelRenderer = _modelRender;
-    __weak MotionBlurRenderer* motionBlurRenderer = _motionBlurRenderer;
-    __weak ModelOperationPanel* panel = _modelPanel;
+    
+    CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
+                               _modelRender.renderTarget.drawableSize.width);
+    
+    NSArray* renders = [self exportRenders];
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
              if (result == NSModalResponseOK)
              {
-                 CGFloat previewSize = fmax(modelRenderer.renderTarget.drawableSize.height,
-                                            modelRenderer.renderTarget.drawableSize.width);
-                 
-                 NSArray* renders = (panel.motionBlurRecordStatus == kRecord_Start) ?
-                                        @[modelRenderer, motionBlurRenderer] :
-                                        @[modelRenderer];
-                 
                  NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:commandQueue.device withTarget:previewSize
                                                                               withClearColor:[NSColor colorWithRed:0.0
                                                                                                              green:0.0
@@ -1276,20 +1289,16 @@ MouseDragMode;
     
     __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
     __weak ModelRenderer* modelRenderer = _modelRender;
-    __weak MotionBlurRenderer* motionBlurRenderer = _motionBlurRenderer;
-    __weak ModelOperationPanel* panel = _modelPanel;
+    
+    CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
+                               _modelRender.renderTarget.drawableSize.width);
+    
+    NSArray* renders = [self exportRenders];
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
              if (result == NSModalResponseOK)
              {
-                 CGFloat previewSize = fmax(modelRenderer.renderTarget.drawableSize.height,
-                                            modelRenderer.renderTarget.drawableSize.width);
-                 
-                 NSArray* renders = (panel.motionBlurRecordStatus == kRecord_Start) ?
-                                           @[modelRenderer, motionBlurRenderer] :
-                                           @[modelRenderer];
-                 
                  NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:commandQueue.device withTarget:previewSize
                                                                          withClearColor:[NSColor colorWithRed:0.0
                                                                                                         green:0.0
