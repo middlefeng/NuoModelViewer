@@ -24,7 +24,6 @@ extern const uint kRayIntersectionStride;
 
 
 @property (nonatomic, assign) CGFloat fieldOfView;
-@property (nonatomic, assign) CGFloat illuminationStrength;
 @property (nonatomic, assign) CGSize drawableSize;
 
 @property (nonatomic, readonly) NuoRayBuffer* primaryRayBuffer;

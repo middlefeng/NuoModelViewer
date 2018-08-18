@@ -109,7 +109,7 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
     
     ray.direction = (uniforms.viewTrans * rayDirection).xyz;
     ray.origin = (uniforms.viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;
-    ray.color = float3(1.0, 1.0, 1.0) * uniforms.illuminationStrength;
+    ray.color = float3(1.0, 1.0, 1.0);
     
     // primary rays are generated with mask as opaque. rays for translucent mask are got by
     // set the mask later by "ray_set_mask"
@@ -442,7 +442,7 @@ void self_illumination(uint2 tid,
         int illuminate = materials[*(vertexIndex)].illuminate;
         if (illuminate == 0)
         {
-            overlayResult.write(float4(color * ray.color, 1.0), tid);
+            overlayResult.write(float4(color * ray.color * tracingUniforms.illuminationStrength, 1.0), tid);
             
             incidentRay.maxDistance = -1;
         }

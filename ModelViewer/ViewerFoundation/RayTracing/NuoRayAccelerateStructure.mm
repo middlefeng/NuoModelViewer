@@ -67,19 +67,6 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
-- (void)setIlluminationStrength:(CGFloat)illuminationStrength
-{
-    [_rayEmittor setIlluminationStrength:illuminationStrength];
-}
-
-
-
-- (CGFloat)illuminationStrength
-{
-    return [_rayEmittor illuminationStrength];
-}
-
-
 
 - (void)setDrawableSize:(CGSize)drawableSize
 {

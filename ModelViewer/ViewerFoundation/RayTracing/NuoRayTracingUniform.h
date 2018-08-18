@@ -46,6 +46,7 @@ typedef struct
     NuoRayTracingLightSource lightSources[2];
     
     float ambient;
+    float illuminationStrength;
 }
 NuoRayTracingUniforms;
 
@@ -68,8 +69,6 @@ typedef struct
     uint hViewPort;
     
     matrix44 viewTrans;
-    
-    float illuminationStrength;
 }
 NuoRayVolumeUniform;
 
