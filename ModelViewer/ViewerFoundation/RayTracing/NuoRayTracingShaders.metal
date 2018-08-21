@@ -152,6 +152,11 @@ kernel void shadow_ray_emit(uint2 tid [[thread_position_in_grid]],
     {
         device RayBuffer* shadowRayCurrent = shadowRay[i];
         
+        // initialize the buffer's strength fields
+        // (took 2 days to figure this out after spot the problem in debugger 8/21/2018)
+        //
+        shadowRayCurrent->strength = 0.0f;
+        
         if (intersection.distance >= 0.0f)
         {
             float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
