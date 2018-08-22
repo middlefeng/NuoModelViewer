@@ -100,7 +100,11 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
     device RayBuffer& ray = rays[rayIdx];
     
     float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
-    float2 pixelCoord = (float2)tid + r;
+    
+    // 0.2 is the empirically measured offset between the rasterization and the ray tracing.
+    // seems caused by the different ways of anti-alias (MSAA vs. randomized camera rays)
+    //
+    float2 pixelCoord = (float2)tid + r + 0.2;
     
     const float u = (pixelCoord.x / (float)uniforms.wViewPort) * uniforms.uRange - uniforms.uRange / 2.0;
     const float v = (pixelCoord.y / (float)uniforms.hViewPort) * uniforms.vRange - uniforms.vRange / 2.0;
@@ -265,6 +269,11 @@ void shadow_ray_emit(uint2 tid,
     {
         device RayBuffer* shadowRayCurrent = shadowRay[i];
         
+        // initialize the buffer's strength fields
+        // (took 2 days to figure this out after spot the problem in debugger 8/21/2018)
+        //
+        shadowRayCurrent->strength = 0.0f;
+        
         if (intersection.distance >= 0.0f)
         {
             float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
@@ -285,7 +294,7 @@ void shadow_ray_emit(uint2 tid,
             
             float3 normal = interpolateNormal(materials, index, intersection);
             
-            shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
+            shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 600000.0);
             shadowRayCurrent->direction = shadowVec;
             
             shadowRayCurrent->strength = dot(normal, shadowVec);
@@ -362,7 +371,11 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
     
     float illuminate = light.read(tid).r;
     float illuminateWithBlock = lightWithBlock.read(tid).r;
-    float illuminatePercent = 0.0;
+    float illuminatePercent = illuminateWithBlock;
+    
+    // (comment to above)
+    // illuminateWithBlock won't be greater than illuminate. if the latter is too small,
+    // use the former directly (rather than use zero)
     
     if (illuminate > 0.00001)   // avoid divided by zero
     {
@@ -371,7 +384,7 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
     
     illuminate = light.read(tid).g;
     illuminateWithBlock = lightWithBlock.read(tid).g;
-    float illuminatePercentTranslucent = 0.0;
+    float illuminatePercentTranslucent = illuminateWithBlock;
     
     if (illuminate > 0.00001)   // avoid divided by zero
     {
