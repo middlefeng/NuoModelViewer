@@ -182,3 +182,41 @@ std::string NuoModelMaterialed::GetTexturePathBump()
     return std::string();
 }
 
+
+
+template <>
+GlobalBuffers NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>::GetGlobalBuffers() const
+{
+    GlobalBuffers result;
+    
+    for (const NuoItemMaterialedBasic& item : NuoModelCommon<NuoItemMaterialedBasic>::_buffer)
+    {
+        {
+            NuoVectorFloat3::_typeTrait::_vectorType vector;
+            vector.x = item._position.x;
+            vector.y = item._position.y;
+            vector.z = item._position.z;
+            result._vertices.push_back(vector);
+        }
+        
+        {
+            NuoRayTracingMaterial material;
+            
+            material.normal.x = item._normal.x;
+            material.normal.y = item._normal.y;
+            material.normal.z = item._normal.z;
+            
+            material.texCoord.x = 0;
+            material.texCoord.y = 0;
+            
+            material.diffuseColor = item._diffuse;
+            material.illuminate = (int)item._shinessDisolveIllum[2];
+            
+            result._materials.push_back(material);
+        }
+    }
+    
+    result._indices = NuoModelCommon<NuoItemMaterialedBasic>::_indices;
+    
+    return result;
+}

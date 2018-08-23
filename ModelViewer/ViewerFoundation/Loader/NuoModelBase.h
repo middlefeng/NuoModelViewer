@@ -478,6 +478,7 @@ GlobalBuffers NuoModelCommon<ItemBase>::GetGlobalBuffers() const
             material.normal.y = item._normal.y;
             material.normal.z = item._normal.z;
             
+            material.texCoord = NuoVectorFloat3(0, 0, 0)._vector;
             material.illuminate = 2;
             
             result._materials.push_back(material);

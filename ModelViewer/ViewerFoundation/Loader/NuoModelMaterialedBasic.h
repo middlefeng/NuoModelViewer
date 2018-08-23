@@ -271,6 +271,9 @@ GlobalBuffers NuoModelMaterialedBasicBase<ItemBase>::GetGlobalBuffers() const
             material.normal.y = item._normal.y;
             material.normal.z = item._normal.z;
             
+            material.texCoord.x = item._texCoord.x;
+            material.texCoord.y = item._texCoord.y;
+            
             material.diffuseColor = item._diffuse;
             material.illuminate = (int)item._shinessDisolveIllum[2];
             
@@ -283,6 +286,9 @@ GlobalBuffers NuoModelMaterialedBasicBase<ItemBase>::GetGlobalBuffers() const
     return result;
 }
 
+
+template <>
+GlobalBuffers NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>::GetGlobalBuffers() const;
 
 
 #endif /* NuoModelMaterialed_hpp */
