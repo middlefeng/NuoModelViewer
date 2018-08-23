@@ -131,20 +131,15 @@
 
 
 
-- (GlobalBuffers)worldBuffers:(const NuoMatrixFloat44&)transform
+- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
 {
-    GlobalBuffers buffer;
-    
     const NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
     const NuoMatrixFloat44 transformWorld = transform * transformLocal;
     
     for (NuoMesh* mesh in _meshes)
     {
-        GlobalBuffers oneBuffer = [mesh worldBuffers:transformWorld];
-        buffer.Union(oneBuffer);
+        [mesh appendWorldBuffers:transformWorld toBuffers:buffers];
     }
-    
-    return buffer;
 }
 
 

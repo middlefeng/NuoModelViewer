@@ -113,7 +113,7 @@
 // the "transform" should be the outter world transform (excluding the view matrix,
 // that is, the returned buffer is in the world coordinate rather than in the camera coordinate)
 //
-- (GlobalBuffers)worldBuffers:(const NuoMatrixFloat44&)transform;
+- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers;
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform;
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;

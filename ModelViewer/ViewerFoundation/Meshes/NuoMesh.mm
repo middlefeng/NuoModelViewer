@@ -283,14 +283,15 @@
 }
 
 
-- (GlobalBuffers)worldBuffers:(const NuoMatrixFloat44&)transform
+- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
 {
     const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
     GlobalBuffers buffer = _rawModel->GetGlobalBuffers();
     buffer.TransformPosition(transformWorld);
     buffer.TransformVector(NuoMatrixExtractLinear(transformWorld));
-    return buffer;
+    
+    buffers->Union(buffer);
 }
 
 
