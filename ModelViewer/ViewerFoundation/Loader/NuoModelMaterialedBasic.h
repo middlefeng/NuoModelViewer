@@ -271,8 +271,10 @@ GlobalBuffers NuoModelMaterialedBasicBase<ItemBase>::GetGlobalBuffers() const
             material.normal.y = item._normal.y;
             material.normal.z = item._normal.z;
             
+            // the texture index is not available yet
             material.texCoord.x = item._texCoord.x;
             material.texCoord.y = item._texCoord.y;
+            material.diffuseTex = -2;
             
             material.diffuseColor = item._diffuse;
             material.illuminate = (int)item._shinessDisolveIllum[2];

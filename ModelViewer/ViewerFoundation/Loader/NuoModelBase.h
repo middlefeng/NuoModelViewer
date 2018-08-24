@@ -109,6 +109,7 @@ struct GlobalBuffers
     std::vector<NuoRayTracingMaterial> _materials;
     
     std::vector<uint32_t> _indices;
+    std::vector<void*> _textureMap;
     
     void Union(const GlobalBuffers& other);
     void TransformPosition(const NuoMatrixFloat44& trans);
@@ -478,7 +479,10 @@ GlobalBuffers NuoModelCommon<ItemBase>::GetGlobalBuffers() const
             material.normal.y = item._normal.y;
             material.normal.z = item._normal.z;
             
+            // no texture
             material.texCoord = NuoVectorFloat3(0, 0, 0)._vector;
+            material.diffuseTex = -1;
+            
             material.illuminate = 2;
             
             result._materials.push_back(material);

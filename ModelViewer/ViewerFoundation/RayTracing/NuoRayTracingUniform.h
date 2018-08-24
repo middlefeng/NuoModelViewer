@@ -55,8 +55,10 @@ typedef struct
 {
     vector3 normal;
     vector3 diffuseColor;
-    vector3 texCoord;
     int illuminate;
+    
+    vector3 texCoord;
+    int diffuseTex;
 }
 NuoRayTracingMaterial;
 

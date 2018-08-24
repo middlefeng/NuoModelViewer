@@ -206,8 +206,10 @@ GlobalBuffers NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>::GetGlobalBuff
             material.normal.y = item._normal.y;
             material.normal.z = item._normal.z;
             
+            // no texture
             material.texCoord.x = 0;
             material.texCoord.y = 0;
+            material.diffuseTex = -1;
             
             material.diffuseColor = item._diffuse;
             material.illuminate = (int)item._shinessDisolveIllum[2];
