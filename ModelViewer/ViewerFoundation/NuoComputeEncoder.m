@@ -96,10 +96,21 @@
 
 
 
+- (void)setTargetTexture:(id<MTLTexture>)texture atIndex:(uint)index
+{
+#if DEBUG
+    CGSize textureSize = CGSizeMake(texture.width, texture.height);
+    assert(CGSizeEqualToSize(textureSize, _dataSize) || CGSizeEqualToSize(_dataSize, CGSizeZero));
+#endif
+    
+    [self setTexture:texture atIndex:index];
+}
+
+
+
 - (void)setTexture:(id<MTLTexture>)texture atIndex:(uint)index
 {
     CGSize textureSize = CGSizeMake(texture.width, texture.height);
-    assert(CGSizeEqualToSize(textureSize, _dataSize) || CGSizeEqualToSize(_dataSize, CGSizeZero));
     
     _dataSize = textureSize;
     

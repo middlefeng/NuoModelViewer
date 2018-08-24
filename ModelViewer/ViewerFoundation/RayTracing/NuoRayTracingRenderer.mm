@@ -179,8 +179,17 @@
             [computeEncoder setBuffer:paramterBuffers[i] offset:0 atIndex:5 + i];
     }
     
-    for (uint i = 0; i < _rayTracingTargets.count; ++i)
-        [computeEncoder setTexture:_rayTracingTargets[i].targetTexture atIndex:i];
+    uint i = 0;
+    for (i = 0; i < _rayTracingTargets.count; ++i)
+    {
+        [computeEncoder setTargetTexture:_rayTracingTargets[i].targetTexture atIndex:i];
+    }
+    
+    for (id<MTLTexture> diffuseTexture in _rayStructure.diffuseTextures)
+    {
+        [computeEncoder setTexture:diffuseTexture atIndex:i];
+        ++i;
+    }
     
     [computeEncoder setDataSize:_drawableSize];
     [computeEncoder dispatch];

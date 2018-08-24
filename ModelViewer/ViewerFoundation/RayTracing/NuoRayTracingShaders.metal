@@ -194,7 +194,8 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 device RayBuffer* shadowRays1 [[buffer(7)]],
                                 device RayBuffer* shadowRays2 [[buffer(8)]],
                                 device RayBuffer* incidentRaysBuffer [[buffer(9)]],
-                                texture2d<float, access::read_write> overlayResult [[texture(0)]])
+                                texture2d<float, access::read_write> overlayResult [[texture(0)]],
+                                array<texture2d<float>, 10> diffuseTex [[texture(1)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -225,7 +226,8 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
                                  device float2* random [[buffer(6)]],
                                  device RayBuffer* incidentRaysBuffer [[buffer(7)]],
-                                 texture2d<float, access::read_write> overlayResult [[texture(0)]])
+                                 texture2d<float, access::read_write> overlayResult [[texture(0)]],
+                                 array<texture2d<float>, 10> diffuseTex [[texture(1)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;

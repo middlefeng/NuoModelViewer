@@ -39,6 +39,7 @@
 @property (nonatomic, assign) CGSize dataSize;
 
 
+- (void)setTargetTexture:(id<MTLTexture>)texture atIndex:(uint)index;
 - (void)setTexture:(id<MTLTexture>)texture atIndex:(uint)index;
 - (void)setBuffer:(id<MTLBuffer>)buffer offset:(uint)offset atIndex:(uint)index;
 

@@ -157,14 +157,20 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     memcpy(_materialBuffer.contents, &buffers._materials[0], materialBufferSize);
     [_materialBuffer didModifyRange:NSMakeRange(0, materialBufferSize)];
      
-     if (!_vertexBuffer)
-     {
-         _vertexBuffer = [_commandQueue.device newBufferWithLength:vertexBufferSize
-                                                           options:MTLResourceStorageModeManaged];
-     }
+    if (!_vertexBuffer)
+    {
+        _vertexBuffer = [_commandQueue.device newBufferWithLength:vertexBufferSize
+                                                          options:MTLResourceStorageModeManaged];
+    }
+    
+    _diffuseTextures = [NSMutableArray new];
+    for (void* textureOne : buffers._textureMap)
+    {
+        [((NSMutableArray*)_diffuseTextures) addObject:(__bridge id<MTLTexture>)textureOne];
+    }
      
-     memcpy(_vertexBuffer.contents, &buffers._vertices[0], vertexBufferSize);
-     [_vertexBuffer didModifyRange:NSMakeRange(0, vertexBufferSize)];
+    memcpy(_vertexBuffer.contents, &buffers._vertices[0], vertexBufferSize);
+    [_vertexBuffer didModifyRange:NSMakeRange(0, vertexBufferSize)];
 }
 
     

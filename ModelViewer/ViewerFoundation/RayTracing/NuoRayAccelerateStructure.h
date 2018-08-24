@@ -32,6 +32,7 @@ extern const uint kRayIntersectionStride;
 @property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> materialBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> maskBuffer;
+@property (nonatomic, readonly) NSArray* diffuseTextures;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
