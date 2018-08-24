@@ -25,6 +25,8 @@
     NSArray<NuoTextureAccumulator*>* _accumulators;
     
     CGSize _drawableSize;
+    
+    id<MTLSamplerState> _sampleState;
 }
 
 
@@ -74,6 +76,14 @@
         
         _rayTracingTargets = [[NSArray alloc] initWithObjects:rayTracingTargets count:targetCount];
         _rayTracingAccumulates = [[NSArray alloc] initWithObjects:rayTracingAccumulates count:targetCount];
+        
+        MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
+        samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
+        samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
+        samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
+        samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
+        samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
+        _sampleState = [commandQueue.device newSamplerStateWithDescriptor:samplerDesc];
         
         [self resetResources:nil];
     }
@@ -191,6 +201,7 @@
         ++i;
     }
     
+    [computeEncoder setSamplerState:_sampleState atIndex:0];
     [computeEncoder setDataSize:_drawableSize];
     [computeEncoder dispatch];
 }

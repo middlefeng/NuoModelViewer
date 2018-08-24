@@ -65,7 +65,9 @@ float3 interpolateNormal(device NuoRayTracingMaterial *materials, device uint* i
 }
 
 
-float3 interpolateColor(device NuoRayTracingMaterial *materials, device uint* index, Intersection intersection)
+float3 interpolateColor(device NuoRayTracingMaterial *materials, array<texture2d<float>, 10> diffuseTex,
+                        device uint* index, Intersection intersection,
+                        sampler samplr)
 {
     // barycentric coordinates sum to one
     float3 uvw;
@@ -80,8 +82,24 @@ float3 interpolateColor(device NuoRayTracingMaterial *materials, device uint* in
     float3 n1 = materials[*(index + 1)].diffuseColor;
     float3 n2 = materials[*(index + 2)].diffuseColor;
     
-    // Compute sum of vertex attributes weighted by barycentric coordinates
-    return uvw.x * n0 + uvw.y * n1 + uvw.z * n2;
+    float3 color = uvw.x * n0 + uvw.y * n1 + uvw.z * n2;
+    
+    int textureIndex = materials[*(index + 0)].diffuseTex;
+    if (textureIndex >= 0)
+    {
+        texture2d<float> texture = diffuseTex[textureIndex];
+        
+        float2 texCoord0 = materials[*(index + 0)].texCoord.xy;
+        float2 texCoord1 = materials[*(index + 1)].texCoord.xy;
+        float2 texCoord2 = materials[*(index + 2)].texCoord.xy;
+        
+        float2 texCoord = uvw.x * texCoord0 + uvw.y * texCoord1 + uvw.z * texCoord2;
+        float4 texColor = texture.sample(samplr, texCoord);
+        
+        color *= texColor.rgb;
+    }
+    
+    return color;
 }
 
 
@@ -135,7 +153,9 @@ static void self_illumination(uint2 tid,
                               device RayBuffer& ray,
                               device RayBuffer& incidentRay,
                               device float2* random,
-                              texture2d<float, access::read_write> overlayResult);
+                              texture2d<float, access::read_write> overlayResult,
+                              array<texture2d<float>, 10> diffuseTex,
+                              sampler samplr);
 
 
 
@@ -195,7 +215,8 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 device RayBuffer* shadowRays2 [[buffer(8)]],
                                 device RayBuffer* incidentRaysBuffer [[buffer(9)]],
                                 texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                array<texture2d<float>, 10> diffuseTex [[texture(1)]])
+                                array<texture2d<float>, 10> diffuseTex [[texture(1)]],
+                                sampler samplr [[sampler(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -212,7 +233,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     
     self_illumination(tid, index, materials, intersection,
                       tracingUniforms, ray, incidentRay,
-                      random, overlayResult);
+                      random, overlayResult, diffuseTex, samplr);
 }
 
 
@@ -227,7 +248,8 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  device float2* random [[buffer(6)]],
                                  device RayBuffer* incidentRaysBuffer [[buffer(7)]],
                                  texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                 array<texture2d<float>, 10> diffuseTex [[texture(1)]])
+                                 array<texture2d<float>, 10> diffuseTex [[texture(1)]],
+                                 sampler samplr [[sampler(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -238,7 +260,7 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     
     self_illumination(tid, index, materials, intersection,
                       tracingUniforms, incidentRay, incidentRay,
-                      random, overlayResult);
+                      random, overlayResult, diffuseTex, samplr);
 }
 
 
@@ -445,14 +467,16 @@ void self_illumination(uint2 tid,
                        device RayBuffer& ray,
                        device RayBuffer& incidentRay,
                        device float2* random,
-                       texture2d<float, access::read_write> overlayResult)
+                       texture2d<float, access::read_write> overlayResult,
+                       array<texture2d<float>, 10> diffuseTex,
+                       sampler samplr)
 {
     if (intersection.distance >= 0.0f)
     {
         unsigned int triangleIndex = intersection.primitiveIndex;
         device uint* vertexIndex = index + triangleIndex * 3;
         
-        float3 color = interpolateColor(materials, index, intersection);
+        float3 color = interpolateColor(materials, diffuseTex, index, intersection, samplr);
         
         int illuminate = materials[*(vertexIndex)].illuminate;
         if (illuminate == 0)

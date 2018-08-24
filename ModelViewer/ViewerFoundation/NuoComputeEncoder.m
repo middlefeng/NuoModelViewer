@@ -118,6 +118,12 @@
 }
 
 
+- (void)setSamplerState:(id<MTLSamplerState>)sampler atIndex:(uint)index
+{
+    [_encoder setSamplerState:sampler atIndex:index];
+}
+
+
 
 - (void)setBuffer:(id<MTLBuffer>)buffer offset:(uint)offset atIndex:(uint)index
 {
