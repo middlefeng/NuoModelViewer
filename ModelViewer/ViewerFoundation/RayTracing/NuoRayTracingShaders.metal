@@ -318,7 +318,7 @@ void shadow_ray_emit(uint2 tid,
             
             float3 normal = interpolateNormal(materials, index, intersection);
             
-            shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 600000.0);
+            shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             shadowRayCurrent->direction = shadowVec;
             
             shadowRayCurrent->strength = dot(normal, shadowVec);

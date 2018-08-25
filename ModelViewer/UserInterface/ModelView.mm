@@ -146,10 +146,12 @@ MouseDragMode;
     {
         [_modelRender setSampleCount:1];
         [_modelRender setRayTracingRecordStatus:kRecord_Stop];
+        [_rayTracingOverlay setOverlay:nil];
     }
     
     if (endingDrag)
     {
+        [_rayTracingOverlay setOverlay:_modelRender.rayTracingOverlay];
         [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
         [_modelRender setSampleCount:kSampleCount];
     }

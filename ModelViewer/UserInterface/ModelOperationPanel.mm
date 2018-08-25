@@ -763,7 +763,7 @@
 {
     _illumination = _illuminationSlider.floatValue;
     
-    [_optionUpdateDelegate modelOptionUpdate:0];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
                                                  
 
