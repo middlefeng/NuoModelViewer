@@ -42,8 +42,11 @@
     
     [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
-    [_overlayMesh setModelTexture:_overlay];
-    [_overlayMesh drawMesh:renderPass indexBuffer:inFlight];
+    if (_overlay)
+    {
+        [_overlayMesh setModelTexture:_overlay];
+        [_overlayMesh drawMesh:renderPass indexBuffer:inFlight];
+    }
     
     [self releaseDefaultEncoder];
 }

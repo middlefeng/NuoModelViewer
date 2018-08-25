@@ -789,12 +789,17 @@ MouseDragMode;
     
     [_modelRender setRayTracingRecordStatus:kRecord_Stop];
     [_modelRender setSampleCount:1];
+    
+    [_rayTracingOverlay setOverlay:nil];
+    
     _mouseMoved = NO;
 }
 
 
 - (void)mouseUp:(NSEvent *)event
 {
+    [_rayTracingOverlay setOverlay:_modelRender.rayTracingOverlay];
+    
     [_modelRender setAdvancedShaowEnabled:YES];
     [_modelRender setSampleCount:kSampleCount];
     [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
