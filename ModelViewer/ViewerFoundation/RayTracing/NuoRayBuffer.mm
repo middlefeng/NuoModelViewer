@@ -12,10 +12,10 @@
 
 
 
-const uint kRayBufferStrid = 52;  //  base fields - 32
+const uint kRayBufferStrid = 52;  //  base fields           - 32
                                   //  illumination strength - 4
-                                  //  ray color - 12
-                                  //  bounce - 4
+                                  //  ray color             - 12
+                                  //  bounce                - 4
 
 
 

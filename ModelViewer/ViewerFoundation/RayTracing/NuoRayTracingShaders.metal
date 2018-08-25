@@ -30,6 +30,7 @@ struct RayBuffer
     
     // cosine base strength factor (reserved, unused)
     float strength;
+    
     packed_float3 color;
     int bounce;
 };
