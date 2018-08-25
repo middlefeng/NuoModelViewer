@@ -12,7 +12,6 @@
 #import "NuoMeshTextured.h"
 #import "NuoMeshTexMatieraled.h"
 #import "NuoMeshUniform.h"
-#import "NuoRayTracingUniform.h"
 
 
 

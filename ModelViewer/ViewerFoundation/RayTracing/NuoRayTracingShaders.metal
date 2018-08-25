@@ -65,7 +65,7 @@ float3 interpolateNormal(device NuoRayTracingMaterial *materials, device uint* i
 }
 
 
-float3 interpolateColor(device NuoRayTracingMaterial *materials, array<texture2d<float>, 10> diffuseTex,
+float3 interpolateColor(device NuoRayTracingMaterial *materials, array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                         device uint* index, Intersection intersection,
                         sampler samplr)
 {
@@ -154,7 +154,7 @@ static void self_illumination(uint2 tid,
                               device RayBuffer& incidentRay,
                               device float2* random,
                               texture2d<float, access::read_write> overlayResult,
-                              array<texture2d<float>, 10> diffuseTex,
+                              array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                               sampler samplr);
 
 
@@ -468,7 +468,7 @@ void self_illumination(uint2 tid,
                        device RayBuffer& incidentRay,
                        device float2* random,
                        texture2d<float, access::read_write> overlayResult,
-                       array<texture2d<float>, 10> diffuseTex,
+                       array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                        sampler samplr)
 {
     if (intersection.distance >= 0.0f)
