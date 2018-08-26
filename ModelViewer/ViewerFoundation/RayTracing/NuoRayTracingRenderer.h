@@ -56,6 +56,18 @@
 - (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                 withInFlight:(uint)inFlight;
 
+/**
+ *  protocol with "pipeline" shader:
+ *  parameter buffers:
+ *      0. ray volume uniform
+ *      1. camera rays
+ *      2. model index buffer
+ *      3. model materials (per vertex)
+ *      4. intersections
+ *      5-m. "paramterBuffers"
+ *      m-(m+targetCount). target textures
+ *      (m+targetCount)-... model material textures
+ */
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers

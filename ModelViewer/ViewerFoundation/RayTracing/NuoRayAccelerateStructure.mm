@@ -46,7 +46,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
         _accelerateStructure.usage = MPSAccelerationStructureUsageRefit;
         
         _rayEmittor = [[NuoRayEmittor alloc] initWithCommandQueue:commandQueue];
-        _primaryRayBuffer = [[NuoRayBuffer alloc] initWithDevice:commandQueue.device];
+        _cameraRayBuffer = [[NuoRayBuffer alloc] initWithDevice:commandQueue.device];
         
         _commandQueue = commandQueue;
     }
@@ -70,14 +70,14 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 
 - (void)setDrawableSize:(CGSize)drawableSize
 {
-    [_primaryRayBuffer setDimension:drawableSize];
+    [_cameraRayBuffer setDimension:drawableSize];
 }
 
 
 
 - (CGSize)drawableSize
 {
-    return [_primaryRayBuffer dimension];
+    return [_cameraRayBuffer dimension];
 }
 
 
@@ -199,14 +199,14 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 - (void)updateRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
          withInFlight:(uint)inFlight
 {
-    [_primaryRayBuffer updateRayMask:mask withUniform:[self uniformBuffer:inFlight]
+    [_cameraRayBuffer updateRayMask:mask withUniform:[self uniformBuffer:inFlight]
                                     withCommandBuffer:commandBuffer];
 }
 
 
 - (void)rayEmit:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight
 {
-    [_rayEmittor rayEmitToBuffer:_primaryRayBuffer withCommandBuffer:commandBuffer withInFlight:inFlight];
+    [_rayEmittor rayEmitToBuffer:_cameraRayBuffer withCommandBuffer:commandBuffer withInFlight:inFlight];
 }
 
 
@@ -216,7 +216,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt)
     {
         [self rayTrace:commandBuffer
-              withRays:_primaryRayBuffer withIntersection:intersection];
+              withRays:_cameraRayBuffer withIntersection:intersection];
     }
 }
 

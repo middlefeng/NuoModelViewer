@@ -46,7 +46,7 @@ struct Intersection
 
 
 
-float3 interpolateNormal(device NuoRayTracingMaterial *materials, device uint* index, Intersection intersection)
+float3 interpolate_normal(device NuoRayTracingMaterial *materials, device uint* index, Intersection intersection)
 {
     // barycentric coordinates sum to one
     float3 uvw;
@@ -66,9 +66,9 @@ float3 interpolateNormal(device NuoRayTracingMaterial *materials, device uint* i
 }
 
 
-float3 interpolateColor(device NuoRayTracingMaterial *materials, array<texture2d<float>, kTextureBindingsCap> diffuseTex,
-                        device uint* index, Intersection intersection,
-                        sampler samplr)
+float3 interpolate_color(device NuoRayTracingMaterial *materials, array<texture2d<float>, kTextureBindingsCap> diffuseTex,
+                         device uint* index, Intersection intersection,
+                         sampler samplr)
 {
     // barycentric coordinates sum to one
     float3 uvw;
@@ -204,36 +204,36 @@ static void shadow_ray_emit(uint2 tid,
 
 
 
-kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
-                                constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                                device RayBuffer* rays [[buffer(1)]],
-                                device uint* index [[buffer(2)]],
-                                device NuoRayTracingMaterial* materials [[buffer(3)]],
-                                device Intersection *intersections [[buffer(4)]],
-                                constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
-                                device float2* random [[buffer(6)]],
-                                device RayBuffer* shadowRays1 [[buffer(7)]],
-                                device RayBuffer* shadowRays2 [[buffer(8)]],
-                                device RayBuffer* incidentRaysBuffer [[buffer(9)]],
-                                texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                array<texture2d<float>, 10> diffuseTex [[texture(1)]],
-                                sampler samplr [[sampler(0)]])
+kernel void camera_ray_process(uint2 tid [[thread_position_in_grid]],
+                               constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                               device RayBuffer* cameraRays [[buffer(1)]],
+                               device uint* index [[buffer(2)]],
+                               device NuoRayTracingMaterial* materials [[buffer(3)]],
+                               device Intersection *intersections [[buffer(4)]],
+                               constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
+                               device float2* random [[buffer(6)]],
+                               device RayBuffer* shadowRays1 [[buffer(7)]],
+                               device RayBuffer* shadowRays2 [[buffer(8)]],
+                               device RayBuffer* incidentRaysBuffer [[buffer(9)]],
+                               texture2d<float, access::read_write> overlayResult [[texture(0)]],
+                               array<texture2d<float>, 10> diffuseTex [[texture(1)]],
+                               sampler samplr [[sampler(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & intersection = intersections[rayIdx];
-    device RayBuffer& ray = rays[rayIdx];
+    device RayBuffer& cameraRay = cameraRays[rayIdx];
     device RayBuffer& incidentRay = incidentRaysBuffer[rayIdx];
     
-    shadow_ray_emit(tid, uniforms, ray, index, materials, intersection,
+    shadow_ray_emit(tid, uniforms, cameraRay, index, materials, intersection,
                     tracingUniforms, random,
                     shadowRays1,
                     shadowRays2);
     
     self_illumination(tid, index, materials, intersection,
-                      tracingUniforms, ray, incidentRay,
+                      tracingUniforms, cameraRay, incidentRay,
                       random, overlayResult, diffuseTex, samplr);
 }
 
@@ -241,7 +241,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
 
 kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                                 device RayBuffer* rays [[buffer(1)]],
+                                 device RayBuffer* cameraRays [[buffer(1)]],
                                  device uint* index [[buffer(2)]],
                                  device NuoRayTracingMaterial* materials [[buffer(3)]],
                                  device Intersection *intersections [[buffer(4)]],
@@ -317,7 +317,7 @@ void shadow_ray_emit(uint2 tid,
             shadowRayCurrent->maxDistance = maxDistance;
             shadowRayCurrent->mask = kNuoRayMask_Opaue;
             
-            float3 normal = interpolateNormal(materials, index, intersection);
+            float3 normal = interpolate_normal(materials, index, intersection);
             
             shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             shadowRayCurrent->direction = shadowVec;
@@ -477,12 +477,19 @@ void self_illumination(uint2 tid,
         unsigned int triangleIndex = intersection.primitiveIndex;
         device uint* vertexIndex = index + triangleIndex * 3;
         
-        float3 color = interpolateColor(materials, diffuseTex, index, intersection, samplr);
+        float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
         
         int illuminate = materials[*(vertexIndex)].illuminate;
         if (illuminate == 0)
         {
-            overlayResult.write(float4(color * ray.color * tracingUniforms.illuminationStrength, 1.0), tid);
+            color = color * ray.color * tracingUniforms.illuminationStrength;
+            
+            // for bounced ray, multiplied with the integral base (2 PI, or the hemisphre)
+            // as there is no primary ray
+            if (ray.bounce > 0)
+                color = 2.0f * M_PI_F * color;
+            
+            overlayResult.write(float4(color, 1.0), tid);
             
             incidentRay.maxDistance = -1;
         }
@@ -490,7 +497,7 @@ void self_illumination(uint2 tid,
         {
             float2 r = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
             
-            float3 normal = interpolateNormal(materials, index, intersection);
+            float3 normal = interpolate_normal(materials, index, intersection);
             float3 sampleVec = sample_cosine_weighted_hemisphere(r);
             
             const float maxDistance = tracingUniforms.bounds.span;
