@@ -26,12 +26,13 @@ extern const uint kRayIntersectionStride;
 @property (nonatomic, assign) CGFloat fieldOfView;
 @property (nonatomic, assign) CGSize drawableSize;
 
-@property (nonatomic, readonly) NuoRayBuffer* primaryRayBuffer;
+@property (nonatomic, readonly) NuoRayBuffer* cameraRayBuffer;
 
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;
-@property (nonatomic, readonly) id<MTLBuffer> normalBuffer;
+@property (nonatomic, readonly) id<MTLBuffer> materialBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> maskBuffer;
+@property (nonatomic, readonly) NSArray* diffuseTextures;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;

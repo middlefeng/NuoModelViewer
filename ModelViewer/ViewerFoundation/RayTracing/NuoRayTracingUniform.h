@@ -17,7 +17,8 @@ typedef enum
 {
     kNuoRayMask_Opaue           = 1,
     kNuoRayMask_Translucent     = 2,
-    kNuoRayMask_Disabled        = 4
+    kNuoRayMask_Illuminating    = 4,
+    kNuoRayMask_Disabled        = 8,
 }
 NuoRayMask;
 
@@ -43,8 +44,23 @@ typedef struct
 {
     NuoBoundsUniform bounds;
     NuoRayTracingLightSource lightSources[2];
+    
+    float ambient;
+    float illuminationStrength;
 }
 NuoRayTracingUniforms;
+
+
+typedef struct
+{
+    vector3 normal;
+    vector3 diffuseColor;
+    int illuminate;
+    
+    vector3 texCoord;
+    int diffuseTex;
+}
+NuoRayTracingMaterial;
 
 
 typedef struct
@@ -58,6 +74,9 @@ typedef struct
     matrix44 viewTrans;
 }
 NuoRayVolumeUniform;
+
+
+#define kTextureBindingsCap 10
 
 
 

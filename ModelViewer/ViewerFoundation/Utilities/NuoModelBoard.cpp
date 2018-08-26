@@ -7,6 +7,7 @@
 //
 
 #include "NuoModelBoard.h"
+#include "NuoMaterial.h"
 
 
 
@@ -32,6 +33,12 @@ NuoModelBackDrop::NuoModelBackDrop(const NuoModelBackDrop& other)
 
 void NuoModelBackDrop::AddMaterial(const NuoMaterial& material)
 {
+}
+
+
+NuoMaterial NuoModelBackDrop::GetMaterial(size_t primtiveIndex) const
+{
+    return NuoMaterial();
 }
 
 

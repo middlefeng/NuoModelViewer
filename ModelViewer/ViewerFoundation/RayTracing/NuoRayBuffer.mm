@@ -12,7 +12,10 @@
 
 
 
-const uint kRayBufferStrid = 36;
+const uint kRayBufferStrid = 52;  //  base fields           - 32
+                                  //  illumination strength - 4
+                                  //  ray color             - 12
+                                  //  bounce                - 4
 
 
 
@@ -28,6 +31,7 @@ const uint kRayBufferStrid = 36;
 {
     NuoComputePipeline* _pipelineMaskOpaque;
     NuoComputePipeline* _pipelineMaskTranslucent;
+    NuoComputePipeline* _pipelineMaskIllum;
 }
 
 
@@ -50,6 +54,10 @@ const uint kRayBufferStrid = 36;
 {
     _pipelineMaskOpaque = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"ray_set_mask" withParameter:NO];
     _pipelineMaskTranslucent = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"ray_set_mask" withParameter:YES];
+    
+    _pipelineMaskIllum = [[NuoComputePipeline alloc] initWithDevice:_device
+                                                       withFunction:@"ray_set_mask_illuminating"
+                                                      withParameter:NO];
     
     _pipelineMaskOpaque.name = @"Ray Mask (Opaque)";
     _pipelineMaskTranslucent.name = @"Ray Mask (Translucent)";
@@ -80,7 +88,9 @@ const uint kRayBufferStrid = 36;
                                   withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
     NuoComputePipeline* pipeline;
-    if (rayMask | kNuoRayMask_Translucent)
+    if (rayMask & kNuoRayMask_Illuminating)
+        pipeline = _pipelineMaskIllum;
+    else if (rayMask & kNuoRayMask_Translucent)
         pipeline = _pipelineMaskTranslucent;
     else
         pipeline = _pipelineMaskOpaque;

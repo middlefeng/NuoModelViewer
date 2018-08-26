@@ -23,6 +23,7 @@
 typedef NuoMatrixFloat44::_typeTrait::_matrixType matrix44;
 typedef NuoMatrixFloat33::_typeTrait::_matrixType matrix33;
 #define vector4 NuoVectorFloat4::_typeTrait::_vectorType
+#define vector3 NuoVectorFloat3::_typeTrait::_vectorType
 
 
 #else
@@ -33,6 +34,7 @@ typedef NuoMatrixFloat33::_typeTrait::_matrixType matrix33;
 #define matrix44 metal::float4x4
 #define matrix33 metal::float3x3
 #define vector4 metal::float4
+#define vector3 metal::float3
 
 #endif
 

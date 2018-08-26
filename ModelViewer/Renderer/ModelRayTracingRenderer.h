@@ -16,6 +16,8 @@
 
 
 @property (nonatomic, assign) NuoBounds sceneBounds;
+@property (nonatomic, assign) CGFloat ambientDensity;
+@property (nonatomic, assign) CGFloat illuminationStrength;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;

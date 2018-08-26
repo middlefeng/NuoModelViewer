@@ -25,6 +25,8 @@
     NSArray<NuoTextureAccumulator*>* _accumulators;
     
     CGSize _drawableSize;
+    
+    id<MTLSamplerState> _sampleState;
 }
 
 
@@ -39,14 +41,13 @@
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
-               withAccumulatedResult:(BOOL)accumulateResult
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                      withTargetCount:(uint)targetCount
 {
     self = [super initWithCommandQueue:commandQueue
                        withPixelFormat:MTLPixelFormatInvalid withSampleCount:1];
     
-    if (self && accumulateResult)
+    if (self && targetCount > 0)
     {
         NuoRenderPassTarget* rayTracingTargets[targetCount];
         NuoRenderPassTarget* rayTracingAccumulates[targetCount];
@@ -70,10 +71,19 @@
             rayTracingAccumulates[i].sharedTargetTexture = NO;
             rayTracingAccumulates[i].colorAttachments[0].needWrite = YES;
             rayTracingAccumulates[i].name = @"Ray Tracing Accumulate";
+            rayTracingAccumulates[i].clearColor = MTLClearColorMake(0, 0, 0, 0);
         }
         
         _rayTracingTargets = [[NSArray alloc] initWithObjects:rayTracingTargets count:targetCount];
         _rayTracingAccumulates = [[NSArray alloc] initWithObjects:rayTracingAccumulates count:targetCount];
+        
+        MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
+        samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
+        samplerDesc.tAddressMode = MTLSamplerAddressModeRepeat;
+        samplerDesc.minFilter = MTLSamplerMinMagFilterLinear;
+        samplerDesc.magFilter = MTLSamplerMinMagFilterLinear;
+        samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
+        _sampleState = [commandQueue.device newSamplerStateWithDescriptor:samplerDesc];
         
         [self resetResources:nil];
     }
@@ -168,9 +178,9 @@
     NuoComputeEncoder* computeEncoder = [pipeline encoderWithCommandBuffer:commandBuffer];
     
     [computeEncoder setBuffer:[_rayStructure uniformBuffer:inFlight] offset:0 atIndex:0];
-    [computeEncoder setBuffer:[_rayStructure primaryRayBuffer].buffer offset:0 atIndex:1];
+    [computeEncoder setBuffer:[_rayStructure cameraRayBuffer].buffer offset:0 atIndex:1];
     [computeEncoder setBuffer:[_rayStructure indexBuffer] offset:0 atIndex:2];
-    [computeEncoder setBuffer:[_rayStructure normalBuffer] offset:0 atIndex:3];
+    [computeEncoder setBuffer:[_rayStructure materialBuffer] offset:0 atIndex:3];
     [computeEncoder setBuffer:intersection offset:0 atIndex:4];
     
     if (paramterBuffers)
@@ -179,9 +189,19 @@
             [computeEncoder setBuffer:paramterBuffers[i] offset:0 atIndex:5 + i];
     }
     
-    for (uint i = 0; i < _rayTracingTargets.count; ++i)
-        [computeEncoder setTexture:_rayTracingTargets[i].targetTexture atIndex:i];
+    uint i = 0;
+    for (i = 0; i < _rayTracingTargets.count; ++i)
+    {
+        [computeEncoder setTargetTexture:_rayTracingTargets[i].targetTexture atIndex:i];
+    }
     
+    for (id<MTLTexture> diffuseTexture in _rayStructure.diffuseTextures)
+    {
+        [computeEncoder setTexture:diffuseTexture atIndex:i];
+        ++i;
+    }
+    
+    [computeEncoder setSamplerState:_sampleState atIndex:0];
     [computeEncoder setDataSize:_drawableSize];
     [computeEncoder dispatch];
 }

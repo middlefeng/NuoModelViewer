@@ -96,10 +96,12 @@ class NuoLua;
 
 @property (nonatomic, assign) BOOL cullEnabled;
 @property (nonatomic, assign) float fieldOfView;
+@property (nonatomic, assign) float illuminationStrength;
 @property (nonatomic, assign) float ambientDensity;
 
 @property (nonatomic, strong, readonly) NuoMeshOption* modelOptions;
 @property (nonatomic, assign) NuoDeferredRenderUniforms deferredParameters;
+@property (nonatomic, readonly) id<MTLTexture> rayTracingOverlay;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;

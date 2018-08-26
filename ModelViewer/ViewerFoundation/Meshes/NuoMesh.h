@@ -103,13 +103,17 @@
 - (void)makeGPUStates;
 
 
+- (std::vector<uint32_t>)maskBuffer;
+
+
 - (void)setRawModel:(const PNuoModelBase&)model;
 - (NSString*)modelName;
 - (void)smoothWithTolerance:(float)tolerance;
 
-- (VectorBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform;
-- (VectorBuffer)worldNormalBuffer:(const NuoMatrixFloat44&)transform;
-
+// the "transform" should be the outter world transform (excluding the view matrix,
+// that is, the returned buffer is in the world coordinate rather than in the camera coordinate)
+//
+- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers;
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform;
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;

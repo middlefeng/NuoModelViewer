@@ -282,24 +282,15 @@
 }
 
 
-- (VectorBuffer)worldPositionBuffer:(const NuoMatrixFloat44&)transform
+- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
 {
     const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
-    VectorBuffer buffer = _rawModel->GetPositionBuffer();
+    GlobalBuffers buffer = _rawModel->GetGlobalBuffers();
     buffer.TransformPosition(transformWorld);
-    return buffer;
-}
-
-
-
-- (VectorBuffer)worldNormalBuffer:(const NuoMatrixFloat44&)transform
-{
-    const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
-    
-    VectorBuffer buffer = _rawModel->GetNormalBuffer();
     buffer.TransformVector(NuoMatrixExtractLinear(transformWorld));
-    return buffer;
+    
+    buffers->Union(buffer);
 }
 
 
@@ -484,6 +475,33 @@
     [self makePipelineShadowState];
     [self makePipelineState];
     [self makeDepthStencilState];
+}
+
+
+- (std::vector<uint32_t>)maskBuffer
+{
+    NuoRayMask mask = kNuoRayMask_Disabled;
+    if (_enabled)
+    {
+        mask = self.hasTransparency ? kNuoRayMask_Translucent :
+                                      kNuoRayMask_Opaue;
+    }
+    
+    const size_t indicesNumber = _rawModel->GetIndicesNumber();
+    const size_t bufferSize = indicesNumber / 3;
+    
+    std::vector<uint32_t> oneBuffer;
+    oneBuffer.resize(bufferSize);
+    std::fill(oneBuffer.begin(), oneBuffer.end(), mask);
+    
+    for (size_t i = 0; i < bufferSize; ++i)
+    {
+        NuoMaterial material = _rawModel->GetMaterial(i);
+        if (material.id != -1 && material.illum == 0)
+            oneBuffer[i] |= kNuoRayMask_Illuminating;
+    }
+    
+    return oneBuffer;
 }
 
 

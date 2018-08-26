@@ -29,7 +29,7 @@
 #import "NuoDeferredRenderer.h"
 #import "NuoRayAccelerateStructure.h"
 #import "ModelRayTracingRenderer.h"
-
+#import "NuoTextureMesh.h"
 
 #import "NuoDirectoryUtils.h"
 #import "NuoModelLoaderGPU.h"
@@ -158,6 +158,7 @@
     _fieldOfView = fieldOfView;
     [_rayAccelerator setFieldOfView:fieldOfView];
 }
+
 
 
 - (void)setAdvancedShaowEnabled:(BOOL)enabled
@@ -1024,6 +1025,7 @@
             const NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
 
             _rayTracingRenderer.sceneBounds = bounds;
+            _rayTracingRenderer.illuminationStrength = _illuminationStrength;
             _rayTracingRenderer.fieldOfView = _fieldOfView;
         }
         
@@ -1080,21 +1082,17 @@
     
     [_immediateTarget releaseRenderPassEndcoder];
     
+    id<MTLRenderCommandEncoder> deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
+    
     BOOL drawBackdrop = _backdropMesh && _backdropMesh.enabled;
     if (drawBackdrop)
-    {
-        id<MTLRenderCommandEncoder> deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
         [_backdropMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
-    }
-    
+
     [_deferredRenderer setRenderTarget:self.renderTarget];
     [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
     [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
-    
-    if (drawBackdrop)
-    {
-        [self releaseDefaultEncoder];
-    }
+        
+    [self releaseDefaultEncoder];
 }
 
 
@@ -1153,6 +1151,11 @@
     [_immediateTarget setResolveDepth:resolveDepth];
 }
 
+
+- (id<MTLTexture>)rayTracingOverlay
+{
+    return _rayTracingRenderer.targetTextures[0];
+}
 
 
 #pragma mark -- Protocol NuoMeshSceneParametersProvider

@@ -176,5 +176,40 @@ static CIContext* sCIContext = nil;
 
 
 
+-  (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
+{
+    GlobalBuffers oneBuffer;
+    [super appendWorldBuffers:transform toBuffers:&oneBuffer];
+    
+    auto existingItem = std::find(buffers->_textureMap.begin(),
+                                  buffers->_textureMap.end(),
+                                  (__bridge void*)_diffuseTex);
+    
+    size_t currentIndex = 0;
+    if (existingItem == buffers->_textureMap.end())
+    {
+        buffers->_textureMap.push_back((__bridge void*)_diffuseTex);
+        currentIndex = buffers->_textureMap.size() - 1;
+    }
+    else
+    {
+        currentIndex = existingItem - buffers->_textureMap.begin();
+    }
+    
+    for (NuoRayTracingMaterial& item : oneBuffer._materials)
+    {
+        assert(item.diffuseTex == -2);
+        item.diffuseTex = (int)currentIndex;
+    }
+    
+    buffers->Union(oneBuffer);
+    
+    // no handling to the array exceeding preset number of shader
+    // argument bindings
+    assert(buffers->_textureMap.size() < kTextureBindingsCap);
+}
+
+
+
 
 @end

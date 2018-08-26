@@ -67,12 +67,6 @@
 
 
 
-- (void)setFieldOfView:(CGFloat)fieldOfView
-{
-    _fieldOfView = fieldOfView;
-}
-
-
 - (void)setupPipeline
 {
     // Generates rays according to view/projection matrices
