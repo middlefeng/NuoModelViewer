@@ -18,6 +18,44 @@ NuoModelBoard::NuoModelBoard(float width, float height, float thickness)
 }
 
 
+GlobalBuffers NuoModelBoard::GetGlobalBuffers() const
+{
+    GlobalBuffers result;
+    
+    for (const NuoItemSimple& item : NuoModelCommon<NuoItemSimple>::_buffer)
+    {
+        {
+            NuoVectorFloat3::_typeTrait::_vectorType vector;
+            vector.x = item._position.x;
+            vector.y = item._position.y;
+            vector.z = item._position.z;
+            result._vertices.push_back(vector);
+        }
+        
+        {
+            NuoRayTracingMaterial material;
+            
+            material.normal.x = item._normal.x;
+            material.normal.y = item._normal.y;
+            material.normal.z = item._normal.z;
+            
+            // no texture
+            material.texCoord = NuoVectorFloat3(0, 0, 0)._vector;
+            material.diffuseTex = -1;
+            
+            material.diffuseColor = NuoVectorFloat3(1, 1, 1)._vector;
+            material.illuminate = 2;
+            
+            result._materials.push_back(material);
+        }
+    }
+    
+    result._indices = NuoModelCommon<NuoItemSimple>::_indices;
+    
+    return result;
+}
+
+
 
 NuoModelBackDrop::NuoModelBackDrop(float width, float height, float thickness)
     : NuoModelBoardBase<NuoItemTextured>(width, height, thickness)

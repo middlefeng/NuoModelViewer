@@ -74,6 +74,7 @@
     NuoShadowMapRenderer* _shadowMapRenderer[2];
     NuoRenderPassTarget* _immediateTarget;
     NuoDeferredRenderer* _deferredRenderer;
+    NuoTextureMesh* _overlayMesh;
     
     NuoRayAccelerateStructure* _rayAccelerator;
     ModelRayTracingRenderer* _rayTracingRenderer;
@@ -105,6 +106,10 @@
         _immediateTarget.sharedTargetTexture = NO;
         
         _deferredRenderer = [[NuoDeferredRenderer alloc] initWithCommandQueue:commandQueue withSceneParameter:self];
+        
+        _overlayMesh = [[NuoTextureMesh alloc] initWithCommandQueue:commandQueue];
+        [_overlayMesh setSampleCount:1];
+        [_overlayMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
         
         _sceneRoot = [[NuoMeshSceneRoot alloc] init];
         _boardMeshes = [NSMutableArray new];
@@ -1025,6 +1030,7 @@
             const NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
 
             _rayTracingRenderer.sceneBounds = bounds;
+            _rayTracingRenderer.ambientDensity = _ambientDensity;
             _rayTracingRenderer.illuminationStrength = _illuminationStrength;
             _rayTracingRenderer.fieldOfView = _fieldOfView;
         }
@@ -1058,8 +1064,11 @@
         [_lightCastBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(lightUniforms))];
     }
     
-    [_deferredRenderer setRoot:_sceneRoot];
-    [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    if (_rayTracingRecordStatus == kRecord_Stop)
+    {
+        [_deferredRenderer setRoot:_sceneRoot];
+        [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    }
 }
 
 
@@ -1088,10 +1097,20 @@
     if (drawBackdrop)
         [_backdropMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
 
-    [_deferredRenderer setRenderTarget:self.renderTarget];
-    [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
-    [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
-        
+    BOOL rayTracingMode = (_rayTracingRecordStatus != kRecord_Stop);
+    
+    if (rayTracingMode)
+    {
+        [_overlayMesh setModelTexture:_immediateTarget.targetTexture];
+        [_overlayMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
+    }
+    else
+    {
+        [_deferredRenderer setRenderTarget:self.renderTarget];
+        [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
+        [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    }
+    
     [self releaseDefaultEncoder];
 }
 

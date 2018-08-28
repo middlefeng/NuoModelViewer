@@ -472,13 +472,12 @@ void self_illumination(uint2 tid,
                        array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                        sampler samplr)
 {
+    unsigned int triangleIndex = intersection.primitiveIndex;
+    device uint* vertexIndex = index + triangleIndex * 3;
+    float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
+    
     if (intersection.distance >= 0.0f)
     {
-        unsigned int triangleIndex = intersection.primitiveIndex;
-        device uint* vertexIndex = index + triangleIndex * 3;
-        
-        float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
-        
         int illuminate = materials[*(vertexIndex)].illuminate;
         if (illuminate == 0)
         {
@@ -511,6 +510,12 @@ void self_illumination(uint2 tid,
             
             incidentRay.color = color * ray.color;
         }
+    }
+    else if (ray.maxDistance > 0 && ray.bounce == 1)
+    {
+        color = ray.color * tracingUniforms.ambient;
+        
+        overlayResult.write(float4(color, 1.0), tid);
     }
 }
 
