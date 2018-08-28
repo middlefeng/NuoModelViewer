@@ -1152,7 +1152,7 @@
 }
 
 
-- (id<MTLTexture>)rayTracingOverlay
+- (id<MTLTexture>)rayTracingIllumination
 {
     return _rayTracingRenderer.targetTextures[0];
 }

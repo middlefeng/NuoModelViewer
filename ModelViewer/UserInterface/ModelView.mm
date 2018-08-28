@@ -19,7 +19,7 @@
 // pipeline stages
 //
 #import "ModelViewerRenderer.h"
-#import "NuoOverlayPass.h"
+#import "ModelRayTracingBlendRenderer.h"
 #import "ModelDissectRenderer.h"
 #import "ModelSelectionRenderer.h"
 #import "NotationRenderer.h"
@@ -74,7 +74,7 @@ MouseDragMode;
     ModelSelectionRenderer* _modelSelectionRenderer;
     NotationRenderer* _notationRenderer;
     MotionBlurRenderer* _motionBlurRenderer;
-    NuoOverlayPass* _rayTracingOverlay;
+    ModelRayTracingBlendRenderer* _rayTracingBlendRenderer;
     
     NSMutableArray<NuoMeshAnimation*>* _animations;
     
@@ -146,12 +146,12 @@ MouseDragMode;
     {
         [_modelRender setSampleCount:1];
         [_modelRender setRayTracingRecordStatus:kRecord_Stop];
-        [_rayTracingOverlay setOverlay:nil];
+        [_rayTracingBlendRenderer setIllumination:nil];
     }
     
     if (endingDrag)
     {
-        [_rayTracingOverlay setOverlay:_modelRender.rayTracingOverlay];
+        [_rayTracingBlendRenderer setIllumination:_modelRender.rayTracingIllumination];
         [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
         [_modelRender setSampleCount:kSampleCount];
     }
@@ -532,9 +532,9 @@ MouseDragMode;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
-    _rayTracingOverlay = [[NuoOverlayPass alloc] initWithCommandQueue:self.commandQueue
-                                                      withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                      withSampleCount:1];
+    _rayTracingBlendRenderer = [[ModelRayTracingBlendRenderer alloc] initWithCommandQueue:self.commandQueue
+                                                                          withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                          withSampleCount:1];
     
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
@@ -631,7 +631,7 @@ MouseDragMode;
     
     if (_modelPanel.rayTracingRecordStatus != kRecord_Stop)
     {
-        [renders addObject:_rayTracingOverlay];
+        [renders addObject:_rayTracingBlendRenderer];
         
         NuoRenderPassTarget* rayTracingTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
                                                                                   withPixelFormat:MTLPixelFormatBGRA8Unorm
@@ -641,8 +641,8 @@ MouseDragMode;
         rayTracingTarget.name = @"Ray-Tracing Overlay";
         rayTracingTarget.sampleCount = 1;
         
-        [_rayTracingOverlay setOverlay:[_modelRender rayTracingOverlay]];
-        [_rayTracingOverlay setRenderTarget:rayTracingTarget];
+        [_rayTracingBlendRenderer setIllumination:[_modelRender rayTracingIllumination]];
+        [_rayTracingBlendRenderer setRenderTarget:rayTracingTarget];
         
         lastTarget = rayTracingTarget;
         
@@ -792,7 +792,7 @@ MouseDragMode;
     [_modelRender setRayTracingRecordStatus:kRecord_Stop];
     [_modelRender setSampleCount:1];
     
-    [_rayTracingOverlay setOverlay:nil];
+    [_rayTracingBlendRenderer setIllumination:nil];
     
     _mouseMoved = NO;
 }
@@ -800,7 +800,7 @@ MouseDragMode;
 
 - (void)mouseUp:(NSEvent *)event
 {
-    [_rayTracingOverlay setOverlay:_modelRender.rayTracingOverlay];
+    [_rayTracingBlendRenderer setIllumination:_modelRender.rayTracingIllumination];
     
     [_modelRender setAdvancedShaowEnabled:YES];
     [_modelRender setSampleCount:kSampleCount];
@@ -1233,7 +1233,7 @@ MouseDragMode;
     [result addObject:_modelRender];
     
     if (_modelPanel.rayTracingRecordStatus != kRecord_Stop)
-        [result addObject:_rayTracingOverlay];
+        [result addObject:_rayTracingBlendRenderer];
     
     if (_modelPanel.motionBlurRecordStatus == kRecord_Start)
         [result addObject:_motionBlurRenderer];

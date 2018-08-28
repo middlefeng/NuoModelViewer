@@ -105,3 +105,17 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
 
 
 
+/**
+ *  illumination and ambient from the ray tracer
+ */
+
+fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
+                                   texture2d<float> source [[texture(0)]],
+                                   texture2d<float> illumination [[texture(1)]],
+                                   sampler samplr [[sampler(0)]])
+{
+    float4 sourceColor = source.sample(samplr, vert.texCoord);
+    float3 illumiColor = illumination.sample(samplr, vert.texCoord).rgb;
+    
+    return (float4(sourceColor.rgb + illumiColor, sourceColor.a));
+}
