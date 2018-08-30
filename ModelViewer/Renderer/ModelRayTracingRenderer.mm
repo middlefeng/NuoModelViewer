@@ -255,6 +255,7 @@ static const uint32_t kRandomBufferSize = 512;
                                              _sceneBounds._center._vector.y,
                                              _sceneBounds._center._vector.z, 1.0)._vector;
     uniforms.ambient = _ambientDensity;
+    uniforms.ambientRadius = _ambientRadius;
     uniforms.illuminationStrength = _illuminationStrength;
     
     memcpy(_rayTraceUniform[index].contents, &uniforms, sizeof(NuoRayTracingUniforms));

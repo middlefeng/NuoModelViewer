@@ -46,6 +46,7 @@ typedef struct
     NuoRayTracingLightSource lightSources[2];
     
     float ambient;
+    float ambientRadius;
     float illuminationStrength;
 }
 NuoRayTracingUniforms;

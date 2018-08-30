@@ -1031,6 +1031,7 @@
 
             _rayTracingRenderer.sceneBounds = bounds;
             _rayTracingRenderer.ambientDensity = _ambientDensity;
+            _rayTracingRenderer.ambientRadius = _deferredParameters.ambientOcclusionParams.sampleRadius;
             _rayTracingRenderer.illuminationStrength = _illuminationStrength;
             _rayTracingRenderer.fieldOfView = _fieldOfView;
         }

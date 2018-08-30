@@ -39,7 +39,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     {
         _intersector = [[MPSRayIntersector alloc] initWithDevice:commandQueue.device];
         _intersector.rayDataType = MPSRayDataTypeOriginMaskDirectionMaxDistance;
-        _intersector.rayStride = kRayBufferStrid;
+        _intersector.rayStride = kRayBufferStride;
         _intersector.rayMaskOptions = MPSRayMaskOptionPrimitive;
         
         _accelerateStructure = [[MPSTriangleAccelerationStructure alloc] initWithDevice:commandQueue.device];

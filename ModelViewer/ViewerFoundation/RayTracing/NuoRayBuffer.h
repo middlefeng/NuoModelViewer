@@ -10,7 +10,7 @@
 #import <Metal/Metal.h>
 
 
-extern const uint kRayBufferStrid;
+extern const uint kRayBufferStride;
 
 
 @interface NuoRayBuffer : NSObject

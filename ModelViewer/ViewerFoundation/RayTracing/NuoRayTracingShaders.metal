@@ -33,6 +33,7 @@ struct RayBuffer
     
     packed_float3 color;
     int bounce;
+    bool ambientIlluminated;
 };
 
 
@@ -138,7 +139,9 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
     // set the mask later by "ray_set_mask"
     //
     ray.mask = kNuoRayMask_Opaue;
+    
     ray.bounce = 0;
+    ray.ambientIlluminated = false;
     
     ray.maxDistance = INFINITY;
 }
@@ -472,12 +475,15 @@ void self_illumination(uint2 tid,
                        array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                        sampler samplr)
 {
-    unsigned int triangleIndex = intersection.primitiveIndex;
-    device uint* vertexIndex = index + triangleIndex * 3;
-    float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
-    
     if (intersection.distance >= 0.0f)
     {
+        const float maxDistance = tracingUniforms.bounds.span;
+        const float ambientRadius = maxDistance / 25.0 * (1.0 - tracingUniforms.ambientRadius * 0.5);
+        
+        unsigned int triangleIndex = intersection.primitiveIndex;
+        device uint* vertexIndex = index + triangleIndex * 3;
+        float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
+        
         int illuminate = materials[*(vertexIndex)].illuminate;
         if (illuminate == 0)
         {
@@ -499,23 +505,34 @@ void self_illumination(uint2 tid,
             float3 normal = interpolate_normal(materials, index, intersection);
             float3 sampleVec = sample_cosine_weighted_hemisphere(r);
             
-            const float maxDistance = tracingUniforms.bounds.span;
-            
             float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
             incidentRay.direction = align_hemisphere_normal(sampleVec, normal);
             incidentRay.origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             incidentRay.maxDistance = maxDistance;
             incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
             incidentRay.bounce = ray.bounce + 1;
+            incidentRay.ambientIlluminated = ray.ambientIlluminated;
             
             incidentRay.color = color * ray.color;
         }
-    }
-    else if (ray.maxDistance > 0 && ray.bounce == 1)
-    {
-        color = ray.color * tracingUniforms.ambient;
         
-        overlayResult.write(float4(color, 1.0), tid);
+        if (ray.bounce > 0 && !ray.ambientIlluminated && intersection.distance > ambientRadius)
+        {
+            color = ray.color * tracingUniforms.ambient;
+            overlayResult.write(float4(color, 1.0), tid);
+            incidentRay.ambientIlluminated = true;
+        }
+    }
+    else if (ray.maxDistance > 0)
+    {
+        if (ray.bounce > 0 && !ray.ambientIlluminated)
+        {
+            float3 color = ray.color * tracingUniforms.ambient;
+            overlayResult.write(float4(color, 1.0), tid);
+            incidentRay.ambientIlluminated = true;
+        }
+        
+        incidentRay.maxDistance = -1;
     }
 }
 
