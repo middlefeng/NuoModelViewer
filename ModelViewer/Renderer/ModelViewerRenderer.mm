@@ -29,7 +29,7 @@
 #import "NuoDeferredRenderer.h"
 #import "NuoRayAccelerateStructure.h"
 #import "ModelRayTracingRenderer.h"
-#import "NuoTextureMesh.h"
+#import "NuoIlluminationmesh.h"
 
 #import "NuoDirectoryUtils.h"
 #import "NuoModelLoaderGPU.h"
@@ -74,7 +74,7 @@
     NuoShadowMapRenderer* _shadowMapRenderer[2];
     NuoRenderPassTarget* _immediateTarget;
     NuoDeferredRenderer* _deferredRenderer;
-    NuoTextureMesh* _overlayMesh;
+    NuoIlluminationMesh* _illuminationMesh;
     
     NuoRayAccelerateStructure* _rayAccelerator;
     ModelRayTracingRenderer* _rayTracingRenderer;
@@ -107,9 +107,9 @@
         
         _deferredRenderer = [[NuoDeferredRenderer alloc] initWithCommandQueue:commandQueue withSceneParameter:self];
         
-        _overlayMesh = [[NuoTextureMesh alloc] initWithCommandQueue:commandQueue];
-        [_overlayMesh setSampleCount:1];
-        [_overlayMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
+        _illuminationMesh = [[NuoIlluminationMesh alloc] initWithCommandQueue:commandQueue];
+        [_illuminationMesh setSampleCount:1];
+        [_illuminationMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
         
         _sceneRoot = [[NuoMeshSceneRoot alloc] init];
         _boardMeshes = [NSMutableArray new];
@@ -1102,8 +1102,10 @@
     
     if (rayTracingMode)
     {
-        [_overlayMesh setModelTexture:_immediateTarget.targetTexture];
-        [_overlayMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
+        [_illuminationMesh setModelTexture:_immediateTarget.targetTexture];
+        [_illuminationMesh setIlluminationMap:[self rayTracingIllumination]];
+        [_illuminationMesh setShadowOverlayMap:[self shadowOverlayMap]];
+        [_illuminationMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
     }
     else
     {
