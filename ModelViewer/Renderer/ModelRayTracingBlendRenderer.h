@@ -13,7 +13,8 @@
 @interface ModelRayTracingBlendRenderer : NuoRenderPipelinePass
 
 
-@property (nonatomic, strong) id<MTLTexture> illumination;
+@property (nonatomic, weak) id<MTLTexture> illumination;
+@property (nonatomic, weak) id<MTLTexture> shadowOverlayMap;
 
 
 @end

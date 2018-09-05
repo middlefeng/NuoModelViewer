@@ -1178,6 +1178,12 @@
 }
 
 
+- (id<MTLTexture>)shadowOverlayMap
+{
+    return _deferredRenderer.shadowOverlayMap;
+}
+
+
 #pragma mark -- Protocol NuoMeshSceneParametersProvider
 
 - (id<MTLTexture>)shadowMap:(NSUInteger)index;

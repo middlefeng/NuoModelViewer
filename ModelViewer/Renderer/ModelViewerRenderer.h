@@ -102,6 +102,7 @@ class NuoLua;
 @property (nonatomic, strong, readonly) NuoMeshOption* modelOptions;
 @property (nonatomic, assign) NuoDeferredRenderUniforms deferredParameters;
 @property (nonatomic, readonly) id<MTLTexture> rayTracingIllumination;
+@property (nonatomic, readonly) id<MTLTexture> shadowOverlayMap;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;

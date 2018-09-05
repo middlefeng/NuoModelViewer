@@ -27,6 +27,7 @@
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
     [renderPass setFragmentTexture:_illuminationMap atIndex:1];
+    [renderPass setFragmentTexture:_shadowOverlayMap atIndex:2];
     [super drawMesh:renderPass indexBuffer:index];
 }
 

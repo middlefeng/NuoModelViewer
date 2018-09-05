@@ -642,6 +642,8 @@ MouseDragMode;
         rayTracingTarget.sampleCount = 1;
         
         [_rayTracingBlendRenderer setIllumination:[_modelRender rayTracingIllumination]];
+        [_rayTracingBlendRenderer setShadowOverlayMap:[_modelRender shadowOverlayMap]];
+        
         [_rayTracingBlendRenderer setRenderTarget:rayTracingTarget];
         
         lastTarget = rayTracingTarget;

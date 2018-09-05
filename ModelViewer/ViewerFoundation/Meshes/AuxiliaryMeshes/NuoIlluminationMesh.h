@@ -15,7 +15,8 @@
 @interface NuoIlluminationMesh : NuoTextureMesh
 
 
-@property (nonatomic, strong) id<MTLTexture> illuminationMap;
+@property (nonatomic, weak) id<MTLTexture> illuminationMap;
+@property (nonatomic, weak) id<MTLTexture> shadowOverlayMap;
 
 
 @end

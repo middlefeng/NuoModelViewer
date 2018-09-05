@@ -112,6 +112,7 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
 fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
                                    texture2d<float> source [[texture(0)]],
                                    texture2d<float> illumination [[texture(1)]],
+                                   texture2d<float> shadowOverlayFactor [[texture(2)]],
                                    sampler samplr [[sampler(0)]])
 {
     float4 sourceColor = source.sample(samplr, vert.texCoord);

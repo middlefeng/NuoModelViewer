@@ -17,6 +17,9 @@
 @interface NuoDeferredRenderer : NuoRenderPass
 
 
+@property (nonatomic, readonly) id<MTLTexture> shadowOverlayMap;
+
+
 /**
  *  result from the immediate phase
  */
