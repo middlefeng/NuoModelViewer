@@ -33,6 +33,9 @@ struct RayBuffer
     
     packed_float3 color;
     int bounce;
+    
+    // determine if the ambient calculation should terminate, which is independent from
+    // whether boucing should terminate
     bool ambientIlluminated;
 };
 
@@ -119,12 +122,8 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device RayBuffer& ray = rays[rayIdx];
     
-    float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
-    
-    // 0.2 is the empirically measured offset between the rasterization and the ray tracing.
-    // seems caused by the different ways of anti-alias (MSAA vs. randomized camera rays)
-    //
-    float2 pixelCoord = (float2)tid + r + 0.2;
+    const float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
+    const float2 pixelCoord = (float2)tid + r;;
     
     const float u = (pixelCoord.x / (float)uniforms.wViewPort) * uniforms.uRange - uniforms.uRange / 2.0;
     const float v = (pixelCoord.y / (float)uniforms.hViewPort) * uniforms.vRange - uniforms.vRange / 2.0;
@@ -484,6 +483,12 @@ void self_illumination(uint2 tid,
         device uint* vertexIndex = index + triangleIndex * 3;
         float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
         
+        // the outgoing ray (that is the input ray buffer) would be stored in the same buffer as the
+        // incident ray (that is the output ray buffer) may be the same. so it's necessary to store the
+        // color before calcuating the bounce
+        //
+        float3 originalRayColor = ray.color;
+        
         int illuminate = materials[*(vertexIndex)].illuminate;
         if (illuminate == 0)
         {
@@ -518,7 +523,7 @@ void self_illumination(uint2 tid,
         
         if (ray.bounce > 0 && !ray.ambientIlluminated && intersection.distance > ambientRadius)
         {
-            color = ray.color * tracingUniforms.ambient;
+            color = originalRayColor * tracingUniforms.ambient;
             overlayResult.write(float4(color, 1.0), tid);
             incidentRay.ambientIlluminated = true;
         }
