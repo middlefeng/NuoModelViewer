@@ -823,6 +823,11 @@
 {
     _deferredParameters = deferredParameters;
     [_deferredRenderer setParameters:&deferredParameters];
+    
+    NuoGlobalIlluminationUniforms globalIllum;
+    globalIllum.directLightDensity = deferredParameters.ambientOcclusionParams.scale / 3.0 * 2.0;
+    globalIllum.ambientDensity = _ambientDensity;
+    [_illuminationMesh setParameters:globalIllum];
 }
 
 

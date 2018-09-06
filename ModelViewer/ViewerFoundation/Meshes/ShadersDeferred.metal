@@ -110,19 +110,26 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
  */
 
 fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
+                                   constant NuoGlobalIlluminationUniforms& params [[buffer(0)]],
                                    texture2d<float> source [[texture(0)]],
                                    texture2d<float> illumination [[texture(1)]],
                                    texture2d<float> shadowOverlayMap [[texture(2)]],
                                    sampler samplr [[sampler(0)]])
 {
-    float4 sourceColor = source.sample(samplr, vert.texCoord);
-    float3 illumiColor = illumination.sample(samplr, vert.texCoord).rgb;
+    const float4 sourceColor = source.sample(samplr, vert.texCoord);
+    const float3 illumiColor = illumination.sample(samplr, vert.texCoord).rgb;
     
-    float shadowOverlayFactor = shadowOverlayMap.sample(samplr, vert.texCoord).r;
-    float3 color = (sourceColor.rgb + illumiColor) * (1 - shadowOverlayFactor);
+    const float shadowOverlayFactor = shadowOverlayMap.sample(samplr, vert.texCoord).r;
+    const float3 color = (sourceColor.rgb + illumiColor) * (1 - shadowOverlayFactor);
     
-    float illumStrength = (illumiColor.r * 0.33 + illumiColor.g * 0.33 + illumiColor.b * 0.33);
-    float alpha = sourceColor.a - illumStrength * shadowOverlayFactor;
+    // illumiColor represents ambient when shadowOverlayFactor is 1.0
+    const float ambientStrength = (illumiColor.r * 0.33 + illumiColor.g * 0.33 + illumiColor.b * 0.33);
+    const float shadowFactor = sourceColor.a;
+    const float shadowWithAmbient = (params.directLightDensity / (params.directLightDensity + params.ambientDensity)) * shadowFactor +
+                                    (params.ambientDensity - ambientStrength) / (params.directLightDensity + params.ambientDensity);
+    
+    
+    float alpha = sourceColor.a * (1 - shadowOverlayFactor) + shadowWithAmbient * shadowOverlayFactor;
     
     return (float4(color, alpha));
 }

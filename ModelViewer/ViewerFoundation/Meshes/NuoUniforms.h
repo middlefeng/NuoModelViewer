@@ -103,6 +103,14 @@ typedef struct
 NuoDeferredRenderUniforms;
 
 
+typedef struct
+{
+    float directLightDensity;
+    float ambientDensity;
+}
+NuoGlobalIlluminationUniforms;
+
+
 typedef enum
 {
     kPipeline_AlphaEmbeded,
