@@ -42,7 +42,7 @@
 #import "NuoRenderPassAttachment.h"
 
 #import "NuoOffscreenView.h"
-#import "NuoWindow.h"
+#import "NuoInspectWindow.h"
 
 
 typedef enum
@@ -96,7 +96,7 @@ MouseDragMode;
     NSTimer* _frameRateMeasuringTimer;
     NSTimer* _frameRateDisplayTimer;
     
-    NSMutableArray<NuoWindow*>* _inspectWindows;
+    NSMutableArray<NuoInspectWindow*>* _inspectWindows;
 }
 
 
@@ -1401,7 +1401,7 @@ MouseDragMode;
 
 - (IBAction)inspectWindow:(id)sender
 {
-    NuoWindow* window = [[NuoWindow alloc] init];
+    NuoInspectWindow* window = [[NuoInspectWindow alloc] initWithDevice:self.metalLayer.device];
     CGRect frame = self.window.frame;
     frame.origin.x += 50;
     frame.origin.y += 10;

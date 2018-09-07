@@ -23,6 +23,8 @@
 @property (nonatomic, readonly) float frameRate;
 
 
+- (instancetype)initWithFrame:(CGRect)frame device:(id<MTLDevice>)device;
+
 - (void)commonInit;
 
 - (void)viewResizing;
