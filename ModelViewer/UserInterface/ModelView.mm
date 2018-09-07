@@ -41,8 +41,8 @@
 #import "NuoRayAccelerateStructure.h"
 #import "NuoRenderPassAttachment.h"
 
-#include "NuoOffscreenView.h"
-
+#import "NuoOffscreenView.h"
+#import "NuoWindow.h"
 
 
 typedef enum
@@ -95,6 +95,8 @@ MouseDragMode;
     
     NSTimer* _frameRateMeasuringTimer;
     NSTimer* _frameRateDisplayTimer;
+    
+    NSMutableArray<NuoWindow*>* _inspectWindows;
 }
 
 
@@ -477,6 +479,8 @@ MouseDragMode;
 - (void)viewResizing
 {
     [super viewResizing];
+    
+    _inspectWindows = [NSMutableArray new];
     
     NSRect viewRect = [self frame];
     NSSize popupSize = NSMakeSize(200, 25);
@@ -1392,6 +1396,21 @@ MouseDragMode;
              }
          }
      }];
+}
+
+
+- (IBAction)inspectWindow:(id)sender
+{
+    NuoWindow* window = [[NuoWindow alloc] init];
+    CGRect frame = self.window.frame;
+    frame.origin.x += 50;
+    frame.origin.y += 10;
+    
+    [window setFrame:frame display:YES];
+    [window display];
+    [window makeKeyAndOrderFront:nil];
+    
+    [_inspectWindows addObject:window];
 }
 
 

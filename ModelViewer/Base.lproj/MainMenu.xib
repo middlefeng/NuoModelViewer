@@ -682,6 +682,9 @@
                             </menuItem>
                             <menuItem title="Inspect Window" id="n8h-TU-Kh2">
                                 <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="inspectWindow:" target="EiT-Mj-1SZ" id="cLT-8K-g49"/>
+                                </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="eu3-7i-yIM"/>
                             <menuItem title="Bring All to Front" id="LE2-aR-0XJ">

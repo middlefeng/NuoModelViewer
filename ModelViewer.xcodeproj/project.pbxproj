@@ -51,6 +51,7 @@
 		2C723A991E42D05700484992 /* ModelPartDimensionPanel.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C723A981E42D05700484992 /* ModelPartDimensionPanel.mm */; };
 		2C723AA91E43A83600484992 /* NuoMeshRotation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C723AA81E43A83600484992 /* NuoMeshRotation.cpp */; };
 		2C723AB01E44355300484992 /* ModelPartsAnimations.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C723AAF1E44355300484992 /* ModelPartsAnimations.xib */; };
+		2C7359222142C9EC000B8BD0 /* NuoWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C7359212142C9EC000B8BD0 /* NuoWindow.m */; };
 		2C78994821343CEA004A54AF /* ModelRayTracingBlendRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C78994721343CEA004A54AF /* ModelRayTracingBlendRenderer.mm */; };
 		2C82E1091F874B2500D2C85C /* ModelOperationAmbientPopover.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C82E1081F874B2500D2C85C /* ModelOperationAmbientPopover.mm */; };
 		2C840D0E1D7001C2000D2956 /* NuoMetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C840D0D1D7001C2000D2956 /* NuoMetalView.m */; };
@@ -255,6 +256,8 @@
 		2C723AA71E43A83600484992 /* NuoMeshRotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoMeshRotation.h; sourceTree = "<group>"; };
 		2C723AA81E43A83600484992 /* NuoMeshRotation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoMeshRotation.cpp; sourceTree = "<group>"; };
 		2C723AAF1E44355300484992 /* ModelPartsAnimations.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ModelPartsAnimations.xib; sourceTree = "<group>"; };
+		2C7359202142C9EC000B8BD0 /* NuoWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoWindow.h; sourceTree = "<group>"; };
+		2C7359212142C9EC000B8BD0 /* NuoWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoWindow.m; sourceTree = "<group>"; };
 		2C78994621343CEA004A54AF /* ModelRayTracingBlendRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelRayTracingBlendRenderer.h; sourceTree = "<group>"; };
 		2C78994721343CEA004A54AF /* ModelRayTracingBlendRenderer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ModelRayTracingBlendRenderer.mm; sourceTree = "<group>"; };
 		2C82E1071F874B2500D2C85C /* ModelOperationAmbientPopover.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelOperationAmbientPopover.h; sourceTree = "<group>"; };
@@ -569,6 +572,8 @@
 				2C9072EF1FE30B5600359F12 /* NuoDirectoryUtils.m */,
 				2C68346020CF812C00E941FC /* NuoRandomBuffer.h */,
 				2C68345F20CF812C00E941FC /* NuoRandomBuffer.cpp */,
+				2C7359202142C9EC000B8BD0 /* NuoWindow.h */,
+				2C7359212142C9EC000B8BD0 /* NuoWindow.m */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -932,6 +937,7 @@
 				2C5B92C01D72D11E00722936 /* NuoModelBase.cpp in Sources */,
 				2C235FCE1DD6CBD700E68295 /* ShadersMaterialed.metal in Sources */,
 				2C5D40801FB8187B00FD234D /* NuoTextureAverageMesh.mm in Sources */,
+				2C7359222142C9EC000B8BD0 /* NuoWindow.m in Sources */,
 				2C82E1091F874B2500D2C85C /* ModelOperationAmbientPopover.mm in Sources */,
 				2C5BE8A320155A5700F36BD6 /* NuoModelLoaderGPU.mm in Sources */,
 				2C235FCD1DD6CBD700E68295 /* Shaders.metal in Sources */,
@@ -1094,6 +1100,7 @@
 				);
 				INFOPLIST_FILE = ModelViewer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_HEADER_SEARCH_PATHS = ModelViewer/ViewerFoundation;
 				MTL_LANGUAGE_REVISION = Metal20;
 				MTL_PREPROCESSOR_DEFINITIONS = Metal;
@@ -1115,6 +1122,7 @@
 				);
 				INFOPLIST_FILE = ModelViewer/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_HEADER_SEARCH_PATHS = ModelViewer/ViewerFoundation;
 				MTL_LANGUAGE_REVISION = Metal20;
 				MTL_PREPROCESSOR_DEFINITIONS = Metal;
