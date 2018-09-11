@@ -34,6 +34,10 @@
 #import "NuoDirectoryUtils.h"
 #import "NuoModelLoaderGPU.h"
 
+// inspect
+//
+#import "NuoInspectableMaster.h"
+
 
 @interface ModelRenderer ()
 
@@ -1081,6 +1085,9 @@
     [_sceneRoot drawMesh:renderPass indexBuffer:inFlight];
     
     [_immediateTarget releaseRenderPassEndcoder];
+    
+    NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
+    [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_Immediate];
     
     id<MTLRenderCommandEncoder> deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
     

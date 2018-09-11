@@ -13,12 +13,25 @@
 @class NuoTextureMesh;
 
 
+extern NSString* const kInspectable_Immediate;
+extern NSString* const kInspectable_Ambient;
 
 
-@interface NuoInspectable
+
+@protocol NuoInspector <NSObject>
+
+- (void)inspect;
+
+@end
+
+
+
+
+@interface NuoInspectable : NSObject
 
 @property (nonatomic, weak) id<MTLTexture> inspectedTexture;
 @property (nonatomic, strong) NuoTextureMesh* inspectingMean;
+@property (nonatomic, strong) id<NuoInspector> inspector;
 
 @end
 
@@ -28,7 +41,16 @@
 
 @interface NuoInspectableMaster : NSObject
 
-@property (nonatomic, strong) NSDictionary<NSString*, NuoInspectable*>* inspectables;
+@property (nonatomic, strong) NSMutableDictionary<NSString*, NuoInspectable*>* inspectables;
+
++ (NuoInspectableMaster*)sharedMaster;
++ (NSDictionary*)inspectableList;
+
+- (void)setInspector:(id<NuoInspector>)inspector forName:(NSString*)name;
+- (void)removeInspectorForName:(NSString*)name;
+- (void)updateTexture:(id<MTLTexture>)texture forName:(NSString*)name;
+
+- (void)inspect;
 
 @end
 

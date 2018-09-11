@@ -97,6 +97,7 @@
 		2CE8ED8120F2549F00CD18AC /* NuoComputeEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CE8ED8020F2549F00CD18AC /* NuoComputeEncoder.m */; };
 		2CEDBBB02119ED4F00BC7E96 /* NuoOverlayPass.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CEDBBAF2119ED4F00BC7E96 /* NuoOverlayPass.mm */; };
 		2CEE8CF71F71BC3F00C4D4F6 /* LightShadowPopoverController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CEE8CF61F71BC3F00C4D4F6 /* LightShadowPopoverController.m */; };
+		2CF47F1E2144F1FE00257AB0 /* OpenInspectPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CF47F1D2144F1FE00257AB0 /* OpenInspectPanel.m */; };
 		2CF62A471EE9B4E7003E23EF /* BoardSettingsPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CF62A461EE9B4E7003E23EF /* BoardSettingsPanel.m */; };
 		2CF62A691EEF5E11003E23EF /* NuoLightSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CF62A681EEF5E11003E23EF /* NuoLightSource.m */; };
 		2CF62A721EEF7CD0003E23EF /* NuoShadowMapRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CF62A711EEF7CD0003E23EF /* NuoShadowMapRenderer.mm */; };
@@ -349,6 +350,8 @@
 		2CF47A4820A72B7F00B15AB5 /* NuoMathVectorTypeTraitRegular.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = NuoMathVectorTypeTraitRegular.hpp; sourceTree = "<group>"; };
 		2CF47A4920A72B7F00B15AB5 /* NuoMathVectorRegular.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoMathVectorRegular.cpp; sourceTree = "<group>"; };
 		2CF47A4A20A72B7F00B15AB5 /* NuoMathVectorRegular.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = NuoMathVectorRegular.hpp; sourceTree = "<group>"; };
+		2CF47F1C2144F1FE00257AB0 /* OpenInspectPanel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OpenInspectPanel.h; sourceTree = "<group>"; };
+		2CF47F1D2144F1FE00257AB0 /* OpenInspectPanel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OpenInspectPanel.m; sourceTree = "<group>"; };
 		2CF62A451EE9B4E7003E23EF /* BoardSettingsPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BoardSettingsPanel.h; sourceTree = "<group>"; };
 		2CF62A461EE9B4E7003E23EF /* BoardSettingsPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BoardSettingsPanel.m; sourceTree = "<group>"; };
 		2CF62A671EEF5E11003E23EF /* NuoLightSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoLightSource.h; sourceTree = "<group>"; };
@@ -489,6 +492,8 @@
 				2C2873151E3F07120098092C /* ModelPanelUpdate.h */,
 				2CF62A451EE9B4E7003E23EF /* BoardSettingsPanel.h */,
 				2CF62A461EE9B4E7003E23EF /* BoardSettingsPanel.m */,
+				2CF47F1C2144F1FE00257AB0 /* OpenInspectPanel.h */,
+				2CF47F1D2144F1FE00257AB0 /* OpenInspectPanel.m */,
 				2C2ACEBE1FA1B1AE0055D52D /* FrameRateView.h */,
 				2C2ACEBF1FA1B1AE0055D52D /* FrameRateView.m */,
 				2CB053CE2043A24700EF8279 /* ModelViewConfiguration.h */,
@@ -913,6 +918,7 @@
 				2C4042BE1E065B2700AAC06E /* NuoLua.cpp in Sources */,
 				2C1585BC1FB9652F00BDF282 /* ShaderAverage.metal in Sources */,
 				2CCD521B20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm in Sources */,
+				2CF47F1E2144F1FE00257AB0 /* OpenInspectPanel.m in Sources */,
 				2CDCDAF31DC185A800ECFE39 /* NuoModelArrow.cpp in Sources */,
 				2C235FD01DD6CBD700E68295 /* ShadersTexturedMaterialed.metal in Sources */,
 				2CB053D02043A24700EF8279 /* ModelViewConfiguration.mm in Sources */,

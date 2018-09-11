@@ -42,7 +42,9 @@
 #import "NuoRenderPassAttachment.h"
 
 #import "NuoOffscreenView.h"
+
 #import "NuoInspectWindow.h"
+#import "OpenInspectPanel.h"
 
 
 typedef enum
@@ -95,8 +97,6 @@ MouseDragMode;
     
     NSTimer* _frameRateMeasuringTimer;
     NSTimer* _frameRateDisplayTimer;
-    
-    NSMutableArray<NuoInspectWindow*>* _inspectWindows;
 }
 
 
@@ -479,8 +479,6 @@ MouseDragMode;
 - (void)viewResizing
 {
     [super viewResizing];
-    
-    _inspectWindows = [NSMutableArray new];
     
     NSRect viewRect = [self frame];
     NSSize popupSize = NSMakeSize(200, 25);
@@ -1034,6 +1032,9 @@ MouseDragMode;
     }
     
     [super render];
+    
+    NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
+    [inspectMaster inspect];
 }
 
 
@@ -1401,16 +1402,29 @@ MouseDragMode;
 
 - (IBAction)inspectWindow:(id)sender
 {
-    NuoInspectWindow* window = [[NuoInspectWindow alloc] initWithDevice:self.metalLayer.device];
-    CGRect frame = self.window.frame;
-    frame.origin.x += 50;
-    frame.origin.y += 10;
+    OpenInspectPanel* panel = [OpenInspectPanel new];
+    [panel setRootWindow:self.window];
     
-    [window setFrame:frame display:YES];
-    [window display];
-    [window makeKeyAndOrderFront:nil];
+    __weak OpenInspectPanel* panelWeak = panel;
     
-    [_inspectWindows addObject:window];
+    [self.window beginSheet:panel completionHandler:^(NSModalResponse returnCode)
+     {
+         if (returnCode == NSModalResponseOK)
+         {
+             NSString* selected = panelWeak.inspectSelected;
+             NuoInspectWindow* window = [[NuoInspectWindow alloc] initWithDevice:self.metalLayer.device
+                                                                         forName:selected];
+             CGRect frame = self.window.frame;
+             frame.origin.x += 50;
+             frame.origin.y += 50;
+             frame.size.width /= 2.0;
+             frame.size.height /= 2.0;
+             
+             [window setFrame:frame display:YES];
+             [window display];
+             [window makeKeyAndOrderFront:nil];
+         }
+     }];
 }
 
 

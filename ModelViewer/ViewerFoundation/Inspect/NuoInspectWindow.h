@@ -7,11 +7,15 @@
 //
 
 #import "NuoWindow.h"
+#import "NuoInspectableMaster.h"
 
 
-@interface NuoInspectWindow : NuoWindow
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device;
+@interface NuoInspectWindow : NuoWindow < NuoInspector >
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device forName:(NSString*)name;
+
+- (void)inspect;
 
 @end
 
