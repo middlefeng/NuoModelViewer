@@ -72,6 +72,9 @@
 		2C9D9AAD1D658F0800283E46 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAC1D658F0800283E46 /* main.m */; };
 		2C9D9AAF1D658F0800283E46 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAE1D658F0800283E46 /* Assets.xcassets */; };
 		2C9E397B1DF7D8BC00286EA0 /* NuoTableExporter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C9E39791DF7D8BC00286EA0 /* NuoTableExporter.cpp */; };
+		2C9FD8D12147FEE700FF974F /* NuoInspectPass.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C9FD8D02147FEE700FF974F /* NuoInspectPass.mm */; };
+		2C9FD8D8214800F000FF974F /* NuoCheckboardMesh.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C9FD8D7214800F000FF974F /* NuoCheckboardMesh.mm */; };
+		2C9FD8DA21481F7B00FF974F /* Inspect.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C9FD8D921481F7B00FF974F /* Inspect.metal */; };
 		2CA55FA91DD21D2A0000AD21 /* NuoRenderPass.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */; };
 		2CA65F88206AA87400C4A313 /* ModelSelectionRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CA65F87206AA87400C4A313 /* ModelSelectionRenderer.mm */; };
 		2CA71A1120ACFC40003A0486 /* NuoMathVectorMac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C69167220A61E450072E8F2 /* NuoMathVectorMac.cpp */; };
@@ -300,6 +303,11 @@
 		2C9D9AB31D658F0800283E46 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2C9E39791DF7D8BC00286EA0 /* NuoTableExporter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoTableExporter.cpp; sourceTree = "<group>"; };
 		2C9E397A1DF7D8BC00286EA0 /* NuoTableExporter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoTableExporter.h; sourceTree = "<group>"; };
+		2C9FD8CF2147FEE700FF974F /* NuoInspectPass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoInspectPass.h; sourceTree = "<group>"; };
+		2C9FD8D02147FEE700FF974F /* NuoInspectPass.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoInspectPass.mm; sourceTree = "<group>"; };
+		2C9FD8D6214800F000FF974F /* NuoCheckboardMesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoCheckboardMesh.h; sourceTree = "<group>"; };
+		2C9FD8D7214800F000FF974F /* NuoCheckboardMesh.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoCheckboardMesh.mm; sourceTree = "<group>"; };
+		2C9FD8D921481F7B00FF974F /* Inspect.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Inspect.metal; sourceTree = "<group>"; };
 		2CA55FA71DD21D2A0000AD21 /* NuoRenderPass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRenderPass.h; sourceTree = "<group>"; };
 		2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoRenderPass.m; sourceTree = "<group>"; };
 		2CA65F86206AA87400C4A313 /* ModelSelectionRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelSelectionRenderer.h; sourceTree = "<group>"; };
@@ -435,6 +443,11 @@
 				2C30DDD12142F69400A68533 /* NuoInspectableMaster.m */,
 				2C30DDD32143200900A68533 /* NuoInspectWindow.h */,
 				2C30DDD42143200900A68533 /* NuoInspectWindow.m */,
+				2C9FD8CF2147FEE700FF974F /* NuoInspectPass.h */,
+				2C9FD8D02147FEE700FF974F /* NuoInspectPass.mm */,
+				2C9FD8D6214800F000FF974F /* NuoCheckboardMesh.h */,
+				2C9FD8D7214800F000FF974F /* NuoCheckboardMesh.mm */,
+				2C9FD8D921481F7B00FF974F /* Inspect.metal */,
 			);
 			path = Inspect;
 			sourceTree = "<group>";
@@ -891,6 +904,7 @@
 				2CFB8D962054305F009B5D41 /* NuoClearMesh.mm in Sources */,
 				2C2873071E3E77790098092C /* ModelComponentPanels.mm in Sources */,
 				2C1B28081D95FF17009F5912 /* NuoTextureBase.m in Sources */,
+				2C9FD8D8214800F000FF974F /* NuoCheckboardMesh.mm in Sources */,
 				2CE8ED8120F2549F00CD18AC /* NuoComputeEncoder.m in Sources */,
 				2C9D9AAD1D658F0800283E46 /* main.m in Sources */,
 				2C2873101E3ED5A40098092C /* ModelPartPropPanel.mm in Sources */,
@@ -921,6 +935,7 @@
 				2CF47F1E2144F1FE00257AB0 /* OpenInspectPanel.m in Sources */,
 				2CDCDAF31DC185A800ECFE39 /* NuoModelArrow.cpp in Sources */,
 				2C235FD01DD6CBD700E68295 /* ShadersTexturedMaterialed.metal in Sources */,
+				2C9FD8DA21481F7B00FF974F /* Inspect.metal in Sources */,
 				2CB053D02043A24700EF8279 /* ModelViewConfiguration.mm in Sources */,
 				2C99908F1F5F350400AEF181 /* ModelDissectRenderer.mm in Sources */,
 				2C5B92BD1D7160EC00722936 /* NuoModelLoader.cpp in Sources */,
@@ -936,6 +951,7 @@
 				98CA11B81DD2B00900440C53 /* NotationRenderer.mm in Sources */,
 				2CA71A1120ACFC40003A0486 /* NuoMathVectorMac.cpp in Sources */,
 				2C69167120A61CD50072E8F2 /* NuoMathVector.cpp in Sources */,
+				2C9FD8D12147FEE700FF974F /* NuoInspectPass.mm in Sources */,
 				2C235FCF1DD6CBD700E68295 /* ShadersTextured.metal in Sources */,
 				2CCF9C801E5B7A43006EF8C4 /* NuoRenderPipeline.mm in Sources */,
 				2CDFB21E1DD99E2100C67FA3 /* NotationLight.mm in Sources */,

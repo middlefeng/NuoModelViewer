@@ -11,7 +11,7 @@
 
 #import "NuoInspectableMaster.h"
 
-#import "NuoOverlayPass.h"
+#import "NuoInspectPass.h"
 #import "NuoRenderPassTarget.h"
 
 
@@ -26,7 +26,7 @@
     NuoMetalView* _inspectView;
     NSString* _name;
     
-    NuoOverlayPass* _renderPass;
+    NuoInspectPass* _renderPass;
 }
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device forName:(NSString*)name
@@ -46,7 +46,7 @@
         [self setDelegate:self];
         [self setTitle:[NSString stringWithFormat:@"Inspect - %@", NuoInspectableMaster.inspectableList[name]]];
         
-        _renderPass = [[NuoOverlayPass alloc] initWithCommandQueue:_inspectView.commandQueue
+        _renderPass = [[NuoInspectPass alloc] initWithCommandQueue:_inspectView.commandQueue
                                                    withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                    withSampleCount:1];
         
@@ -101,7 +101,7 @@
     
     id<MTLTexture> texture = inspectable.inspectedTexture;
     inspectable.inspector = self;
-    [_renderPass setSourceTexture:texture];
+    _renderPass.inspectedTexture = texture;
     
     [_inspectView render];
 }

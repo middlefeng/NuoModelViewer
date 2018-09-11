@@ -1423,6 +1423,11 @@ MouseDragMode;
              [window setFrame:frame display:YES];
              [window display];
              [window makeKeyAndOrderFront:nil];
+             
+             [self render];
+             
+             NuoInspectableMaster* master = [NuoInspectableMaster sharedMaster];
+             [master inspect];
          }
      }];
 }
