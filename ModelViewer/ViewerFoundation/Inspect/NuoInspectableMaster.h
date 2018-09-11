@@ -21,6 +21,7 @@ extern NSString* const kInspectable_Ambient;
 @protocol NuoInspector <NSObject>
 
 - (void)inspect;
+- (void)setInspectAspectRatio:(CGFloat)aspectRatio;
 
 @end
 

@@ -98,7 +98,13 @@ NSString* const kInspectable_Ambient = @"inspectable_ambient";
 - (void)inspect
 {
     for (NSString* inspectable in _inspectables)
+    {
+        id<MTLTexture> inspectedTexture = _inspectables[inspectable].inspectedTexture;
+        if (inspectedTexture)
+            [_inspectables[inspectable].inspector setInspectAspectRatio:(float)[inspectedTexture width] / (float)[inspectedTexture height]];
+        
         [_inspectables[inspectable].inspector inspect];
+    }
 }
 
 
