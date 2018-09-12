@@ -15,6 +15,8 @@ static NuoInspectableMaster* sInspectableMaster = nil;
 
 NSString* const kInspectable_Immediate = @"inspectable_immediate";
 NSString* const kInspectable_Ambient = @"inspectable_ambient";
+NSString* const kInspectable_Shadow0 = @"inspectable_shadow0";
+NSString* const kInspectable_Shadow1 = @"inspectable_shadow1";
 
 
 @implementation NuoInspectable
@@ -38,7 +40,9 @@ NSString* const kInspectable_Ambient = @"inspectable_ambient";
 + (NSDictionary*)inspectableList
 {
     return @{ kInspectable_Immediate: @"Immediate",
-              kInspectable_Ambient: @"Ambient" };
+              kInspectable_Ambient: @"Ambient",
+              kInspectable_Shadow0: @"Shadow [0]",
+              kInspectable_Shadow1: @"Shadow [1]", };
 }
 
 

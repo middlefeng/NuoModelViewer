@@ -38,7 +38,9 @@ static const float kPopupHeight = 24;
     [self.contentView addSubview:_inspectList];
     
     NSDictionary* inspectables = [NuoInspectableMaster inspectableList];
-    for (NSString* inspectable in inspectables)
+    NSArray<NSString*>* inspectKeys = [inspectables allKeys];
+    inspectKeys = [inspectKeys sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
+    for (NSString* inspectable in inspectKeys)
         [_inspectList addItemWithTitle:inspectables[inspectable]];
     
     [_inspectList setFont:[NSFont fontWithName:_inspectList.font.fontName size:11]];
@@ -87,10 +89,12 @@ static const float kPopupHeight = 24;
 
 - (NSString*)inspectSelected
 {
-    const NSInteger selected = _inspectList.indexOfSelectedItem;
     NSDictionary* inspectables = [NuoInspectableMaster inspectableList];
+    NSArray<NSString*>* inspectKeys = [inspectables allKeys];
+    inspectKeys = [inspectKeys sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
     
-    return inspectables.allKeys[selected];
+    const NSInteger selected = [_inspectList indexOfSelectedItem];
+    return inspectKeys[selected];
 }
 
 
