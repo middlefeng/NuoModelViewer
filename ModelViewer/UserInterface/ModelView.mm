@@ -1413,7 +1413,7 @@ MouseDragMode;
          {
              NSString* selected = panelWeak.inspectSelected;
              NuoInspectWindow* window = [[NuoInspectWindow alloc] initWithDevice:self.metalLayer.device
-                                                                         forName:selected];
+                                                                        withName:selected];
              CGRect frame = self.window.frame;
              frame.origin.x += 50;
              frame.origin.y += 50;

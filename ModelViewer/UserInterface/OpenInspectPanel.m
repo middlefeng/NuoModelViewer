@@ -37,11 +37,11 @@ static const float kPopupHeight = 24;
     _inspectList = [NSPopUpButton new];
     [self.contentView addSubview:_inspectList];
     
-    NSDictionary* inspectables = [NuoInspectableMaster inspectableList];
+    NSDictionary<NSString*, NuoInspectable*>* inspectables = [NuoInspectableMaster inspectableList];
     NSArray<NSString*>* inspectKeys = [inspectables allKeys];
     inspectKeys = [inspectKeys sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
     for (NSString* inspectable in inspectKeys)
-        [_inspectList addItemWithTitle:inspectables[inspectable]];
+        [_inspectList addItemWithTitle:inspectables[inspectable].displayTitle];
     
     [_inspectList setFont:[NSFont fontWithName:_inspectList.font.fontName size:11]];
     [_inspectList setControlSize:NSControlSizeSmall];

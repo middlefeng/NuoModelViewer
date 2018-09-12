@@ -14,12 +14,24 @@ static NuoInspectableMaster* sInspectableMaster = nil;
 
 
 NSString* const kInspectable_Immediate = @"inspectable_immediate";
+NSString* const kInspectable_ImmediateAlpha = @"inspectable_immediateAlpha";
 NSString* const kInspectable_Ambient = @"inspectable_ambient";
 NSString* const kInspectable_Shadow0 = @"inspectable_shadow0";
 NSString* const kInspectable_Shadow1 = @"inspectable_shadow1";
 
 
 @implementation NuoInspectable
+
+
++ (NuoInspectable*)inspectableWithTitle:(NSString*)title withMean:(NSString*)mean
+{
+    NuoInspectable* inspect = [NuoInspectable new];
+    inspect.displayTitle = title;
+    inspect.inspectingMean = mean;
+    
+    return inspect;
+}
+
 
 @end
 
@@ -37,12 +49,13 @@ NSString* const kInspectable_Shadow1 = @"inspectable_shadow1";
 }
 
 
-+ (NSDictionary*)inspectableList
++ (NSDictionary<NSString*, NuoInspectable*>*)inspectableList
 {
-    return @{ kInspectable_Immediate: @"Immediate",
-              kInspectable_Ambient: @"Ambient",
-              kInspectable_Shadow0: @"Shadow [0]",
-              kInspectable_Shadow1: @"Shadow [1]", };
+    return @{ kInspectable_Immediate: [NuoInspectable inspectableWithTitle:@"Immediate" withMean:nil],
+              kInspectable_ImmediateAlpha: [NuoInspectable inspectableWithTitle:@"Immediate Alpha" withMean:@"fragment_alpha"],
+              kInspectable_Ambient: [NuoInspectable inspectableWithTitle:@"Ambient" withMean:nil],
+              kInspectable_Shadow0: [NuoInspectable inspectableWithTitle:@"Shadow [0]" withMean:nil],
+              kInspectable_Shadow1: [NuoInspectable inspectableWithTitle:@"Shadow [1]" withMean:nil] };
 }
 
 
@@ -66,7 +79,7 @@ NSString* const kInspectable_Shadow1 = @"inspectable_shadow1";
     
     if (!inspectable && create)
     {
-        inspectable = [NuoInspectable new];
+        inspectable = [NuoInspectableMaster inspectableList][name];
         [_inspectables setObject:inspectable forKey:name];
     }
     
@@ -91,10 +104,12 @@ NSString* const kInspectable_Shadow1 = @"inspectable_shadow1";
 }
 
 
-- (void)setInspector:(id<NuoInspector>)inspector forName:(NSString*)name;
+- (NuoInspectable*)setInspector:(id<NuoInspector>)inspector forName:(NSString*)name;
 {
     NuoInspectable* inspectable = [self inspectableForName:name create:YES];
     inspectable.inspector = inspector;
+    
+    return inspectable;
 }
 
 

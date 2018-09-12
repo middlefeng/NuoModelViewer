@@ -14,6 +14,7 @@
 
 
 extern NSString* const kInspectable_Immediate;
+extern NSString* const kInspectable_ImmediateAlpha;
 extern NSString* const kInspectable_Ambient;
 extern NSString* const kInspectable_Shadow0;
 extern NSString* const kInspectable_Shadow1;
@@ -33,8 +34,12 @@ extern NSString* const kInspectable_Shadow1;
 @interface NuoInspectable : NSObject
 
 @property (nonatomic, weak) id<MTLTexture> inspectedTexture;
-@property (nonatomic, strong) NuoTextureMesh* inspectingMean;
+@property (nonatomic, strong) NSString* displayTitle;
+@property (nonatomic, strong) NSString* inspectingMean;
 @property (nonatomic, strong) id<NuoInspector> inspector;
+
+
++ (NuoInspectable*)inspectableWithTitle:(NSString*)title withMean:(NSString*)mean;
 
 @end
 
@@ -47,9 +52,9 @@ extern NSString* const kInspectable_Shadow1;
 @property (nonatomic, strong) NSMutableDictionary<NSString*, NuoInspectable*>* inspectables;
 
 + (NuoInspectableMaster*)sharedMaster;
-+ (NSDictionary*)inspectableList;
++ (NSDictionary<NSString*, NuoInspectable*>*)inspectableList;
 
-- (void)setInspector:(id<NuoInspector>)inspector forName:(NSString*)name;
+- (NuoInspectable*)setInspector:(id<NuoInspector>)inspector forName:(NSString*)name;
 - (void)removeInspectorForName:(NSString*)name;
 - (void)updateTexture:(id<MTLTexture>)texture forName:(NSString*)name;
 

@@ -29,7 +29,8 @@
     NuoInspectPass* _renderPass;
 }
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device forName:(NSString*)name
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+                      withName:(NSString*)name
 {
     self = [super init];
     
@@ -44,11 +45,15 @@
         [_inspectView commonInit];
         [self.contentView addSubview:_inspectView];
         [self setDelegate:self];
-        [self setTitle:[NSString stringWithFormat:@"Inspect - %@", NuoInspectableMaster.inspectableList[name]]];
+        [self setTitle:[NSString stringWithFormat:@"Inspect - %@", NuoInspectableMaster.inspectableList[name].displayTitle]];
+        
+        _name = name;
+        NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
+        NuoInspectable* inspectable = [inspectMaster setInspector:self forName:_name];
         
         _renderPass = [[NuoInspectPass alloc] initWithCommandQueue:_inspectView.commandQueue
                                                    withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                   withSampleCount:1];
+                                                       withProcess:inspectable.inspectingMean];
         
         NuoRenderPassTarget* renderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:_inspectView.commandQueue
                                                                               withPixelFormat:MTLPixelFormatBGRA8Unorm
@@ -56,10 +61,6 @@
         renderTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
         renderTarget.manageTargetTexture = NO;
         renderTarget.name = @"Inspect";
-        
-        _name = name;
-        NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
-        [inspectMaster setInspector:self forName:_name];
         
         [_renderPass setRenderTarget:renderTarget];
         

@@ -13,7 +13,8 @@
 
 @interface NuoInspectWindow : NuoWindow < NuoInspector >
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device forName:(NSString*)name;
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+                      withName:(NSString*)name;
 
 - (void)inspect;
 
