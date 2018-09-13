@@ -31,3 +31,23 @@ fragment float4 fragment_alpha(PositionTextureSimple vert [[stage_in]],
     float4 color = texture.sample(samplr, vert.texCoord);
     return float4(float3(0), color.a);
 }
+
+
+
+fragment float4 fragment_g(PositionTextureSimple vert [[stage_in]],
+                           texture2d<float> texture [[texture(0)]],
+                           sampler samplr [[sampler(0)]])
+{
+    float4 color = texture.sample(samplr, vert.texCoord);
+    return float4(float3(0), color.g);
+}
+
+
+
+fragment float4 fragment_r(PositionTextureSimple vert [[stage_in]],
+                           texture2d<float> texture [[texture(0)]],
+                           sampler samplr [[sampler(0)]])
+{
+    float4 color = texture.sample(samplr, vert.texCoord);
+    return float4(float3(0), color.r);
+}

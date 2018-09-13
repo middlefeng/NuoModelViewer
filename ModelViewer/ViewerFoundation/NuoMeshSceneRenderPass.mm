@@ -65,8 +65,8 @@
     [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
     
     NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
-    [inspectMaster updateTexture:[provider shadowMap:0] forName:kInspectable_Shadow0];
-    [inspectMaster updateTexture:[provider shadowMap:1] forName:kInspectable_Shadow1];
+    [inspectMaster updateTexture:[provider shadowMap:0] forName:kInspectable_Shadow];
+    [inspectMaster updateTexture:[provider shadowMap:0] forName:kInspectable_ShadowTranslucent];
 }
 
 

@@ -16,8 +16,8 @@ static NuoInspectableMaster* sInspectableMaster = nil;
 NSString* const kInspectable_Immediate = @"inspectable_immediate";
 NSString* const kInspectable_ImmediateAlpha = @"inspectable_immediateAlpha";
 NSString* const kInspectable_Ambient = @"inspectable_ambient";
-NSString* const kInspectable_Shadow0 = @"inspectable_shadow0";
-NSString* const kInspectable_Shadow1 = @"inspectable_shadow1";
+NSString* const kInspectable_Shadow = @"inspectable_shadow";
+NSString* const kInspectable_ShadowTranslucent = @"inspectable_shadowTranslucent";
 
 
 @implementation NuoInspectable
@@ -54,8 +54,8 @@ NSString* const kInspectable_Shadow1 = @"inspectable_shadow1";
     return @{ kInspectable_Immediate: [NuoInspectable inspectableWithTitle:@"Immediate" withMean:nil],
               kInspectable_ImmediateAlpha: [NuoInspectable inspectableWithTitle:@"Immediate Alpha" withMean:@"fragment_alpha"],
               kInspectable_Ambient: [NuoInspectable inspectableWithTitle:@"Ambient" withMean:nil],
-              kInspectable_Shadow0: [NuoInspectable inspectableWithTitle:@"Shadow [0]" withMean:nil],
-              kInspectable_Shadow1: [NuoInspectable inspectableWithTitle:@"Shadow [1]" withMean:nil] };
+              kInspectable_Shadow: [NuoInspectable inspectableWithTitle:@"Shadow on Opaque" withMean:@"fragment_g"],
+              kInspectable_ShadowTranslucent: [NuoInspectable inspectableWithTitle:@"Shadow on Translucent" withMean:@"fragment_r"] };
 }
 
 
