@@ -110,7 +110,7 @@
 
 - (void)setInspectAspectRatio:(CGFloat)aspectRatio
 {
-    [self setAspectRatio:CGSizeMake(aspectRatio, 1.0)];
+    [self setContentAspectRatio:CGSizeMake(aspectRatio, 1.0)];
 }
 
 

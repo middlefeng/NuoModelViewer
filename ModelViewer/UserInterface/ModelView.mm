@@ -1421,6 +1421,7 @@ MouseDragMode;
              frame.size.height /= 2.0;
              
              [window setFrame:frame display:YES];
+             [window setContentSize:frame.size];
              [window display];
              [window makeKeyAndOrderFront:nil];
              
