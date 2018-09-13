@@ -54,8 +54,8 @@ NSString* const kInspectable_ShadowTranslucent = @"inspectable_shadowTranslucent
     return @{ kInspectable_Immediate: [NuoInspectable inspectableWithTitle:@"Immediate" withMean:nil],
               kInspectable_ImmediateAlpha: [NuoInspectable inspectableWithTitle:@"Immediate Alpha" withMean:@"fragment_alpha"],
               kInspectable_Ambient: [NuoInspectable inspectableWithTitle:@"Ambient" withMean:nil],
-              kInspectable_Shadow: [NuoInspectable inspectableWithTitle:@"Shadow on Opaque" withMean:@"fragment_g"],
-              kInspectable_ShadowTranslucent: [NuoInspectable inspectableWithTitle:@"Shadow on Translucent" withMean:@"fragment_r"] };
+              kInspectable_Shadow: [NuoInspectable inspectableWithTitle:@"Shadow on Opaque" withMean:@"fragment_r"],
+              kInspectable_ShadowTranslucent: [NuoInspectable inspectableWithTitle:@"Shadow on Translucent" withMean:@"fragment_g"] };
 }
 
 
