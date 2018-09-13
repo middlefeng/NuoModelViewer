@@ -41,8 +41,10 @@
 #import "NuoRayAccelerateStructure.h"
 #import "NuoRenderPassAttachment.h"
 
-#include "NuoOffscreenView.h"
+#import "NuoOffscreenView.h"
 
+#import "NuoInspectWindow.h"
+#import "OpenInspectPanel.h"
 
 
 typedef enum
@@ -998,6 +1000,9 @@ MouseDragMode;
     }
     
     [super render];
+    
+    NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
+    [inspectMaster inspect];
 }
 
 
@@ -1355,6 +1360,40 @@ MouseDragMode;
                  [menu setTarget:self];
                  [menu setAction:@selector(removeObject:)];
              }
+         }
+     }];
+}
+
+
+- (IBAction)inspectWindow:(id)sender
+{
+    OpenInspectPanel* panel = [OpenInspectPanel new];
+    [panel setRootWindow:self.window];
+    
+    __weak OpenInspectPanel* panelWeak = panel;
+    
+    [self.window beginSheet:panel completionHandler:^(NSModalResponse returnCode)
+     {
+         if (returnCode == NSModalResponseOK)
+         {
+             NSString* selected = panelWeak.inspectSelected;
+             NuoInspectWindow* window = [[NuoInspectWindow alloc] initWithDevice:self.metalLayer.device
+                                                                        withName:selected];
+             CGRect frame = self.window.frame;
+             frame.origin.x += 50;
+             frame.origin.y += 50;
+             frame.size.width /= 2.0;
+             frame.size.height /= 2.0;
+             
+             [window setFrame:frame display:YES];
+             [window setContentSize:frame.size];
+             [window display];
+             [window makeKeyAndOrderFront:nil];
+             
+             [self render];
+             
+             NuoInspectableMaster* master = [NuoInspectableMaster sharedMaster];
+             [master inspect];
          }
      }];
 }

@@ -10,6 +10,8 @@
 #import "NuoScreenSpaceRenderer.h"
 #import "NuoScreenSpaceMesh.h"
 
+#import "NuoInspectableMaster.h"
+
 
 
 @implementation NuoDeferredRenderer
@@ -90,6 +92,9 @@
     
     [self drawWithRenderPass:renderPass withInFlightIndex:inFlight];
     [self releaseDefaultEncoder];
+    
+    NuoInspectableMaster* master = [NuoInspectableMaster sharedMaster];
+    [master updateTexture:_screenSpaceRenderer.ambientBuffer forName:kInspectable_Ambient];
 }
 
 
