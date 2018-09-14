@@ -15,6 +15,7 @@
 
 extern NSString* const kInspectable_Immediate;
 extern NSString* const kInspectable_ImmediateAlpha;
+extern NSString* const kInspectable_Illuminate;
 extern NSString* const kInspectable_Ambient;
 extern NSString* const kInspectable_Shadow;
 extern NSString* const kInspectable_ShadowTranslucent;

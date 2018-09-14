@@ -1115,6 +1115,8 @@
     
     if (rayTracingMode)
     {
+        [inspectMaster updateTexture:[self rayTracingIllumination] forName:kInspectable_Illuminate];
+        
         [_illuminationMesh setModelTexture:_immediateTarget.targetTexture];
         [_illuminationMesh setIlluminationMap:[self rayTracingIllumination]];
         [_illuminationMesh setShadowOverlayMap:[self shadowOverlayMap]];
