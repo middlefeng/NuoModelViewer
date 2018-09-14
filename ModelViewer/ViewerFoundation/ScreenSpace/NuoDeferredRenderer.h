@@ -18,6 +18,7 @@
 
 
 @property (nonatomic, readonly) id<MTLTexture> shadowOverlayMap;
+@property (nonatomic, readonly) id<MTLTexture> ambientBuffer;
 
 
 /**

@@ -54,6 +54,12 @@
 }
 
 
+- (id<MTLTexture>)ambientBuffer
+{
+    return [_screenSpaceRenderer ambientBuffer];
+}
+
+
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];

@@ -173,9 +173,16 @@ kernel void ray_set_mask(uint2 tid [[thread_position_in_grid]],
     device RayBuffer& ray = rays[rayIdx];
     
     if (kShadowOnTranslucent)
-        ray.mask = kNuoRayMask_Translucent;
+    {
+        // rays are used for calculate the ambient, so both translucent and opaque are detected upon.
+        // this implies the ambient of objects behind translucent objects is ignored
+        //
+        ray.mask = kNuoRayMask_Translucent | kNuoRayMask_Opaue;
+    }
     else
+    {
         ray.mask = kNuoRayMask_Opaue;
+    }
 }
 
 

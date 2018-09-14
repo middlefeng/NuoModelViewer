@@ -114,16 +114,22 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
                                    texture2d<float> source [[texture(0)]],
                                    texture2d<float> illumination [[texture(1)]],
                                    texture2d<float> shadowOverlayMap [[texture(2)]],
+                                   texture2d<float> translucentCoverMap [[texture(3)]],
                                    sampler samplr [[sampler(0)]])
 {
     const float4 sourceColor = source.sample(samplr, vert.texCoord);
     const float3 illumiColor = illumination.sample(samplr, vert.texCoord).rgb;
     
+    // reduce the ambient reflected by a translucent surface according to its opacity.
+    // the ambient of objects covered (semi-blocked) by it is ignored, for it's too hard to calculate in the screen space
+    const float translucentCover = translucentCoverMap.sample(samplr, vert.texCoord).a;
+    const float3 illuminateEffective = illumiColor * translucentCover;
+    
     const float shadowOverlayFactor = shadowOverlayMap.sample(samplr, vert.texCoord).r;
-    const float3 color = (sourceColor.rgb + illumiColor) * (1 - shadowOverlayFactor);
+    const float3 color = (sourceColor.rgb + illuminateEffective) * (1 - shadowOverlayFactor);
     
     // illumiColor represents ambient when shadowOverlayFactor is 1.0
-    const float ambientStrength = (illumiColor.r * 0.33 + illumiColor.g * 0.33 + illumiColor.b * 0.33);
+    const float ambientStrength = (illuminateEffective.r * 0.33 + illuminateEffective.g * 0.33 + illuminateEffective.b * 0.33);
     const float shadowFactor = sourceColor.a;
     const float shadowWithAmbient = (params.directLightDensity / (params.directLightDensity + params.ambientDensity)) * shadowFactor +
                                     (params.ambientDensity - ambientStrength) / (params.directLightDensity + params.ambientDensity);

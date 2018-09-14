@@ -17,6 +17,7 @@
 
 @property (nonatomic, weak) id<MTLTexture> illuminationMap;
 @property (nonatomic, weak) id<MTLTexture> shadowOverlayMap;
+@property (nonatomic, weak) id<MTLTexture> translucentCoverMap;
 
 - (void)setParameters:(const NuoGlobalIlluminationUniforms&)params;
 

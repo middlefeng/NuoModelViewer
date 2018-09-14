@@ -289,16 +289,6 @@ static const uint32_t kRandomBufferSize = 512;
                                    _incidentRaysBuffer.buffer]
                 withIntersection:self.primaryIntersectionBuffer
                withInFlightIndex:inFlight];
-        
-        for (uint i = 0; i < 2; ++i)
-        {
-            [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.primaryIntersectionBuffer];
-            
-            [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
-                       withParameter:@[_rayTraceUniform[inFlight], _randomBuffers[inFlight], _incidentRaysBuffer.buffer]
-                    withIntersection:self.primaryIntersectionBuffer
-                   withInFlightIndex:inFlight];
-        }
     }
     
     [self updatePrimaryRayMask:kNuoRayMask_Translucent withCommandBuffer:commandBuffer withInFlight:inFlight];
@@ -315,6 +305,16 @@ static const uint32_t kRandomBufferSize = 512;
                                    _incidentRaysBuffer.buffer]
                 withIntersection:self.primaryIntersectionBuffer
                withInFlightIndex:inFlight];
+        
+        for (uint i = 0; i < 2; ++i)
+        {
+            [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.primaryIntersectionBuffer];
+            
+            [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
+                       withParameter:@[_rayTraceUniform[inFlight], _randomBuffers[inFlight], _incidentRaysBuffer.buffer]
+                    withIntersection:self.primaryIntersectionBuffer
+                   withInFlightIndex:inFlight];
+        }
     }
         
     for (uint i = 0; i < 2; ++i)

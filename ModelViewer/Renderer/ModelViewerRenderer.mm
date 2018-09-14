@@ -1120,6 +1120,7 @@
         [_illuminationMesh setModelTexture:_immediateTarget.targetTexture];
         [_illuminationMesh setIlluminationMap:[self rayTracingIllumination]];
         [_illuminationMesh setShadowOverlayMap:[self shadowOverlayMap]];
+        [_illuminationMesh setTranslucentCoverMap:[_deferredRenderer ambientBuffer]];
         [_illuminationMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
     }
     else
