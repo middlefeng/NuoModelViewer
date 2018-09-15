@@ -19,6 +19,7 @@ NSString* const kInspectable_Illuminate = @"inspectable_illuminate";
 NSString* const kInspectable_Ambient = @"inspectable_ambient";
 NSString* const kInspectable_Shadow = @"inspectable_shadow";
 NSString* const kInspectable_ShadowTranslucent = @"inspectable_shadowTranslucent";
+NSString* const kInspectable_ShadowOverlay = @"inspectable_shadowOverlay";
 
 
 @implementation NuoInspectable
@@ -57,7 +58,8 @@ NSString* const kInspectable_ShadowTranslucent = @"inspectable_shadowTranslucent
               kInspectable_Illuminate: [NuoInspectable inspectableWithTitle:@"Illumination" withMean:nil],
               kInspectable_Ambient: [NuoInspectable inspectableWithTitle:@"Ambient" withMean:nil],
               kInspectable_Shadow: [NuoInspectable inspectableWithTitle:@"Shadow on Opaque" withMean:@"fragment_r"],
-              kInspectable_ShadowTranslucent: [NuoInspectable inspectableWithTitle:@"Shadow on Translucent" withMean:@"fragment_g"] };
+              kInspectable_ShadowTranslucent: [NuoInspectable inspectableWithTitle:@"Shadow on Translucent" withMean:@"fragment_g"],
+              kInspectable_ShadowOverlay: [NuoInspectable inspectableWithTitle:@"Shadow Overlay" withMean:@"fragment_r"] };
 }
 
 
