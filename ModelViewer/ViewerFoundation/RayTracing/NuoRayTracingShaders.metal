@@ -225,7 +225,7 @@ kernel void camera_ray_process(uint2 tid [[thread_position_in_grid]],
                                device RayBuffer* shadowRays2 [[buffer(8)]],
                                device RayBuffer* incidentRaysBuffer [[buffer(9)]],
                                texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                               array<texture2d<float>, 10> diffuseTex [[texture(1)]],
+                               array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(1)]],
                                sampler samplr [[sampler(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
@@ -258,7 +258,7 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  device float2* random [[buffer(6)]],
                                  device RayBuffer* incidentRaysBuffer [[buffer(7)]],
                                  texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                 array<texture2d<float>, 10> diffuseTex [[texture(1)]],
+                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(1)]],
                                  sampler samplr [[sampler(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
