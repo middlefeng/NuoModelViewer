@@ -158,10 +158,10 @@ inline float3 align_hemisphere_normal(float3 sample, float3 normal)
 
 #pragma mark -- Camera Ray Emission
 
-kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
-                     constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                     device RayBuffer* rays [[buffer(1)]],
-                     device float2* random [[buffer(2)]])
+kernel void camera_ray_emit(uint2 tid [[thread_position_in_grid]],
+                            constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                            device RayBuffer* rays [[buffer(1)]],
+                            device float2* random [[buffer(2)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;

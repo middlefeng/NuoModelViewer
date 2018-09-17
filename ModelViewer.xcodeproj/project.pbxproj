@@ -92,7 +92,7 @@
 		2CD183792102544A00980510 /* NuoRayBuffer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CD183782102544A00980510 /* NuoRayBuffer.mm */; };
 		2CD6249F1F016B820058CCB7 /* libluad.dylib in Copy Dylibs */ = {isa = PBXBuildFile; fileRef = 2C4DE7851DFB55E100199F1D /* libluad.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		2CDCDAF31DC185A800ECFE39 /* NuoModelArrow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CDCDAF11DC185A800ECFE39 /* NuoModelArrow.cpp */; };
-		2CDD3ACB20CEC84D00158212 /* NuoRayEmittor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CDD3ACA20CEC84D00158212 /* NuoRayEmittor.mm */; };
+		2CDD3ACB20CEC84D00158212 /* NuoCameraRayEmitter.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CDD3ACA20CEC84D00158212 /* NuoCameraRayEmitter.mm */; };
 		2CDFB21E1DD99E2100C67FA3 /* NotationLight.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CDFB21D1DD99E2100C67FA3 /* NotationLight.mm */; };
 		2CE2CA221D804EC5005509EE /* NuoMeshTextured.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2CA211D804EC5005509EE /* NuoMeshTextured.mm */; };
 		2CE2D7FF1E2167F2000CCD2D /* ModelPartsPanel.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2D7FE1E2167F2000CCD2D /* ModelPartsPanel.mm */; };
@@ -339,8 +339,8 @@
 		2CD183782102544A00980510 /* NuoRayBuffer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoRayBuffer.mm; sourceTree = "<group>"; };
 		2CDCDAF11DC185A800ECFE39 /* NuoModelArrow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NuoModelArrow.cpp; sourceTree = "<group>"; };
 		2CDCDAF21DC185A800ECFE39 /* NuoModelArrow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoModelArrow.h; sourceTree = "<group>"; };
-		2CDD3AC920CEC84D00158212 /* NuoRayEmittor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoRayEmittor.h; sourceTree = "<group>"; };
-		2CDD3ACA20CEC84D00158212 /* NuoRayEmittor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoRayEmittor.mm; sourceTree = "<group>"; };
+		2CDD3AC920CEC84D00158212 /* NuoCameraRayEmitter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoCameraRayEmitter.h; sourceTree = "<group>"; };
+		2CDD3ACA20CEC84D00158212 /* NuoCameraRayEmitter.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoCameraRayEmitter.mm; sourceTree = "<group>"; };
 		2CDFB21C1DD99E2100C67FA3 /* NotationLight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotationLight.h; sourceTree = "<group>"; };
 		2CDFB21D1DD99E2100C67FA3 /* NotationLight.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NotationLight.mm; sourceTree = "<group>"; };
 		2CE2CA201D804EC5005509EE /* NuoMeshTextured.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoMeshTextured.h; sourceTree = "<group>"; };
@@ -753,8 +753,8 @@
 		2CDD3AC420CEC62A00158212 /* RayTracing */ = {
 			isa = PBXGroup;
 			children = (
-				2CDD3AC920CEC84D00158212 /* NuoRayEmittor.h */,
-				2CDD3ACA20CEC84D00158212 /* NuoRayEmittor.mm */,
+				2CDD3AC920CEC84D00158212 /* NuoCameraRayEmitter.h */,
+				2CDD3ACA20CEC84D00158212 /* NuoCameraRayEmitter.mm */,
 				2CD183772102544A00980510 /* NuoRayBuffer.h */,
 				2CD183782102544A00980510 /* NuoRayBuffer.mm */,
 				2CFDD1ED20D5B59F00F2E218 /* NuoRayAccelerateStructure.h */,
@@ -921,7 +921,7 @@
 				2CF62A691EEF5E11003E23EF /* NuoLightSource.m in Sources */,
 				2C5D40871FB81BDE00FD234D /* MotionBlurRenderer.mm in Sources */,
 				2C6A8E701F80BBA70007551F /* NuoScreenSpaceMesh.mm in Sources */,
-				2CDD3ACB20CEC84D00158212 /* NuoRayEmittor.mm in Sources */,
+				2CDD3ACB20CEC84D00158212 /* NuoCameraRayEmitter.mm in Sources */,
 				2CA75EBF201AAFE0000E9A05 /* NuoMeshBounds.cpp in Sources */,
 				2C2A58B01DD1457200E9F9BC /* NuoRenderPassTarget.mm in Sources */,
 				983C2E1A1F86D60200D8E689 /* ModelOperationTexturePopover.mm in Sources */,

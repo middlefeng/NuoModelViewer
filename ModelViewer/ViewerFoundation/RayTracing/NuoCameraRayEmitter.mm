@@ -6,7 +6,7 @@
 //  Copyright © 2018 middleware. All rights reserved.
 //
 
-#import "NuoRayEmittor.h"
+#import "NuoCameraRayEmitter.h"
 #import "NuoTypes.h"
 #import "NuoComputeEncoder.h"
 #import "NuoRayBuffer.h"
@@ -17,14 +17,14 @@
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
 
-@interface NuoRayEmittor()
+@interface NuoCameraRayEmitter()
 
 @property (nonatomic, weak) id<MTLDevice> device;
 
 @end
 
 
-@implementation NuoRayEmittor
+@implementation NuoCameraRayEmitter
 {
     NSArray<id<MTLBuffer>>* _uniformBuffers;
     NSArray<id<MTLBuffer>>* _randomBuffers;
@@ -70,9 +70,9 @@
 - (void)setupPipeline
 {
     // Generates rays according to view/projection matrices
-    _pipeline = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"ray_emit"
+    _pipeline = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"camera_ray_emit"
                                              withParameter:NO];
-    _pipeline.name = @"Ray Emit";
+    _pipeline.name = @"Camera Ray Emit";
 }
 
 
@@ -111,7 +111,7 @@
 }
 
 
-- (void)rayEmitToBuffer:(NuoRayBuffer*)rayBuffer withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)emitToBuffer:(NuoRayBuffer*)rayBuffer withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                                                    withInFlight:(uint)inFlight
 {
     [self updateUniform:inFlight widthRayBuffer:rayBuffer];

@@ -127,33 +127,33 @@
     const uint w = (uint)drawableSize.width;
     const uint h = (uint)drawableSize.height;
     const uint intersectionSize = kRayIntersectionStride * w * h;
-    _primaryIntersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
-                                                                       options:MTLResourceStorageModePrivate];
+    _intersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
+                                                                options:MTLResourceStorageModePrivate];
     
     _drawableSize = drawableSize;
 }
 
 
 
-- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                withInFlight:(uint)inFlight
+- (void)updateCameraRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+               withInFlight:(uint)inFlight
 {
-    [_rayStructure updateRayMask:mask withCommandBuffer:commandBuffer withInFlight:inFlight];
+    [_rayStructure updateCameraRayMask:mask withCommandBuffer:commandBuffer withInFlight:inFlight];
 }
 
 
-- (void)rayEmit:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)cameraRayEmit:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    [_rayStructure rayEmit:commandBuffer inFlight:inFlight];
+    [_rayStructure cameraRayEmit:commandBuffer inFlight:inFlight];
 }
 
 
-- (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (BOOL)cameraRayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
     if (!_rayStructure)
         return NO;
     
-    [_rayStructure rayTrace:commandBuffer inFlight:inFlight withIntersection:_primaryIntersectionBuffer];
+    [_rayStructure cameraRayIntersect:commandBuffer inFlight:inFlight withIntersection:_intersectionBuffer];
     return YES;
 }
 
@@ -164,7 +164,7 @@
     if (!_rayStructure)
         return NO;
     
-    [_rayStructure rayTrace:commandBuffer withRays:rayBuffer withIntersection:intersection];
+    [_rayStructure rayIntersect:commandBuffer withRays:rayBuffer withIntersection:intersection];
     return YES;
 }
 
@@ -214,7 +214,7 @@
     
     /*************************************************************/
     /*************************************************************/
-    if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
+    if ([self cameraRayIntersect:commandBuffer withInFlightIndex:inFlight])
     {
         [self runRayTraceCompute:/* some shade pipeline */ nil withCommandBuffer:commandBuffer
                    withParameter:nil withIntersection:nil withInFlightIndex:inFlight];

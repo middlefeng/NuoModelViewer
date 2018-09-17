@@ -41,15 +41,15 @@ extern const uint kRayIntersectionStride;
 - (void)setRoot:(NuoMeshSceneRoot *)root withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
 - (void)setView:(const NuoMatrixFloat44&)viewTrans;
 
-- (void)updateRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-         withInFlight:(uint)inFlight;
+- (void)updateCameraRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+               withInFlight:(uint)inFlight;
 
-- (void)rayEmit:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight;
+- (void)cameraRayEmit:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight;
 
-- (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer
-        inFlight:(uint32_t)inFlight withIntersection:(id<MTLBuffer>)intersection;
-- (void)rayTrace:(id<MTLCommandBuffer>)commandBuffer
-        withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection;
+- (void)cameraRayIntersect:(id<MTLCommandBuffer>)commandBuffer
+                  inFlight:(uint32_t)inFlight withIntersection:(id<MTLBuffer>)intersection;
+- (void)rayIntersect:(id<MTLCommandBuffer>)commandBuffer
+            withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection;
 
 
 - (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight;

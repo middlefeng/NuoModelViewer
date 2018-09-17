@@ -24,7 +24,7 @@
 @property (nonatomic, weak) NuoMesh* mesh;
 @property (nonatomic, weak) NuoRayAccelerateStructure* rayStructure;
 
-@property (nonatomic, readonly) id<MTLBuffer> primaryIntersectionBuffer;
+@property (nonatomic, readonly) id<MTLBuffer> intersectionBuffer;
 @property (nonatomic, readonly) NSArray<id<MTLTexture>>* targetTextures;
 
 
@@ -47,14 +47,14 @@
 /**
  *  functions called from within "- (void)runRayTraceShade:..."
  */
-- (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
+- (BOOL)cameraRayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
 - (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer
             withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection;
 
 
-- (void)rayEmit:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
-- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                withInFlight:(uint)inFlight;
+- (void)cameraRayEmit:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
+- (void)updateCameraRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+               withInFlight:(uint)inFlight;
 
 /**
  *  protocol with "pipeline" shader:
@@ -64,7 +64,7 @@
  *      2. model index buffer
  *      3. model materials (per vertex)
  *      4. intersections
- *      5-m. "paramterBuffers"
+ *      5-m. "paramterBuffers" (e.g. primary rays and/or random incidential rays)
  *      m-(m+targetCount). target textures
  *      (m+targetCount)-... model material textures
  */
