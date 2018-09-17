@@ -50,6 +50,12 @@ struct Intersection
 
 
 
+#pragma mark -- Sampling/Interpolation
+
+/**
+ *  sampling / interpolation utilities
+ */
+
 float3 interpolate_normal(device NuoRayTracingMaterial *materials, device uint* index, Intersection intersection)
 {
     // barycentric coordinates sum to one
@@ -108,8 +114,49 @@ float3 interpolate_color(device NuoRayTracingMaterial *materials, array<texture2
 }
 
 
+// uses the inversion method to map two uniformly random numbers to a three dimensional
+// unit hemisphere where the probability of a given sample is proportional to the cosine
+// of the angle between the sample direction and the "up" direction (0, 1, 0)
+inline float3 sample_cosine_weighted_hemisphere(float2 u)
+{
+    float phi = 2.0f * M_PI_F * u.x;
+    
+    float cos_phi;
+    float sin_phi = sincos(phi, cos_phi);
+    
+    float cos_theta = sqrt(u.y);
+    float sin_theta = sqrt(1.0f - cos_theta * cos_theta);
+    
+    return float3(sin_theta * cos_phi, cos_theta, sin_theta * sin_phi);
+}
 
 
+// Aligns a direction on the unit hemisphere such that the hemisphere's "up" direction
+// (0, 1, 0) maps to the given surface normal direction
+inline float3 align_hemisphere_normal(float3 sample, float3 normal)
+{
+    // Set the "up" vector to the normal
+    float3 up = normal;
+    
+    // Find an arbitrary direction perpendicular to the normal. This will become the
+    // "right" vector.
+    float3 right = normalize(cross(normal, float3(0.0072f, 1.0f, 0.0034f)));
+    if (length(right) < 1e-3)
+        right = normalize(cross(normal, float3(0.0072f, 0.0034f, 1.0f)));
+    
+    // Find a third vector perpendicular to the previous two. This will be the
+    // "forward" vector.
+    float3 forward = cross(right, up);
+    
+    // Map the direction on the unit hemisphere to the coordinate system aligned
+    // with the normal.
+    return sample.x * right + sample.y * up + sample.z * forward;
+}
+
+
+
+
+#pragma mark -- Camera Ray Emission
 
 kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
                      constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
@@ -147,18 +194,6 @@ kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
 
 
 static constant bool kShadowOnTranslucent  [[ function_constant(0) ]];
-
-static void self_illumination(uint2 tid,
-                              device uint* index,
-                              device NuoRayTracingMaterial* materials,
-                              device Intersection& intersection,
-                              constant NuoRayTracingUniforms& tracingUniforms,
-                              device RayBuffer& ray,
-                              device RayBuffer& incidentRay,
-                              device float2* random,
-                              texture2d<float, access::read_write> overlayResult,
-                              array<texture2d<float>, kTextureBindingsCap> diffuseTex,
-                              sampler samplr);
 
 
 
@@ -210,6 +245,18 @@ static void shadow_ray_emit(uint2 tid,
                             device float2* random,
                             device RayBuffer* shadowRays1,
                             device RayBuffer* shadowRays2);
+
+static void self_illumination(uint2 tid,
+                              device uint* index,
+                              device NuoRayTracingMaterial* materials,
+                              device Intersection& intersection,
+                              constant NuoRayTracingUniforms& tracingUniforms,
+                              device RayBuffer& ray,
+                              device RayBuffer& incidentRay,
+                              device float2* random,
+                              texture2d<float, access::read_write> overlayResult,
+                              array<texture2d<float>, kTextureBindingsCap> diffuseTex,
+                              sampler samplr);
 
 
 
@@ -426,46 +473,6 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
     }
     
     dstTex.write(float4(1 - illuminatePercent, 1 - illuminatePercentTranslucent, 0.0, 1.0), tid);
-}
-
-
-// uses the inversion method to map two uniformly random numbers to a three dimensional
-// unit hemisphere where the probability of a given sample is proportional to the cosine
-// of the angle between the sample direction and the "up" direction (0, 1, 0)
-inline float3 sample_cosine_weighted_hemisphere(float2 u)
-{
-    float phi = 2.0f * M_PI_F * u.x;
-    
-    float cos_phi;
-    float sin_phi = sincos(phi, cos_phi);
-    
-    float cos_theta = sqrt(u.y);
-    float sin_theta = sqrt(1.0f - cos_theta * cos_theta);
-    
-    return float3(sin_theta * cos_phi, cos_theta, sin_theta * sin_phi);
-}
-
-
-// Aligns a direction on the unit hemisphere such that the hemisphere's "up" direction
-// (0, 1, 0) maps to the given surface normal direction
-inline float3 align_hemisphere_normal(float3 sample, float3 normal)
-{
-    // Set the "up" vector to the normal
-    float3 up = normal;
-    
-    // Find an arbitrary direction perpendicular to the normal. This will become the
-    // "right" vector.
-    float3 right = normalize(cross(normal, float3(0.0072f, 1.0f, 0.0034f)));
-    if (length(right) < 1e-3)
-        right = normalize(cross(normal, float3(0.0072f, 0.0034f, 1.0f)));
-    
-    // Find a third vector perpendicular to the previous two. This will be the
-    // "forward" vector.
-    float3 forward = cross(right, up);
-    
-    // Map the direction on the unit hemisphere to the coordinate system aligned
-    // with the normal.
-    return sample.x * right + sample.y * up + sample.z * forward;
 }
 
 
