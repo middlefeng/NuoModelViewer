@@ -156,7 +156,7 @@ inline float3 align_hemisphere_normal(float3 sample, float3 normal)
 
 
 
-#pragma mark -- Camera Ray Emission
+#pragma mark -- Camera / Primary Ray Emission
 
 kernel void camera_ray_emit(uint2 tid [[thread_position_in_grid]],
                             constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
@@ -235,16 +235,71 @@ kernel void ray_set_mask_illuminating(uint2 tid [[thread_position_in_grid]],
 }
 
 
-static void shadow_ray_emit(uint2 tid,
-                            constant NuoRayVolumeUniform& uniforms,
-                            device RayBuffer& ray,
-                            device uint* index,
-                            device NuoRayTracingMaterial* materials,
-                            device Intersection& intersection,
-                            constant NuoRayTracingUniforms& tracingUniforms,
-                            device float2* random,
-                            device RayBuffer* shadowRays1,
-                            device RayBuffer* shadowRays2);
+void primary_ray_emit(uint2 tid,
+                      constant NuoRayVolumeUniform& uniforms,
+                      device RayBuffer& ray,
+                      device uint* index,
+                      device NuoRayTracingMaterial* materials,
+                      device Intersection& intersection,
+                      constant NuoRayTracingUniforms& tracingUniforms,
+                      device float2* random,
+                      device RayBuffer* primaryRays[2])
+{
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    
+    const float maxDistance = tracingUniforms.bounds.span;
+    
+    float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
+    float2 r1 = random[(tid.y % 16) * 16 + (tid.x % 16) + 256];
+    r = (r * 2.0 - 1.0) * maxDistance * 0.25;
+    r1 = (r1 * 2.0 - 1.0);
+    
+    for (uint i = 0; i < 2; ++i)
+    {
+        device RayBuffer* primaryRayCurrent = primaryRays[i] + rayIdx;
+        
+        // initialize the buffer's strength fields
+        // (took 2 days to figure this out after spot the problem in debugger 8/21/2018)
+        //
+        primaryRayCurrent->strength = 0.0f;
+        
+        if (intersection.distance >= 0.0f)
+        {
+            float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
+            lightVec = normalize(tracingUniforms.lightSources[i].direction * lightVec);
+            
+            float3 lightPosition = (lightVec.xyz * maxDistance);
+            float3 lightRight = normalize(cross(lightVec.xyz, float3(r1.x, r1.y, 1.0)));
+            float3 lightForward = cross(lightRight, lightVec.xyz);
+            
+            float radius = tracingUniforms.lightSources[i].radius / 2.0;
+            lightPosition = lightPosition + lightRight * r.x * radius + lightForward * r.y * radius;
+            
+            float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
+            float3 shadowVec = normalize(lightPosition.xyz);
+            
+            primaryRayCurrent->maxDistance = maxDistance;
+            primaryRayCurrent->mask = kNuoRayMask_Opaue;
+            
+            float3 normal = interpolate_normal(materials, index, intersection);
+            
+            primaryRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
+            primaryRayCurrent->direction = shadowVec;
+            
+            primaryRayCurrent->strength = dot(normal, shadowVec);
+        }
+        else
+        {
+            primaryRayCurrent->maxDistance = -1.0;
+        }
+    }
+}
+
+
+
+
+#pragma mark -- Hybrid Rendering
+
 
 static void self_illumination(uint2 tid,
                               device uint* index,
@@ -268,8 +323,8 @@ kernel void camera_ray_process(uint2 tid [[thread_position_in_grid]],
                                device Intersection *intersections [[buffer(4)]],
                                constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
                                device float2* random [[buffer(6)]],
-                               device RayBuffer* shadowRays1 [[buffer(7)]],
-                               device RayBuffer* shadowRays2 [[buffer(8)]],
+                               device RayBuffer* primaryRays0 [[buffer(7)]],
+                               device RayBuffer* primaryRays1 [[buffer(8)]],
                                device RayBuffer* incidentRaysBuffer [[buffer(9)]],
                                texture2d<float, access::read_write> overlayResult [[texture(0)]],
                                array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(1)]],
@@ -283,10 +338,10 @@ kernel void camera_ray_process(uint2 tid [[thread_position_in_grid]],
     device RayBuffer& cameraRay = cameraRays[rayIdx];
     device RayBuffer& incidentRay = incidentRaysBuffer[rayIdx];
     
-    shadow_ray_emit(tid, uniforms, cameraRay, index, materials, intersection,
-                    tracingUniforms, random,
-                    shadowRays1,
-                    shadowRays2);
+    device RayBuffer* primaryRays[] = { primaryRays0, primaryRays1 };
+    
+    primary_ray_emit(tid, uniforms, cameraRay, index, materials, intersection,
+                     tracingUniforms, random, primaryRays);
     
     self_illumination(tid, index, materials, intersection,
                       tracingUniforms, cameraRay, incidentRay,
@@ -320,72 +375,6 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                       random, overlayResult, diffuseTex, samplr);
 }
 
-
-
-void shadow_ray_emit(uint2 tid,
-                     constant NuoRayVolumeUniform& uniforms,
-                     device RayBuffer& ray,
-                     device uint* index,
-                     device NuoRayTracingMaterial* materials,
-                     device Intersection& intersection,
-                     constant NuoRayTracingUniforms& tracingUniforms,
-                     device float2* random,
-                     device RayBuffer* shadowRays1,
-                     device RayBuffer* shadowRays2)
-{
-    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    
-    device RayBuffer* shadowRay[2];
-    shadowRay[0] = &shadowRays1[rayIdx];
-    shadowRay[1] = &shadowRays2[rayIdx];
-    
-    const float maxDistance = tracingUniforms.bounds.span;
-    
-    float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
-    float2 r1 = random[(tid.y % 16) * 16 + (tid.x % 16) + 256];
-    r = (r * 2.0 - 1.0) * maxDistance * 0.25;
-    r1 = (r1 * 2.0 - 1.0);
-    
-    for (uint i = 0; i < 2; ++i)
-    {
-        device RayBuffer* shadowRayCurrent = shadowRay[i];
-        
-        // initialize the buffer's strength fields
-        // (took 2 days to figure this out after spot the problem in debugger 8/21/2018)
-        //
-        shadowRayCurrent->strength = 0.0f;
-        
-        if (intersection.distance >= 0.0f)
-        {
-            float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
-            lightVec = normalize(tracingUniforms.lightSources[i].direction * lightVec);
-            
-            float3 lightPosition = (lightVec.xyz * maxDistance);
-            float3 lightRight = normalize(cross(lightVec.xyz, float3(r1.x, r1.y, 1.0)));
-            float3 lightForward = cross(lightRight, lightVec.xyz);
-            
-            float radius = tracingUniforms.lightSources[i].radius / 2.0;
-            lightPosition = lightPosition + lightRight * r.x * radius + lightForward * r.y * radius;
-            
-            float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
-            float3 shadowVec = normalize(lightPosition.xyz);
-            
-            shadowRayCurrent->maxDistance = maxDistance;
-            shadowRayCurrent->mask = kNuoRayMask_Opaue;
-            
-            float3 normal = interpolate_normal(materials, index, intersection);
-            
-            shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
-            shadowRayCurrent->direction = shadowVec;
-            
-            shadowRayCurrent->strength = dot(normal, shadowVec);
-        }
-        else
-        {
-            shadowRayCurrent->maxDistance = -1.0;
-        }
-    }
-}
 
 
 
