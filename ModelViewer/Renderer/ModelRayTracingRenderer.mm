@@ -156,7 +156,7 @@ static const uint32_t kRandomBufferSize = 512;
 
 @implementation ModelRayTracingRenderer
 {
-    NuoComputePipeline* _cameraRaysPipeline;
+    NuoComputePipeline* _primaryRaysPipeline;
     NuoComputePipeline* _rayShadePipeline;
     
     NSArray<id<MTLBuffer>>* _rayTraceUniform;
@@ -175,10 +175,10 @@ static const uint32_t kRandomBufferSize = 512;
     
     if (self)
     {
-        _cameraRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                               withFunction:@"camera_ray_process"
+        _primaryRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
+                                                               withFunction:@"primary_ray_process"
                                                               withParameter:NO];
-        _cameraRaysPipeline.name = @"Camera Ray Process";
+        _primaryRaysPipeline.name = @"Primary Ray Process";
         
         _rayShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
                                                           withFunction:@"incident_ray_process" withParameter:NO];
@@ -280,7 +280,7 @@ static const uint32_t kRandomBufferSize = 512;
     {
         // generate rays for the two light sources, from opaque objects
         //
-        [self runRayTraceCompute:_cameraRaysPipeline withCommandBuffer:commandBuffer
+        [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[_rayTraceUniform[inFlight],
                                    _randomBuffers[inFlight],
                                    _subRenderers[0].shadowRayBuffer.buffer,
@@ -296,7 +296,7 @@ static const uint32_t kRandomBufferSize = 512;
     {
         // generate rays for the two light sources, from translucent objects
         //
-        [self runRayTraceCompute:_cameraRaysPipeline withCommandBuffer:commandBuffer
+        [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[_rayTraceUniform[inFlight],
                                    _randomBuffers[inFlight],
                                    _subRenderers[0].shadowRayBufferOnTranslucent.buffer,
