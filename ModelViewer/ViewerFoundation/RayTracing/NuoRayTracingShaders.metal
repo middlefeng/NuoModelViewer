@@ -156,12 +156,12 @@ inline float3 align_hemisphere_normal(float3 sample, float3 normal)
 
 
 
-#pragma mark -- Camera Ray Emission
+#pragma mark -- Primary / Shadow Ray Emission
 
-kernel void ray_emit(uint2 tid [[thread_position_in_grid]],
-                     constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                     device RayBuffer* rays [[buffer(1)]],
-                     device float2* random [[buffer(2)]])
+kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
+                             constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                             device RayBuffer* rays [[buffer(1)]],
+                             device float2* random [[buffer(2)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -235,93 +235,6 @@ kernel void ray_set_mask_illuminating(uint2 tid [[thread_position_in_grid]],
 }
 
 
-static void shadow_ray_emit(uint2 tid,
-                            constant NuoRayVolumeUniform& uniforms,
-                            device RayBuffer& ray,
-                            device uint* index,
-                            device NuoRayTracingMaterial* materials,
-                            device Intersection& intersection,
-                            constant NuoRayTracingUniforms& tracingUniforms,
-                            device float2* random,
-                            device RayBuffer* shadowRays1,
-                            device RayBuffer* shadowRays2);
-
-static void self_illumination(uint2 tid,
-                              device uint* index,
-                              device NuoRayTracingMaterial* materials,
-                              device Intersection& intersection,
-                              constant NuoRayTracingUniforms& tracingUniforms,
-                              device RayBuffer& ray,
-                              device RayBuffer& incidentRay,
-                              device float2* random,
-                              texture2d<float, access::read_write> overlayResult,
-                              array<texture2d<float>, kTextureBindingsCap> diffuseTex,
-                              sampler samplr);
-
-
-
-kernel void camera_ray_process(uint2 tid [[thread_position_in_grid]],
-                               constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                               device RayBuffer* cameraRays [[buffer(1)]],
-                               device uint* index [[buffer(2)]],
-                               device NuoRayTracingMaterial* materials [[buffer(3)]],
-                               device Intersection *intersections [[buffer(4)]],
-                               constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
-                               device float2* random [[buffer(6)]],
-                               device RayBuffer* shadowRays1 [[buffer(7)]],
-                               device RayBuffer* shadowRays2 [[buffer(8)]],
-                               device RayBuffer* incidentRaysBuffer [[buffer(9)]],
-                               texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                               array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(1)]],
-                               sampler samplr [[sampler(0)]])
-{
-    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
-        return;
-    
-    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    device Intersection & intersection = intersections[rayIdx];
-    device RayBuffer& cameraRay = cameraRays[rayIdx];
-    device RayBuffer& incidentRay = incidentRaysBuffer[rayIdx];
-    
-    shadow_ray_emit(tid, uniforms, cameraRay, index, materials, intersection,
-                    tracingUniforms, random,
-                    shadowRays1,
-                    shadowRays2);
-    
-    self_illumination(tid, index, materials, intersection,
-                      tracingUniforms, cameraRay, incidentRay,
-                      random, overlayResult, diffuseTex, samplr);
-}
-
-
-
-kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
-                                 constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                                 device RayBuffer* cameraRays [[buffer(1)]],
-                                 device uint* index [[buffer(2)]],
-                                 device NuoRayTracingMaterial* materials [[buffer(3)]],
-                                 device Intersection *intersections [[buffer(4)]],
-                                 constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
-                                 device float2* random [[buffer(6)]],
-                                 device RayBuffer* incidentRaysBuffer [[buffer(7)]],
-                                 texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(1)]],
-                                 sampler samplr [[sampler(0)]])
-{
-    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
-        return;
-    
-    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    device Intersection & intersection = intersections[rayIdx];
-    device RayBuffer& incidentRay = incidentRaysBuffer[rayIdx];
-    
-    self_illumination(tid, index, materials, intersection,
-                      tracingUniforms, incidentRay, incidentRay,
-                      random, overlayResult, diffuseTex, samplr);
-}
-
-
-
 void shadow_ray_emit(uint2 tid,
                      constant NuoRayVolumeUniform& uniforms,
                      device RayBuffer& ray,
@@ -330,14 +243,9 @@ void shadow_ray_emit(uint2 tid,
                      device Intersection& intersection,
                      constant NuoRayTracingUniforms& tracingUniforms,
                      device float2* random,
-                     device RayBuffer* shadowRays1,
-                     device RayBuffer* shadowRays2)
+                     device RayBuffer* shadowRays[2])
 {
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    
-    device RayBuffer* shadowRay[2];
-    shadowRay[0] = &shadowRays1[rayIdx];
-    shadowRay[1] = &shadowRays2[rayIdx];
     
     const float maxDistance = tracingUniforms.bounds.span;
     
@@ -348,7 +256,7 @@ void shadow_ray_emit(uint2 tid,
     
     for (uint i = 0; i < 2; ++i)
     {
-        device RayBuffer* shadowRayCurrent = shadowRay[i];
+        device RayBuffer* shadowRayCurrent = shadowRays[i] + rayIdx;
         
         // initialize the buffer's strength fields
         // (took 2 days to figure this out after spot the problem in debugger 8/21/2018)
@@ -386,6 +294,87 @@ void shadow_ray_emit(uint2 tid,
         }
     }
 }
+
+
+
+
+#pragma mark -- Hybrid Rendering
+
+
+static void self_illumination(uint2 tid,
+                              device uint* index,
+                              device NuoRayTracingMaterial* materials,
+                              device Intersection& intersection,
+                              constant NuoRayTracingUniforms& tracingUniforms,
+                              device RayBuffer& ray,
+                              device RayBuffer& incidentRay,
+                              device float2* random,
+                              texture2d<float, access::read_write> overlayResult,
+                              array<texture2d<float>, kTextureBindingsCap> diffuseTex,
+                              sampler samplr);
+
+
+
+kernel void camera_ray_process(uint2 tid [[thread_position_in_grid]],
+                               constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                               device RayBuffer* cameraRays [[buffer(1)]],
+                               device uint* index [[buffer(2)]],
+                               device NuoRayTracingMaterial* materials [[buffer(3)]],
+                               device Intersection *intersections [[buffer(4)]],
+                               constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
+                               device float2* random [[buffer(6)]],
+                               device RayBuffer* shadowRays0 [[buffer(7)]],
+                               device RayBuffer* shadowRays1 [[buffer(8)]],
+                               device RayBuffer* incidentRaysBuffer [[buffer(9)]],
+                               texture2d<float, access::read_write> overlayResult [[texture(0)]],
+                               array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(1)]],
+                               sampler samplr [[sampler(0)]])
+{
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device Intersection & intersection = intersections[rayIdx];
+    device RayBuffer& cameraRay = cameraRays[rayIdx];
+    device RayBuffer& incidentRay = incidentRaysBuffer[rayIdx];
+    
+    device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
+    
+    shadow_ray_emit(tid, uniforms, cameraRay, index, materials, intersection,
+                    tracingUniforms, random, shadowRays);
+    
+    self_illumination(tid, index, materials, intersection,
+                      tracingUniforms, cameraRay, incidentRay,
+                      random, overlayResult, diffuseTex, samplr);
+}
+
+
+
+kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
+                                 constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                                 device RayBuffer* cameraRays [[buffer(1)]],
+                                 device uint* index [[buffer(2)]],
+                                 device NuoRayTracingMaterial* materials [[buffer(3)]],
+                                 device Intersection *intersections [[buffer(4)]],
+                                 constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
+                                 device float2* random [[buffer(6)]],
+                                 device RayBuffer* incidentRaysBuffer [[buffer(7)]],
+                                 texture2d<float, access::read_write> overlayResult [[texture(0)]],
+                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(1)]],
+                                 sampler samplr [[sampler(0)]])
+{
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device Intersection & intersection = intersections[rayIdx];
+    device RayBuffer& incidentRay = incidentRaysBuffer[rayIdx];
+    
+    self_illumination(tid, index, materials, intersection,
+                      tracingUniforms, incidentRay, incidentRay,
+                      random, overlayResult, diffuseTex, samplr);
+}
+
 
 
 
