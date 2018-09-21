@@ -1084,7 +1084,7 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    // get the target render pass and draw the scene
+    // get the target render pass and draw the scene in the forward rendering
     //
     id<MTLRenderCommandEncoder> renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
     if (!renderPass)
@@ -1097,6 +1097,11 @@
     
     [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
     
+    BOOL rayTracingMode = (_rayTracingRecordStatus != kRecord_Stop);
+    
+    if (rayTracingMode)
+        [_sceneRoot setShadowOverlayMap:[self shadowOverlayMap]];
+    
     [_sceneRoot drawMesh:renderPass indexBuffer:inFlight];
     
     [_immediateTarget releaseRenderPassEndcoder];
@@ -1106,14 +1111,15 @@
     [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_ImmediateAlpha];
     [inspectMaster updateTexture:[self shadowOverlayMap] forName:kInspectable_ShadowOverlay];
     
+    
+    // deferred rendering for the illumination
+    
     id<MTLRenderCommandEncoder> deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
     
     BOOL drawBackdrop = _backdropMesh && _backdropMesh.enabled;
     if (drawBackdrop)
         [_backdropMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
 
-    BOOL rayTracingMode = (_rayTracingRecordStatus != kRecord_Stop);
-    
     if (rayTracingMode)
     {
         [inspectMaster updateTexture:[self rayTracingIllumination] forName:kInspectable_Illuminate];

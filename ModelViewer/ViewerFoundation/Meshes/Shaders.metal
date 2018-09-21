@@ -170,6 +170,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                       constant NuoModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
                                       texture2d<float> shadowMap0 [[texture(0)]],
                                       texture2d<float> shadowMap1 [[texture(1)]],
+                                      texture2d<float> shadowOverlayMap [[texture(2)]],
                                       sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
@@ -223,9 +224,27 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     }
     
     if (kShadowOverlay)
-        return float4(0.0, 0.0, 0.0, shadowOverlay / surfaceBrightness);
+    {
+        // the primitive coverage on the pixel
+        float shadowOverlayCoverage = shadowOverlayMap.sample(samplr, ndc_to_texture_coord(vert.positionNDC)).r;
+        
+        // this happens when a translucent object blocking the overlay-only object
+        if (shadowOverlayCoverage < 0.000001)
+            shadowOverlayCoverage = 1.0;
+
+        // anti-alias compensation by being divided by shadowOverlayCoverage
+        //
+        // the shadowOverlayCoverage/surfaceBrightness has already taken in acount the anti-aliasing when it is
+        // computed through ray tracing. if being returned from this fragement shader, it will be subject to the
+        // MSAA by the pipeline. to avoid this mistaken anti-aliasing double-blending, the value should be divided
+        // by the primitive coverage (in order to get its pre-anti-aliasing value, at least approximately)
+        //
+        return float4(0.0, 0.0, 0.0, shadowOverlay / surfaceBrightness / shadowOverlayCoverage);
+    }
     else
+    {
         return float4(colorForLights, modelCharacterUniforms.opacity);
+    }
 }
 
 
@@ -481,18 +500,8 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool transluc
 {
     if (kShadowRayTracing)
     {
-        // for ray tracing based mechanism, the shadowCastModelPostion conveys the NDC space coordinate
-        //
-        float4 projectedNDC = shadowCastModelPostion;
-        
-        projectedNDC.xy = projectedNDC.xy / projectedNDC.w;
-        projectedNDC.x = (projectedNDC.x + 1) * 0.5;
-        projectedNDC.y = (-projectedNDC.y + 1) * 0.5;
-        
-        if (translucent)
-            return shadowMap.sample(samplr, projectedNDC.xy).g;
-        else
-            return shadowMap.sample(samplr, projectedNDC.xy).r;
+        float4 shadowCoverage = shadowMap.sample(samplr, ndc_to_texture_coord(shadowCastModelPostion));
+        return (translucent) ? shadowCoverage.g : shadowCoverage.r;
     }
     
     float shadowMapBias = 0.002;
@@ -610,3 +619,8 @@ float2 rand(float2 co)
 
 
 
+float2 ndc_to_texture_coord(float4 ndc)
+{
+    float2 result = ndc.xy / ndc.w;
+    return float2((result.x + 1) * 0.5, (-result.y + 1) * 0.5);
+}

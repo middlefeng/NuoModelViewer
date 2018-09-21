@@ -8,7 +8,7 @@
 
 #import "NuoMeshCompound.h"
 #import "NuoMeshBounds.h"
-
+#import "NuoBoardMesh.h"
 
 
 @implementation NuoMeshCompound
@@ -89,6 +89,18 @@
     }
     
     return { bounds, sphere };
+}
+
+
+- (void)setShadowOverlayMap:(id<MTLTexture>)shadowOverlayMap
+{
+    for (NuoMesh* mesh in _meshes)
+    {
+        if ([mesh isKindOfClass:NuoBoardMesh.class])
+        {
+            ((NuoBoardMesh*)mesh).shadowOverlayMap = shadowOverlayMap;
+        }
+    }
 }
 
 
