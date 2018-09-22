@@ -43,6 +43,9 @@ GlobalBuffers NuoModelBoard::GetGlobalBuffers() const
             material.texCoord = NuoVectorFloat3(0, 0, 0)._vector;
             material.diffuseTex = -1;
             
+            // diffuse factor is used in ray tracing. set to 1.0 so the result illumination is relative to the
+            // lighting strength (usually ambient). see more comments in the "illumination_blend()" fragment shader
+            //
             material.diffuseColor = NuoVectorFloat3(1, 1, 1)._vector;
             material.illuminate = 2;
             

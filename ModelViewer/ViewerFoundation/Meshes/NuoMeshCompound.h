@@ -8,8 +8,6 @@
 
 #import "NuoMesh.h"
 
-#include <vector>
-
 
 @interface NuoMeshCompound : NuoMesh
 
