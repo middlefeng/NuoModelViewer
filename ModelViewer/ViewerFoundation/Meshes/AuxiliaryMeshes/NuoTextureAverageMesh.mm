@@ -15,14 +15,6 @@
 
 
 
-struct AccumulateUniform
-{
-    uint32_t frameIndex;
-    uint32_t width;
-    uint32_t height;
-};
-
-
 
 @implementation NuoTextureAverageMesh
 {
