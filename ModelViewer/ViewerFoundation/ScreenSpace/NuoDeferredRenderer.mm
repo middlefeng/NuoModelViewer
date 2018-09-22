@@ -48,6 +48,18 @@
 }
 
 
+- (id<MTLTexture>)shadowOverlayMap
+{
+    return [_screenSpaceRenderer shdowOverlayBuffer];
+}
+
+
+- (id<MTLTexture>)ambientBuffer
+{
+    return [_screenSpaceRenderer ambientBuffer];
+}
+
+
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];

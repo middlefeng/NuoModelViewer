@@ -12,7 +12,6 @@
 #import "NuoLightSource.h"
 
 #import "NuoRayBuffer.h"
-#import "NuoRayEmittor.h"
 #import "NuoRayAccelerateStructure.h"
 
 #include "NuoRandomBuffer.h"
@@ -157,7 +156,7 @@ static const uint32_t kRandomBufferSize = 512;
 
 @implementation ModelRayTracingRenderer
 {
-    NuoComputePipeline* _cameraRaysPipeline;
+    NuoComputePipeline* _primaryRaysPipeline;
     NuoComputePipeline* _rayShadePipeline;
     
     NSArray<id<MTLBuffer>>* _rayTraceUniform;
@@ -176,10 +175,10 @@ static const uint32_t kRandomBufferSize = 512;
     
     if (self)
     {
-        _cameraRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                               withFunction:@"camera_ray_process"
+        _primaryRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
+                                                               withFunction:@"primary_ray_process"
                                                               withParameter:NO];
-        _cameraRaysPipeline.name = @"Camera Ray Process";
+        _primaryRaysPipeline.name = @"Primary Ray Process";
         
         _rayShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
                                                           withFunction:@"incident_ray_process" withParameter:NO];
@@ -255,6 +254,7 @@ static const uint32_t kRandomBufferSize = 512;
                                              _sceneBounds._center._vector.y,
                                              _sceneBounds._center._vector.z, 1.0)._vector;
     uniforms.ambient = _ambientDensity;
+    uniforms.ambientRadius = _ambientRadius;
     uniforms.illuminationStrength = _illuminationStrength;
     
     memcpy(_rayTraceUniform[index].contents, &uniforms, sizeof(NuoRayTracingUniforms));
@@ -274,46 +274,46 @@ static const uint32_t kRandomBufferSize = 512;
     
     [self updateUniforms:inFlight];
     
-    [self rayEmit:commandBuffer withInFlightIndex:inFlight];
+    [self primaryRayEmit:commandBuffer withInFlightIndex:inFlight];
     
-    if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
+    if ([self primaryRayIntersect:commandBuffer withInFlightIndex:inFlight])
     {
         // generate rays for the two light sources, from opaque objects
         //
-        [self runRayTraceCompute:_cameraRaysPipeline withCommandBuffer:commandBuffer
+        [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[_rayTraceUniform[inFlight],
                                    _randomBuffers[inFlight],
                                    _subRenderers[0].shadowRayBuffer.buffer,
                                    _subRenderers[1].shadowRayBuffer.buffer,
                                    _incidentRaysBuffer.buffer]
-                withIntersection:self.primaryIntersectionBuffer
+                withIntersection:self.intersectionBuffer
                withInFlightIndex:inFlight];
-        
-        for (uint i = 0; i < 2; ++i)
-        {
-            [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.primaryIntersectionBuffer];
-            
-            [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
-                       withParameter:@[_rayTraceUniform[inFlight], _randomBuffers[inFlight], _incidentRaysBuffer.buffer]
-                    withIntersection:self.primaryIntersectionBuffer
-                   withInFlightIndex:inFlight];
-        }
     }
     
     [self updatePrimaryRayMask:kNuoRayMask_Translucent withCommandBuffer:commandBuffer withInFlight:inFlight];
     
-    if ([self rayIntersect:commandBuffer withInFlightIndex:inFlight])
+    if ([self primaryRayIntersect:commandBuffer withInFlightIndex:inFlight])
     {
         // generate rays for the two light sources, from translucent objects
         //
-        [self runRayTraceCompute:_cameraRaysPipeline withCommandBuffer:commandBuffer
+        [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[_rayTraceUniform[inFlight],
                                    _randomBuffers[inFlight],
                                    _subRenderers[0].shadowRayBufferOnTranslucent.buffer,
                                    _subRenderers[1].shadowRayBufferOnTranslucent.buffer,
                                    _incidentRaysBuffer.buffer]
-                withIntersection:self.primaryIntersectionBuffer
+                withIntersection:self.intersectionBuffer
                withInFlightIndex:inFlight];
+        
+        for (uint i = 0; i < 2; ++i)
+        {
+            [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.intersectionBuffer];
+            
+            [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
+                       withParameter:@[_rayTraceUniform[inFlight], _randomBuffers[inFlight], _incidentRaysBuffer.buffer]
+                    withIntersection:self.intersectionBuffer
+                   withInFlightIndex:inFlight];
+        }
     }
         
     for (uint i = 0; i < 2; ++i)

@@ -46,6 +46,7 @@ typedef struct
     NuoRayTracingLightSource lightSources[2];
     
     float ambient;
+    float ambientRadius;
     float illuminationStrength;
 }
 NuoRayTracingUniforms;
@@ -76,7 +77,7 @@ typedef struct
 NuoRayVolumeUniform;
 
 
-#define kTextureBindingsCap 10
+#define kTextureBindingsCap 15
 
 
 

@@ -10,10 +10,6 @@
 #import "NuoIlluminationMesh.h"
 
 
-//#import "NuoComputeEncoder.h"
-//#import "NuoRenderPassAttachment.h"
-
-
 
 @implementation ModelRayTracingBlendRenderer
 {
@@ -46,6 +42,7 @@
     id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
     [_mesh setModelTexture:self.sourceTexture];
     [_mesh setIlluminationMap:_illumination];
+    [_mesh setShadowOverlayMap:_shadowOverlayMap];
     [_mesh drawMesh:renderPass indexBuffer:inFlight];
     [self releaseDefaultEncoder];
 }

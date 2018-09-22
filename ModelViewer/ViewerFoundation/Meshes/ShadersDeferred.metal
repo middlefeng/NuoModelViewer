@@ -110,12 +110,57 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
  */
 
 fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
+                                   constant NuoGlobalIlluminationUniforms& params [[buffer(0)]],
                                    texture2d<float> source [[texture(0)]],
                                    texture2d<float> illumination [[texture(1)]],
+                                   texture2d<float> shadowOverlayMap [[texture(2)]],
+                                   texture2d<float> translucentCoverMap [[texture(3)]],
                                    sampler samplr [[sampler(0)]])
 {
-    float4 sourceColor = source.sample(samplr, vert.texCoord);
-    float3 illumiColor = illumination.sample(samplr, vert.texCoord).rgb;
+    const float4 sourceColor = source.sample(samplr, vert.texCoord);
+    const float3 illumiColor = illumination.sample(samplr, vert.texCoord).rgb;
     
-    return (float4(sourceColor.rgb + illumiColor, sourceColor.a));
+    // reduce the ambient reflected by a translucent surface according to its opacity.
+    // the ambient of objects covered (semi-blocked) by it is ignored, for it's too hard to calculate in the screen space
+    const float translucentCover = translucentCoverMap.sample(samplr, vert.texCoord).a;
+    const float3 illuminateEffective = illumiColor * translucentCover;
+    
+    const float shadowOverlayFactor = shadowOverlayMap.sample(samplr, vert.texCoord).r;
+    const float3 color = (sourceColor.rgb + illuminateEffective) * (1 - shadowOverlayFactor);
+    
+    // calculate the ambient-affected shadow overlay
+    //
+    // physically based equation:
+    //
+    //   - alpha: the alpha of the overlay-only object. (this is the result needed)
+    //   - C-direct: the direct ligthing without considing shadow casting
+    //   - S-direct: the shadow casting of the direct lighting (the direct light being blocked), which is shadowFactor in code,
+    //               and has been calculated by ray-tracing and the forward-rendering consdering multi-light-source
+    //   - C-ambient-max: the cap of the ambient, meaning there is no occlusion
+    //   - C-ambient: the ambient considering occlusion, which is ambientStrength in code. in the previous ray-tracing
+    //                stage, this has been computed in relative to C-ambient-max
+    //
+    //   (C-direct + C-ambient-max)(1 - alpha) = (C-direct - C-direct * S-direct) + C-ambient
+    //
+    // note that the case is the overlay-only layer is put on top of a real scene (a caputred photo, usually).
+    // the color from the real scene is (C-direct + C-ambient-max), and there is no way to estimate C-direct from other
+    // parameters. so C-direct has to be given by user from trial-and-error
+    //
+    // it derives:
+    //   alpha = C-direct / (C-direct + C-ambient-max) * S-direct + (C-ambient-max - C-ambient) / (C-direct + C-ambient)
+    //
+    //
+    const float ambientStrength = (illuminateEffective.r * 0.33 + illuminateEffective.g * 0.33 + illuminateEffective.b * 0.33);
+    const float shadowFactor = sourceColor.a;
+    const float shadowWithAmbient = (params.directLightDensity / (params.directLightDensity + params.ambientDensity)) * shadowFactor +
+                                    (params.ambientDensity - ambientStrength) / (params.directLightDensity + params.ambientDensity);
+    
+    
+    // shadowOverlayFactor being 1.0 means it is an overlay-only object and shadowWithAmbient is used, being
+    // 0.0 means it is a normal object and sourceColor.a is used (the forward-rendering result using the ray-tracing-based
+    // direct light shadowing)
+    //
+    float alpha = sourceColor.a * (1 - shadowOverlayFactor) + shadowWithAmbient * shadowOverlayFactor;
+    
+    return (float4(color, alpha));
 }

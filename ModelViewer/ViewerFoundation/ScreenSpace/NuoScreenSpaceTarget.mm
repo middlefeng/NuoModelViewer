@@ -33,7 +33,7 @@
     if (self)
     {
         self.manageTargetTexture = YES;
-        self.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 0.0);
+        self.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
         
         _clearMesh = [[NuoClearMesh alloc] initWithCommandQueue:commandQueue];
         [_clearMesh makePipelineScreenSpaceState];

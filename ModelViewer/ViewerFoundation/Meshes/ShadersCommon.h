@@ -161,6 +161,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool transluc
                              metal::texture2d<float> shadowMap, metal::sampler samplr);
 
 metal::float2 rand(metal::float2 co);
+metal::float2 ndc_to_texture_coord(metal::float4 ndc);
 
 
 

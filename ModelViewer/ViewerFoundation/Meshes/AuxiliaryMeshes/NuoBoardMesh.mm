@@ -109,6 +109,7 @@
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
     [renderPass setCullMode:MTLCullModeBack];
+    [renderPass setFragmentTexture:_shadowOverlayMap atIndex:2];
     [super drawMesh:renderPass indexBuffer:index];
 }
 

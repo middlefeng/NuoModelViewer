@@ -12,10 +12,11 @@
 
 
 
-const uint kRayBufferStrid = 52;  //  base fields           - 32
-                                  //  illumination strength - 4
-                                  //  ray color             - 12
-                                  //  bounce                - 4
+const uint kRayBufferStride = 56;  //  base fields           - 32
+                                   //  illumination strength - 4
+                                   //  ray color             - 12
+                                   //  bounce                - 4
+                                   //  ambient illuminateed  - 4
 
 
 
@@ -78,14 +79,14 @@ const uint kRayBufferStrid = 52;  //  base fields           - 32
     _dimension = dimension;
     
     const uint rayCount = [self rayCount];
-    const uint rayBufferSize = kRayBufferStrid * rayCount;
+    const uint rayBufferSize = kRayBufferStride * rayCount;
     _buffer = [_device newBufferWithLength:rayBufferSize options:MTLResourceStorageModePrivate];
 }
 
 
 
-- (void)updateRayMask:(uint32_t)rayMask withUniform:(id<MTLBuffer>)uniforms
-                                  withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)updateMask:(uint32_t)rayMask withUniform:(id<MTLBuffer>)uniforms
+                               withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
     NuoComputePipeline* pipeline;
     if (rayMask & kNuoRayMask_Illuminating)

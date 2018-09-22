@@ -76,7 +76,6 @@ MouseDragMode;
     ModelSelectionRenderer* _modelSelectionRenderer;
     NotationRenderer* _notationRenderer;
     MotionBlurRenderer* _motionBlurRenderer;
-    ModelRayTracingBlendRenderer* _rayTracingBlendRenderer;
     
     NSMutableArray<NuoMeshAnimation*>* _animations;
     
@@ -148,12 +147,10 @@ MouseDragMode;
     {
         [_modelRender setSampleCount:1];
         [_modelRender setRayTracingRecordStatus:kRecord_Stop];
-        [_rayTracingBlendRenderer setIllumination:nil];
     }
     
     if (endingDrag)
     {
-        [_rayTracingBlendRenderer setIllumination:_modelRender.rayTracingIllumination];
         [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
         [_modelRender setSampleCount:kSampleCount];
     }
@@ -534,9 +531,6 @@ MouseDragMode;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
-    _rayTracingBlendRenderer = [[ModelRayTracingBlendRenderer alloc] initWithCommandQueue:self.commandQueue
-                                                                          withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                          withSampleCount:1];
     
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
@@ -626,28 +620,6 @@ MouseDragMode;
         
         [_modelDissectRenderer setRenderTarget:modelDissectTarget];
         lastTarget = modelDissectTarget;
-    }
-    
-    // ray-tracing overlay (rendering performed inside _modelRender)
-    //
-    
-    if (_modelPanel.rayTracingRecordStatus != kRecord_Stop)
-    {
-        [renders addObject:_rayTracingBlendRenderer];
-        
-        NuoRenderPassTarget* rayTracingTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
-                                                                                  withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                                  withSampleCount:kSampleCount];
-        rayTracingTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
-        rayTracingTarget.manageTargetTexture = YES;
-        rayTracingTarget.name = @"Ray-Tracing Overlay";
-        rayTracingTarget.sampleCount = 1;
-        
-        [_rayTracingBlendRenderer setIllumination:[_modelRender rayTracingIllumination]];
-        [_rayTracingBlendRenderer setRenderTarget:rayTracingTarget];
-        
-        lastTarget = rayTracingTarget;
-        
     }
     
     // motion blur renderer
@@ -794,16 +766,12 @@ MouseDragMode;
     [_modelRender setRayTracingRecordStatus:kRecord_Stop];
     [_modelRender setSampleCount:1];
     
-    [_rayTracingBlendRenderer setIllumination:nil];
-    
     _mouseMoved = NO;
 }
 
 
 - (void)mouseUp:(NSEvent *)event
 {
-    [_rayTracingBlendRenderer setIllumination:_modelRender.rayTracingIllumination];
-    
     [_modelRender setAdvancedShaowEnabled:YES];
     [_modelRender setSampleCount:kSampleCount];
     [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
@@ -1236,9 +1204,6 @@ MouseDragMode;
     NSMutableArray* result = [NSMutableArray new];
     
     [result addObject:_modelRender];
-    
-    if (_modelPanel.rayTracingRecordStatus != kRecord_Stop)
-        [result addObject:_rayTracingBlendRenderer];
     
     if (_modelPanel.motionBlurRecordStatus == kRecord_Start)
         [result addObject:_motionBlurRenderer];

@@ -13,6 +13,7 @@
 
 @property (assign, readonly) const NuoVectorFloat3& dimensions;
 @property (assign, nonatomic) BOOL shadowOverlayOnly;
+@property (nonatomic, weak) id<MTLTexture> shadowOverlayMap;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 - (void)makePipelineShadowState;
