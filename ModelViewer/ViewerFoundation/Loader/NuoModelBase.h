@@ -12,8 +12,10 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <sys/types.h>
 
 #include "NuoBounds.h"
+#include "NuoRayTracingUniform.h"
 
 
 
@@ -37,8 +39,12 @@ public:
 
 
 
-std::shared_ptr<NuoModelBase> CreateModel(const NuoModelOption& options, const NuoMaterial& material,
-                                          const std::string& modelItemName);
+typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
+
+
+
+PNuoModelBase CreateModel(const NuoModelOption& options, const NuoMaterial& material,
+                          const std::string& modelItemName);
 
 template <class ItemBase>
 class SmoothItem
@@ -85,6 +91,34 @@ bool ItemTexCoordEequal(const ItemBase& i1, const ItemBase& i2)
 
 
 
+
+/**
+ *  buffers which are, or could be concatenated to, a continous buffer set used for
+ *  global algorithm, e.g. ray tracing, global illuminating
+ *
+ *  the buffer is a per-vertex buffer. it cannot be passed to the MSP structure which
+ *  requires per-primitive buffer. instead, it is for the subsequent custom computer
+ *  shaders for global algorithms
+ */
+
+typedef std::vector<NuoVectorFloat3::_typeTrait::_vectorType> VectorBufferItem;
+
+struct GlobalBuffers
+{
+    VectorBufferItem _vertices;
+    std::vector<NuoRayTracingMaterial> _materials;
+    
+    std::vector<uint32_t> _indices;
+    std::vector<void*> _textureMap;
+    
+    void Union(const GlobalBuffers& other);
+    void TransformPosition(const NuoMatrixFloat44& trans);
+    void TransformVector(const NuoMatrixFloat33& trans);
+};
+
+
+
+
 class NuoModelBase : public std::enable_shared_from_this<NuoModelBase>
 {
 protected:
@@ -113,9 +147,13 @@ public:
     
     virtual void SmoothSurface(float tolerance, bool texDiscontinuityOnly) = 0;
     
-    virtual size_t GetVerticesNumber() = 0;
+    virtual size_t GetVerticesNumber() const = 0;
+    virtual size_t GetIndicesNumber() const = 0;
     virtual NuoVectorFloat4 GetPosition(size_t index) = 0;
+    virtual NuoMaterial GetMaterial(size_t primtiveIndex) const = 0;
     virtual NuoBounds GetBoundingBox();
+    
+    virtual GlobalBuffers GetGlobalBuffers() const = 0;
     
     virtual void* Ptr() = 0;
     virtual size_t Length() = 0;
@@ -154,8 +192,11 @@ public:
     
     virtual void SmoothSurface(float tolerance, bool texDiscontinuityOnly) override;
     
-    virtual size_t GetVerticesNumber() override;
+    virtual size_t GetVerticesNumber() const override;
+    virtual size_t GetIndicesNumber() const override;
     virtual NuoVectorFloat4 GetPosition(size_t index) override;
+    
+    virtual GlobalBuffers GetGlobalBuffers() const override;
     
     virtual void* Ptr() override;
     virtual size_t Length() override;
@@ -210,6 +251,7 @@ public:
     virtual void SetTexturePathBump(const std::string texPath) override;
     virtual std::string GetTexturePathBump() override;
     
+    virtual NuoMaterial GetMaterial(size_t primtiveIndex) const override;
     virtual bool HasTransparent() override;
     virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
     virtual void UpdateBufferWithUnifiedMaterial() override;
@@ -394,9 +436,16 @@ void NuoModelCommon<ItemBase>::AddNormal(size_t sourceIndex, const std::vector<f
 
 
 template <class ItemBase>
-size_t NuoModelCommon<ItemBase>::GetVerticesNumber()
+size_t NuoModelCommon<ItemBase>::GetVerticesNumber() const
 {
     return _buffer.size();
+}
+
+
+template <class ItemBase>
+size_t NuoModelCommon<ItemBase>::GetIndicesNumber() const
+{
+    return _indices.size();
 }
 
 
@@ -405,6 +454,44 @@ template <class ItemBase>
 NuoVectorFloat4 NuoModelCommon<ItemBase>::GetPosition(size_t index)
 {
     return _buffer[index]._position;
+}
+
+
+template <class ItemBase>
+GlobalBuffers NuoModelCommon<ItemBase>::GetGlobalBuffers() const
+{
+    GlobalBuffers result;
+    
+    for (const ItemBase& item : _buffer)
+    {
+        {
+            NuoVectorFloat3::_typeTrait::_vectorType vector;
+            vector.x = item._position.x;
+            vector.y = item._position.y;
+            vector.z = item._position.z;
+            result._vertices.push_back(vector);
+        }
+        
+        {
+            NuoRayTracingMaterial material;
+            
+            material.normal.x = item._normal.x;
+            material.normal.y = item._normal.y;
+            material.normal.z = item._normal.z;
+            
+            // no texture
+            material.texCoord = NuoVectorFloat3(0, 0, 0)._vector;
+            material.diffuseTex = -1;
+            
+            material.illuminate = 2;
+            
+            result._materials.push_back(material);
+        }
+    }
+    
+    result._indices = _indices;
+
+    return result;
 }
 
 

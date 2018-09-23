@@ -107,7 +107,7 @@
 - (NSButton*)createCheckButton:(NSString*)text
 {
     NSButton* button = [NSButton new];
-    [button setButtonType:NSSwitchButton];
+    [button setButtonType:NSButtonTypeSwitch];
     [button setTitle:text];
     [button setTarget:self];
     [self addSubview:button];
@@ -186,8 +186,8 @@
     
     NSString* names = nil;
 #if METAL_2
-    NSControlStateValue smoothOption = NSOffState;
-    NSControlStateValue reverseCullOption = NSOffState;
+    NSControlStateValue smoothOption = NSControlStateValueOff;
+    NSControlStateValue reverseCullOption = NSControlStateValueOff;
 #else
     NSInteger smoothOption = NSOffState;
     NSInteger reverseCullOption = NSOffState;
@@ -201,18 +201,18 @@
         {
             names = [names stringByAppendingString:@", "];
             names = [names stringByAppendingString:mesh.modelName];
-            if (mesh.smoothConservative != (smoothOption == NSOnState))
-                smoothOption = NSMixedState;
-            if (mesh.reverseCommonCullMode != (reverseCullOption == NSOnState))
-                reverseCullOption = NSMixedState;
+            if (mesh.smoothConservative != (smoothOption == NSControlStateValueOn))
+                smoothOption = NSControlStateValueMixed;
+            if (mesh.reverseCommonCullMode != (reverseCullOption == NSControlStateValueOn))
+                reverseCullOption = NSControlStateValueMixed;
             if (mesh.smoothTolerance != smoothTolerance)
                 smoothToleranceStr = @"<multiple values>";
         }
         else
         {
             names = mesh.modelName;
-            smoothOption = mesh.smoothConservative ? NSOnState : NSOffState;
-            reverseCullOption = mesh.reverseCommonCullMode ? NSOnState : NSOffState;
+            smoothOption = mesh.smoothConservative ? NSControlStateValueOn : NSControlStateValueOff;
+            reverseCullOption = mesh.reverseCommonCullMode ? NSControlStateValueOn : NSControlStateValueOff;
             smoothToleranceStr = [[NSString alloc] initWithFormat:@"%.4f", mesh.smoothTolerance];
             smoothTolerance = mesh.smoothTolerance;
         }
@@ -242,19 +242,19 @@
     // no logic to reverse to the original mixed state,
     // enforce all-on
     //
-    if (_modelCullOption.state == NSMixedState)
+    if (_modelCullOption.state == NSControlStateValueMixed)
     {
-        _modelCullOption.state = NSOnState;
+        _modelCullOption.state = NSControlStateValueOn;
         _modelCullOption.allowsMixedState = NO;
     }
-    if (_modelSmoothOption.state == NSMixedState)
+    if (_modelSmoothOption.state == NSControlStateValueMixed)
     {
-        _modelSmoothOption.state = NSOnState;
+        _modelSmoothOption.state = NSControlStateValueOn;
         _modelSmoothOption.allowsMixedState = NO;
     }
     
-    bool smoothConservative = [_modelSmoothOption state] == NSOnState;
-    bool reverseCullMode = [_modelCullOption state] == NSOnState;
+    bool smoothConservative = [_modelSmoothOption state] == NSControlStateValueOn;
+    bool reverseCullMode = [_modelCullOption state] == NSControlStateValueOn;
     
     float smoothTolerance = 0.0;
     NSScanner* scanner = [[NSScanner alloc] initWithString:_smoothToleranceField.stringValue];

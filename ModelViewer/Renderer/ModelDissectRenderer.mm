@@ -1,7 +1,7 @@
 
 #import "ModelDissectRenderer.h"
 
-#import "NuoMesh.h"
+#import "NuoMeshSceneRoot.h"
 #import "NuoTypes.h"
 #import "NuoTextureMesh.h"
 
@@ -103,12 +103,8 @@
     renderPass.label = @"Dissection Render Pass";
     
     [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
-    
-    for (NuoMesh* mesh in _dissectMeshes)
-    {
-        [mesh setCullEnabled:[self.paramsProvider cullEnabled]];
-        [mesh drawMesh:renderPass indexBuffer:inFlight];
-    }
+    [_dissectScene setCullEnabled:[self.paramsProvider cullEnabled]];
+    [_dissectScene drawMesh:renderPass indexBuffer:inFlight];
     
     [_dissectRenderTarget releaseRenderPassEndcoder];
 }

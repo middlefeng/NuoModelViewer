@@ -13,6 +13,7 @@ struct Vertex
 struct ProjectedVertex
 {
     float4 position [[position]];
+    float4 positionNDC;
     float3 eye;
     float3 normal;
     float2 texCoord;
@@ -52,6 +53,7 @@ vertex VertexScreenSpace vertex_screen_space_textured(device Vertex *vertices [[
     result.position =  uniforms.viewMatrix * meshPosition;
     result.normal = float4(meshNormal, 1.0);
     result.diffuseColorFactor = material.diffuseColor;
+    result.texCoord = vertices[vid].texCoord;
     result.opacity = 1.0;
     
     return result;
@@ -93,6 +95,7 @@ vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(
     float4 eyePosition = uniforms.viewMatrixInverse * float4(0.0, 0.0, 0.0, 1.0);
     
     outVert.position = uniforms.viewProjectionMatrix * meshPosition;
+    outVert.positionNDC = outVert.position;
     outVert.eye = eyePosition.xyz - meshPosition.xyz;
     outVert.normal = meshUniforms.normalTransform * vertices[vid].normal.xyz;
     outVert.texCoord = vertices[vid].texCoord;
@@ -106,8 +109,8 @@ vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(
 
 fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
                                         constant NuoLightUniforms &lightUniform [[buffer(0)]],
-                                        depth2d<float> shadowMap0 [[texture(0)]],
-                                        depth2d<float> shadowMap1 [[texture(1)]],
+                                        texture2d<float> shadowMap0 [[texture(0)]],
+                                        texture2d<float> shadowMap1 [[texture(1)]],
                                         texture2d<float> diffuseTexture [[texture(2)]],
                                         sampler depthSamplr [[sampler(0)]],
                                         sampler samplr [[sampler(1)]])
@@ -118,7 +121,7 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
     
     float3 colorForLights = 0.0;
     
-    depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
     for (unsigned i = 0; i < 4; ++i)
@@ -140,8 +143,9 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
         float shadowPercent = 0.0;
         if (i < 2)
         {
+            float4 shadowPositionCurrent = kShadowRayTracing ? vert.positionNDC : shadowPosition[i];
             const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
-            shadowPercent = shadow_coverage_common(shadowPosition[i],
+            shadowPercent = shadow_coverage_common(shadowPositionCurrent, false,
                                                    shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], depthSamplr);
         }

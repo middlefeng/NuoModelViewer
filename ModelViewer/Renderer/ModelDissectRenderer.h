@@ -3,14 +3,14 @@
 #import "NuoMeshSceneRenderPass.h"
 
 
-@class NuoMesh;
+@class NuoMeshSceneRoot;
 @class ModelRenderer;
 
 
 @interface ModelDissectRenderer : NuoMeshSceneRenderPass
 
 
-@property (nonatomic, strong) NSArray<NuoMesh*>* dissectMeshes;
+@property (nonatomic, strong) NuoMeshSceneRoot* dissectScene;
 @property (nonatomic, assign) float splitViewProportion;
 
 

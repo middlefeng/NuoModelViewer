@@ -19,6 +19,7 @@
 // pipeline stages
 //
 #import "ModelViewerRenderer.h"
+#import "ModelRayTracingBlendRenderer.h"
 #import "ModelDissectRenderer.h"
 #import "ModelSelectionRenderer.h"
 #import "NotationRenderer.h"
@@ -37,10 +38,13 @@
 #import "NuoMeshRotation.h"
 #import "NuoMeshAnimation.h"
 #import "NuoTextureBase.h"
+#import "NuoRayAccelerateStructure.h"
 #import "NuoRenderPassAttachment.h"
 
-#include "NuoOffscreenView.h"
+#import "NuoOffscreenView.h"
 
+#import "NuoInspectWindow.h"
+#import "OpenInspectPanel.h"
 
 
 typedef enum
@@ -135,14 +139,21 @@ MouseDragMode;
 - (void)handleDraggingQuality
 {
     NSEvent *event = [[NSApplication sharedApplication] currentEvent];
-    BOOL startingDrag = event.type == NSLeftMouseDown;
-    BOOL endingDrag = event.type == NSLeftMouseUp;
-    BOOL dragging = event.type == NSLeftMouseDragged;
+    BOOL startingDrag = event.type == NSEventTypeLeftMouseDown;
+    BOOL endingDrag = event.type == NSEventTypeLeftMouseUp;
+    BOOL dragging = event.type == NSEventTypeLeftMouseDragged;
     
     if (startingDrag || dragging)
+    {
         [_modelRender setSampleCount:1];
+        [_modelRender setRayTracingRecordStatus:kRecord_Stop];
+    }
+    
     if (endingDrag)
+    {
+        [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
         [_modelRender setSampleCount:kSampleCount];
+    }
 }
 
 
@@ -211,13 +222,15 @@ MouseDragMode;
     
     if (_modelPanel.meshMode == kMeshMode_Normal)
     {
-        [_modelDissectRenderer setDissectMeshes:nil];
+        [_modelDissectRenderer setDissectScene:nil];
     }
     else
     {
-        NSArray<NuoMesh*>* dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
-        [_modelDissectRenderer setDissectMeshes:dissectMeshes];
+        NuoMeshSceneRoot* dissectScene = [_modelRender cloneSceneFor:_modelPanel.meshMode];
+        [_modelDissectRenderer setDissectScene:dissectScene];
     }
+    
+    [_modelRender rebuildRayTracingBuffers];
 }
 
 
@@ -267,17 +280,26 @@ MouseDragMode;
     [_modelRender setFieldOfView:_modelPanel.fieldOfViewRadian];
     [_modelRender setAmbientDensity:_modelPanel.ambientDensity];
     [_modelRender setTransMode:_modelPanel.transformMode];
+    [_modelRender setIlluminationStrength:_modelPanel.illumination];
     [_modelSelectionRenderer setEnabled:_modelPanel.showModelParts];
     [_modelComponentPanels setHidden:!_modelPanel.showModelParts];
+    
+    // mark the ray tracing dirty flag before all substantial work, in order not to
+    // cause duplicated waste work
+    //
+    [_modelRender syncRayTracingBuffers];
     
     if (options & kUpdateOption_RebuildPipeline)
     {
         [self setupPipelineSettings];
     }
         
+    if (!_modelPanel.showFrameRate)
+        [self accumulatingRecord:(_modelPanel.rayTracingRecordStatus == kRecord_Start)];
+        
     for (NuoMeshAnimation* animation in _animations)
         [animation setProgress:_modelPanel.animationProgress];
-        
+    
     if (_modelPanel.meshMode == kMeshMode_Normal)
         [self.window setAcceptsMouseMovedEvents:NO];
     else
@@ -336,18 +358,15 @@ MouseDragMode;
     [_frameRateView setHidden:!show];
     
     [self setMeasureFrameRate:show];
+    [self accumulatingRecord:show];
     
     if (show)
     {
-        if (!_frameRateMeasuringTimer && !_frameRateDisplayTimer)
+        if (!_frameRateDisplayTimer)
         {
             __weak ModelView* weakSelf = self;
             __weak FrameRateView* frameRateView = _frameRateView;
             
-            _frameRateMeasuringTimer = [NSTimer scheduledTimerWithTimeInterval:1 / 60.0 repeats:YES block:^(NSTimer* timer)
-                                         {
-                                             [weakSelf render];
-                                         }];
             _frameRateDisplayTimer = [NSTimer scheduledTimerWithTimeInterval:2.0 repeats:YES block:^(NSTimer* timer)
                                         {
                                             [frameRateView showFrameRate:[weakSelf frameRate]];
@@ -356,11 +375,31 @@ MouseDragMode;
     }
     else
     {
-        [_frameRateMeasuringTimer invalidate];
         [_frameRateDisplayTimer invalidate];
-        
-        _frameRateMeasuringTimer = nil;
         _frameRateDisplayTimer = nil;
+    }
+}
+
+
+
+- (void)accumulatingRecord:(BOOL)record
+{
+    if (record)
+    {
+        if (!_frameRateMeasuringTimer)
+        {
+            __weak ModelView* weakSelf = self;
+            
+            _frameRateMeasuringTimer = [NSTimer scheduledTimerWithTimeInterval:1 / 60.0 repeats:YES block:^(NSTimer* timer)
+                                        {
+                                            [weakSelf render];
+                                        }];
+        }
+    }
+    else
+    {
+        [_frameRateMeasuringTimer invalidate];
+        _frameRateMeasuringTimer = nil;
     }
 }
 
@@ -379,7 +418,7 @@ MouseDragMode;
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
-             if (result == NSFileHandlingPanelOKButton)
+             if (result == NSModalResponseOK)
              {
                  NuoLua* lua = [self lua];
                  lua->LoadFile(openPanel.URL.path.UTF8String);
@@ -492,6 +531,7 @@ MouseDragMode;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
+    
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
     // sync the model renderer with the initial settings in the model panel
@@ -548,13 +588,28 @@ MouseDragMode;
     [_modelRender setRenderTarget:modelRenderTarget];
     lastTarget = modelRenderTarget;
     
+    if (_modelPanel.rayTracingRecordStatus == kRecord_Start &&
+        _modelPanel.motionBlurRecordStatus != kRecord_Start)
+    {
+        // when the panel indicates the recording to be "start",
+        //   1. if the render's flag is "start" as well, the accumulation need to be reset becuase some render property
+        //      other than the recording status is changed
+        //   2. if the render's flag is not "start", it is either "stop" or "pause", none of which need reset the
+        //      accumulation since either it is already stop, or a pasued accumulation should be resumed
+        
+        if (_modelRender.rayTracingRecordStatus == kRecord_Start)
+            _modelRender.rayTracingRecordStatus = kRecord_Stop;
+    }
+    
+    _modelRender.rayTracingRecordStatus = _modelPanel.rayTracingRecordStatus;
+    
     // dissect renderer
     //
     
     if (_modelPanel.meshMode != kMeshMode_Normal)
     {
         [renders addObject:_modelDissectRenderer];
-        _modelDissectRenderer.dissectMeshes = [_modelRender cloneMeshesFor:_modelPanel.meshMode];
+        _modelDissectRenderer.dissectScene = [_modelRender cloneSceneFor:_modelPanel.meshMode];
         
         NuoRenderPassTarget* modelDissectTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
                                                                                     withPixelFormat:MTLPixelFormatBGRA8Unorm
@@ -570,7 +625,7 @@ MouseDragMode;
     // motion blur renderer
     //
     
-    if (_modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Start)
+    if (_modelPanel.motionBlurRecordStatus == kRecord_Start)
     {
         [renders addObject:_motionBlurRenderer];
         
@@ -586,7 +641,7 @@ MouseDragMode;
         
         lastTarget = motionBlurTarget;
     }
-    else if (_modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Stop)
+    else if (_modelPanel.motionBlurRecordStatus == kRecord_Stop)
     {
         [_motionBlurRenderer resetResources];
     }
@@ -705,10 +760,12 @@ MouseDragMode;
     
     // ok to turn off the advanced shadow unless in case of recording blur, or adjusting light.
     //
-    if (!_trackingLighting && _modelPanel.motionBlurRecordStatus == kMotionBlurRecord_Stop)
+    if (!_trackingLighting && _modelPanel.motionBlurRecordStatus == kRecord_Stop)
         [_modelRender setAdvancedShaowEnabled:NO];
     
+    [_modelRender setRayTracingRecordStatus:kRecord_Stop];
     [_modelRender setSampleCount:1];
+    
     _mouseMoved = NO;
 }
 
@@ -717,6 +774,7 @@ MouseDragMode;
 {
     [_modelRender setAdvancedShaowEnabled:YES];
     [_modelRender setSampleCount:kSampleCount];
+    [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
     
     _trackingLighting = NO;
     _trackingSplitView = NO;
@@ -795,6 +853,7 @@ MouseDragMode;
         }
     }
     
+    [_modelRender syncRayTracingBuffers];
     [self render];
 }
 
@@ -806,6 +865,9 @@ MouseDragMode;
     else
         _modelRender.zoomDelta = 10 * event.magnification;
     
+    [_modelRender setRayTracingRecordStatus:kRecord_Stop];
+    [_modelRender syncRayTracingBuffers];
+    [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
     [self render];
 }
 
@@ -833,6 +895,9 @@ MouseDragMode;
         _modelRender.transYDelta = deltaY;
     }
     
+    [_modelRender setRayTracingRecordStatus:kRecord_Stop];
+    [_modelRender syncRayTracingBuffers];
+    [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
     [self render];
 }
 
@@ -840,11 +905,11 @@ MouseDragMode;
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender
 {
     NSPasteboard* paste = [sender draggingPasteboard];
-    NSArray *draggedFilePaths = [paste propertyListForType:NSFilenamesPboardType];
+    NSURL* url = [NSURL URLFromPasteboard:paste];
     
-    if (draggedFilePaths.count > 0)
+    if (url && url.isFileURL)
     {
-        NSString* path = draggedFilePaths[0];
+        NSString* path = url.path;
         if ([path hasSuffix:@".obj"] || [path hasSuffix:@".jpg"] || [path hasSuffix:@".png"])
         {
             NSLog(@"Enterred.");
@@ -884,8 +949,8 @@ MouseDragMode;
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender
 {
     NSPasteboard* paste = [sender draggingPasteboard];
-    NSArray *draggedFilePaths = [paste propertyListForType:NSFilenamesPboardType];
-    NSString* path = draggedFilePaths[0];
+    NSURL* url = [NSURL URLFromPasteboard:paste];
+    NSString* path = url.path;
     
     if ([path hasSuffix:@".jpg"] || [path hasSuffix:@".png"])
     {
@@ -935,6 +1000,9 @@ MouseDragMode;
     }
     
     [super render];
+    
+    NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
+    [inspectMaster inspect];
 }
 
 
@@ -1025,7 +1093,7 @@ MouseDragMode;
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
             {
-                if (result == NSFileHandlingPanelOKButton)
+                if (result == NSModalResponseOK)
                 {
                     NSString* path = openPanel.URL.path;
                     NSString* ext = path.pathExtension;
@@ -1064,7 +1132,7 @@ MouseDragMode;
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
-                 if (result == NSFileHandlingPanelOKButton)
+                 if (result == NSModalResponseOK)
                  {
                      NSString* path = openPanel.URL.path;
                      
@@ -1089,7 +1157,7 @@ MouseDragMode;
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
-                 if (result == NSFileHandlingPanelOKButton)
+                 if (result == NSModalResponseOK)
                  {
                      NSString* path = openPanel.URL.path;
                      
@@ -1116,7 +1184,7 @@ MouseDragMode;
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
-                 if (result == NSFileHandlingPanelOKButton)
+                 if (result == NSModalResponseOK)
                  {
                      NSString* path = savePanel.URL.path;
                      NSString* result = [renderer exportSceneAsString:[self.window contentView].frame.size];
@@ -1128,6 +1196,20 @@ MouseDragMode;
                  }
              }];
         }
+
+
+
+- (NSArray*)exportRenders
+{
+    NSMutableArray* result = [NSMutableArray new];
+    
+    [result addObject:_modelRender];
+    
+    if (_modelPanel.motionBlurRecordStatus == kRecord_Start)
+        [result addObject:_motionBlurRenderer];
+    
+    return result;
+}
 
 
 - (IBAction)exportPNG:(id)sender
@@ -1142,21 +1224,16 @@ MouseDragMode;
     [savePanel setAllowedFileTypes:@[@"png"]];
     
     __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
-    __weak ModelRenderer* modelRenderer = _modelRender;
-    __weak MotionBlurRenderer* motionBlurRenderer = _motionBlurRenderer;
-    __weak ModelOperationPanel* panel = _modelPanel;
+    
+    CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
+                               _modelRender.renderTarget.drawableSize.width);
+    
+    NSArray* renders = [self exportRenders];
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
-             if (result == NSFileHandlingPanelOKButton)
+             if (result == NSModalResponseOK)
              {
-                 CGFloat previewSize = fmax(modelRenderer.renderTarget.drawableSize.height,
-                                            modelRenderer.renderTarget.drawableSize.width);
-                 
-                 NSArray* renders = (panel.motionBlurRecordStatus == kMotionBlurRecord_Start) ?
-                                        @[modelRenderer, motionBlurRenderer] :
-                                        @[modelRenderer];
-                 
                  NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:commandQueue.device withTarget:previewSize
                                                                               withClearColor:[NSColor colorWithRed:0.0
                                                                                                              green:0.0
@@ -1189,20 +1266,16 @@ MouseDragMode;
     
     __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
     __weak ModelRenderer* modelRenderer = _modelRender;
-    __weak MotionBlurRenderer* motionBlurRenderer = _motionBlurRenderer;
-    __weak ModelOperationPanel* panel = _modelPanel;
+    
+    CGFloat previewSize = fmax(_modelRender.renderTarget.drawableSize.height,
+                               _modelRender.renderTarget.drawableSize.width);
+    
+    NSArray* renders = [self exportRenders];
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
-             if (result == NSFileHandlingPanelOKButton)
+             if (result == NSModalResponseOK)
              {
-                 CGFloat previewSize = fmax(modelRenderer.renderTarget.drawableSize.height,
-                                            modelRenderer.renderTarget.drawableSize.width);
-                 
-                 NSArray* renders = (panel.motionBlurRecordStatus == kMotionBlurRecord_Start) ?
-                                           @[modelRenderer, motionBlurRenderer] :
-                                           @[modelRenderer];
-                 
                  NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:commandQueue.device withTarget:previewSize
                                                                          withClearColor:[NSColor colorWithRed:0.0
                                                                                                         green:0.0
@@ -1287,6 +1360,40 @@ MouseDragMode;
                  [menu setTarget:self];
                  [menu setAction:@selector(removeObject:)];
              }
+         }
+     }];
+}
+
+
+- (IBAction)inspectWindow:(id)sender
+{
+    OpenInspectPanel* panel = [OpenInspectPanel new];
+    [panel setRootWindow:self.window];
+    
+    __weak OpenInspectPanel* panelWeak = panel;
+    
+    [self.window beginSheet:panel completionHandler:^(NSModalResponse returnCode)
+     {
+         if (returnCode == NSModalResponseOK)
+         {
+             NSString* selected = panelWeak.inspectSelected;
+             NuoInspectWindow* window = [[NuoInspectWindow alloc] initWithDevice:self.metalLayer.device
+                                                                        withName:selected];
+             CGRect frame = self.window.frame;
+             frame.origin.x += 50;
+             frame.origin.y += 50;
+             frame.size.width /= 2.0;
+             frame.size.height /= 2.0;
+             
+             [window setFrame:frame display:YES];
+             [window setContentSize:frame.size];
+             [window display];
+             [window makeKeyAndOrderFront:nil];
+             
+             [self render];
+             
+             NuoInspectableMaster* master = [NuoInspectableMaster sharedMaster];
+             [master inspect];
          }
      }];
 }

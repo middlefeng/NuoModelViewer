@@ -42,6 +42,10 @@
 
 @property (nonatomic, strong) NSButton* motionBlurRecord;
 @property (nonatomic, strong) NSButton* motionBlurPause;
+@property (nonatomic, strong) NSSlider* illuminationSlider;
+
+@property (nonatomic, strong) NSButton* rayTracingRecord;
+@property (nonatomic, strong) NSButton* rayTracingPause;
 
 @property (nonatomic, strong) NSPopUpButton* deviceList;
 
@@ -81,10 +85,48 @@
         _showLightSettings = NO;
         _ambientDensity = 0.28;
         
-        _motionBlurRecordStatus = kMotionBlurRecord_Stop;
+        _motionBlurRecordStatus = kRecord_Stop;
+        _rayTracingRecordStatus = kRecord_Stop;
+        _illumination = 3.0;
     }
     
     return self;
+}
+
+
+- (NSButton*)createSwitchButtonWithLabel:(NSString*)label
+                               withFrame:(CGRect)frame
+                            withSelector:(SEL)selector
+{
+    NSButton* button = [NSButton new];
+    [button setButtonType:NSButtonTypeSwitch];
+    [button setTitle:label];
+    [button setFrame:frame];
+    [button setTarget:self];
+    [button setAction:selector];
+    
+    return button;
+}
+
+
+- (NSButton*)createToggleButtonWithImageEnabled:(NSString*)imageName
+                             withAlternateImage:(NSString*)imageNameAlternate
+                                      withFrame:(CGRect)frame
+                                   withSelector:(SEL)selector
+{
+    NSButton* button = [[NSButton alloc] init];
+    [button setTitle:@""];
+    [button setFrame:frame];
+    [button setBezelStyle:NSBezelStyleRounded];
+    [button setButtonType:NSButtonTypeToggle];
+    [button setControlSize:NSControlSizeSmall];
+    [button setTarget:self];
+    [button setAction:selector];
+    [button setImage:[NSImage imageNamed:imageName]];
+    [button setAlternateImage:[NSImage imageNamed:imageNameAlternate]];
+    [button setState:NSControlStateValueOff];
+    
+    return button;
 }
 
 
@@ -107,7 +149,7 @@
     
     CGRect docViewFrame = CGRectMake(0, 0, 0, 0);
     docViewFrame.size = rootViewFrame.size;
-    docViewFrame.size.height += 265.0;
+    docViewFrame.size.height += 305.0;
     
     rootScroll.frame = rootViewFrame;
     scrollDocumentView.frame = docViewFrame;
@@ -117,45 +159,37 @@
     
     float rowCoord = 0.0;
     
-    NSButton* checkModelParts = [NSButton new];
-    [checkModelParts setButtonType:NSSwitchButton];
-    [checkModelParts setTitle:@"Show Model Parts"];
-    [checkModelParts setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
-    [checkModelParts setTarget:self];
-    [checkModelParts setAction:@selector(showModelPartsChanged:)];
+    NSButton* checkModelParts = [self createSwitchButtonWithLabel:@"Show Model Parts"
+                                                        withFrame:[self buttonLoactionAtRow:rowCoord
+                                                                                withLeading:0 inView:scrollDocumentView]
+                                                     withSelector:@selector(showModelPartsChanged:)];
     [scrollDocumentView addSubview:checkModelParts];
     _checkModelParts = checkModelParts;
     
     rowCoord += 1.0;
     
-    NSButton* checkFrameRate = [NSButton new];
-    [checkFrameRate setButtonType:NSSwitchButton];
-    [checkFrameRate setTitle:@"Show Frame Rate"];
-    [checkFrameRate setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
-    [checkFrameRate setTarget:self];
-    [checkFrameRate setAction:@selector(showModelFrameRateChanged:)];
+    NSButton* checkFrameRate = [self createSwitchButtonWithLabel:@"Show Frame Rate"
+                                                       withFrame:[self buttonLoactionAtRow:rowCoord
+                                                                               withLeading:0 inView:scrollDocumentView]
+                                                    withSelector:@selector(showModelFrameRateChanged:)];
     [scrollDocumentView addSubview:checkFrameRate];
     _checkFrameRate = checkFrameRate;
     
     rowCoord += 1.2;
     
-    NSButton* checkMaterial = [NSButton new];
-    [checkMaterial setButtonType:NSSwitchButton];
-    [checkMaterial setTitle:@"Basic Material"];
-    [checkMaterial setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
-    [checkMaterial setTarget:self];
-    [checkMaterial setAction:@selector(basicMaterializedChanged:)];
+    NSButton* checkMaterial = [self createSwitchButtonWithLabel:@"Basic Material"
+                                                      withFrame:[self buttonLoactionAtRow:rowCoord
+                                                                              withLeading:0 inView:scrollDocumentView]
+                                                   withSelector:@selector(basicMaterializedChanged:)];
     [scrollDocumentView addSubview:checkMaterial];
     _checkMaterial = checkMaterial;
     
     rowCoord += 1.0;
     
-    NSButton* checkTexture = [NSButton new];
-    [checkTexture setButtonType:NSSwitchButton];
-    [checkTexture setTitle:@"Model Textures"];
-    [checkTexture setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
-    [checkTexture setTarget:self];
-    [checkTexture setAction:@selector(texturedChanged:)];
+    NSButton* checkTexture = [self createSwitchButtonWithLabel:@"Model Textures"
+                                                     withFrame:[self buttonLoactionAtRow:rowCoord
+                                                                             withLeading:0 inView:scrollDocumentView]
+                                                  withSelector:@selector(texturedChanged:)];
     [scrollDocumentView addSubview:checkTexture];
     _checkTexture = checkTexture;
     
@@ -170,24 +204,19 @@
     
     rowCoord += 1.0;
     
-    NSButton* cull = [NSButton new];
-    [cull setButtonType:NSSwitchButton];
-    [cull setTitle:@"Enable Culling"];
-    [cull setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0
-                                      inView:scrollDocumentView]];
-    [cull setTarget:self];
-    [cull setAction:@selector(cullChanged:)];
+    NSButton* cull = [self createSwitchButtonWithLabel:@"Enable Culling"
+                                             withFrame:[self buttonLoactionAtRow:rowCoord
+                                                                     withLeading:0 inView:scrollDocumentView]
+                                          withSelector:@selector(cullChanged:)];
     [scrollDocumentView addSubview:cull];
     _cull = cull;
     
     rowCoord += 1;
     
-    NSButton* combine = [NSButton new];
-    [combine setButtonType:NSSwitchButton];
-    [combine setTitle:@"Combine Shapes by Material"];
-    [combine setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
-    [combine setTarget:self];
-    [combine setAction:@selector(combineChanged:)];
+    NSButton* combine = [self createSwitchButtonWithLabel:@"Combine Shapes by Material"
+                                                withFrame:[self buttonLoactionAtRow:rowCoord
+                                                                        withLeading:0 inView:scrollDocumentView]
+                                             withSelector:@selector(combineChanged:)];
     [scrollDocumentView addSubview:combine];
     _combine = combine;
     
@@ -245,23 +274,19 @@
     
     rowCoord += 1.2;
     
-    NSButton* lightSettings = [NSButton new];
-    [lightSettings setButtonType:NSSwitchButton];
-    [lightSettings setTitle:@"Light Settings"];
-    [lightSettings setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
-    [lightSettings setTarget:self];
-    [lightSettings setAction:@selector(lightSettingsChanged:)];
+    NSButton* lightSettings = [self createSwitchButtonWithLabel:@"Light Settings"
+                                                      withFrame:[self buttonLoactionAtRow:rowCoord
+                                                                              withLeading:0 inView:scrollDocumentView]
+                                                   withSelector:@selector(lightSettingsChanged:)];
     [scrollDocumentView addSubview:lightSettings];
     _lightSettings = lightSettings;
     
     rowCoord += 1.0;
     
-    NSButton* brdfMode = [NSButton new];
-    [brdfMode setButtonType:NSSwitchButton];
-    [brdfMode setTitle:@"Physically Based Reflection"];
-    [brdfMode setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
-    [brdfMode setTarget:self];
-    [brdfMode setAction:@selector(brdfModeChanged:)];
+    NSButton* brdfMode = [self createSwitchButtonWithLabel:@"Physically Based Reflection"
+                                                 withFrame:[self buttonLoactionAtRow:rowCoord
+                                                                         withLeading:0 inView:scrollDocumentView]
+                                              withSelector:@selector(brdfModeChanged:)];
     [scrollDocumentView addSubview:brdfMode];
     _checkBrdfMode = brdfMode;
     
@@ -363,7 +388,7 @@
     NSButton* animationLoad = [[NSButton alloc] init];
     [animationLoad setTitle:@"Load ..."];
     [animationLoad setFrame:animationLoadRect];
-    [animationLoad setBezelStyle:NSRoundedBezelStyle];
+    [animationLoad setBezelStyle:NSBezelStyleRounded];
     [animationLoad setControlSize:NSControlSizeSmall];
     [animationLoad setTarget:self];
     [animationLoad setAction:@selector(loadAnimation:)];
@@ -427,40 +452,86 @@
     recordRect.size.width = 40;
     recordRect.size.height = 35;
     
-    NSButton* recordButton = [[NSButton alloc] init];
-    [recordButton setTitle:@""];
-    [recordButton setFrame:recordRect];
-    [recordButton setBezelStyle:NSRoundedBezelStyle];
-    [recordButton setButtonType:NSToggleButton];
-    [recordButton setControlSize:NSControlSizeSmall];
-    [recordButton setTarget:self];
-    [recordButton setAction:@selector(motionBlurUpdate:)];
-    [recordButton setImage:[NSImage imageNamed:@"MotionBlurRecord"]];
-    [recordButton setAlternateImage:[NSImage imageNamed:@"MotionBlurStop"]];
-    [recordButton setState:NSOffState];
+    NSButton* recordButton = [self createToggleButtonWithImageEnabled:@"MotionBlurRecord"
+                                                   withAlternateImage:@"MotionBlurStop"
+                                                            withFrame:recordRect
+                                                         withSelector:@selector(motionBlurUpdate:)];
     [recordButton setAllowsMixedState:NO];
     [scrollDocumentView addSubview:recordButton];
     _motionBlurRecord = recordButton;
     
     recordRect.origin.x += 35;
     
-    NSButton* pauseButton = [[NSButton alloc] init];
-    [pauseButton setTitle:@""];
-    [pauseButton setFrame:recordRect];
-    [pauseButton setBezelStyle:NSRoundedBezelStyle];
-    [pauseButton setButtonType:NSToggleButton];
-    [pauseButton setControlSize:NSControlSizeSmall];
-    [pauseButton setTarget:self];
-    [pauseButton setAction:@selector(motionBlurUpdate:)];
-    [pauseButton setImage:[NSImage imageNamed:@"MotionBlurPause"]];
-    [pauseButton setAlternateImage:[NSImage imageNamed:@"MotionBlurPaused"]];
-    [recordButton setState:NSOffState];
+    NSButton* pauseButton = [self createToggleButtonWithImageEnabled:@"MotionBlurPause"
+                                                  withAlternateImage:@"MotionBlurPaused"
+                                                           withFrame:recordRect
+                                                        withSelector:@selector(motionBlurUpdate:)];
     [scrollDocumentView addSubview:pauseButton];
     _motionBlurPause = pauseButton;
     
+    // ray tracing integration
+    
+    rowCoord += 1.0;
+    
+    NSTextField* labelRayTracingLabel = [NSTextField new];
+    [labelRayTracingLabel setEditable:NO];
+    [labelRayTracingLabel setSelectable:NO];
+    [labelRayTracingLabel setBordered:NO];
+    [labelRayTracingLabel setStringValue:@"Ray Tracing:"];
+    [labelRayTracingLabel setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
+    [scrollDocumentView addSubview:labelRayTracingLabel];
+    
+    NSRect recordRectRayTracing = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    recordRectRayTracing.origin.x += 120;
+    recordRectRayTracing.origin.y -=10;
+    recordRectRayTracing.size.width = 40;
+    recordRectRayTracing.size.height = 35;
+    
+    NSButton* recordButtonRayTracing = [self createToggleButtonWithImageEnabled:@"MotionBlurRecord"
+                                                             withAlternateImage:@"MotionBlurStop"
+                                                                      withFrame:recordRectRayTracing
+                                                                   withSelector:@selector(rayTracingUpdate:)];
+    [recordButtonRayTracing setAllowsMixedState:NO];
+    [scrollDocumentView addSubview:recordButtonRayTracing];
+    _rayTracingRecord = recordButtonRayTracing;
+    
+    recordRectRayTracing.origin.x += 35;
+    
+    NSButton* pauseButtonRayTracing = [self createToggleButtonWithImageEnabled:@"MotionBlurPause"
+                                                            withAlternateImage:@"MotionBlurPaused"
+                                                                     withFrame:recordRectRayTracing
+                                                                  withSelector:@selector(rayTracingUpdate:)];
+    [scrollDocumentView addSubview:pauseButtonRayTracing];
+    _rayTracingPause = pauseButtonRayTracing;
+    
+    // ray tracing illumination stregth
+    
+    rowCoord += 1.0;
+    
+    NSTextField* illumStregthLabel = [NSTextField new];
+    [illumStregthLabel setEditable:NO];
+    [illumStregthLabel setSelectable:NO];
+    [illumStregthLabel setBordered:NO];
+    [illumStregthLabel setStringValue:@"Illumination:"];
+    [illumStregthLabel setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
+    [scrollDocumentView addSubview:illumStregthLabel];
+    
+    NSSlider* illumination = [NSSlider new];
+    CGRect frame = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    frame.origin.x += 80;
+    frame.size.width -= 80;
+    [illumination setFrame:frame];
+    [illumination setMaxValue:10.0];
+    [illumination setMinValue:0.0];
+    [illumination setFloatValue:_illumination];
+    [illumination setTarget:self];
+    [illumination setAction:@selector(illuminationChanged:)];
+    [scrollDocumentView addSubview:illumination];
+    _illuminationSlider = illumination;
+    
     // device select
     
-    rowCoord += 1.8;
+    rowCoord += 1.5;
     
     NSTextField* labelDevices = [NSTextField new];
     NSRect labelDevicesRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
@@ -513,7 +584,7 @@
 
 - (void)showModelPartsChanged:(id)sender
 {
-    _showModelParts = [_checkModelParts state] == NSOnState;
+    _showModelParts = [_checkModelParts state] == NSControlStateValueOn;
     [self updateControls];
     
     [_optionUpdateDelegate modelOptionUpdate:0];
@@ -523,7 +594,7 @@
 
 - (void)showModelFrameRateChanged:(id)sender
 {
-    _showFrameRate = [_checkFrameRate state] == NSOnState;
+    _showFrameRate = [_checkFrameRate state] == NSControlStateValueOn;
     
     [_optionUpdateDelegate modelOptionUpdate:0];
 }
@@ -532,7 +603,7 @@
 
 - (void)basicMaterializedChanged:(id)sender
 {
-    _meshOptions.basicMaterialized = [_checkMaterial state] == NSOnState;
+    _meshOptions.basicMaterialized = [_checkMaterial state] == NSControlStateValueOn;
     [self updateControls];
     
     [_optionUpdateDelegate modelUpdate:_meshOptions];
@@ -541,7 +612,7 @@
 
 - (void)texturedChanged:(id)sender
 {
-    _meshOptions.textured = [_checkTexture state] == NSOnState;
+    _meshOptions.textured = [_checkTexture state] == NSControlStateValueOn;
     [self updateControls];
     
     [_optionUpdateDelegate modelUpdate:_meshOptions];
@@ -550,7 +621,7 @@
 
 - (void)cullChanged:(id)sender
 {
-    _cullEnabled = [_cull state] == NSOnState;
+    _cullEnabled = [_cull state] == NSControlStateValueOn;
     
     [_optionUpdateDelegate modelOptionUpdate:0];
 }
@@ -558,7 +629,7 @@
 
 - (void)combineChanged:(id)sender
 {
-    _meshOptions.combineShapes = [_combine state] == NSOnState;
+    _meshOptions.combineShapes = [_combine state] == NSControlStateValueOn;
     
     [_optionUpdateDelegate modelUpdate:_meshOptions];
 }
@@ -582,14 +653,14 @@
 
 - (void)lightSettingsChanged:(id)sender
 {
-    _showLightSettings = [_lightSettings state] == NSOnState;
+    _showLightSettings = [_lightSettings state] == NSControlStateValueOn;
     
     [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
 }
 
 - (void)brdfModeChanged:(id)sender
 {
-    _meshOptions.physicallyReflection = [_checkBrdfMode state] == NSOnState;
+    _meshOptions.physicallyReflection = [_checkBrdfMode state] == NSControlStateValueOn;
     
     [_optionUpdateDelegate modelUpdate:_meshOptions];
 }
@@ -653,7 +724,7 @@
 {
     _animationProgress = _animationSlider.floatValue;
     
-    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
+    [_optionUpdateDelegate modelOptionUpdate:0];
 }
 
 
@@ -661,14 +732,38 @@
 {
     [self updateControls];
     
-    if (_motionBlurRecord.state == NSOnState && _motionBlurPause.state == NSOffState)
-        _motionBlurRecordStatus = kMotionBlurRecord_Start;
-    else if (_motionBlurRecord.state == NSOnState)
-        _motionBlurRecordStatus = kMotionBlurRecord_Pause;
+    if (_motionBlurRecord.state == NSControlStateValueOn && _motionBlurPause.state == NSControlStateValueOff)
+        _motionBlurRecordStatus = kRecord_Start;
+    else if (_motionBlurRecord.state == NSControlStateValueOn)
+        _motionBlurRecordStatus = kRecord_Pause;
     else
-        _motionBlurRecordStatus = kMotionBlurRecord_Stop;
+        _motionBlurRecordStatus = kRecord_Stop;
     
     [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
+}
+
+
+
+- (void)rayTracingUpdate:(id)sender
+{
+    [self updateControls];
+    
+    if (_rayTracingRecord.state == NSControlStateValueOn && _rayTracingPause.state == NSControlStateValueOff)
+        _rayTracingRecordStatus = kRecord_Start;
+    else if (_rayTracingRecord.state == NSControlStateValueOn)
+        _rayTracingRecordStatus = kRecord_Pause;
+    else
+        _rayTracingRecordStatus = kRecord_Stop;
+    
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
+}
+
+
+- (void)illuminationChanged:(id)sender
+{
+    _illumination = _illuminationSlider.floatValue;
+    
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
                                                  
 
@@ -677,21 +772,31 @@
 {
     [_checkTexturePopover setEnabled:[_checkTexture state]];
     
-    [_checkMaterial setState:_meshOptions.basicMaterialized ? NSOnState : NSOffState];
-    [_checkTexture setState:_meshOptions.textured ? NSOnState : NSOffState];
-    [_cull setState:_cullEnabled ? NSOnState : NSOffState];
-    [_combine setState:_meshOptions.combineShapes ? NSOnState : NSOffState];
+    [_checkMaterial setState:_meshOptions.basicMaterialized ? NSControlStateValueOn : NSControlStateValueOff];
+    [_checkTexture setState:_meshOptions.textured ? NSControlStateValueOn : NSControlStateValueOff];
+    [_cull setState:_cullEnabled ? NSControlStateValueOn : NSControlStateValueOff];
+    [_combine setState:_meshOptions.combineShapes ? NSControlStateValueOn : NSControlStateValueOff];
     [_fieldOfView setFloatValue:_fieldOfViewRadian];
     [_ambientDensitySlider setFloatValue:_ambientDensity];
     
-    if ([_motionBlurRecord state] == NSOnState)
+    if ([_motionBlurRecord state] == NSControlStateValueOn)
     {
         [_motionBlurPause setEnabled:YES];
     }
     else
     {
         [_motionBlurPause setEnabled:NO];
-        [_motionBlurPause setState:NSOffState];
+        [_motionBlurPause setState:NSControlStateValueOff];
+    }
+    
+    if ([_rayTracingRecord state] == NSControlStateValueOn)
+    {
+        [_rayTracingPause setEnabled:YES];
+    }
+    else
+    {
+        [_rayTracingPause setEnabled:NO];
+        [_rayTracingPause setState:NSControlStateValueOff];
     }
 }
 

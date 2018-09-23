@@ -15,7 +15,7 @@
 
 
 @class NuoLightSource;
-@class NuoMesh;
+@class NuoMeshSceneRoot;
 @class NuoShadowMapTarget;
 
 
@@ -29,7 +29,7 @@
 /**
  *  Scene model. Be weak reference because the owner should be the model render.
  */
-@property (nonatomic, weak) NSArray<NuoMesh*>* meshes;
+@property (nonatomic, weak) NuoMeshSceneRoot* sceneRoot;
 
 /**
  *  Shadow map, the depth texture from the view point of the light source.

@@ -45,6 +45,8 @@ constant Light light = {
 
 struct VertexFragmentCharacters
 {
+    metal::float4 projectedNDC;
+    
     metal::float3 eye;
     
     metal::float3 diffuseColor;
@@ -97,6 +99,7 @@ struct FragementScreenSpace
 struct PositionSimple
 {
     metal::float4 position [[position]];
+    metal::float4 positionNDC;
 };
 
 
@@ -117,7 +120,7 @@ constant bool kShadowOverlay                    [[ function_constant(3) ]];
 
 constant bool kShadowPCSS                       [[ function_constant(4) ]];
 constant bool kShadowPCF                        [[ function_constant(5) ]];
-
+constant bool kShadowRayTracing                 [[ function_constant(7) ]];
 constant int  kMeshMode                         [[ function_constant(6) ]];
 
 constant bool kDepthPrerenderred = kMeshMode == kMeshMode_Selection;
@@ -128,12 +131,20 @@ metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert
                                                    metal::float3 normal,
                                                    constant NuoLightUniforms &lighting,
                                                    metal::float4 diffuseTexel,
-                                                   metal::depth2d<float> shadowMap[2],
+                                                   metal::texture2d<float> shadowMap[2],
                                                    metal::sampler samplr);
+
+float4 fragment_light_color_opacity_common(VertexFragmentCharacters vert,
+                                           metal::float3 normal,
+                                           constant NuoLightUniforms &lightingUniform,
+                                           metal::float3 diffuseColor,
+                                           float opacity,
+                                           metal::texture2d<float> shadowMap[2],
+                                           metal::sampler samplr);
 
 metal::float4 diffuse_lighted_selection(metal::float4 vertPositionNDC,
                                         metal::float3 normal,
-                                        metal::depth2d<float> depth,
+                                        metal::texture2d<float> depth,
                                         metal::sampler depthSamplr);
 
 
@@ -145,11 +156,12 @@ metal::float3 specular_common(metal::float3 materialSpecularColor, float materia
                               metal::float3 normal, metal::float3 halfway, float dotNL);
 
 
-float shadow_coverage_common(metal::float4 shadowCastModelPostion,
+float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
                              NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
-                             metal::depth2d<float> shadowMap, metal::sampler samplr);
+                             metal::texture2d<float> shadowMap, metal::sampler samplr);
 
 metal::float2 rand(metal::float2 co);
+metal::float2 ndc_to_texture_coord(metal::float4 ndc);
 
 
 
@@ -165,6 +177,7 @@ PositionSimple vertex_simple(device T *vertices [[buffer(0)]],
     PositionSimple outSimple;
     metal::float4 position = meshUniform.transform * vertices[vid].position;
     outSimple.position = uniforms.viewProjectionMatrix * position;
+    outSimple.positionNDC = outSimple.position;
     return outSimple;
 }
 

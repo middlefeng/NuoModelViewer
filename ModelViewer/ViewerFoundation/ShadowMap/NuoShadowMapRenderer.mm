@@ -11,7 +11,7 @@
 #import "NuoLightSource.h"
 #import "NuoShadowMapTarget.h"
 
-#import "NuoMesh.h"
+#import "NuoMeshSceneRoot.h"
 #import "NuoMeshBounds.h"
 
 #include "NuoUniforms.h"
@@ -80,9 +80,9 @@
     NuoVectorFloat4 lightAsEye(0, 0, kCameraDistance, 1);
     
     NuoLightSource* lightSource = _lightSource;
-    const NuoMatrixFloat44 lightAsEyeMatrix = NuoMatrixRotation(lightSource.lightingRotationX,
-                                                                lightSource.lightingRotationY);
-    lightAsEye = lightAsEyeMatrix * lightAsEye;
+    const NuoMatrixFloat44 lightDirectionMatrix = NuoMatrixRotation(lightSource.lightingRotationX,
+                                                                    lightSource.lightingRotationY);
+    lightAsEye = lightDirectionMatrix * lightAsEye;
     lightAsEye = lightAsEye + center;
     lightAsEye.w(1.0);
     
@@ -94,12 +94,8 @@
     float aspectRatio = drawableSize.width / drawableSize.height;
     
     NuoBounds bounds;
-    if (_meshes && _meshes.count > 0)
-    {
-        bounds = [_meshes[0] worldBounds:viewMatrix].boundingBox;
-        for (NSUInteger i = 1; i < _meshes.count; ++i)
-            bounds = bounds.Union([_meshes[i] worldBounds:viewMatrix].boundingBox);
-    }
+    if (_sceneRoot && _sceneRoot.meshes.count > 0)
+        bounds = [_sceneRoot worldBounds:viewMatrix].boundingBox;
     
     float viewPortHeight = bounds._span.y() / 2.0f;
     float viewPortWidth = bounds._span.x() / 2.0f;
@@ -143,11 +139,7 @@
     renderPass.label = @"Shadow Map";
 
     [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
-    for (NuoMesh* mesh in _meshes)
-    {
-        if (mesh.enabled)
-            [mesh drawShadow:renderPass indexBuffer:inFlight];
-    }
+    [_sceneRoot drawShadow:renderPass indexBuffer:inFlight];
     
     [self releaseDefaultEncoder];
 }

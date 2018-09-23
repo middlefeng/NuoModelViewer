@@ -6,13 +6,14 @@
 #import "NuoMeshSceneRenderPass.h"
 
 
-@class NuoMesh;
 @class NuoMeshOption;
 @class NuoMeshCompound;
+@class NuoMeshSceneRoot;
 @class NuoBoardMesh;
 @class NuoCubeMesh;
 @class NuoBackdropMesh;
 @class NuoLightSource;
+@class NuoRayAccelerateStructure;
 
 /**
  TERMS:
@@ -49,6 +50,16 @@ typedef enum
 }
 TransformMode;
 
+
+typedef enum
+{
+    kRecord_Start,
+    kRecord_Stop,
+    kRecord_Pause
+}
+RecordStatus;
+
+
 class NuoLua;
 
 
@@ -78,8 +89,14 @@ class NuoLua;
 @property (nonatomic, assign) float transYDelta;
 
 
+// support to hybrid ray tracing
+//
+@property (nonatomic, assign) RecordStatus rayTracingRecordStatus;
+
+
 @property (nonatomic, assign) BOOL cullEnabled;
 @property (nonatomic, assign) float fieldOfView;
+@property (nonatomic, assign) float illuminationStrength;
 @property (nonatomic, assign) float ambientDensity;
 
 @property (nonatomic, strong, readonly) NuoMeshOption* modelOptions;
@@ -108,7 +125,9 @@ class NuoLua;
 
 - (void)setResolveDepth:(BOOL)resolveDepth;
 
-- (NSArray<NuoMesh*>*)cloneMeshesFor:(NuoMeshModeShaderParameter)mode;
+- (NuoMeshSceneRoot*)cloneSceneFor:(NuoMeshModeShaderParameter)mode;
+- (void)rebuildRayTracingBuffers;
+- (void)syncRayTracingBuffers;
 
 
 @end

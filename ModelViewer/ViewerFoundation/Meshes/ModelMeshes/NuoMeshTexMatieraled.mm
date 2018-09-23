@@ -184,7 +184,7 @@
     vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat3;      // specular
     vertexDescriptor.attributes[attrIndex].offset = offset; offset += 16;
     vertexDescriptor.attributes[attrIndex].bufferIndex = 0; ++attrIndex;
-    vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat2;      // shinessDisolve
+    vertexDescriptor.attributes[attrIndex].format = MTLVertexFormatFloat3;      // shiness / disolve / illum mode
     vertexDescriptor.attributes[attrIndex].offset = offset; offset += 16;
     vertexDescriptor.attributes[attrIndex].bufferIndex = 0; ++attrIndex;
     
@@ -363,7 +363,7 @@
     vertexDescriptor.attributes[4].format = MTLVertexFormatFloat3;
     vertexDescriptor.attributes[4].offset = 64;
     vertexDescriptor.attributes[4].bufferIndex = 0;
-    vertexDescriptor.attributes[5].format = MTLVertexFormatFloat2;
+    vertexDescriptor.attributes[5].format = MTLVertexFormatFloat3;  // shiness / disolve / illum mode
     vertexDescriptor.attributes[5].offset = 80;
     vertexDescriptor.attributes[5].bufferIndex = 0;
     

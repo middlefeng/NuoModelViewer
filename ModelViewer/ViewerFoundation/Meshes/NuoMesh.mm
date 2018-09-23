@@ -73,6 +73,7 @@
         
         _shadowOptionPCSS = YES;
         _shadowOptionPCF = YES;
+        _shadowOptionRayTracing = NO;
         
         _rotation = NuoMeshRotation();
         
@@ -132,6 +133,12 @@
 }
 
 
+- (NuoMatrixFloat44)meshTransform
+{
+    return _rotation.RotationMatrix() * _transformTranslate * _transformPoise;
+}
+
+
 - (void)shareResourcesFrom:(NuoMesh*)mesh
 {
     _commandQueue = mesh.commandQueue;
@@ -154,8 +161,7 @@
     const NuoBounds& boundsLocal = _boundsLocal.boundingBox;
     const NuoSphere& sphereLocal = _boundsLocal.boundingSphere;
     
-    const NuoMatrixFloat44 transformObject = _transformTranslate * _transformPoise;
-    const NuoMatrixFloat44 transformWorld = transform * transformObject;
+    const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
     NuoMeshBounds worldMeshBounds =
     {
@@ -258,9 +264,9 @@
 
 
 
-- (void)setRawModel:(void*)model
+- (void)setRawModel:(const PNuoModelBase&)model
 {
-    _rawModel = ((NuoModelBase*)model)->shared_from_this();
+    _rawModel = model;
 }
 
 
@@ -273,6 +279,18 @@
     }
     
     return nil;
+}
+
+
+- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
+{
+    const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
+    
+    GlobalBuffers buffer = _rawModel->GetGlobalBuffers();
+    buffer.TransformPosition(transformWorld);
+    buffer.TransformVector(NuoMatrixExtractLinear(transformWorld));
+    
+    buffers->Union(buffer);
 }
 
 
@@ -309,10 +327,12 @@
 {
     BOOL pcss = self.shadowOptionPCSS;
     BOOL pcf = self.shadowOptionPCF;
+    BOOL rayTracing = self.shadowOptionRayTracing;
     NuoMeshModeShaderParameter meshMode = self.meshMode;
     
     [constants setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
     [constants setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
+    [constants setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
     [constants setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
 }
 
@@ -331,11 +351,13 @@
     
     BOOL pcss = self.shadowOptionPCSS;
     BOOL pcf = self.shadowOptionPCF;
+    BOOL rayTracing = self.shadowOptionRayTracing;
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
     [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
     [funcConstant setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
@@ -419,9 +441,9 @@
     
     MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
     shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShadowShader];
-    shadowPipelineDescriptor.fragmentFunction = nil;
+    shadowPipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"depth_simple"];
     shadowPipelineDescriptor.sampleCount = 1 /*kSampleCount*/;
-    shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatInvalid;
+    shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatR32Float;
     shadowPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     NSError *error = nil;
@@ -456,12 +478,37 @@
 }
 
 
+- (std::vector<uint32_t>)maskBuffer
+{
+    NuoRayMask mask = kNuoRayMask_Disabled;
+    if (_enabled)
+    {
+        mask = self.hasTransparency ? kNuoRayMask_Translucent :
+                                      kNuoRayMask_Opaue;
+    }
+    
+    const size_t indicesNumber = _rawModel->GetIndicesNumber();
+    const size_t bufferSize = indicesNumber / 3;
+    
+    std::vector<uint32_t> oneBuffer;
+    oneBuffer.resize(bufferSize);
+    std::fill(oneBuffer.begin(), oneBuffer.end(), mask);
+    
+    for (size_t i = 0; i < bufferSize; ++i)
+    {
+        NuoMaterial material = _rawModel->GetMaterial(i);
+        if (material.id != -1 && material.illum == 0)
+            oneBuffer[i] |= kNuoRayMask_Illuminating;
+    }
+    
+    return oneBuffer;
+}
+
+
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
 {
-    NuoMatrixFloat44 localTransform = _transformTranslate * _transformPoise;
-    localTransform = localTransform * _rotation.RotationMatrix();
-    NuoMatrixFloat44 transformWorld = transform * localTransform;
+    NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
     NuoMeshUniforms uniforms;
     uniforms.transform = transformWorld._m;
@@ -653,7 +700,7 @@ NuoMesh* CreateMesh(const NuoModelOption& options,
         resultMesh = mesh;
     }
     
-    [resultMesh setRawModel:model.get()];
+    [resultMesh setRawModel:model];
     [resultMesh makeGPUStates];
     return resultMesh;
 }

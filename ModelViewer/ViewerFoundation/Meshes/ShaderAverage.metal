@@ -17,16 +17,15 @@ using namespace metal;
 fragment float4 fragment_texutre_average(PositionTextureSimple vert [[stage_in]],
                                          texture2d<float> textureAccumulated [[texture(0)]],
                                          texture2d<float> textureLatest [[texture(1)]],
-                                         constant int& averageCount [[buffer(0)]],
+                                         constant uint32_t& averageCount [[buffer(0)]],
                                          sampler samplr [[sampler(0)]])
 {
     float4 colorAccumulated = textureAccumulated.sample(samplr, vert.texCoord);
-    colorAccumulated *= (averageCount - 1) / (float)averageCount;
+    colorAccumulated *= (averageCount - 1);
     
     float4 color = textureLatest.sample(samplr, vert.texCoord);
-    color /= (float)averageCount;
     
-    return color + colorAccumulated;
+    return (color + colorAccumulated) / (float)averageCount;
 }
 
 

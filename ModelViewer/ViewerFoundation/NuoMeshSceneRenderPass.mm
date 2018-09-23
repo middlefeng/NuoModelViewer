@@ -7,9 +7,7 @@
 //
 
 #import "NuoMeshSceneRenderPass.h"
-#import "NuoShadowMapRenderer.h"
-
-
+#import "NuoInspectableMaster.h"
 
 @implementation NuoMeshSceneRenderPass
 
@@ -62,9 +60,13 @@
     
     [renderPass setFragmentBuffer:[provider lightingUniformBuffers][inFlight] offset:0 atIndex:0];
     [renderPass setFragmentBuffer:[provider modelCharacterUnfiromBuffer] offset:0 atIndex:1];
-    [renderPass setFragmentTexture:[provider shadowMapRenderer:0].renderTarget.depthTexture atIndex:0];
-    [renderPass setFragmentTexture:[provider shadowMapRenderer:1].renderTarget.depthTexture atIndex:1];
+    [renderPass setFragmentTexture:[provider shadowMap:0] atIndex:0];
+    [renderPass setFragmentTexture:[provider shadowMap:1] atIndex:1];
     [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
+    
+    NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
+    [inspectMaster updateTexture:[provider shadowMap:0] forName:kInspectable_Shadow];
+    [inspectMaster updateTexture:[provider shadowMap:0] forName:kInspectable_ShadowTranslucent];
 }
 
 

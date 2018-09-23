@@ -82,6 +82,14 @@ static CIContext* sCIContext = nil;
 }
 
 
+- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+{
+    [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
+    [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
+    
+    [super drawScreenSpace:renderPass indexBuffer:index];
+}
+
 
 
 - (void)makeTexture:(NSString*)texPath checkTransparency:(BOOL)check
@@ -106,11 +114,13 @@ static CIContext* sCIContext = nil;
     
     BOOL pcss = self.shadowOptionPCSS;
     BOOL pcf = self.shadowOptionPCF;
+    BOOL rayTracing = self.shadowOptionRayTracing;
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     NuoMeshModeShaderParameter meshMode = kMeshMode_Normal;
     [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
+    [funcConstant setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
     [funcConstant setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
@@ -162,6 +172,41 @@ static CIContext* sCIContext = nil;
 - (void)makePipelineShadowState
 {
     [super makePipelineShadowState:@"vertex_simple_textured"];
+}
+
+
+
+-  (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
+{
+    GlobalBuffers oneBuffer;
+    [super appendWorldBuffers:transform toBuffers:&oneBuffer];
+    
+    auto existingItem = std::find(buffers->_textureMap.begin(),
+                                  buffers->_textureMap.end(),
+                                  (__bridge void*)_diffuseTex);
+    
+    size_t currentIndex = 0;
+    if (existingItem == buffers->_textureMap.end())
+    {
+        buffers->_textureMap.push_back((__bridge void*)_diffuseTex);
+        currentIndex = buffers->_textureMap.size() - 1;
+    }
+    else
+    {
+        currentIndex = existingItem - buffers->_textureMap.begin();
+    }
+    
+    for (NuoRayTracingMaterial& item : oneBuffer._materials)
+    {
+        assert(item.diffuseTex == -2);
+        item.diffuseTex = (int)currentIndex;
+    }
+    
+    buffers->Union(oneBuffer);
+    
+    // no handling to the array exceeding preset number of shader
+    // argument bindings
+    assert(buffers->_textureMap.size() < kTextureBindingsCap);
 }
 
 

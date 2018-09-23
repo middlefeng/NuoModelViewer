@@ -88,9 +88,9 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert);
 
 fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
                                               constant NuoLightUniforms &lighting [[buffer(0)]],
-                                              depth2d<float> shadowMap0 [[texture(0)]],
-                                              depth2d<float> shadowMap1 [[texture(1)]],
-                                              depth2d<float> depth      [[texture(2), function_constant(kDepthPrerenderred)]],
+                                              texture2d<float> shadowMap0 [[texture(0)]],
+                                              texture2d<float> shadowMap1 [[texture(1)]],
+                                              texture2d<float> depth      [[texture(2), function_constant(kDepthPrerenderred)]],
                                               texture2d<float> diffuseTexture [[texture(3)]],
                                               texture2d<float> opacityTexture [[texture(4), function_constant(kAlphaChannelInSeparatedTexture)]],
                                               sampler depthSamplr [[sampler(0)]],
@@ -108,7 +108,7 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
     
     float4 diffuseColor = diffuse_common(diffuseTexel, opacityTexel.a);
     
-    depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseColor,
                                                 shadowMap, depthSamplr);
 }
@@ -118,6 +118,7 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
 {
     VertexFragmentCharacters outVert;
     
+    outVert.projectedNDC = vert.positionNDC;
     outVert.eye = vert.eye;
     outVert.diffuseColor = vert.diffuseColor;
     outVert.ambientColor = vert.ambientColor;

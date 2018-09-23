@@ -7,6 +7,7 @@
 
 #include "NuoMathVector.h"
 #include "NuoMeshBounds.h"
+#include "NuoModelBase.h"
 
 
 
@@ -45,6 +46,7 @@
 @property (nonatomic, assign) NSUInteger sampleCount;
 @property (nonatomic, assign) BOOL shadowOptionPCSS;
 @property (nonatomic, assign) BOOL shadowOptionPCF;
+@property (nonatomic, assign) BOOL shadowOptionRayTracing;
 
 
 
@@ -101,10 +103,17 @@
 - (void)makeGPUStates;
 
 
-- (void)setRawModel:(void*)model;
+- (std::vector<uint32_t>)maskBuffer;
+
+
+- (void)setRawModel:(const PNuoModelBase&)model;
 - (NSString*)modelName;
 - (void)smoothWithTolerance:(float)tolerance;
 
+// the "transform" should be the outter world transform (excluding the view matrix,
+// that is, the returned buffer is in the world coordinate rather than in the camera coordinate)
+//
+- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers;
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform;
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index;

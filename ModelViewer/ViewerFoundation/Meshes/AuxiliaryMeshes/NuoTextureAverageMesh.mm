@@ -8,6 +8,7 @@
 
 #import "NuoTextureAverageMesh.h"
 
+#import "NuoComputeEncoder.h"
 #import "NuoRenderPassTarget.h"
 #import "NuoTextureMesh.h"
 #import "NuoRenderPassAttachment.h"
@@ -22,7 +23,7 @@
     
     NuoRenderPassTarget* _texturesAccumulated;
     id<MTLTexture> _textureLatest;
-    NSUInteger _textureCount;
+    uint32_t _textureCount;
     
     NSArray<id<MTLBuffer>>* _texCountBuffer;
 }
@@ -36,7 +37,7 @@
     {
         id<MTLBuffer> buffers[kInFlightBufferCount];
         for (size_t i = 0; i < kInFlightBufferCount; ++i)
-            buffers[i] = [commandQueue.device newBufferWithLength:sizeof(int)
+            buffers[i] = [commandQueue.device newBufferWithLength:sizeof(uint32_t)
                                                           options:MTLResourceStorageModeManaged];
         _texCountBuffer = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
         
@@ -52,7 +53,7 @@
     NSString* shaderName = @"fragment_texutre_average";
     
     _texturesAccumulated = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
-                                                             withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                             withPixelFormat:MTLPixelFormatRGBA32Float
                                                              withSampleCount:1];
     
     _texturesAccumulated.clearColor = MTLClearColorMake(0, 0, 0, 0);
@@ -61,9 +62,9 @@
     
     _accumulatedMesh = [[NuoTextureMesh alloc] initWithCommandQueue:self.commandQueue];
     _accumulatedMesh.sampleCount = 1;
-    [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_None];
+    [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatRGBA32Float withBlendMode:kBlend_Alpha];
     
-    [self makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withFragementShader:shaderName
+    [self makePipelineAndSampler:MTLPixelFormatRGBA32Float withFragementShader:shaderName
                    withBlendMode:kBlend_Accumulate];
 }
 
@@ -102,10 +103,10 @@
 {
     [_texturesAccumulated setDrawableSize:CGSizeMake(texture.width, texture.height)];
     
-    id<MTLRenderCommandEncoder> accumulatePass = [_texturesAccumulated retainRenderPassEndcoder:commandBuffer];
+    /*id<MTLRenderCommandEncoder> accumulatePass = [_texturesAccumulated retainRenderPassEndcoder:commandBuffer];
     [_accumulatedMesh setModelTexture:texture];
     [_accumulatedMesh drawMesh:accumulatePass indexBuffer:0];
-    [_texturesAccumulated releaseRenderPassEndcoder];
+    [_texturesAccumulated releaseRenderPassEndcoder];*/
     
     /**
      *  BLIT copy can NOT handle framebuffer-only source texture, nor can it handle texture size change.
@@ -125,21 +126,29 @@
         desc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
 
         _texturesAccumulated = [self.device newTextureWithDescriptor:desc];
-    }
+    } */
     
     MTLOrigin origin = {0, 0, 0};
     MTLSize size = {texture.width, texture.height, 1};
     id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
     [encoder copyFromTexture:texture sourceSlice:0 sourceLevel:0 sourceOrigin:origin sourceSize:size
-                   toTexture:_texturesAccumulated destinationSlice:0 destinationLevel:0 destinationOrigin:origin];
+                   toTexture:_texturesAccumulated.targetTexture destinationSlice:0 destinationLevel:0 destinationOrigin:origin];
     
-    [encoder endEncoding];*/
+    [encoder endEncoding];
 }
 
 
 
 - (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
 {
+    /*AccumulateUniform uniform;
+    uniform.frameIndex = _textureCount;
+    uniform.width = _texturesAccumulated.drawableSize.width;
+    uniform.height = _texturesAccumulated.drawableSize.height;
+    
+    memcpy(_texCountBuffer[bufferIndex].contents, &uniform, sizeof(AccumulateUniform));
+    [_texCountBuffer[bufferIndex] didModifyRange:NSMakeRange(0, sizeof(AccumulateUniform))];*/
+    
     memcpy(_texCountBuffer[bufferIndex].contents, &_textureCount, sizeof(int));
     [_texCountBuffer[bufferIndex] didModifyRange:NSMakeRange(0, sizeof(int))];
 }
@@ -173,8 +182,8 @@
     NuoRenderPassTarget* _texturesAccumulated;
     
     id<MTLCommandQueue> _commandQueue;
-    id<MTLComputePipelineState> _pipelineState;
-    id<MTLComputePipelineState> _pipelineStateCopy;
+    NuoComputePipeline* _pipelineState;
+    NuoComputePipeline* _pipelineStateCopy;
     
     id<MTLTexture> _textureLatest;
     uint32_t _textureCount;
@@ -221,21 +230,13 @@
     _accumulatedMesh.sampleCount = 1;
     [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_None];
     
-    id<MTLLibrary> library = [_commandQueue.device newDefaultLibrary];
+    _pipelineState = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:shaderName
+                                                  withParameter:NO];
+    _pipelineStateCopy = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"compute_texture_copy"
+                                                      withParameter:NO];
     
-    MTLComputePipelineDescriptor *pipelineDescriptor = [MTLComputePipelineDescriptor new];
-    pipelineDescriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
-    
-    NSError* error = nil;
-    pipelineDescriptor.computeFunction = [library newFunctionWithName:shaderName];
-    _pipelineState = [_commandQueue.device newComputePipelineStateWithDescriptor:pipelineDescriptor options:0
-                                                                      reflection:nil error:&error];
-    
-    pipelineDescriptor.computeFunction = [library newFunctionWithName:@"compute_texture_copy"];
-    _pipelineStateCopy = [_commandQueue.device newComputePipelineStateWithDescriptor:pipelineDescriptor options:0
-                                                                          reflection:nil error:&error];
-    
-    assert(error == nil);
+    _pipelineState.name = @"Average Accumulation";
+    _pipelineStateCopy.name = @"Texture Copy";
 }
 
 
@@ -255,28 +256,39 @@
              withInFlight:(NSUInteger)inFlight
         withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
+    [self accumulateTexture:texture withInFlight:inFlight withCommandBuffer:commandBuffer];
+    [self outputAccumulateToTarget:target withCommandBuffer:commandBuffer];
+}
+
+
+- (void)accumulateTexture:(id<MTLTexture>)texture
+                onTexture:(id<MTLTexture>)targetTexture
+             withInFlight:(NSUInteger)inFlight
+        withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+{
+    [self accumulateTexture:texture withInFlight:inFlight withCommandBuffer:commandBuffer];
+    [self outputAccumulateToTexture:targetTexture withCommandBuffer:commandBuffer];
+}
+
+
+- (void)accumulateTexture:(id<MTLTexture>)texture
+             withInFlight:(NSUInteger)inFlight
+        withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+{
     [self appendTexture:texture];
     [self updateUniform:inFlight];
     
-    id<MTLComputeCommandEncoder> encoder = [commandBuffer computeCommandEncoder];
+    NuoComputeEncoder* encoder = [_pipelineState encoderWithCommandBuffer:commandBuffer];
     
     [encoder setTexture:_texturesAccumulated.targetTexture atIndex:0];
     [encoder setTexture:_textureLatest atIndex:1];
     [encoder setBuffer:_texCountBuffer[inFlight] offset:0 atIndex:0];
     
-    MTLSize threadsPerThreadgroup = MTLSizeMake(8, 8, 1);
-    MTLSize threadgroups = MTLSizeMake((texture.width  + threadsPerThreadgroup.width  - 1) / threadsPerThreadgroup.width,
-                                       (texture.height + threadsPerThreadgroup.height - 1) / threadsPerThreadgroup.height, 1);
-    
-    [encoder setComputePipelineState:_pipelineState];
-    [encoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threadsPerThreadgroup];
-    [encoder endEncoding];
-    
-    [self setAccumulateTexture:target withCommandBuffer:commandBuffer];
+    [encoder dispatch];
 }
 
 
-- (void)setAccumulateTexture:(NuoRenderPassTarget*)target withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)outputAccumulateToTarget:(NuoRenderPassTarget*)target withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
     if (!target.manageTargetTexture)
     {
@@ -287,19 +299,17 @@
     }
     else
     {
-        id<MTLComputeCommandEncoder> encoder = [commandBuffer computeCommandEncoder];
-        
-        [encoder setTexture:target.targetTexture atIndex:0];
-        [encoder setTexture:_texturesAccumulated.targetTexture atIndex:1];
-        
-        MTLSize threadsPerThreadgroup = MTLSizeMake(8, 8, 1);
-        MTLSize threadgroups = MTLSizeMake((target.targetTexture.width  + threadsPerThreadgroup.width  - 1) / threadsPerThreadgroup.width,
-                                           (target.targetTexture.height + threadsPerThreadgroup.height - 1) / threadsPerThreadgroup.height, 1);
-        
-        [encoder setComputePipelineState:_pipelineStateCopy];
-        [encoder dispatchThreadgroups:threadgroups threadsPerThreadgroup:threadsPerThreadgroup];
-        [encoder endEncoding];
+        [self outputAccumulateToTexture:target.targetTexture withCommandBuffer:commandBuffer];
     }
+}
+    
+- (void)outputAccumulateToTexture:(id<MTLTexture>)targetTexture withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+{
+    NuoComputeEncoder* encoder = [_pipelineStateCopy encoderWithCommandBuffer:commandBuffer];
+    
+    [encoder setTexture:targetTexture atIndex:0];
+    [encoder setTexture:_texturesAccumulated.targetTexture atIndex:1];
+    [encoder dispatch];
 }
 
 

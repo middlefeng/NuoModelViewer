@@ -96,9 +96,9 @@ vertex PositionSimple vertex_simple_tex_materialed_bump(device Vertex *vertices 
 
 fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
                                              constant NuoLightUniforms &lighting [[buffer(0)]],
-                                             depth2d<float> shadowMap0 [[texture(0)]],
-                                             depth2d<float> shadowMap1 [[texture(1)]],
-                                             depth2d<float> depth      [[texture(2), function_constant(kDepthPrerenderred)]],
+                                             texture2d<float> shadowMap0 [[texture(0)]],
+                                             texture2d<float> shadowMap1 [[texture(1)]],
+                                             texture2d<float> depth      [[texture(2), function_constant(kDepthPrerenderred)]],
                                              texture2d<float> diffuseTexture [[texture(3)]],
                                              texture2d<float> opacityTexture [[texture(4),
                                                                                function_constant(kAlphaChannelInSeparatedTexture)]],
@@ -121,7 +121,7 @@ fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
     float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
     float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
     
-    depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseColor,
                                                 shadowMap, depthSamplr);
 }
@@ -130,6 +130,8 @@ fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
 VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
 {
     VertexFragmentCharacters outVert;
+    
+    outVert.projectedNDC = vert.positionNDC;
     
     outVert.eye = vert.eye;
     outVert.diffuseColor = vert.diffuseColor;

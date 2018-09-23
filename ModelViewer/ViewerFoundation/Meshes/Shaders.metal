@@ -12,6 +12,8 @@ struct Vertex
 
 struct ProjectedVertex
 {
+    float4 positionNDC;
+    
     float4 position [[position]];
     float3 eye;
     float3 normal;
@@ -42,6 +44,16 @@ vertex PositionSimple vertex_simple(device Vertex *vertices [[buffer(0)]],
 {
     return vertex_simple<Vertex>(vertices, uniforms, meshUniform, vid);
 }
+
+
+/**
+ *  generate depth map as red-channel color texture (for Metal's forbiding type check)
+ */
+fragment float4 depth_simple(PositionSimple vert [[stage_in]])
+{
+    return float4((vert.positionNDC.z / vert.positionNDC.w), 0.0, 0.0, 1.0);
+}
+
 
 
 
@@ -146,6 +158,7 @@ vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)
 {
     ProjectedVertex outVert = vertex_project_common(vertices, uniforms, meshUniform, vid);
     float4 meshPosition = meshUniform.transform * vertices[vid].position;
+    outVert.positionNDC = outVert.position;
     outVert.shadowPosition0 = lightCast.lightCastMatrix[0] * meshPosition;
     outVert.shadowPosition1 = lightCast.lightCastMatrix[1] * meshPosition;
     return outVert;
@@ -155,8 +168,9 @@ vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)
 fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                       constant NuoLightUniforms &lightUniform [[buffer(0)]],
                                       constant NuoModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
-                                      depth2d<float> shadowMap0 [[texture(0)]],
-                                      depth2d<float> shadowMap1 [[texture(1)]],
+                                      texture2d<float> shadowMap0 [[texture(0)]],
+                                      texture2d<float> shadowMap1 [[texture(1)]],
+                                      texture2d<float> shadowOverlayMap [[texture(2)]],
                                       sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
@@ -165,7 +179,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     float shadowOverlay = 0.0;
     float surfaceBrightness = 0.0;
     
-    depth2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
+    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
     for (unsigned i = 0; i < 4; ++i)
@@ -176,8 +190,9 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         float shadowPercent = 0.0;
         if (i < 2)
         {
+            float4 shadowPostionCurrent = kShadowRayTracing ? vert.positionNDC : shadowPosition[i];
             const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
-            shadowPercent = shadow_coverage_common(shadowPosition[i],
+            shadowPercent = shadow_coverage_common(shadowPostionCurrent, false,
                                                    shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], samplr);
         }
@@ -209,9 +224,27 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     }
     
     if (kShadowOverlay)
-        return float4(0.0, 0.0, 0.0, shadowOverlay / surfaceBrightness);
+    {
+        // the primitive coverage on the pixel
+        float shadowOverlayCoverage = shadowOverlayMap.sample(samplr, ndc_to_texture_coord(vert.positionNDC)).r;
+        
+        // this happens when a translucent object blocking the overlay-only object
+        if (shadowOverlayCoverage < 0.000001)
+            shadowOverlayCoverage = 1.0;
+
+        // anti-alias compensation by being divided by shadowOverlayCoverage
+        //
+        // the shadowOverlayCoverage/surfaceBrightness has already taken in acount the anti-aliasing when it is
+        // computed through ray tracing. if being returned from this fragement shader, it will be subject to the
+        // MSAA by the pipeline. to avoid this mistaken anti-aliasing double-blending, the value should be divided
+        // by the primitive coverage (in order to get its pre-anti-aliasing value, at least approximately)
+        //
+        return float4(0.0, 0.0, 0.0, shadowOverlay / surfaceBrightness / shadowOverlayCoverage);
+    }
     else
+    {
         return float4(colorForLights, modelCharacterUniforms.opacity);
+    }
 }
 
 
@@ -219,7 +252,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                             float3 normal,
                                             constant NuoLightUniforms &lightingUniform,
                                             float4 diffuseTexel,
-                                            depth2d<float> shadowMap[2],
+                                            texture2d<float> shadowMap[2],
                                             sampler samplr)
 {
     normal = normalize(normal);
@@ -227,6 +260,20 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
     float3 diffuseColor = diffuseTexel.rgb * vert.diffuseColor;
     float opacity = diffuseTexel.a * vert.opacity;
     
+    return fragment_light_color_opacity_common(vert, normal, lightingUniform, diffuseColor,
+                                               opacity, shadowMap, samplr);
+}
+
+
+
+float4 fragment_light_color_opacity_common(VertexFragmentCharacters vert,
+                                           float3 normal,
+                                           constant NuoLightUniforms &lightingUniform,
+                                           float3 diffuseColor,
+                                           float opacity,
+                                           texture2d<float> shadowMap[2],
+                                           sampler samplr)
+{
     float3 colorForLights = 0.0;
     
     float transparency = (1 - opacity);
@@ -242,8 +289,11 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         float shadowPercent = 0.0;
         if (i < 2)
         {
+            const float4 shadowPositionCurrent = kShadowRayTracing ?
+                                                    vert.projectedNDC : vert.shadowPosition[i];
+            
             const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
-            shadowPercent = shadow_coverage_common(vert.shadowPosition[i],
+            shadowPercent = shadow_coverage_common(shadowPositionCurrent, opacity < 1.0,
                                                    shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], samplr);
             
@@ -282,6 +332,7 @@ ProjectedVertex vertex_project_common(device Vertex *vertices,
     float3 meshNormal = meshUniform.normalTransform * vertices[vid].normal.xyz;
     
     outVert.position = uniforms.viewProjectionMatrix * meshPosition;
+    outVert.positionNDC = outVert.position;
     outVert.eye =  eyePosition.xyz - meshPosition.xyz;
     outVert.normal = meshNormal;
     
@@ -291,13 +342,13 @@ ProjectedVertex vertex_project_common(device Vertex *vertices,
 
 
 float4 diffuse_lighted_selection(float4 vertPositionNDC, float3 normal,
-                                 depth2d<float> depth, sampler depthSamplr)
+                                 texture2d<float> depth, sampler depthSamplr)
 {
     float2 screenPos = vertPositionNDC.xy / vertPositionNDC.w;
     screenPos.x = (screenPos.x + 1) * 0.5;
     screenPos.y = (-screenPos.y + 1) * 0.5;
     
-    float depthSample = depth.sample(depthSamplr, screenPos);
+    float depthSample = depth.sample(depthSamplr, screenPos).r;
     float indicatorDepth = vertPositionNDC.z / vertPositionNDC.w;
     
     // light always comes from the direct front
@@ -346,7 +397,7 @@ float4 diffuse_common(float4 diffuseTexel, float extraOpacity)
 
 
 
-// see p233 real-time rendering
+// see p233 real-time rendering, 3rd
 // see https://seblagarde.wordpress.com/2011/08/17/hello-world/
 //
 float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
@@ -355,6 +406,10 @@ float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
 }
 
 
+// see p257, (7.49) real-time rendering, 3rd
+// the code embodies the half-vector based specular which is ((m + 2) / (8 * pi)) * Cspecular * power(cos(theta), m)
+//               p253 (7.47) the reflection based version is ((m + 2) / (2 * pi)) * Cspecular * power(cos(reflection), m)
+//
 float3 specular_common(float3 materialSpecularColor, float materialSpecularPower,
                        NuoLightParameterUniformField lightParams,
                        float3 normal, float3 halfway, float dotNL)
@@ -378,7 +433,7 @@ float3 specular_common(float3 materialSpecularColor, float materialSpecularPower
 
 float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius, float occluderRadius,
                              float shadowMapBias, float modelDepth, float2 shadowCoord,
-                             metal::depth2d<float> shadowMap, metal::sampler samplr)
+                             metal::texture2d<float> shadowMap, metal::sampler samplr)
 {
     float penumbraFactor = 1.0;
     float blocker = 0;
@@ -399,7 +454,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
         float yCurrentSearch = shadowCoord.y - searchRegion.y;
         for (int j = 0; j < searchDiameter; ++j)
         {
-            float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch));
+            float shadowDepth = shadowMap.sample(samplr, float2(xCurrentSearch, yCurrentSearch)).r;
             if (shadowDepth < modelDepth - shadowMapBias * length(shadowCoord - float2(xCurrentSearch, yCurrentSearch)) / sampleDiameter)
             {
                 blockerSampleCount += 1;
@@ -439,10 +494,16 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
 
 
 
-float shadow_coverage_common(metal::float4 shadowCastModelPostion,
+float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
                              NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
-                             metal::depth2d<float> shadowMap, metal::sampler samplr)
+                             metal::texture2d<float> shadowMap, metal::sampler samplr)
 {
+    if (kShadowRayTracing)
+    {
+        float4 shadowCoverage = shadowMap.sample(samplr, ndc_to_texture_coord(shadowCastModelPostion));
+        return (translucent) ? shadowCoverage.g : shadowCoverage.r;
+    }
+    
     float shadowMapBias = 0.002;
     shadowMapBias += shadowParams.bias * (1 - shadowedSurfaceAngle);
     
@@ -502,15 +563,21 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
                 //
                 if (kShadowPCSS)
                 {
-                    shadowCoverage += shadowMap.sample_compare(samplr, current,
-                                                               modelDepth + shadowMapBias -
-                                                               shadowMapBias * length(current - shadowCoord) / length(kSampleSizeBase));
+                    if (shadowMap.sample(samplr, current).r <
+                           modelDepth + shadowMapBias -
+                           shadowMapBias * length(current - shadowCoord) / length(kSampleSizeBase))
+                    {
+                        shadowCoverage += 1;
+                    }
                 }
                 else
                 {
-                    shadowCoverage += shadowMap.sample_compare(samplr, current,
-                                                               modelDepth -
-                                                               shadowMapBias * length(current - shadowCoord) / length(kSampleSizeBase));
+                    if (shadowMap.sample(samplr, current).r <
+                           modelDepth -
+                           shadowMapBias * length(current - shadowCoord) / length(kSampleSizeBase))
+                    {
+                        shadowCoverage += 1;
+                    }
                 }
                 
                 yCurrent += sampleSize.y;
@@ -539,7 +606,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion,
     {
         /** simpler shadow without PCF
          */
-        return shadowMap.sample_compare(samplr, shadowCoord, modelDepth);
+        return shadowMap.sample(samplr, shadowCoord).r < modelDepth ? 1 : 0;
     }
 }
 
@@ -552,3 +619,8 @@ float2 rand(float2 co)
 
 
 
+float2 ndc_to_texture_coord(float4 ndc)
+{
+    float2 result = ndc.xy / ndc.w;
+    return float2((result.x + 1) * 0.5, (-result.y + 1) * 0.5);
+}

@@ -10,6 +10,8 @@
 #import "NuoScreenSpaceRenderer.h"
 #import "NuoScreenSpaceMesh.h"
 
+#import "NuoInspectableMaster.h"
+
 
 
 @implementation NuoDeferredRenderer
@@ -46,6 +48,18 @@
 }
 
 
+- (id<MTLTexture>)shadowOverlayMap
+{
+    return [_screenSpaceRenderer shdowOverlayBuffer];
+}
+
+
+- (id<MTLTexture>)ambientBuffer
+{
+    return [_screenSpaceRenderer ambientBuffer];
+}
+
+
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
@@ -59,9 +73,9 @@
 }
 
 
-- (void)setMeshes:(NSArray<NuoMesh*>*)meshes
+- (void)setRoot:(NuoMeshSceneRoot*)root
 {
-    [_screenSpaceRenderer setMeshes:meshes];
+    [_screenSpaceRenderer setSceneRoot:root];
 }
 
 
@@ -84,6 +98,9 @@
     
     [self drawWithRenderPass:renderPass withInFlightIndex:inFlight];
     [self releaseDefaultEncoder];
+    
+    NuoInspectableMaster* master = [NuoInspectableMaster sharedMaster];
+    [master updateTexture:_screenSpaceRenderer.ambientBuffer forName:kInspectable_Ambient];
 }
 
 

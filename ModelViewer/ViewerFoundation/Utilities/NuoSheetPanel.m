@@ -51,17 +51,17 @@ static const float kButtonOKHeight = 60;
     
     _buttonOK = [[NSButton alloc] init];
     [_buttonOK setTitle:@"OK"];
-    [_buttonOK setBezelStyle:NSRoundedBezelStyle];
+    [_buttonOK setBezelStyle:NSBezelStyleRounded];
     [_buttonOK setControlSize:NSControlSizeRegular];
     [self.contentView addSubview:_buttonOK];
     
     _buttonCancel = [[NSButton alloc] init];
     [_buttonCancel setTitle:@"Cancel"];
-    [_buttonCancel setBezelStyle:NSRoundedBezelStyle];
+    [_buttonCancel setBezelStyle:NSBezelStyleRounded];
     [_buttonCancel setControlSize:NSControlSizeRegular];
     [self.contentView addSubview:_buttonCancel];
     
-    [self setStyleMask:[self styleMask] | NSResizableWindowMask];
+    [self setStyleMask:[self styleMask] | NSWindowStyleMaskResizable];
 }
 
 

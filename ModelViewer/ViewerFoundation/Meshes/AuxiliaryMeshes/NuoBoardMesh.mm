@@ -96,7 +96,9 @@
 {
     MTLFunctionConstantValues* constants = [MTLFunctionConstantValues new];
     BOOL shadowOverlay = YES;
+    BOOL rayTracing = self.shadowOptionRayTracing;
     [constants setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
+    [constants setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
     
     [super makePipelineScreenSpaceStateWithVertexShader:@"vertex_project_screen_space"
                                      withFragemtnShader:@"fragement_screen_space"
@@ -107,6 +109,7 @@
 - (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
 {
     [renderPass setCullMode:MTLCullModeBack];
+    [renderPass setFragmentTexture:_shadowOverlayMap atIndex:2];
     [super drawMesh:renderPass indexBuffer:index];
 }
 
@@ -137,6 +140,7 @@ NuoBoardMesh* CreateBoardMesh(id<MTLCommandQueue> commandQueue, const std::share
     
     resultMesh.boundsLocal = bounds;
     
+    [resultMesh setRawModel:model];
     [resultMesh setShadowOverlayOnly:shadowCastOnly];
     [resultMesh makeGPUStates];
     

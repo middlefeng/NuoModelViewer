@@ -8,6 +8,7 @@
 
 #import "NuoMeshCompound.h"
 #import "NuoMeshBounds.h"
+#import "NuoBoardMesh.h"
 
 
 @implementation NuoMeshCompound
@@ -51,6 +52,9 @@
 {
     _meshes = meshes;
     
+    if (!meshes.count)
+        return;
+    
     NuoBounds bounds = meshes[0].boundsLocal.boundingBox;
     NuoSphere sphere = meshes[0].boundsLocal.boundingSphere;
     for (size_t i = 1; i < meshes.count; ++i)
@@ -66,6 +70,9 @@
 
 - (NuoMeshBounds)worldBounds:(const NuoMatrixFloat44&)transform
 {
+    if (!_meshes.count)
+        return { NuoBounds(), NuoSphere() };
+    
     NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
     NuoMatrixFloat44 transformWorld = transform * transformLocal;
     
@@ -82,6 +89,18 @@
     }
     
     return { bounds, sphere };
+}
+
+
+- (void)setShadowOverlayMap:(id<MTLTexture>)shadowOverlayMap
+{
+    for (NuoMesh* mesh in _meshes)
+    {
+        if ([mesh isKindOfClass:NuoBoardMesh.class])
+        {
+            ((NuoBoardMesh*)mesh).shadowOverlayMap = shadowOverlayMap;
+        }
+    }
 }
 
 
@@ -105,6 +124,49 @@
 {
     for (NuoMesh* mesh in _meshes)
         mesh.shadowOptionPCF = shadowOptionPCF;
+}
+
+
+- (void)setShadowOptionRayTracing:(BOOL)shadowOptionRayTracing
+{
+    for (NuoMesh* mesh in _meshes)
+        mesh.shadowOptionRayTracing = shadowOptionRayTracing;
+}
+
+
+
+- (void)makeGPUStates
+{
+    for (NuoMesh* mesh in _meshes)
+        [mesh makeGPUStates];
+}
+
+
+
+- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
+{
+    const NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
+    const NuoMatrixFloat44 transformWorld = transform * transformLocal;
+    
+    for (NuoMesh* mesh in _meshes)
+    {
+        [mesh appendWorldBuffers:transformWorld toBuffers:buffers];
+    }
+}
+
+
+- (std::vector<uint32_t>)maskBuffer
+{
+    std::vector<uint32_t> buffer;
+    
+    for (NuoMesh* mesh in _meshes)
+    {
+        NuoMeshCompound* compoundOne = (NuoMeshCompound*)mesh;
+        std::vector<uint32_t> oneBuffer = [compoundOne maskBuffer];
+        buffer.insert(buffer.end(), oneBuffer.begin(), oneBuffer.end());
+    }
+    
+    return buffer;
 }
 
 
@@ -159,8 +221,8 @@
 - (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)bufferIndex
 {
     NSArray* cullModes = self.cullEnabled ?
-    @[@(MTLCullModeBack), @(MTLCullModeNone)] :
-    @[@(MTLCullModeNone), @(MTLCullModeBack)];
+                            @[@(MTLCullModeBack), @(MTLCullModeNone)] :
+                            @[@(MTLCullModeNone), @(MTLCullModeBack)];
     NSUInteger cullMode = [cullModes[0] unsignedLongValue];
     [renderPass setCullMode:(MTLCullMode)cullMode];
     

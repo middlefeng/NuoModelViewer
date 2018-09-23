@@ -37,6 +37,9 @@ private:
 public:
     
     virtual void AddMaterial(const NuoMaterial& material) override;
+    virtual NuoMaterial GetMaterial(size_t primtiveIndex) const override;
+    virtual GlobalBuffers GetGlobalBuffers() const override;
+    
     virtual bool HasTransparent() override;
     virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
     virtual void UpdateBufferWithUnifiedMaterial() override;
@@ -54,7 +57,7 @@ struct NuoItemMaterialedTexturedBasic
     NuoVectorFloat3::_typeTrait::_vectorType _diffuse;
     NuoVectorFloat3::_typeTrait::_vectorType _ambient;
     NuoVectorFloat3::_typeTrait::_vectorType _specular;
-    NuoVectorFloat2::_typeTrait::_vectorType _shinessDisolve;
+    NuoVectorFloat3::_typeTrait::_vectorType _shinessDisolveIllum;
     
     NuoItemMaterialedTexturedBasic();
     
@@ -90,7 +93,7 @@ struct NuoItermMaterialedBumpedTextured
     NuoVectorFloat3::_typeTrait::_vectorType _diffuse;
     NuoVectorFloat3::_typeTrait::_vectorType _ambient;
     NuoVectorFloat3::_typeTrait::_vectorType _specular;
-    NuoVectorFloat2::_typeTrait::_vectorType _shinessDisolve;
+    NuoVectorFloat3::_typeTrait::_vectorType _shinessDisolveIllum;
     
     NuoItermMaterialedBumpedTextured();
     
@@ -118,7 +121,7 @@ struct NuoItemMaterialedBasic
     NuoVectorFloat3::_typeTrait::_vectorType _diffuse;
     NuoVectorFloat3::_typeTrait::_vectorType _ambient;
     NuoVectorFloat3::_typeTrait::_vectorType _specular;
-    NuoVectorFloat2::_typeTrait::_vectorType _shinessDisolve;
+    NuoVectorFloat3::_typeTrait::_vectorType _shinessDisolveIllum;
     
     NuoItemMaterialedBasic();
     
@@ -169,8 +172,9 @@ void NuoModelMaterialedBasicBase<ItemBase>::AddMaterial(const NuoMaterial& mater
     NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.y = material.specular[1];
     NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.z = material.specular[2];
     
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.x = material.shininess;
-    NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.y = material.dissolve;
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.x = material.shininess;
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.y = material.dissolve;
+    NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.z = material.illum;
     
     if (!_material)
         _material.reset(new NuoMaterial(material));
@@ -216,12 +220,77 @@ void NuoModelMaterialedBasicBase<ItemBase>::UpdateBufferWithUnifiedMaterial()
         NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.y = material.specular[1];
         NuoModelCommon<ItemBase>::_buffer[targetOffset]._specular.z = material.specular[2];
         
-        NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.x = material.shininess;
-        NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolve.y = material.dissolve;
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.x = material.shininess;
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.y = material.dissolve;
+        NuoModelCommon<ItemBase>::_buffer[targetOffset]._shinessDisolveIllum.z = material.illum;
     }
-    
 }
 
+
+template <class ItemBase>
+NuoMaterial NuoModelMaterialedBasicBase<ItemBase>::GetMaterial(size_t primtiveIndex) const
+{
+    size_t index = primtiveIndex * 3;
+    
+    // so far assuming the primitive material represented by its first vertex
+    //
+    const auto& item0 = NuoModelCommon<ItemBase>::_buffer[NuoModelCommon<ItemBase>::_indices[index]];
+    
+    uint32_t illumMode = (uint32_t)item0._shinessDisolveIllum.z;
+    auto& color = item0._diffuse;
+    
+    NuoMaterial material;
+    material.diffuse[0] = color.x;
+    material.diffuse[1] = color.y;
+    material.diffuse[2] = color.z;
+    material.illum = illumMode;
+    
+    return material;
+}
+
+
+template <class ItemBase>
+GlobalBuffers NuoModelMaterialedBasicBase<ItemBase>::GetGlobalBuffers() const
+{
+    GlobalBuffers result;
+    
+    for (const ItemBase& item : NuoModelCommon<ItemBase>::_buffer)
+    {
+        {
+            NuoVectorFloat3::_typeTrait::_vectorType vector;
+            vector.x = item._position.x;
+            vector.y = item._position.y;
+            vector.z = item._position.z;
+            result._vertices.push_back(vector);
+        }
+        
+        {
+            NuoRayTracingMaterial material;
+            
+            material.normal.x = item._normal.x;
+            material.normal.y = item._normal.y;
+            material.normal.z = item._normal.z;
+            
+            // the texture index is not available yet
+            material.texCoord.x = item._texCoord.x;
+            material.texCoord.y = item._texCoord.y;
+            material.diffuseTex = -2;
+            
+            material.diffuseColor = item._diffuse;
+            material.illuminate = (int)item._shinessDisolveIllum[2];
+            
+            result._materials.push_back(material);
+        }
+    }
+    
+    result._indices = NuoModelCommon<ItemBase>::_indices;
+    
+    return result;
+}
+
+
+template <>
+GlobalBuffers NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>::GetGlobalBuffers() const;
 
 
 #endif /* NuoModelMaterialed_hpp */
