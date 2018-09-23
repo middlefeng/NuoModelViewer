@@ -4,6 +4,15 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Ray tracing based shadow.
+  * Direct lighting shadow.
+  * Indirect lighting (ambient) with physically-based occlusion.
+  * Physically based effect for the shadow overlay (blend-in with photographic scene).
+
+<p align="left">
+  <img width="400" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F-35-ray_tracing.png"/>
+</p>
+
 * Overlay indicator for selected parts.
 
 <p align="left">
