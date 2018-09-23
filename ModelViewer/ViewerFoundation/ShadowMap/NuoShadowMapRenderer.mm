@@ -30,7 +30,6 @@
 @implementation NuoShadowMapRenderer
 {
     NuoMatrixFloat44 _lightCastMatrix;
-    NuoMatrixFloat44 _lightDirectionMatrix;
 }
 
 

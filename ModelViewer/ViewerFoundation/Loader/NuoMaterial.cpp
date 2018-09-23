@@ -10,7 +10,18 @@
 
 
 
-NuoMaterial::NuoMaterial() : id(-1)
+NuoMaterial::NuoMaterial() :
+    id(-1),
+
+    ambient { 1, 1, 1 },
+    diffuse { 1, 1, 1},
+    specular { 1, 1, 1 },
+    transmittance { 1, 1, 1 },
+    emission { 0, 0, 0 },
+    shininess(0),
+    ior(0),
+    dissolve(1),
+    illum(2)
 {
 }
 
