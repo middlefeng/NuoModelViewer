@@ -4,13 +4,15 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
-* Ray tracing based shadow.
-  * Direct lighting shadow.
+* Hybrid rendering with ray tracing.
+  * Direct lighting soft shadow.
   * Indirect lighting (ambient) with physically-based occlusion.
   * Physically based effect for the shadow overlay (blend-in with photographic scene).
+  * Self-illuminating objects.
 
 <p align="left">
   <img width="400" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F-35-ray_tracing.png"/>
+  <img width="400" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/AFD-ray-tracing.png"/>
 </p>
 
 * Overlay indicator for selected parts.
@@ -126,7 +128,7 @@ A simple Wavefront OBJ viewer.
   * <del>Material opacity adjustment.
   * Material adjustment (specular, colors, etc).
   * List of board objects.
-  * Self illumination.
+  * <del>Self illumination.</del>
 * Reflection.
 * <del>BRDF mode.</del>
 * <del>Ambient occlusion.</del>
