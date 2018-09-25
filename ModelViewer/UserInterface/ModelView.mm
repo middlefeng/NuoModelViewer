@@ -281,6 +281,8 @@ MouseDragMode;
     [_modelRender setAmbientDensity:_modelPanel.ambientDensity];
     [_modelRender setTransMode:_modelPanel.transformMode];
     [_modelRender setIlluminationStrength:_modelPanel.illumination];
+    [_modelRender setShowCheckerboard:_modelPanel.showModelParts];
+    
     [_modelSelectionRenderer setEnabled:_modelPanel.showModelParts];
     [_modelComponentPanels setHidden:!_modelPanel.showModelParts];
     

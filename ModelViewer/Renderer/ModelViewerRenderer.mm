@@ -36,6 +36,7 @@
 
 // inspect
 //
+#import "NuoCheckboardMesh.h"
 #import "NuoInspectableMaster.h"
 
 
@@ -80,6 +81,8 @@
     NuoDeferredRenderer* _deferredRenderer;
     NuoIlluminationMesh* _illuminationMesh;
     
+    NuoCheckboardMesh* _checkerboard;
+    
     NuoRayAccelerateStructure* _rayAccelerator;
     ModelRayTracingRenderer* _rayTracingRenderer;
     
@@ -114,6 +117,8 @@
         _illuminationMesh = [[NuoIlluminationMesh alloc] initWithCommandQueue:commandQueue];
         [_illuminationMesh setSampleCount:1];
         [_illuminationMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
+        
+        _checkerboard = [[NuoCheckboardMesh alloc] initWithCommandQueue:commandQueue];
         
         _sceneRoot = [[NuoMeshSceneRoot alloc] init];
         _boardMeshes = [NSMutableArray new];
@@ -1115,6 +1120,9 @@
     // deferred rendering for the illumination
     
     id<MTLRenderCommandEncoder> deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
+    
+    if (_showCheckerboard)
+        [_checkerboard drawMesh:deferredRenderPass indexBuffer:inFlight];
     
     BOOL drawBackdrop = _backdropMesh && _backdropMesh.enabled;
     if (drawBackdrop)
