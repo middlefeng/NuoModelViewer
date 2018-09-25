@@ -84,6 +84,17 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 
 - (void)setRoot:(NuoMeshSceneRoot*)root
 {
+    if (!root.meshes || !root.meshes.count)
+    {
+        _accelerateStructure.vertexBuffer = nil;
+        _accelerateStructure.indexType = MPSDataTypeUInt32;
+        _accelerateStructure.indexBuffer = 0;
+        _accelerateStructure.triangleCount = 0;
+        _accelerateStructure.maskBuffer = nil;
+        
+        return;
+    }
+    
     // all coordinates are in the world system, with primary rays following the same rule as
     // they are transformed through the inverse of the view matrix
     

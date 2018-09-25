@@ -92,3 +92,42 @@ NuoMaterial NuoModelTextured::GetMaterial(size_t primtiveIndex) const
 {
     return NuoMaterial();
 }
+
+
+GlobalBuffers NuoModelTextured::GetGlobalBuffers() const
+{
+    GlobalBuffers result;
+    
+    for (const NuoItemTextured& item : _buffer)
+    {
+        {
+            NuoVectorFloat3::_typeTrait::_vectorType vector;
+            vector.x = item._position.x;
+            vector.y = item._position.y;
+            vector.z = item._position.z;
+            result._vertices.push_back(vector);
+        }
+        
+        {
+            NuoRayTracingMaterial material;
+            
+            material.normal.x = item._normal.x;
+            material.normal.y = item._normal.y;
+            material.normal.z = item._normal.z;
+            
+            // the texture index is not available yet
+            material.texCoord.x = item._texCoord.x;
+            material.texCoord.y = item._texCoord.y;
+            material.diffuseTex = -2;
+            
+            material.diffuseColor = NuoVectorFloat3(1, 1, 1)._vector;
+            material.illuminate = 2;
+            
+            result._materials.push_back(material);
+        }
+    }
+    
+    result._indices = _indices;
+    
+    return result;
+}

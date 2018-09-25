@@ -95,7 +95,7 @@
 - (void)makePipelineScreenSpaceState
 {
     MTLFunctionConstantValues* constants = [MTLFunctionConstantValues new];
-    BOOL shadowOverlay = YES;
+    BOOL shadowOverlay = self.shadowOverlayOnly;
     BOOL rayTracing = self.shadowOptionRayTracing;
     [constants setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
     [constants setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];

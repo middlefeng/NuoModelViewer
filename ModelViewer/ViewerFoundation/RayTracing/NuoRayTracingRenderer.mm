@@ -150,7 +150,7 @@
 
 - (BOOL)primaryRayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    if (!_rayStructure)
+    if (!_rayStructure || !_rayStructure.vertexBuffer)
         return NO;
     
     [_rayStructure primaryRayIntersect:commandBuffer inFlight:inFlight withIntersection:_intersectionBuffer];

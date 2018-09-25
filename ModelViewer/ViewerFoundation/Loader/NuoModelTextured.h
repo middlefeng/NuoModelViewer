@@ -79,6 +79,7 @@ public:
     virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
     virtual void UpdateBufferWithUnifiedMaterial() override;
     virtual NuoMaterial GetMaterial(size_t primtiveIndex) const override;
+    virtual GlobalBuffers GetGlobalBuffers() const override;
     
     virtual void GenerateTangents() override;
     
