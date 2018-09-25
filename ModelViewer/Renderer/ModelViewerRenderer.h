@@ -99,6 +99,8 @@ class NuoLua;
 @property (nonatomic, assign) float illuminationStrength;
 @property (nonatomic, assign) float ambientDensity;
 
+@property (nonatomic, assign) BOOL showCheckerboard;
+
 @property (nonatomic, strong, readonly) NuoMeshOption* modelOptions;
 @property (nonatomic, assign) NuoDeferredRenderUniforms deferredParameters;
 
