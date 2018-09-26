@@ -20,6 +20,12 @@ A simple Wavefront OBJ viewer.
   <img width="400" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/LP670-checkerboard.png"/>
 </p>
 
+* Inspecting intremediate textures in debug.
+
+<p align="left">
+  <img width="600" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/Inspect.jpg"/>
+</p>
+
 * Overlay indicator for selected parts.
 
 <p align="left">
