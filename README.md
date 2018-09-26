@@ -9,10 +9,15 @@ A simple Wavefront OBJ viewer.
   * Indirect lighting (ambient) with physically-based occlusion.
   * Physically based effect for the shadow overlay (blend-in with photographic scene).
   * Self-illuminating objects.
+* Checkerboard background for better inspecting the result transparency.
 
 <p align="left">
   <img width="400" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F-35-ray_tracing.png"/>
   <img width="400" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/AFD-ray-tracing.png"/>
+</p>
+
+<p align="left">
+  <img width="400" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/LP670-checkerboard.png"/>
 </p>
 
 * Overlay indicator for selected parts.
