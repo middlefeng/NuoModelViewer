@@ -1079,11 +1079,8 @@
         [_lightCastBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(lightUniforms))];
     }
     
-    if (_rayTracingRecordStatus == kRecord_Stop)
-    {
-        [_deferredRenderer setRoot:_sceneRoot];
-        [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
-    }
+    [_deferredRenderer setRoot:_sceneRoot];
+    [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
 }
 
 
