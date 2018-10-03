@@ -48,6 +48,7 @@ struct VertexFragmentCharacters
     metal::float4 projectedNDC;
     
     metal::float3 eye;
+    metal::float3 normal;
     
     metal::float3 diffuseColor;
     metal::float3 ambientColor;
@@ -128,17 +129,9 @@ constant bool kDepthPrerenderred = kMeshMode == kMeshMode_Selection;
 
 
 metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
-                                                   metal::float3 normal,
                                                    constant NuoLightUniforms &lighting,
-                                                   metal::float4 diffuseTexel,
                                                    metal::texture2d<float> shadowMap[2],
                                                    metal::sampler samplr);
-
-float4 fragment_light_color_opacity_common(VertexFragmentCharacters vert,
-                                           metal::float3 normal,
-                                           constant NuoLightUniforms &lightingUniform,
-                                           metal::texture2d<float> shadowMap[2],
-                                           metal::sampler samplr);
 
 metal::float4 diffuse_lighted_selection(metal::float4 vertPositionNDC,
                                         metal::float3 normal,

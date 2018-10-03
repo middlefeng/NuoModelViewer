@@ -107,10 +107,11 @@ fragment float4 fragment_light_tex_materialed(ProjectedVertex vert [[stage_in]],
         opacityTexel = opacityTexture.sample(samplr, vert.texCoord);
     
     float4 diffuseColor = diffuse_common(diffuseTexel, opacityTexel.a);
+    outVert.diffuseColor = diffuseColor.rgb * outVert.diffuseColor;
+    outVert.opacity = diffuseColor.a * outVert.opacity;
     
     texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
-    return fragment_light_tex_materialed_common(outVert, vert.normal, lighting, diffuseColor,
-                                                shadowMap, depthSamplr);
+    return fragment_light_tex_materialed_common(outVert, lighting, shadowMap, depthSamplr);
 }
 
 
@@ -120,6 +121,7 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
     
     outVert.projectedNDC = vert.positionNDC;
     outVert.eye = vert.eye;
+    outVert.normal = normalize(vert.normal);
     outVert.diffuseColor = vert.diffuseColor;
     outVert.ambientColor = vert.ambientColor;
     outVert.specularColor = vert.specularColor;

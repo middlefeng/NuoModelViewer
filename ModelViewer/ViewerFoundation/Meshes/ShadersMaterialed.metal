@@ -84,12 +84,9 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
     if (kMeshMode == kMeshMode_Selection)
         return diffuse_lighted_selection(vert.positionNDC, vert.normal, depth, depthSamplr);
     
-    float3 normal = normalize(vert.normal);
     texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
-    
     VertexFragmentCharacters vertFrag = vertex_characters(vert);
-    return fragment_light_color_opacity_common(vertFrag, normal, lightUniform,
-                                               shadowMap, depthSamplr);
+    return fragment_light_tex_materialed_common(vertFrag, lightUniform, shadowMap, depthSamplr);
 }
 
 
@@ -100,6 +97,7 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
     
     outVert.projectedNDC = vert.positionNDC;
     outVert.eye = vert.eye;
+    outVert.normal = normalize(vert.normal);
     outVert.diffuseColor = vert.diffuseColor;
     outVert.ambientColor = vert.ambientColor;
     outVert.specularColor = vert.specularColor;

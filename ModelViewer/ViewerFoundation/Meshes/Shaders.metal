@@ -249,28 +249,9 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
 
 
 float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
-                                            float3 normal,
                                             constant NuoLightUniforms &lightingUniform,
-                                            float4 diffuseTexel,
                                             texture2d<float> shadowMap[2],
                                             sampler samplr)
-{
-    normal = normalize(normal);
-    
-    vert.diffuseColor = diffuseTexel.rgb * vert.diffuseColor;
-    vert.opacity = diffuseTexel.a * vert.opacity;
-    
-    return fragment_light_color_opacity_common(vert, normal, lightingUniform,
-                                               shadowMap, samplr);
-}
-
-
-
-float4 fragment_light_color_opacity_common(VertexFragmentCharacters vert,
-                                           float3 normal,
-                                           constant NuoLightUniforms &lightingUniform,
-                                           texture2d<float> shadowMap[2],
-                                           sampler samplr)
 {
     float3 colorForLights = 0.0;
     
@@ -281,7 +262,7 @@ float4 fragment_light_color_opacity_common(VertexFragmentCharacters vert,
         const NuoLightParameterUniformField lightParams = lightingUniform.lightParams[i];
         
         float3 lightVector = normalize(lightParams.direction.xyz);
-        float diffuseIntensity = saturate(dot(normal, lightVector));
+        float diffuseIntensity = saturate(dot(vert.normal, lightVector));
         float3 diffuseTerm = vert.diffuseColor * diffuseIntensity;
         
         float shadowPercent = 0.0;
@@ -306,7 +287,7 @@ float4 fragment_light_color_opacity_common(VertexFragmentCharacters vert,
             float3 halfway = normalize(lightVector + eyeDirection);
             
             specularTerm = specular_common(vert.specularColor, vert.specularPower,
-                                           lightParams, normal, halfway, diffuseIntensity);
+                                           lightParams, vert.normal, halfway, diffuseIntensity);
             transparency *= ((1 - saturate(pow(length(specularTerm), 1.0) * (1 - shadowPercent))));
         }
         
