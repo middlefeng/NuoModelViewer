@@ -1125,21 +1125,24 @@
     if (drawBackdrop)
         [_backdropMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
 
-    if (rayTracingMode)
+    if (_mainModelMesh.enabled)
     {
-        [inspectMaster updateTexture:[self rayTracingIllumination] forName:kInspectable_Illuminate];
-        
-        [_illuminationMesh setModelTexture:_immediateTarget.targetTexture];
-        [_illuminationMesh setIlluminationMap:[self rayTracingIllumination]];
-        [_illuminationMesh setShadowOverlayMap:[self shadowOverlayMap]];
-        [_illuminationMesh setTranslucentCoverMap:[_deferredRenderer ambientBuffer]];
-        [_illuminationMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
-    }
-    else
-    {
-        [_deferredRenderer setRenderTarget:self.renderTarget];
-        [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
-        [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        if (rayTracingMode)
+        {
+            [inspectMaster updateTexture:[self rayTracingIllumination] forName:kInspectable_Illuminate];
+            
+            [_illuminationMesh setModelTexture:_immediateTarget.targetTexture];
+            [_illuminationMesh setIlluminationMap:[self rayTracingIllumination]];
+            [_illuminationMesh setShadowOverlayMap:[self shadowOverlayMap]];
+            [_illuminationMesh setTranslucentCoverMap:[_deferredRenderer ambientBuffer]];
+            [_illuminationMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
+        }
+        else
+        {
+            [_deferredRenderer setRenderTarget:self.renderTarget];
+            [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
+            [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        }
     }
     
     [self releaseDefaultEncoder];
