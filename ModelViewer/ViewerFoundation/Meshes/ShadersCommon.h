@@ -137,8 +137,6 @@ metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert
 float4 fragment_light_color_opacity_common(VertexFragmentCharacters vert,
                                            metal::float3 normal,
                                            constant NuoLightUniforms &lightingUniform,
-                                           metal::float3 diffuseColor,
-                                           float opacity,
                                            metal::texture2d<float> shadowMap[2],
                                            metal::sampler samplr);
 

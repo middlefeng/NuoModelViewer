@@ -85,15 +85,11 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
         return diffuse_lighted_selection(vert.positionNDC, vert.normal, depth, depthSamplr);
     
     float3 normal = normalize(vert.normal);
-    float3 diffuseColor = vert.diffuseColor;
-    
     texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
-    float opacity = vert.specularPowerDisolve.y;
     
     VertexFragmentCharacters vertFrag = vertex_characters(vert);
-    
-    return fragment_light_color_opacity_common(vertFrag, normal, lightUniform, diffuseColor,
-                                               opacity, shadowMap, depthSamplr);
+    return fragment_light_color_opacity_common(vertFrag, normal, lightUniform,
+                                               shadowMap, depthSamplr);
 }
 
 
