@@ -123,7 +123,6 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
     outVert.eye = vert.eye;
     outVert.normal = normalize(vert.normal);
     outVert.diffuseColor = vert.diffuseColor;
-    outVert.ambientColor = vert.ambientColor;
     outVert.specularColor = vert.specularColor;
     outVert.specularPower = vert.specularPower;
     outVert.opacity = vert.dissolve;

@@ -18,14 +18,12 @@
 
 struct Material
 {
-    metal::float3 ambientColor;
     metal::float3 diffuseColor;
     metal::float3 specularColor;
     float specularPower;
 };
 
 constant Material material = {
-    .ambientColor = { 0.6, 0.6, 0.6 },
     .diffuseColor = { 0.6, 0.6, 0.6 },
     .specularColor = { 1, 1, 1 },
     .specularPower = 100
@@ -51,7 +49,6 @@ struct VertexFragmentCharacters
     metal::float3 normal;
     
     metal::float3 diffuseColor;
-    metal::float3 ambientColor;
     metal::float3 specularColor;
     float specularPower;
     float opacity;
