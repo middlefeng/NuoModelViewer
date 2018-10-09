@@ -19,10 +19,11 @@ class NuoRandomBuffer
 {
     ItemType* _buffer;
     size_t _bufferSize;
+    size_t _dimension;
     
 public:
     
-    inline NuoRandomBuffer(size_t size);
+    inline NuoRandomBuffer(size_t size, size_t dimension);
     void SetBuffer(void* buffer) { _buffer = (ItemType*)buffer; }
     size_t Size() { return _bufferSize; }
     size_t BytesSize() { return _bufferSize * sizeof(ItemType); }
@@ -32,8 +33,9 @@ public:
 
 
 template <class ItemType>
-inline NuoRandomBuffer<ItemType>::NuoRandomBuffer(size_t size)
-    : _bufferSize(size)
+inline NuoRandomBuffer<ItemType>::NuoRandomBuffer(size_t size, size_t dimension)
+    : _bufferSize(size),
+      _dimension(dimension)
 {
 }
 
@@ -41,7 +43,9 @@ inline NuoRandomBuffer<ItemType>::NuoRandomBuffer(size_t size)
 template <>
 inline void NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType>::UpdateBuffer()
 {
-    for (int i = 0; i < _bufferSize; ++i)
+    size_t amount = _bufferSize * _dimension;
+    
+    for (int i = 0; i < amount; ++i)
     {
         _buffer[i] =
         {
