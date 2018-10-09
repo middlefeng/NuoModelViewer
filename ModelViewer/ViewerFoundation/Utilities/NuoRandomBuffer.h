@@ -17,31 +17,31 @@
 template <class ItemType>
 class NuoRandomBuffer
 {
-    std::vector<ItemType> _buffer;
-    
-    inline void InitBuffer();
+    ItemType* _buffer;
+    size_t _bufferSize;
     
 public:
     
     inline NuoRandomBuffer(size_t size);
-    void* Ptr() { return &_buffer[0]; }
-    size_t Size() { return _buffer.size(); }
-    size_t BytesSize() { return Size() * sizeof(ItemType); }
+    void SetBuffer(void* buffer) { _buffer = (ItemType*)buffer; }
+    size_t Size() { return _bufferSize; }
+    size_t BytesSize() { return _bufferSize * sizeof(ItemType); }
+    
+    void UpdateBuffer();
 };
 
 
 template <class ItemType>
 inline NuoRandomBuffer<ItemType>::NuoRandomBuffer(size_t size)
+    : _bufferSize(size)
 {
-    _buffer.resize(size);
-    InitBuffer();
 }
 
 
 template <>
-inline void NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType>::InitBuffer()
+inline void NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType>::UpdateBuffer()
 {
-    for (int i = 0; i < _buffer.size(); ++i)
+    for (int i = 0; i < _bufferSize; ++i)
     {
         _buffer[i] =
         {
@@ -51,6 +51,9 @@ inline void NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType>::InitBuffe
     }
 }
 
+
+typedef NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> RandomGenerator;
+typedef std::shared_ptr<RandomGenerator> PRandomGenerator;
 
 
 #endif /* NuoRandomBuffer_hpp */
