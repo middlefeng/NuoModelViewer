@@ -54,7 +54,7 @@ A simple Wavefront OBJ viewer.
 * Better PCSS soft shadow
 
 <p align="left">
-  <img height="295" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F4J-ground-pcss.jpg"/>
+  <img width="408" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F4J-ground-pcss.jpg"/>
 </p>
 
 * Ground shadow
