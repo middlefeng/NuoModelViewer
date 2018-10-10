@@ -47,7 +47,7 @@ A simple Wavefront OBJ viewer.
 * Ambient occlusion.
 
 <p align="left">
-  <img height="295" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/SDROBJ-no-occlusion.jpg"/>
+  <img width="446" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/SDROBJ-no-occlusion.jpg"/>
 </p>
 
 * Transform of the entire scene (including the light sources).
