@@ -118,6 +118,9 @@ static CIContext* sCIContext = nil;
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     NuoMeshModeShaderParameter meshMode = kMeshMode_Normal;
+    BOOL physicalReflection = NO;
+    
+    [funcConstant setConstantValue:&physicalReflection type:MTLDataTypeBool atIndex:2];
     [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
     [funcConstant setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];

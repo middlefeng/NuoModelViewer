@@ -117,13 +117,14 @@ fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
         opacityTexel = opacityTexture.sample(samplr, vert.texCoord);
     
     float4 diffuseColor = diffuse_common(diffuseTexel, opacityTexel.a);
+    outVert.diffuseColor = diffuseColor.rgb * outVert.diffuseColor;
+    outVert.opacity = diffuseColor.a * outVert.opacity;
     
     float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
-    float3 normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
+    outVert.normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
     
     texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
-    return fragment_light_tex_materialed_common(outVert, normal, lighting, diffuseColor,
-                                                shadowMap, depthSamplr);
+    return fragment_light_tex_materialed_common(outVert, lighting, shadowMap, depthSamplr);
 }
 
 
@@ -135,7 +136,6 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
     
     outVert.eye = vert.eye;
     outVert.diffuseColor = vert.diffuseColor;
-    outVert.ambientColor = vert.ambientColor;
     outVert.specularColor = vert.specularColor;
     outVert.specularPower = vert.specularPower;
     outVert.opacity = vert.dissolve;

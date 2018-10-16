@@ -249,42 +249,21 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
 
 
 float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
-                                            float3 normal,
                                             constant NuoLightUniforms &lightingUniform,
-                                            float4 diffuseTexel,
                                             texture2d<float> shadowMap[2],
                                             sampler samplr)
 {
-    normal = normalize(normal);
-    
-    float3 diffuseColor = diffuseTexel.rgb * vert.diffuseColor;
-    float opacity = diffuseTexel.a * vert.opacity;
-    
-    return fragment_light_color_opacity_common(vert, normal, lightingUniform, diffuseColor,
-                                               opacity, shadowMap, samplr);
-}
-
-
-
-float4 fragment_light_color_opacity_common(VertexFragmentCharacters vert,
-                                           float3 normal,
-                                           constant NuoLightUniforms &lightingUniform,
-                                           float3 diffuseColor,
-                                           float opacity,
-                                           texture2d<float> shadowMap[2],
-                                           sampler samplr)
-{
     float3 colorForLights = 0.0;
     
-    float transparency = (1 - opacity);
+    float transparency = (1 - vert.opacity);
     
     for (unsigned i = 0; i < 4; ++i)
     {
         const NuoLightParameterUniformField lightParams = lightingUniform.lightParams[i];
         
         float3 lightVector = normalize(lightParams.direction.xyz);
-        float diffuseIntensity = saturate(dot(normal, lightVector));
-        float3 diffuseTerm = diffuseColor * diffuseIntensity;
+        float diffuseIntensity = saturate(dot(vert.normal, lightVector));
+        float3 diffuseTerm = vert.diffuseColor * diffuseIntensity;
         
         float shadowPercent = 0.0;
         if (i < 2)
@@ -293,7 +272,7 @@ float4 fragment_light_color_opacity_common(VertexFragmentCharacters vert,
                                                     vert.projectedNDC : vert.shadowPosition[i];
             
             const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
-            shadowPercent = shadow_coverage_common(shadowPositionCurrent, opacity < 1.0,
+            shadowPercent = shadow_coverage_common(shadowPositionCurrent, vert.opacity < 1.0,
                                                    shadowParams, diffuseIntensity, 3,
                                                    shadowMap[i], samplr);
             
@@ -308,7 +287,7 @@ float4 fragment_light_color_opacity_common(VertexFragmentCharacters vert,
             float3 halfway = normalize(lightVector + eyeDirection);
             
             specularTerm = specular_common(vert.specularColor, vert.specularPower,
-                                           lightParams, normal, halfway, diffuseIntensity);
+                                           lightParams, vert.normal, halfway, diffuseIntensity);
             transparency *= ((1 - saturate(pow(length(specularTerm), 1.0) * (1 - shadowPercent))));
         }
         

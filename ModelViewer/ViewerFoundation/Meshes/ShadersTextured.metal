@@ -107,6 +107,26 @@ vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(
 }
 
 
+static VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
+{
+    VertexFragmentCharacters outVert;
+    
+    outVert.projectedNDC = vert.positionNDC;
+    
+    outVert.eye = vert.eye;
+    outVert.normal = normalize(vert.normal);
+    outVert.diffuseColor = material.diffuseColor;
+    outVert.specularColor = material.specularColor;
+    outVert.specularPower = material.specularPower;
+    outVert.opacity = 1.0;
+    
+    outVert.shadowPosition[0] = vert.shadowPosition0;
+    outVert.shadowPosition[1] = vert.shadowPosition1;
+    
+    return outVert;
+}
+
+
 fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
                                         constant NuoLightUniforms &lightUniform [[buffer(0)]],
                                         texture2d<float> shadowMap0 [[texture(0)]],
@@ -115,44 +135,15 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
                                         sampler depthSamplr [[sampler(0)]],
                                         sampler samplr [[sampler(1)]])
 {
-    float3 normal = normalize(vert.normal);
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     float3 diffuseColor = diffuseTexel.rgb / diffuseTexel.a;
     
-    float3 colorForLights = 0.0;
-    
     texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
-    const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
     
-    for (unsigned i = 0; i < 4; ++i)
-    {
-        const NuoLightParameterUniformField lightParams = lightUniform.lightParams[i];
-        
-        float diffuseIntensity = saturate(dot(normal, normalize(lightParams.direction.xyz)));
-        float3 diffuseTerm = diffuseColor * diffuseIntensity;
-        
-        float3 specularTerm(0);
-        if (diffuseIntensity > 0)
-        {
-            float3 eyeDirection = normalize(vert.eye);
-            float3 halfway = normalize(normalize(lightParams.direction.xyz) + eyeDirection);
-            float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower) * diffuseIntensity;
-            specularTerm = material.specularColor * specularFactor;
-        }
-        
-        float shadowPercent = 0.0;
-        if (i < 2)
-        {
-            float4 shadowPositionCurrent = kShadowRayTracing ? vert.positionNDC : shadowPosition[i];
-            const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
-            shadowPercent = shadow_coverage_common(shadowPositionCurrent, false,
-                                                   shadowParams, diffuseIntensity, 3,
-                                                   shadowMap[i], depthSamplr);
-        }
-        
-        colorForLights += (diffuseTerm * lightParams.density + specularTerm * lightParams.spacular) * (1 - shadowPercent);
-    }
+    VertexFragmentCharacters outVert = vertex_characters(vert);
+    outVert.diffuseColor = diffuseColor;
+    outVert.opacity = diffuseTexel.a;
     
-    return float4(colorForLights, diffuseTexel.a);
+    return fragment_light_tex_materialed_common(outVert, lightUniform, shadowMap, depthSamplr);
 }
 
