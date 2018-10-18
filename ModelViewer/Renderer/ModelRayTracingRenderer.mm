@@ -20,7 +20,7 @@
 
 
 
-static const uint32_t kRandomBufferSize = 512;
+static const uint32_t kRandomBufferSize = 256;
 
 
 @interface ModelRayTracingSubrenderer : NuoRayTracingRenderer
@@ -165,6 +165,8 @@ static const uint32_t kRandomBufferSize = 512;
     ModelRayTracingSubrenderer* _subRenderers[2];
     
     NuoRayBuffer* _incidentRaysBuffer;
+    
+    PRandomGenerator _rng;
 }
 
 
@@ -186,12 +188,12 @@ static const uint32_t kRandomBufferSize = 512;
         
         id<MTLBuffer> buffers[kInFlightBufferCount];
         id<MTLBuffer> randoms[kInFlightBufferCount];
-        NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> randomBufferContent(kRandomBufferSize);
+        _rng = std::make_shared<RandomGenerator>(kRandomBufferSize, 2, 1);
         for (uint i = 0; i < kInFlightBufferCount; ++i)
         {
             buffers[i] = [commandQueue.device newBufferWithLength:sizeof(NuoRayTracingUniforms)
                                                           options:MTLResourceStorageModeManaged];
-            randoms[i] = [commandQueue.device newBufferWithLength:randomBufferContent.BytesSize()
+            randoms[i] = [commandQueue.device newBufferWithLength:_rng->BytesSize()
                                                           options:MTLResourceStorageModeManaged];
         }
         _rayTraceUniform = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
@@ -260,10 +262,9 @@ static const uint32_t kRandomBufferSize = 512;
     memcpy(_rayTraceUniform[index].contents, &uniforms, sizeof(NuoRayTracingUniforms));
     [_rayTraceUniform[index] didModifyRange:NSMakeRange(0, sizeof(NuoRayTracingUniforms))];
     
-    NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> randomBuffer(kRandomBufferSize);
-    memcpy([_randomBuffers[index] contents], randomBuffer.Ptr(), randomBuffer.BytesSize());
-    
-    [_randomBuffers[index] didModifyRange:NSMakeRange(0, randomBuffer.BytesSize())];
+    _rng->SetBuffer(_randomBuffers[index].contents);
+    _rng->UpdateBuffer();
+    [_randomBuffers[index] didModifyRange:NSMakeRange(0, _rng->BytesSize())];
 }
 
 

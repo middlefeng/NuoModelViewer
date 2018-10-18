@@ -30,6 +30,7 @@
     NSArray<id<MTLBuffer>>* _randomBuffers;
     
     NuoComputePipeline* _pipeline;
+    PRandomGenerator _rng;
 }
 
 
@@ -43,13 +44,13 @@
         
         id<MTLBuffer> uniformBuffer[kInFlightBufferCount];
         id<MTLBuffer> randomBuffer[kInFlightBufferCount];
-        NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> randomBufferContent(256);
+        _rng = std::make_shared<RandomGenerator>(256, 1, 1);
         
         for (uint i = 0; i < kInFlightBufferCount; ++i)
         {
             uniformBuffer[i] = [_device newBufferWithLength:sizeof(NuoRayVolumeUniform)
                                                     options:MTLResourceStorageModeManaged];
-            randomBuffer[i] = [_device newBufferWithLength:randomBufferContent.BytesSize()
+            randomBuffer[i] = [_device newBufferWithLength:_rng->BytesSize()
                                                    options:MTLResourceStorageModeManaged];
             
             uniformBuffer[i].label = @"Ray Uniform";
@@ -78,10 +79,9 @@
 
 - (void)updateRandomBuffer:(uint)inFlight
 {
-    NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> randomBuffer(256);
-    memcpy([_randomBuffers[inFlight] contents], randomBuffer.Ptr(), randomBuffer.BytesSize());
-        
-    [_randomBuffers[inFlight] didModifyRange:NSMakeRange(0, randomBuffer.BytesSize())];
+    _rng->SetBuffer(_randomBuffers[inFlight].contents);
+    _rng->UpdateBuffer();
+    [_randomBuffers[inFlight] didModifyRange:NSMakeRange(0, _rng->BytesSize())];
 }
 
 
