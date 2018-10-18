@@ -44,7 +44,7 @@
         
         id<MTLBuffer> uniformBuffer[kInFlightBufferCount];
         id<MTLBuffer> randomBuffer[kInFlightBufferCount];
-        _rng = std::make_shared<RandomGenerator>(256, 1, 4);
+        _rng = std::make_shared<RandomGenerator>(256, 1, 1);
         
         for (uint i = 0; i < kInFlightBufferCount; ++i)
         {

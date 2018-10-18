@@ -17,9 +17,30 @@
 template <class ItemType>
 class NuoRandomBuffer
 {
+
+protected:
+
     ItemType* _buffer;
     size_t _bufferSize;
     size_t _dimension;
+    
+public:
+    
+    NuoRandomBuffer(size_t size, size_t dimension);
+    
+    void SetBuffer(void* buffer) { _buffer = (ItemType*)buffer; }
+    size_t Size() { return _bufferSize; }
+    size_t BytesSize() { return _bufferSize * _dimension * sizeof(ItemType); }
+    
+    virtual void UpdateBuffer() = 0;
+};
+
+
+template <class ItemType>
+class NuoRandomBufferStratified : public NuoRandomBuffer<ItemType>
+{
+
+protected:
     
     size_t _stratification;
     size_t _stratCurrentDimension;
@@ -28,22 +49,24 @@ class NuoRandomBuffer
     
 public:
     
-    inline NuoRandomBuffer(size_t size, size_t dimension,
-                           size_t stratification);
+    inline NuoRandomBufferStratified(size_t size, size_t dimension,
+                                     size_t stratification);
     
-    void SetBuffer(void* buffer) { _buffer = (ItemType*)buffer; }
-    size_t Size() { return _bufferSize; }
-    size_t BytesSize() { return _bufferSize * _dimension * sizeof(ItemType); }
-    
-    void UpdateBuffer();
+    virtual void UpdateBuffer() override;
 };
 
 
 template <class ItemType>
-inline NuoRandomBuffer<ItemType>::NuoRandomBuffer(size_t size, size_t dimension,
-                                                  size_t stratification)
+NuoRandomBuffer<ItemType>::NuoRandomBuffer(size_t size, size_t dimension)
     : _bufferSize(size),
-      _dimension(dimension),
+      _dimension(dimension)
+{
+}
+
+template <class ItemType>
+NuoRandomBufferStratified<ItemType>::NuoRandomBufferStratified(size_t size, size_t dimension,
+                                                               size_t stratification)
+    : NuoRandomBuffer<ItemType>(size, dimension),
       _stratification(stratification),
       _stratCurrentDimension(0)
 {
@@ -57,9 +80,8 @@ inline NuoRandomBuffer<ItemType>::NuoRandomBuffer(size_t size, size_t dimension,
     }
 }
 
-
 template <>
-inline void NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType>::UpdateBuffer()
+inline void NuoRandomBufferStratified<NuoVectorFloat2::_typeTrait::_vectorType>::UpdateBuffer()
 {
     const float invSample = 1.0f / (float)_stratification;
     
@@ -73,11 +95,6 @@ inline void NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType>::UpdateBuf
                 ((float)_stratCurrentY[currentDimension] + (float)rand() / (float)RAND_MAX) * invSample
             };
         }
-    }
-    
-    if (_dimension == 2)
-    {
-        printf("Stratifying: %lu, %lu, %lu, %lu.\n", _stratCurrentX[0], _stratCurrentY[0], _stratCurrentX[1], _stratCurrentY[1]);
     }
     
     for (size_t i = 0; i < _dimension;)
@@ -107,7 +124,7 @@ inline void NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType>::UpdateBuf
 }
 
 
-typedef NuoRandomBuffer<NuoVectorFloat2::_typeTrait::_vectorType> RandomGenerator;
+typedef NuoRandomBufferStratified<NuoVectorFloat2::_typeTrait::_vectorType> RandomGenerator;
 typedef std::shared_ptr<RandomGenerator> PRandomGenerator;
 
 
