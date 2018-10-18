@@ -33,6 +33,11 @@ public:
     size_t BytesSize() { return _bufferSize * _dimension * sizeof(ItemType); }
     
     virtual void UpdateBuffer() = 0;
+
+protected:
+    
+    inline float UniformRandom();
+    
 };
 
 
@@ -63,6 +68,16 @@ NuoRandomBuffer<ItemType>::NuoRandomBuffer(size_t size, size_t dimension)
 {
 }
 
+
+
+template <class ItemType>
+inline float NuoRandomBuffer<ItemType>::UniformRandom()
+{
+    return (float)rand() / (float)RAND_MAX;
+}
+
+
+
 template <class ItemType>
 NuoRandomBufferStratified<ItemType>::NuoRandomBufferStratified(size_t size, size_t dimension,
                                                                size_t stratification)
@@ -91,8 +106,8 @@ inline void NuoRandomBufferStratified<NuoVectorFloat2::_typeTrait::_vectorType>:
         {
             _buffer[i + _bufferSize * currentDimension] =
             {
-                ((float)_stratCurrentX[currentDimension] + (float)rand() / (float)RAND_MAX) * invSample,
-                ((float)_stratCurrentY[currentDimension] + (float)rand() / (float)RAND_MAX) * invSample
+                ((float)_stratCurrentX[currentDimension] + UniformRandom()) * invSample,
+                ((float)_stratCurrentY[currentDimension] + UniformRandom()) * invSample
             };
         }
     }
