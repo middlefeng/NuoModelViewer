@@ -85,9 +85,24 @@
 }
 
 
+- (CGPoint)normalizedRange:(const CGSize&)drawableSize
+{
+    const uint width = (uint)drawableSize.width;
+    const uint height = (uint)drawableSize.height;
+    
+    const float aspectRatio = width / (float)height;
+    
+    CGPoint result;
+    result.x = tan(_fieldOfView / 2.0) * 2.0;
+    result.y = result.x * aspectRatio;
+    
+    return result;
+}
+
+
 - (void)updateUniform:(uint)inFlight widthRayBuffer:(NuoRayBuffer*)buffer
 {
-    CGSize drawableSize = [buffer dimension];
+    const CGSize drawableSize = [buffer dimension];
     
     const uint width = (uint)drawableSize.width;
     const uint height = (uint)drawableSize.height;
@@ -97,10 +112,10 @@
     uniform.wViewPort = width;
     uniform.hViewPort = height;
     
-    const float aspectRatio = width / (float)height;
+    const CGPoint normalized = [self normalizedRange:drawableSize];
     
-    uniform.vRange = tan(_fieldOfView / 2.0) * 2.0;
-    uniform.uRange = uniform.vRange * aspectRatio;
+    uniform.vRange = normalized.x;
+    uniform.uRange = normalized.y;
     uniform.viewTrans = _viewTrans._m;
     
     memcpy([_uniformBuffers[inFlight] contents], &uniform, sizeof(uniform));
