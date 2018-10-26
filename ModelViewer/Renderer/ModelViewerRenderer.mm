@@ -1155,16 +1155,16 @@
     const float scale = [[NSScreen mainScreen] backingScaleFactor];
     const CGPoint scaledPoint = CGPointMake(point.x * scale, point.y * scale);
     
+    const CGSize drawableSize = self.renderTarget.drawableSize;
+    const NuoVectorFloat2 normalized(scaledPoint.x / drawableSize.width * 2.0 - 1.0,
+                                     scaledPoint.y / drawableSize.height * 2.0 - 1.0);
+    
     for (NuoMesh* mesh in _sceneRoot.meshes)
     {
         const NuoVectorFloat3 center = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox._center;
         const NuoVectorFloat4 centerVec(center.x(), center.y(), center.z(), 1.0);
         const NuoVectorFloat4 centerProjected = _projection * centerVec;
         const NuoVectorFloat2 centerOnScreen = NuoVectorFloat2(centerProjected.x(), centerProjected.y()) / centerProjected.w();
-        
-        CGSize drawableSize = self.renderTarget.drawableSize;
-        const NuoVectorFloat2 normalized(scaledPoint.x / drawableSize.width * 2.0 - 1.0,
-                                         scaledPoint.y / drawableSize.height * 2.0 - 1.0);
         
         const float currentDistance = NuoDistance(normalized, centerOnScreen);
         if (currentDistance < distance)
