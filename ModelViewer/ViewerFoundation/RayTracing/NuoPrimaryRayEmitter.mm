@@ -93,8 +93,8 @@
     const float aspectRatio = width / (float)height;
     
     CGPoint result;
-    result.x = tan(_fieldOfView / 2.0) * 2.0;
-    result.y = result.x * aspectRatio;
+    result.y = tan(_fieldOfView / 2.0) * 2.0;
+    result.x = result.y * aspectRatio;
     
     return result;
 }
@@ -114,8 +114,8 @@
     
     const CGPoint normalized = [self normalizedRange:drawableSize];
     
-    uniform.vRange = normalized.x;
-    uniform.uRange = normalized.y;
+    uniform.uRange = normalized.x;
+    uniform.vRange = normalized.y;
     uniform.viewTrans = _viewTrans._m;
     
     memcpy([_uniformBuffers[inFlight] contents], &uniform, sizeof(uniform));
