@@ -120,6 +120,12 @@
 }
 
 
+- (BOOL)hasTransparency
+{
+    return YES;
+}
+
+
 @end
 
 
@@ -145,4 +151,19 @@ NuoBoardMesh* CreateBoardMesh(id<MTLCommandQueue> commandQueue, const std::share
     [resultMesh makeGPUStates];
     
     return resultMesh;
+}
+
+
+
+NuoBoardMesh* CreateBoardMesh(id<MTLCommandQueue> commandQueue, const NuoBounds& bounds)
+{
+    std::shared_ptr<NuoModelBoard> model = std::make_shared<NuoModelBoard>(bounds);
+    model->CreateBuffer();
+    
+    NuoBoardMesh* mesh = CreateBoardMesh(commandQueue, model, false);
+    const NuoVectorFloat3 translation = bounds._center;
+    const NuoMatrixFloat44 matrix = NuoMatrixTranslation(translation);
+    mesh.transformTranslate = matrix;
+    
+    return mesh;
 }

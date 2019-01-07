@@ -88,6 +88,8 @@
     
     BOOL _rayAcceleratorOutOfSync;
     BOOL _rayAcceleratorNeedRebuild;
+    
+    NuoBoardMesh* _boundMesh;
 }
 
 
@@ -236,7 +238,35 @@
     const NuoVectorFloat3 defaultDistanceVec(0, 0, defaultDistance);
     [_mainModelMesh setTransformTranslate:NuoMatrixTranslation(defaultDistanceVec)];
     
+    
+    //mesh.sampleCount = _immediateTarget.sampleCount;
+    //[mesh makePipelineState];
+    //[mesh drawMesh:renderPass indexBuffer:inFlight];
+    
     [self caliberateSceneCenter];
+    
+    //std::shared_ptr<NuoModelBoard> modelBoard(new NuoModelBoard(20, 20, 0.001));
+    //modelBoard->CreateBuffer();
+    //NuoBoardMesh* boardMesh = CreateBoardMesh(self.commandQueue, modelBoard, [_modelOptions basicMaterialized]);
+    {
+        const NuoBounds modelBounds = [_mainModelMesh worldBounds:NuoMatrixFloat44Identity].boundingBox;
+        
+        //std::shared_ptr<NuoModelBoard> modelBoard(new NuoModelBoard(20, 20, 0.001));
+        //modelBoard->CreateBuffer();
+        //NuoBoardMesh* boardMesh = CreateBoardMesh(self.commandQueue, modelBoard, [_modelOptions basicMaterialized]);
+        NuoBoardMesh* boardMesh = CreateBoardMesh(self.commandQueue, modelBounds);
+        
+        /*const NuoBounds bounds = boardMesh.boundsLocal.boundingBox;
+        const float radius = bounds.MaxDimension();
+        const float defaultDistance = - 3.0 * radius;
+        const NuoVectorFloat3 defaultDistanceVec(0, 0, defaultDistance);
+        //[boardMesh setTransformTranslate:NuoMatrixTranslation(defaultDistanceVec)];*/
+        [_sceneRoot addBoardObject:boardMesh];
+        
+        _boundMesh = boardMesh;
+    }
+    
+    
 }
 
 
@@ -919,6 +949,20 @@
         const NuoMatrixFloat44 transMatrix = NuoMatrixTranslation(translation) * _selectedMesh.transformTranslate;
         [_selectedMesh setTransformTranslate:transMatrix];
     }
+    
+    if (_selectedMesh)
+    {
+        NuoBounds bounds = [_selectedMesh worldBounds:[self viewMatrix]].boundingBox;
+        NuoBoardMesh* mesh = CreateBoardMesh(self.commandQueue, bounds);
+        
+        [mesh setSampleCount:_immediateTarget.sampleCount];
+        [mesh makeGPUStates];
+        //[mesh drawMesh:renderPass indexBuffer:inFlight];
+        
+        [_sceneRoot removeMesh:_boundMesh];
+        [_sceneRoot addBoardObject:mesh];
+        _boundMesh = mesh;
+    }
 }
 
 
@@ -958,7 +1002,7 @@
 
     float near = -bounds._center.z() - bounds._span.z() / 2.0 + 0.01;
     float far = near + bounds._span.z() + 0.02;
-    near = std::max<float>(0.001, near);
+    near = std::max<float>(0.001, near + bounds._center.z() / 100.0);
     far = std::max<float>(near + 0.001, far);
     
     _projection = NuoMatrixPerspective(aspect, _fieldOfView, near, far);
@@ -1106,6 +1150,15 @@
     
     [_sceneRoot drawMesh:renderPass indexBuffer:inFlight];
     
+    /*if (_selectedMesh)
+    {
+        NuoBounds bounds = [_selectedMesh worldBounds:[self viewMatrix]].boundingBox;
+        NuoMesh* mesh = CreateBoardMesh(commandBuffer.commandQueue, bounds);
+        mesh.sampleCount = _immediateTarget.sampleCount;
+        [mesh makePipelineState];
+        [mesh drawMesh:renderPass indexBuffer:inFlight];
+    }*/
+    
     [_immediateTarget releaseRenderPassEndcoder];
     
     NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
@@ -1161,6 +1214,9 @@
     
     for (NuoMesh* mesh in _sceneRoot.meshes)
     {
+        if (mesh == _boundMesh)
+            continue;
+        
         const NuoVectorFloat3 center = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox._center;
         const NuoVectorFloat4 centerVec(center.x(), center.y(), center.z(), 1.0);
         const NuoVectorFloat4 centerProjected = _projection * centerVec;

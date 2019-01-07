@@ -18,6 +18,14 @@ NuoModelBoard::NuoModelBoard(float width, float height, float thickness)
 }
 
 
+NuoModelBoard::NuoModelBoard(const NuoBounds& bounds)
+    : NuoModelBoardBase<NuoItemSimple>(bounds._span.x(),
+                                       bounds._span.y(),
+                                       bounds._span.z())
+{
+}
+
+
 GlobalBuffers NuoModelBoard::GetGlobalBuffers() const
 {
     GlobalBuffers result;

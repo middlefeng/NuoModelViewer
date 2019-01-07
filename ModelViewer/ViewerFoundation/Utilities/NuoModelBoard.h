@@ -50,6 +50,7 @@ class NuoModelBoard : virtual public NuoModelBoardBase<NuoItemSimple>,
 public:
     
     NuoModelBoard(float width, float height, float thickness);
+    NuoModelBoard(const NuoBounds& bounds);
     
     virtual GlobalBuffers GetGlobalBuffers() const override;
     

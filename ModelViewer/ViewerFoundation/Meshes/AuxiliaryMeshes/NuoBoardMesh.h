@@ -30,5 +30,6 @@
 
 
 NuoBoardMesh* CreateBoardMesh(id<MTLCommandQueue> commandQueue, const std::shared_ptr<NuoModelBoard> model, bool shadowCastOnly);
+NuoBoardMesh* CreateBoardMesh(id<MTLCommandQueue> commandQueue, const NuoBounds& bounds);
 
 #endif

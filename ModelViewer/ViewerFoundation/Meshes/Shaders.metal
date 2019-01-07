@@ -243,7 +243,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     }
     else
     {
-        return float4(colorForLights, modelCharacterUniforms.opacity);
+        return float4(colorForLights, 0.5);// modelCharacterUniforms.opacity);
     }
 }
 
