@@ -36,7 +36,7 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     const float u = (pixelCoord.x / (float)uniforms.wViewPort) * uniforms.uRange - uniforms.uRange / 2.0;
     const float v = (pixelCoord.y / (float)uniforms.hViewPort) * uniforms.vRange - uniforms.vRange / 2.0;
     
-    float4 rayDirection = float4(normalize(float3(u, -v, -1.0)), 0.0);
+    const float4 rayDirection = float4(normalize(float3(u, -v, -1.0)), 0.0);
     
     ray.direction = (uniforms.viewTrans * rayDirection).xyz;
     ray.origin = (uniforms.viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;

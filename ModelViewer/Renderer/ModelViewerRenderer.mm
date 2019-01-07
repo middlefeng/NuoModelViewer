@@ -952,7 +952,7 @@
     
     if (_selectedMesh)
     {
-        NuoBounds bounds = [_selectedMesh worldBounds:[self viewMatrix]].boundingBox;
+        NuoBounds bounds = [_selectedMesh worldBounds:NuoMatrixFloat44Identity].boundingBox;
         NuoBoardMesh* mesh = CreateBoardMesh(self.commandQueue, bounds);
         
         [mesh setSampleCount:_immediateTarget.sampleCount];
@@ -1204,29 +1204,36 @@
 
 - (void)selectMeshWithScreen:(CGPoint)point
 {
-    float distance = CGFLOAT_MAX;
     const float scale = [[NSScreen mainScreen] backingScaleFactor];
     const CGPoint scaledPoint = CGPointMake(point.x * scale, point.y * scale);
     
-    const CGSize drawableSize = self.renderTarget.drawableSize;
-    const NuoVectorFloat2 normalized(scaledPoint.x / drawableSize.width * 2.0 - 1.0,
-                                     scaledPoint.y / drawableSize.height * 2.0 - 1.0);
+    //const CGSize drawableSize = self.renderTarget.drawableSize;
+    //const NuoVectorFloat2 normalized(scaledPoint.x / drawableSize.width * 2.0 - 1.0,
+    //                                 scaledPoint.y / drawableSize.height * 2.0 - 1.0);
+    
+    NuoMatrixFloat44 viewMatrix = [self viewMatrix];
+    
+    [_rayAccelerator setView:viewMatrix];
+    [_rayAccelerator setFieldOfView:_fieldOfView];
+    
+    NuoRay ray = [_rayAccelerator primaryRayEmitOnPoint:scaledPoint];
+    float near = INFINITY;
     
     for (NuoMesh* mesh in _sceneRoot.meshes)
     {
         if (mesh == _boundMesh)
             continue;
         
-        const NuoVectorFloat3 center = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox._center;
-        const NuoVectorFloat4 centerVec(center.x(), center.y(), center.z(), 1.0);
-        const NuoVectorFloat4 centerProjected = _projection * centerVec;
-        const NuoVectorFloat2 centerOnScreen = NuoVectorFloat2(centerProjected.x(), centerProjected.y()) / centerProjected.w();
+        NuoBounds bounds = [mesh worldBounds:viewMatrix].boundingBox;
+        float tNear;
         
-        const float currentDistance = NuoDistance(normalized, centerOnScreen);
-        if (currentDistance < distance)
+        if (bounds.Intersect(ray, &tNear, nullptr))
         {
-            distance = currentDistance;
-            _selectedMesh = mesh;
+            if (tNear < near)
+            {
+                near = tNear;
+                _selectedMesh = mesh;
+            }
         }
     }
 }

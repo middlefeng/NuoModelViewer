@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 
-#include "NuoMathVector.h"
+#include "NuoRay.h"
 
 
 extern const uint kRayIntersectionStride;
@@ -44,6 +44,7 @@ extern const uint kRayIntersectionStride;
 - (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                 withInFlight:(uint)inFlight;
 
+- (NuoRay)primaryRayEmitOnPoint:(CGPoint)point;
 - (void)primaryRayEmit:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight;
 
 - (void)primaryRayIntersect:(id<MTLCommandBuffer>)commandBuffer

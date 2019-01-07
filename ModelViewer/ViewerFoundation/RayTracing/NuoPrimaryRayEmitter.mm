@@ -141,6 +141,27 @@
 }
 
 
+- (NuoRay)emitOnPoint:(CGPoint)pixelCoord withDrawable:(CGSize)drawableSize
+{
+    const CGPoint normalized = [self normalizedRange:drawableSize];
+    
+    const float u = ((pixelCoord.x / (float)drawableSize.width)  * normalized.x - normalized.x / 2.0);
+    const float v = ((pixelCoord.y / (float)drawableSize.height) * normalized.y - normalized.y / 2.0);
+    
+    NuoRay ray;
+    
+    NuoVectorFloat4 rayDirection = NuoVectorFloat4(u, v, -1.0, 0.0).Normalize();
+    //rayDirection = _viewTrans * rayDirection;
+    ray._direction = NuoVectorFloat3(rayDirection.x(), rayDirection.y(), rayDirection.z());
+    
+    NuoVectorFloat4 origin(0, 0, 0, 1.0);
+    //origin = _viewTrans * origin;
+    ray._origin = NuoVectorFloat3(origin.x(), origin.y(), origin.z());
+    
+    return ray;
+}
+
+
 - (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight
 {
     return _uniformBuffers[inFlight];

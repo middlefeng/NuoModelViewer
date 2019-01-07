@@ -12,7 +12,7 @@
 
 
 #include "NuoMathVector.h"
-
+#include "NuoRay.h"
 
 /**
  *  it's usually arbitrary to pick either the bounds (i.e. bounding box) or the sphere
@@ -57,6 +57,8 @@ public:
     float MaxDimension() const;
     
     NuoSphere Sphere() const;
+    
+    bool Intersect(const NuoRay& ray, float* near, float* far);
 };
 
 

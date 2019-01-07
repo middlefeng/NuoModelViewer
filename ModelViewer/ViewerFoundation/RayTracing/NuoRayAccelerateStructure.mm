@@ -215,6 +215,13 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
+
+- (NuoRay)primaryRayEmitOnPoint:(CGPoint)point
+{
+    return [_primaryRayEmitter emitOnPoint:point withDrawable:self.drawableSize];
+}
+
+
 - (void)primaryRayEmit:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight
 {
     [_primaryRayEmitter emitToBuffer:_primaryRayBuffer withCommandBuffer:commandBuffer withInFlight:inFlight];

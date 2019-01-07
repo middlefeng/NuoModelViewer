@@ -146,6 +146,52 @@ NuoSphere NuoBounds::Sphere() const
 }
 
 
+bool NuoBounds::Intersect(const NuoRay& ray, float* near, float* far)
+{
+    const float rayDirection[3] = {ray._direction.x(), ray._direction.y(), ray._direction.z()};
+    const float rayOrigin[3] = {ray._origin.x(), ray._origin.y(), ray._origin.z()};
+    const double min[3] =
+    {
+        _center.x() - _span.x() / 2.0,
+        _center.y() - _span.y() / 2.0,
+        _center.z() - _span.z() / 2.0
+    };
+    const double max[3] =
+    {
+        _center.x() + _span.x() / 2.0,
+        _center.y() + _span.y() / 2.0,
+        _center.z() + _span.z() / 2.0
+    };
+    
+    float t0 = 0, t1 = INFINITY;
+    
+    for (int i = 0; i < 3; ++i)
+    {
+        // update interval for _i_th bounding box slab
+        float invRayDir = 1 / rayDirection[i];
+        float tNear = (min[i] - rayOrigin[i]) * invRayDir;
+        float tFar = (max[i] - rayOrigin[i]) * invRayDir;
+        
+        // update parametric interval from slab intersection $t$ values
+        if (tNear > tFar)
+            std::swap(tNear, tFar);
+        
+        // Update _tFar_ to ensure robust ray--bounds intersection
+        t0 = tNear > t0 ? tNear : t0;
+        t1 = tFar < t1 ? tFar : t1;
+        if (t0 > t1)
+            return false;
+    }
+    
+    if (near)
+        *near = t0;
+    if (far)
+        *far = t1;
+    
+    return true;
+}
+
+
 NuoSphere::NuoSphere()
     : _center(0.0, 0.0, 0.0),
       _radius(0.0)

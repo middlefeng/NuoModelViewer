@@ -11,7 +11,7 @@
 
 #import "NuoRenderPassTarget.h"
 
-#include "NuoMathVector.h"
+#include "NuoRay.h"
 
 
 @class NuoRayBuffer;
@@ -32,6 +32,7 @@
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
+- (NuoRay)emitOnPoint:(CGPoint)pixelCoord withDrawable:(CGSize)drawableSize;
 - (void)emitToBuffer:(NuoRayBuffer*)rayBuffer withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                                                    withInFlight:(uint)inFlight;
 - (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight;

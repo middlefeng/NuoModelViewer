@@ -179,6 +179,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2C12086C2183AE7D009F7424 /* NuoRay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoRay.h; sourceTree = "<group>"; };
 		2C156CAC1EE7961C000C52D4 /* NuoBoardMesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoBoardMesh.h; sourceTree = "<group>"; };
 		2C156CAD1EE7961C000C52D4 /* NuoBoardMesh.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoBoardMesh.mm; sourceTree = "<group>"; };
 		2C156CCE1EE9B357000C52D4 /* NuoSheetPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoSheetPanel.h; sourceTree = "<group>"; };
@@ -768,6 +769,7 @@
 				2CECF8262150C3B000979919 /* RayTracingShadersCommon.h */,
 				2CE78F6520CF14A6007B9B7A /* RayTracingShaders.metal */,
 				2CECF8242150C34900979919 /* RayTracingHybridShaders.metal */,
+				2C12086C2183AE7D009F7424 /* NuoRay.h */,
 			);
 			path = RayTracing;
 			sourceTree = "<group>";
