@@ -193,6 +193,10 @@ void self_illumination(uint2 tid,
                        array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                        sampler samplr)
 {
+    // ambient factor, for historical reason, was set in a range which didn't consider the
+    // hemisphere factor
+    float ambientFactor = tracingUniforms.ambient / (2.0f * M_PI_F);
+    
     if (intersection.distance >= 0.0f)
     {
         const float maxDistance = tracingUniforms.bounds.span;
@@ -211,13 +215,7 @@ void self_illumination(uint2 tid,
         int illuminate = materials[*(vertexIndex)].illuminate;
         if (illuminate == 0)
         {
-            color = color * ray.color * tracingUniforms.illuminationStrength;
-            
-            // for bounced ray, multiplied with the integral base (2 PI, or the hemisphre)
-            // as there is no primary ray
-            if (ray.bounce > 0)
-                color = 2.0f * M_PI_F * color;
-            
+            color *= ray.color * tracingUniforms.illuminationStrength;
             overlayResult.write(float4(color, 1.0), tid);
             
             incidentRay.maxDistance = -1;
@@ -237,12 +235,14 @@ void self_illumination(uint2 tid,
             incidentRay.bounce = ray.bounce + 1;
             incidentRay.ambientIlluminated = ray.ambientIlluminated;
             
-            incidentRay.color = color * ray.color;
+            // for bounced ray, multiplied with the integral base (2 PI, or the hemisphre)
+            // as there is no primary ray
+            incidentRay.color = color * ray.color * (2.0f * M_PI_F);
         }
         
         if (ray.bounce > 0 && !ray.ambientIlluminated && intersection.distance > ambientRadius)
         {
-            color = originalRayColor * tracingUniforms.ambient;
+            color = originalRayColor * ambientFactor;
             overlayResult.write(float4(color, 1.0), tid);
             incidentRay.ambientIlluminated = true;
         }
@@ -251,7 +251,7 @@ void self_illumination(uint2 tid,
     {
         if (ray.bounce > 0 && !ray.ambientIlluminated)
         {
-            float3 color = ray.color * tracingUniforms.ambient;
+            float3 color = ray.color * ambientFactor;
             overlayResult.write(float4(color, 1.0), tid);
             incidentRay.ambientIlluminated = true;
         }
