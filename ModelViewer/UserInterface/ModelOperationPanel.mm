@@ -778,6 +778,7 @@
     [_combine setState:_meshOptions.combineShapes ? NSControlStateValueOn : NSControlStateValueOff];
     [_fieldOfView setFloatValue:_fieldOfViewRadian];
     [_ambientDensitySlider setFloatValue:_ambientDensity];
+    [_illuminationSlider setFloatValue:_illumination];
     
     if ([_motionBlurRecord state] == NSControlStateValueOn)
     {

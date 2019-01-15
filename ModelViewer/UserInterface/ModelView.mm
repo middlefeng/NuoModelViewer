@@ -1070,6 +1070,7 @@ MouseDragMode;
     [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
     [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];
     [_modelPanel setAmbientDensity:_modelRender.ambientDensity];
+    [_modelPanel setIllumination:_modelRender.illuminationStrength];
     [_modelPanel updateControls];
 }
 

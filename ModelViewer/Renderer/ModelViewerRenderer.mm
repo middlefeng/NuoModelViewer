@@ -671,6 +671,12 @@
             exporter.EndEntry(true);
         }
         
+        {
+            exporter.StartEntry("illumination");
+            exporter.SetEntryValueFloat(_illuminationStrength);
+            exporter.EndEntry(false);
+        }
+        
         exporter.EndTable();
         exporter.EndEntry(true);
     }
@@ -795,6 +801,14 @@
             params.ambientOcclusionParams.scale = lua->GetFieldAsNumber("scale", -1);
             [self setDeferredParameters:params];
         }
+        lua->RemoveField();
+    }
+    
+    {
+        lua->GetField("illumination", -1);
+        if (!lua->IsNil(-1))
+            [self setIlluminationStrength:lua->GetFieldAsNumber("illumination", -2)];
+
         lua->RemoveField();
     }
     
