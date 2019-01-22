@@ -1093,8 +1093,14 @@
         [_lightCastBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(lightUniforms))];
     }
     
-    [_deferredRenderer setRoot:_sceneRoot];
-    [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    if (_rayTracingRecordStatus == kRecord_Stop)
+    {
+        // seems unnecessary with ray tracing running, and it slows down ray tracing on
+        // 10.14.2 occasionally for unknown reason
+        
+        [_deferredRenderer setRoot:_sceneRoot];
+        [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    }
 }
 
 

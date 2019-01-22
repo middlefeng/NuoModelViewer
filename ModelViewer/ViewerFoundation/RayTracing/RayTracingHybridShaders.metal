@@ -211,12 +211,17 @@ void self_illumination(uint2 tid,
         int illuminate = materials[*(vertexIndex)].illuminate;
         if (illuminate == 0)
         {
-            color = color * ray.color * tracingUniforms.illuminationStrength;
+            color = color * ray.color * tracingUniforms.illuminationStrength * 10.0;
             
-            // for bounced ray, multiplied with the integral base (2 PI, or the hemisphre)
-            // as there is no primary ray
-            if (ray.bounce > 0)
-                color = 2.0f * M_PI_F * color;
+            // old comment regarding the light source sampling vs. reflection sampling:
+            //   for bounced ray, multiplied with the integral base (2 PI, or the hemisphre)
+            //   as there is no primary ray
+            //
+            // which seems not true and commented out (the 10.0 multiplication above is the
+            // parameter range compensation for the removal of 2.0 * M_PI
+            //
+            // if (ray.bounce > 0)
+            //     color = 2.0f * M_PI_F * color;
             
             overlayResult.write(float4(color, 1.0), tid);
             
