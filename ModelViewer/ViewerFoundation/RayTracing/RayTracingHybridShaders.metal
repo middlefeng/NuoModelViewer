@@ -56,8 +56,11 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     
     device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
     
-    shadow_ray_emit(tid, uniforms, cameraRay, index, materials, intersection,
-                    tracingUniforms, random, shadowRays);
+    // directional light sources in the scene definition are considered area lights with finite
+    // subtending solid angles, in far distance
+    //
+    shadow_ray_emit_infinite_area(tid, uniforms, cameraRay, index, materials, intersection,
+                                  tracingUniforms, random, shadowRays);
     
     self_illumination(tid, index, materials, intersection,
                       tracingUniforms, cameraRay, incidentRay,

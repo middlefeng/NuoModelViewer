@@ -182,15 +182,15 @@ inline float3 align_hemisphere_normal(float3 sample, float3 normal)
  *  shadow ray optimization
  */
 
-void shadow_ray_emit(uint2 tid,
-                     constant NuoRayVolumeUniform& uniforms,
-                     device RayBuffer& ray,
-                     device uint* index,
-                     device NuoRayTracingMaterial* materials,
-                     device Intersection& intersection,
-                     constant NuoRayTracingUniforms& tracingUniforms,
-                     device float2* random,
-                     device RayBuffer* shadowRays[2]);
+void shadow_ray_emit_infinite_area(uint2 tid,
+                                   constant NuoRayVolumeUniform& uniforms,
+                                   device RayBuffer& ray,
+                                   device uint* index,
+                                   device NuoRayTracingMaterial* materials,
+                                   device Intersection& intersection,
+                                   constant NuoRayTracingUniforms& tracingUniforms,
+                                   device float2* random,
+                                   device RayBuffer* shadowRays[2]);
 
 
 

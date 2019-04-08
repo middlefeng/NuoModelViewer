@@ -93,15 +93,15 @@ kernel void ray_set_mask_illuminating(uint2 tid [[thread_position_in_grid]],
 }
 
 
-void shadow_ray_emit(uint2 tid,
-                     constant NuoRayVolumeUniform& uniforms,
-                     device RayBuffer& ray,
-                     device uint* index,
-                     device NuoRayTracingMaterial* materials,
-                     device Intersection& intersection,
-                     constant NuoRayTracingUniforms& tracingUniforms,
-                     device float2* random,
-                     device RayBuffer* shadowRays[2])
+void shadow_ray_emit_infinite_area(uint2 tid,
+                                   constant NuoRayVolumeUniform& uniforms,
+                                   device RayBuffer& ray,
+                                   device uint* index,
+                                   device NuoRayTracingMaterial* materials,
+                                   device Intersection& intersection,
+                                   constant NuoRayTracingUniforms& tracingUniforms,
+                                   device float2* random,
+                                   device RayBuffer* shadowRays[2])
 {
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     
@@ -123,8 +123,8 @@ void shadow_ray_emit(uint2 tid,
             float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
             lightVec = normalize(tracingUniforms.lightSources[i].direction * lightVec);
             
-            float radius = tracingUniforms.lightSources[i].radius / 2.0 * 0.25;
-            float maxThetaCos = (1 / metal::sqrt(radius * radius + 1));
+            float maxThetaTan = tracingUniforms.lightSources[i].radius / 2.0 * 0.25;  // factor to maintain old range
+            float maxThetaCos = (1 / metal::sqrt(maxThetaTan * maxThetaTan + 1));
 
             float3 shadowVec = sample_cone_uniform(r, maxThetaCos);
             shadowVec = align_hemisphere_normal(shadowVec, lightVec.xyz);
@@ -139,7 +139,7 @@ void shadow_ray_emit(uint2 tid,
             shadowRayCurrent->direction = shadowVec;
             
             // only the cosine factor is counted into the coupling term, for samples generated
-            // from a sphere uniformly
+            // from an inifinit distant area light (uniform on a finit contending solid angle)
             shadowRayCurrent->geometricCoupling = dot(normal, shadowVec);
         }
         else
