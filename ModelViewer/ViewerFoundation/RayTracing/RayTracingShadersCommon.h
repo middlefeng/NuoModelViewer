@@ -27,8 +27,8 @@ struct RayBuffer
     packed_float3 direction;
     float maxDistance;
     
-    // cosine base strength factor (reserved, unused)
-    float strength;
+    // geometric coupling term between the two ends (pbr-book 14.14)
+    float geometricCoupling;
     
     packed_float3 color;
     int bounce;
@@ -139,6 +139,18 @@ inline float3 sample_cosine_weighted_hemisphere(float2 u)
     float sin_theta = metal::sqrt(1.0f - cos_theta * cos_theta);
     
     return float3(sin_theta * cos_phi, cos_theta, sin_theta * sin_phi);
+}
+
+
+inline float3 sample_cone_uniform(float2 u, float cosThetaMax)
+{
+    float cosTheta = (1 - u.x) + u.x * cosThetaMax;
+    float sinTheta = metal::sqrt(1 - cosTheta * cosTheta);
+    float phi = u.y * 2.0f * M_PI_F;
+    
+    return float3(metal::cos(phi) * sinTheta,
+                  cosTheta,
+                  metal::sin(phi) * sinTheta);
 }
 
 
