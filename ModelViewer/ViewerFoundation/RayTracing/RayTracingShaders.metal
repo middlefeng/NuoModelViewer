@@ -123,7 +123,7 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
             lightVec = normalize(tracingUniforms.lightSources[i].direction * lightVec);
             
-            float maxThetaTan = tracingUniforms.lightSources[i].radius / 2.0 * 0.25;  // factor to maintain old range
+            float maxThetaTan = tracingUniforms.lightSources[i].radius / 2.0 * 0.25;  // sacle factor to maintain backward-compatibility
             float maxThetaCos = (1 / metal::sqrt(maxThetaTan * maxThetaTan + 1));
 
             float3 shadowVec = sample_cone_uniform(r, maxThetaCos);
@@ -138,8 +138,12 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             shadowRayCurrent->direction = shadowVec;
             
-            // only the cosine factor is counted into the coupling term, for samples generated
-            // from an inifinit distant area light (uniform on a finit contending solid angle)
+            // only the cosine factor is counted into the coupling term, because samples are generated
+            // from an inifinit distant area light (uniform on a finit contending solid angle) and used
+            // as a scale map. no need to take into account the distance (constant) and the other cosine
+            // (always 1).
+            //
+            // todo: brdf specular term is not considered
             shadowRayCurrent->geometricCoupling = dot(normal, shadowVec);
         }
         else
