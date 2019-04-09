@@ -27,8 +27,8 @@ struct RayBuffer
     packed_float3 direction;
     float maxDistance;
     
-    // cosine base strength factor (reserved, unused)
-    float strength;
+    // geometric coupling term between the two ends (pbr-book 14.14)
+    float geometricCoupling;
     
     packed_float3 color;
     int bounce;
@@ -142,6 +142,18 @@ inline float3 sample_cosine_weighted_hemisphere(float2 u)
 }
 
 
+inline float3 sample_cone_uniform(float2 u, float cosThetaMax)
+{
+    float cosTheta = (1 - u.x) + u.x * cosThetaMax;
+    float sinTheta = metal::sqrt(1 - cosTheta * cosTheta);
+    float phi = u.y * 2.0f * M_PI_F;
+    
+    return float3(metal::cos(phi) * sinTheta,
+                  cosTheta,
+                  metal::sin(phi) * sinTheta);
+}
+
+
 // Aligns a direction on the unit hemisphere such that the hemisphere's "up" direction
 // (0, 1, 0) maps to the given surface normal direction
 inline float3 align_hemisphere_normal(float3 sample, float3 normal)
@@ -170,15 +182,15 @@ inline float3 align_hemisphere_normal(float3 sample, float3 normal)
  *  shadow ray optimization
  */
 
-void shadow_ray_emit(uint2 tid,
-                     constant NuoRayVolumeUniform& uniforms,
-                     device RayBuffer& ray,
-                     device uint* index,
-                     device NuoRayTracingMaterial* materials,
-                     device Intersection& intersection,
-                     constant NuoRayTracingUniforms& tracingUniforms,
-                     device float2* random,
-                     device RayBuffer* shadowRays[2]);
+void shadow_ray_emit_infinite_area(uint2 tid,
+                                   constant NuoRayVolumeUniform& uniforms,
+                                   device RayBuffer& ray,
+                                   device uint* index,
+                                   device NuoRayTracingMaterial* materials,
+                                   device Intersection& intersection,
+                                   constant NuoRayTracingUniforms& tracingUniforms,
+                                   device float2* random,
+                                   device RayBuffer* shadowRays[2]);
 
 
 

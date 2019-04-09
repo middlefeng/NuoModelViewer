@@ -21,6 +21,7 @@
 
 
 static const uint32_t kRandomBufferSize = 256;
+static const uint32_t kRayBounce = 4;
 
 
 @interface ModelRayTracingSubrenderer : NuoRayTracingRenderer
@@ -188,7 +189,7 @@ static const uint32_t kRandomBufferSize = 256;
         
         id<MTLBuffer> buffers[kInFlightBufferCount];
         id<MTLBuffer> randoms[kInFlightBufferCount];
-        _rng = std::make_shared<RandomGenerator>(kRandomBufferSize, 2, 1);
+        _rng = std::make_shared<RandomGenerator>(kRandomBufferSize, kRayBounce, 1);
         for (uint i = 0; i < kInFlightBufferCount; ++i)
         {
             buffers[i] = [commandQueue.device newBufferWithLength:sizeof(NuoRayTracingUniforms)
@@ -306,7 +307,7 @@ static const uint32_t kRandomBufferSize = 256;
                 withIntersection:self.intersectionBuffer
                withInFlightIndex:inFlight];
         
-        for (uint i = 0; i < 2; ++i)
+        for (uint i = 0; i < kRayBounce; ++i)
         {
             [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.intersectionBuffer];
             

@@ -93,58 +93,58 @@ kernel void ray_set_mask_illuminating(uint2 tid [[thread_position_in_grid]],
 }
 
 
-void shadow_ray_emit(uint2 tid,
-                     constant NuoRayVolumeUniform& uniforms,
-                     device RayBuffer& ray,
-                     device uint* index,
-                     device NuoRayTracingMaterial* materials,
-                     device Intersection& intersection,
-                     constant NuoRayTracingUniforms& tracingUniforms,
-                     device float2* random,
-                     device RayBuffer* shadowRays[2])
+void shadow_ray_emit_infinite_area(uint2 tid,
+                                   constant NuoRayVolumeUniform& uniforms,
+                                   device RayBuffer& ray,
+                                   device uint* index,
+                                   device NuoRayTracingMaterial* materials,
+                                   device Intersection& intersection,
+                                   constant NuoRayTracingUniforms& tracingUniforms,
+                                   device float2* random,
+                                   device RayBuffer* shadowRays[2])
 {
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     
     const float maxDistance = tracingUniforms.bounds.span;
     
     float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
-    float2 r1 = random[(tid.y % 16) * 16 + (tid.x % 16) + 256];
-    r = (r * 2.0 - 1.0) * maxDistance * 0.25;
-    r1 = (r1 * 2.0 - 1.0);
     
     for (uint i = 0; i < 2; ++i)
     {
         device RayBuffer* shadowRayCurrent = shadowRays[i] + rayIdx;
         
-        // initialize the buffer's strength fields
+        // initialize the buffer's geometric coupling fields
         // (took 2 days to figure this out after spot the problem in debugger 8/21/2018)
         //
-        shadowRayCurrent->strength = 0.0f;
+        shadowRayCurrent->geometricCoupling = 0.0f;
         
         if (intersection.distance >= 0.0f)
         {
             float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
             lightVec = normalize(tracingUniforms.lightSources[i].direction * lightVec);
             
-            float3 lightPosition = (lightVec.xyz * maxDistance);
-            float3 lightRight = normalize(cross(lightVec.xyz, float3(r1.x, r1.y, 1.0)));
-            float3 lightForward = cross(lightRight, lightVec.xyz);
-            
-            float radius = tracingUniforms.lightSources[i].radius / 2.0;
-            lightPosition = lightPosition + lightRight * r.x * radius + lightForward * r.y * radius;
-            
-            float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
-            float3 shadowVec = normalize(lightPosition.xyz);
+            float maxThetaTan = tracingUniforms.lightSources[i].radius / 2.0 * 0.25;  // sacle factor to maintain backward-compatibility
+            float maxThetaCos = (1 / metal::sqrt(maxThetaTan * maxThetaTan + 1));
+
+            float3 shadowVec = sample_cone_uniform(r, maxThetaCos);
+            shadowVec = align_hemisphere_normal(shadowVec, lightVec.xyz);
             
             shadowRayCurrent->maxDistance = maxDistance;
             shadowRayCurrent->mask = kNuoRayMask_Opaue;
             
             float3 normal = interpolate_normal(materials, index, intersection);
             
+            float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
             shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             shadowRayCurrent->direction = shadowVec;
             
-            shadowRayCurrent->strength = dot(normal, shadowVec);
+            // only the cosine factor is counted into the coupling term, because samples are generated
+            // from an inifinit distant area light (uniform on a finit contending solid angle) and used
+            // as a scale map. no need to take into account the distance (constant) and the other cosine
+            // (always 1).
+            //
+            // todo: brdf specular term is not considered
+            shadowRayCurrent->geometricCoupling = dot(normal, shadowVec);
         }
         else
         {

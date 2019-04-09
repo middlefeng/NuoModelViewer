@@ -56,8 +56,11 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     
     device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
     
-    shadow_ray_emit(tid, uniforms, cameraRay, index, materials, intersection,
-                    tracingUniforms, random, shadowRays);
+    // directional light sources in the scene definition are considered area lights with finite
+    // subtending solid angles, in far distance
+    //
+    shadow_ray_emit_infinite_area(tid, uniforms, cameraRay, index, materials, intersection,
+                                  tracingUniforms, random, shadowRays);
     
     self_illumination(tid, index, materials, intersection,
                       tracingUniforms, cameraRay, incidentRay,
@@ -108,25 +111,28 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
         return;
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    device Intersection & intersection = intersections[rayIdx];
-    device RayBuffer & shadowRay = shadowRays[rayIdx];
+    device Intersection& intersection = intersections[rayIdx];
+    device RayBuffer& shadowRay = shadowRays[rayIdx];
     
-    if (shadowRay.strength > 0)
+    if (shadowRay.geometricCoupling > 0)
     {
         /**
-         *  the total diffuse (with all blockers virtually removed) and the amount that considers
-         *  blockers are recorded, and therefore accumulated by a subsequent accumulator.
+         *  to generate a shadow map (rather than illuminating), the geometric coupling term is integrand
+         *
+         *  previous comment before pbr-book reading:
+         *      the total diffuse (with all blockers virtually removed) and the amount that considers
+         *      blockers are recorded, and therefore accumulated by a subsequent accumulator.
          */
         
         if (kShadowOnTranslucent)
         {
             float r = light.read(tid).r;
-            light.write(float4(r, shadowRay.strength, 0.0, 1.0), tid);
+            light.write(float4(r, shadowRay.geometricCoupling, 0.0, 1.0), tid);
         }
         else
         {
             float g = light.read(tid).g;
-            light.write(float4(shadowRay.strength, g, 0.0, 1.0), tid);
+            light.write(float4(shadowRay.geometricCoupling, g, 0.0, 1.0), tid);
         }
         
         if (intersection.distance < 0.0f)
@@ -134,12 +140,12 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
             if (kShadowOnTranslucent)
             {
                 float r = lightWithBlock.read(tid).r;
-                lightWithBlock.write(float4(r, shadowRay.strength, 0.0, 1.0), tid);
+                lightWithBlock.write(float4(r, shadowRay.geometricCoupling, 0.0, 1.0), tid);
             }
             else
             {
                 float g = lightWithBlock.read(tid).g;
-                lightWithBlock.write(float4(shadowRay.strength, g, 0.0, 1.0), tid);
+                lightWithBlock.write(float4(shadowRay.geometricCoupling, g, 0.0, 1.0), tid);
             }
         }
     }
