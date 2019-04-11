@@ -262,8 +262,8 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         const NuoLightParameterUniformField lightParams = lightingUniform.lightParams[i];
         
         float3 lightVector = normalize(lightParams.direction.xyz);
-        float diffuseIntensity = saturate(dot(vert.normal, lightVector));
-        float3 diffuseTerm = vert.diffuseColor * diffuseIntensity;
+        float cosTheta = saturate(dot(vert.normal, lightVector));
+        float3 diffuseTerm = vert.diffuseColor * cosTheta * lightParams.density;
         
         float shadowPercent = 0.0;
         if (i < 2)
@@ -273,7 +273,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             
             const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(shadowPositionCurrent, vert.opacity < 1.0,
-                                                   shadowParams, diffuseIntensity, 3,
+                                                   shadowParams, cosTheta, 3,
                                                    shadowMap[i], samplr);
             
             if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
@@ -281,18 +281,17 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         }
         
         float3 specularTerm(0);
-        if (diffuseIntensity > 0)
+        if (cosTheta > 0)
         {
             float3 eyeDirection = normalize(vert.eye);
             float3 halfway = normalize(lightVector + eyeDirection);
             
             specularTerm = specular_common(vert.specularColor, vert.specularPower,
-                                           lightParams, vert.normal, halfway, diffuseIntensity);
-            transparency *= ((1 - saturate(pow(length(specularTerm), 1.0) * (1 - shadowPercent))));
+                                           lightParams, vert.normal, halfway, cosTheta);
+            transparency *= (1 - saturate(length(specularTerm)) * (1 - shadowPercent));
         }
         
-        colorForLights += (diffuseTerm * lightParams.density + specularTerm) *
-                          (1 - shadowPercent);
+        colorForLights += (diffuseTerm + specularTerm) * (1 - shadowPercent);
     }
     
     return float4(colorForLights, 1.0 - transparency);
@@ -391,20 +390,19 @@ float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
 //
 float3 specular_common(float3 materialSpecularColor, float materialSpecularPower,
                        NuoLightParameterUniformField lightParams,
-                       float3 normal, float3 halfway, float dotNL)
+                       float3 normal, float3 halfway, float cosTheta)
 {
-    float dotNHPower = pow(saturate(dot(normal, halfway)), materialSpecularPower);
-    float specularFactor = dotNHPower * dotNL;
-    float3 adjustedCsepcular = materialSpecularColor * lightParams.spacular;
+    float cosNHPower = pow(saturate(dot(normal, halfway)), materialSpecularPower);
+    float3 adjustedCsepcular = materialSpecularColor * lightParams.spacular / 3.0;
     
     if (kPhysicallyReflection)
     {
-        return fresnel_schlick(adjustedCsepcular / 3.0, lightParams.direction.xyz, halfway) *
-               ((materialSpecularPower + 2) / 8) * specularFactor * lightParams.density;
+        return fresnel_schlick(adjustedCsepcular, lightParams.direction.xyz, halfway) *
+               ((materialSpecularPower + 2) / 8) * cosNHPower * cosTheta * lightParams.density;
     }
     else
     {
-        return adjustedCsepcular * specularFactor;
+        return adjustedCsepcular * cosNHPower * cosTheta * lightParams.density;
     }
 }
 
