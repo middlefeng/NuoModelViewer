@@ -35,8 +35,6 @@
     
     NSTextField* _shadowBiasLabel;
     NSSlider* _shadowBiasSlider;
-    
-    BOOL _physicallyReflection;
 }
 
 
