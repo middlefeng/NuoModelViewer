@@ -311,8 +311,10 @@ MouseDragMode;
     
     if (!_lightPanel.hidden)
     {
+        _notationRenderer.physicallySpecular = _modelPanel.meshOptions.physicallyReflection;
+        
         _notationRenderer.density = _lightPanel.lightDensity;
-        _notationRenderer.spacular = _lightPanel.lightSpacular;
+        _notationRenderer.specular = _lightPanel.lightSpecular;
         _notationRenderer.shadowSoften = _lightPanel.shadowSoften;
         _notationRenderer.shadowOccluderRadius = _lightPanel.shadowOccluderRadius;
         _notationRenderer.shadowBias = _lightPanel.shadowBias;

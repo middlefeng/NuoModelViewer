@@ -22,6 +22,7 @@ class NuoLua;
 
 @property (nonatomic, assign) float notationWidthCap;
 @property (nonatomic, assign) CGRect notationArea;
+@property (nonatomic, assign) BOOL physicallySpecular;
 
 
 // retrieve the currently-selected description
@@ -41,7 +42,7 @@ class NuoLua;
 - (void)setRotateX:(float)rotateX;
 - (void)setRotateY:(float)rotateY;
 - (void)setDensity:(float)density;
-- (void)setSpacular:(float)spacular;
+- (void)setSpecular:(float)specular;
 - (void)setShadowSoften:(float)shadowSoften;
 - (void)setShadowOccluderRadius:(float)shadowOccluderRadius;
 - (void)setShadowBias:(float)shadowBias;

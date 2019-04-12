@@ -616,7 +616,7 @@
                 exporter.EndEntry(false);
                 
                 exporter.StartEntry("spacular");
-                exporter.SetEntryValueFloat(light.lightingSpacular);
+                exporter.SetEntryValueFloat(light.lightingSpecular);
                 exporter.EndEntry(false);
                 
                 exporter.StartEntry("enableShadow");
@@ -995,7 +995,7 @@
         const NuoVectorFloat4 lightVector(rotationMatrix * NuoVectorFloat4(0, 0, 1, 0));
         lighting.lightParams[i].direction = lightVector._vector;
         lighting.lightParams[i].density = _lights[i].lightingDensity;
-        lighting.lightParams[i].spacular = _lights[i].lightingSpacular;
+        lighting.lightParams[i].specular = _lights[i].lightingSpecular;
         
         if (i < 2)
         {

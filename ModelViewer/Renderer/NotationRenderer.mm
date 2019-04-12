@@ -70,7 +70,7 @@
         _currentLightVector.selected = YES;
         
         lightSourcesDesc[0].lightingDensity = 1.0f;
-        lightSourcesDesc[0].lightingSpacular = 0.4f;
+        lightSourcesDesc[0].lightingSpecular = 0.4f;
         lightSourcesDesc[0].shadowOccluderRadius = 5.0f;
         
         // the direction of light used to render the "light vector"
@@ -81,7 +81,7 @@
         lightUniform.lightParams[0].direction.y = 0.72;
         lightUniform.lightParams[0].direction.z = 0.68;
         lightUniform.lightParams[0].density = 1.0f;
-        lightUniform.lightParams[0].spacular = 0.6f;
+        lightUniform.lightParams[0].specular = 0.6f;
         
         _lightBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoLightUniforms)
                                                         options:MTLResourceOptionCPUCacheModeDefault];
@@ -171,7 +171,7 @@
         _lightSources[lightIndex].lightingRotationX = lua->GetFieldAsNumber("rotateX", -1);
         _lightSources[lightIndex].lightingRotationY = lua->GetFieldAsNumber("rotateY", -1);
         _lightSources[lightIndex].lightingDensity = lua->GetFieldAsNumber("density", -1);
-        _lightSources[lightIndex].lightingSpacular = lua->GetFieldAsNumber("spacular", -1);
+        _lightSources[lightIndex].lightingSpecular = lua->GetFieldAsNumber("spacular", -1);
         _lightSources[lightIndex].enableShadow = lua->GetFieldAsBool("enableShadow", -1);
         
         if (_lightSources[lightIndex].enableShadow)
@@ -204,9 +204,19 @@
 }
 
 
-- (void)setSpacular:(float)spacular
+- (void)setSpecular:(float)specular
 {
-    _currentLightVector.lightSourceDesc.lightingSpacular = spacular;
+    if (_physicallySpecular)
+    {
+        // physically based specular need not per-light adjust factor
+        //
+        for (NotationLight* light : _lightVectors)
+            light.lightSourceDesc.lightingSpecular = specular;
+    }
+    else
+    {
+        _currentLightVector.lightSourceDesc.lightingSpecular = specular;
+    }
 }
 
 

@@ -352,13 +352,15 @@
     BOOL pcss = self.shadowOptionPCSS;
     BOOL pcf = self.shadowOptionPCF;
     BOOL rayTracing = self.shadowOptionRayTracing;
+    BOOL physicallyBased = NO;
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
+    [funcConstant setConstantValue:&physicallyBased type:MTLDataTypeBool atIndex:2];
     [funcConstant setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
     [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
-    [funcConstant setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
     [funcConstant setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
+    [funcConstant setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];

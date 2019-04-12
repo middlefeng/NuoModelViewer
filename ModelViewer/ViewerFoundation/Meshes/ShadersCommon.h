@@ -145,7 +145,7 @@ metal::float3 specular_common(metal::float3 materialSpecularColor, float materia
 
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
-                             NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
+                             NuoShadowParameterUniformField shadowParams, float cosTheta, float shadowMapSampleRadius,
                              metal::texture2d<float> shadowMap, metal::sampler samplr);
 
 metal::float2 rand(metal::float2 co);
