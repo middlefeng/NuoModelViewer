@@ -214,7 +214,7 @@ void self_illumination(uint2 tid,
         //
         float3 originalRayColor = ray.color;
         
-        int illuminate = materials[*(vertexIndex)].illuminate;
+        int illuminate = materials[*(vertexIndex)].shinessDisolveIllum.z;
         if (illuminate == 0)
         {
             color = color * ray.color * tracingUniforms.illuminationStrength * 10.0;

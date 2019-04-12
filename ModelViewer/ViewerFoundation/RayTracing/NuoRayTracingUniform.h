@@ -56,7 +56,8 @@ typedef struct
 {
     vector3 normal;
     vector3 diffuseColor;
-    int illuminate;
+    vector3 specularColor;
+    vector3 shinessDisolveIllum;
     
     vector3 texCoord;
     int diffuseTex;
