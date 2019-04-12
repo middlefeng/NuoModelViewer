@@ -63,7 +63,11 @@
     NSString* vertexFunc = @"vertex_project_shadow";
     NSString* fragmnFunc = @"fragment_light_shadow";
     
+    // board mesh has no specular factor
+    BOOL physicallyReflection = NO;
+    
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
+    [funcConstant setConstantValue:&physicallyReflection type:MTLDataTypeBool atIndex:2];
     [funcConstant setConstantValue:&_shadowOverlayOnly type:MTLDataTypeBool atIndex:3];
     [self setupCommonPipelineFunctionConstants:funcConstant];
     

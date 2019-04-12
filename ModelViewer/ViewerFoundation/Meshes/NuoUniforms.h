@@ -50,7 +50,7 @@ typedef struct
 {
     vector4 direction __attribute__ ((aligned (16)));
     float density;
-    float spacular;
+    float specular;
 }
 NuoLightParameterUniformField;
 

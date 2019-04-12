@@ -84,19 +84,20 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
     {
         const NuoLightParameterUniformField lightParams = lightUniform.lightParams[i];
         
-        float diffuseIntensity = saturate(dot(normal, normalize(lightParams.direction.xyz)));
-        float3 diffuseTerm = material.diffuseColor * diffuseIntensity;
+        float cosTheta = saturate(dot(normal, normalize(lightParams.direction.xyz)));
+        float3 diffuseTerm = material.diffuseColor * cosTheta * lightParams.density;
         
         float3 specularTerm(0);
-        if (diffuseIntensity > 0)
+        if (cosTheta > 0)
         {
             float3 eyeDirection = normalize(vert.eye);
             float3 halfway = normalize(normalize(lightParams.direction.xyz) + eyeDirection);
-            float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower);
-            specularTerm = material.specularColor * specularFactor;
+            
+            specularTerm = specular_common(material.specularColor, material.specularPower,
+                                           lightParams, vert.normal, halfway, cosTheta);
         }
         
-        colorForLights += diffuseTerm * lightParams.density + specularTerm * lightParams.spacular;
+        colorForLights += diffuseTerm + specularTerm;
     }
     
     return float4(colorForLights, modelCharacterUniforms.opacity);
@@ -186,14 +187,14 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     {
         const NuoLightParameterUniformField lightParams = lightUniform.lightParams[i];
         
-        float diffuseIntensity = saturate(dot(normal, normalize(lightParams.direction.xyz)));
+        float cosTheta = saturate(dot(normal, normalize(lightParams.direction.xyz)));
         float shadowPercent = 0.0;
         if (i < 2)
         {
             float4 shadowPostionCurrent = kShadowRayTracing ? vert.positionNDC : shadowPosition[i];
             const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(shadowPostionCurrent, false,
-                                                   shadowParams, diffuseIntensity, 3,
+                                                   shadowParams, cosTheta, 3,
                                                    shadowMap[i], samplr);
         }
         
@@ -202,24 +203,24 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         
         if (kShadowOverlay)
         {
-            shadowOverlay += lightUniform.lightParams[i].density * diffuseIntensity * shadowPercent;
-            surfaceBrightness += lightUniform.lightParams[i].density * diffuseIntensity;
+            shadowOverlay += lightUniform.lightParams[i].density * cosTheta * shadowPercent;
+            surfaceBrightness += lightUniform.lightParams[i].density * cosTheta;
         }
         else
         {
-            float3 diffuseTerm = material.diffuseColor * diffuseIntensity;
+            float3 diffuseTerm = material.diffuseColor * cosTheta * lightParams.density;
             
             float3 specularTerm(0);
-            if (diffuseIntensity > 0)
+            if (cosTheta > 0)
             {
                 float3 eyeDirection = normalize(vert.eye);
                 float3 halfway = normalize(normalize(lightUniform.lightParams[i].direction.xyz) + eyeDirection);
-                float specularFactor = pow(saturate(dot(normal, halfway)), material.specularPower);
-                specularTerm = material.specularColor * specularFactor;
+                
+                specularTerm = specular_common(material.specularColor, material.specularPower,
+                                               lightParams, vert.normal, halfway, cosTheta);
             }
             
-            colorForLights += (diffuseTerm * lightParams.density +
-                               specularTerm * lightParams.spacular) * (1.0 - shadowPercent);
+            colorForLights += (diffuseTerm + specularTerm) * (1.0 - shadowPercent);
         }
     }
     
@@ -262,8 +263,8 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         const NuoLightParameterUniformField lightParams = lightingUniform.lightParams[i];
         
         float3 lightVector = normalize(lightParams.direction.xyz);
-        float diffuseIntensity = saturate(dot(vert.normal, lightVector));
-        float3 diffuseTerm = vert.diffuseColor * diffuseIntensity;
+        float cosTheta = saturate(dot(vert.normal, lightVector));
+        float3 diffuseTerm = vert.diffuseColor * cosTheta * lightParams.density;
         
         float shadowPercent = 0.0;
         if (i < 2)
@@ -273,7 +274,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             
             const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(shadowPositionCurrent, vert.opacity < 1.0,
-                                                   shadowParams, diffuseIntensity, 3,
+                                                   shadowParams, cosTheta, 3,
                                                    shadowMap[i], samplr);
             
             if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
@@ -281,18 +282,17 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         }
         
         float3 specularTerm(0);
-        if (diffuseIntensity > 0)
+        if (cosTheta > 0)
         {
             float3 eyeDirection = normalize(vert.eye);
             float3 halfway = normalize(lightVector + eyeDirection);
             
             specularTerm = specular_common(vert.specularColor, vert.specularPower,
-                                           lightParams, vert.normal, halfway, diffuseIntensity);
-            transparency *= ((1 - saturate(pow(length(specularTerm), 1.0) * (1 - shadowPercent))));
+                                           lightParams, vert.normal, halfway, cosTheta);
+            transparency *= (1 - saturate(length(specularTerm)) * (1 - shadowPercent));
         }
         
-        colorForLights += (diffuseTerm * lightParams.density + specularTerm) *
-                          (1 - shadowPercent);
+        colorForLights += (diffuseTerm + specularTerm) * (1 - shadowPercent);
     }
     
     return float4(colorForLights, 1.0 - transparency);
@@ -389,22 +389,30 @@ float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
 // the code embodies the half-vector based specular which is ((m + 2) / (8 * pi)) * Cspecular * power(cos(theta), m)
 //               p253 (7.47) the reflection based version is ((m + 2) / (2 * pi)) * Cspecular * power(cos(reflection), m)
 //
+// specular_common() returns (radiance * pi), because that saves some calculation and the 1/pi factor
+// in radiance is usually cancelled by the outside integral
+//
 float3 specular_common(float3 materialSpecularColor, float materialSpecularPower,
                        NuoLightParameterUniformField lightParams,
-                       float3 normal, float3 halfway, float dotNL)
+                       float3 normal, float3 halfway, float cosTheta)
 {
-    float dotNHPower = pow(saturate(dot(normal, halfway)), materialSpecularPower);
-    float specularFactor = dotNHPower * dotNL;
-    float3 adjustedCsepcular = materialSpecularColor * lightParams.spacular;
+    // in order to uphold the energy conservativeness, the following invarant need to be kept:
+    //   adjustedCsepcular + diffuseColor < 1.0
+    //
+    // some poorly materialed model do not hold it, which is why a slider is put the UI.
+    // the range of the slider is [0, 3.0] for historical reason, which is why it is divided by 3.0
+    //
+    float3 adjustedCsepcular = materialSpecularColor * lightParams.specular / 3.0;
+    float cosNHPower = pow(saturate(dot(normal, halfway)), materialSpecularPower);
     
     if (kPhysicallyReflection)
     {
-        return fresnel_schlick(adjustedCsepcular / 3.0, lightParams.direction.xyz, halfway) *
-               ((materialSpecularPower + 2) / 8) * specularFactor * lightParams.density;
+        return fresnel_schlick(adjustedCsepcular, lightParams.direction.xyz, halfway) *
+               ((materialSpecularPower + 2) / 8) * cosNHPower * cosTheta * lightParams.density;
     }
     else
     {
-        return adjustedCsepcular * specularFactor;
+        return adjustedCsepcular * cosNHPower * cosTheta * lightParams.density;
     }
 }
 
@@ -474,7 +482,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
 
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
-                             NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
+                             NuoShadowParameterUniformField shadowParams, float cosTheta, float shadowMapSampleRadius,
                              metal::texture2d<float> shadowMap, metal::sampler samplr)
 {
     if (kShadowRayTracing)
@@ -484,7 +492,7 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool transluc
     }
     
     float shadowMapBias = 0.002;
-    shadowMapBias += shadowParams.bias * (1 - shadowedSurfaceAngle);
+    shadowMapBias += shadowParams.bias * (1 - cosTheta);
     
     const float2 kSampleSizeBase = 1.0 / float2(shadowMap.get_width(), shadowMap.get_height());
     float2 sampleSize = kSampleSizeBase;

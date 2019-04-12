@@ -141,11 +141,11 @@ metal::float4 diffuse_common(metal::float4 diffuseTexel, float extraOpacity);
 
 metal::float3 specular_common(metal::float3 materialSpecularColor, float materialSecularPower,
                               NuoLightParameterUniformField lightParams,
-                              metal::float3 normal, metal::float3 halfway, float dotNL);
+                              metal::float3 normal, metal::float3 halfway, float cosTheta);
 
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
-                             NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
+                             NuoShadowParameterUniformField shadowParams, float cosTheta, float shadowMapSampleRadius,
                              metal::texture2d<float> shadowMap, metal::sampler samplr);
 
 metal::float2 rand(metal::float2 co);

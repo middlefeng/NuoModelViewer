@@ -26,8 +26,8 @@
     NSTextField* _lightDensityLabel;
     NSSlider* _lightDensitySlider;
     
-    NSTextField* _lightSpacularLabel;
-    NSSlider* _lightSpacularSlider;
+    NSTextField* _lightSpecularLabel;
+    NSSlider* _lightSpecularSlider;
     
     NSTextField* _shadowSoftenLabel;
     NSSlider* _shadowSoftenSlider;
@@ -49,8 +49,8 @@
         _lightDensityLabel = [self createLabel:@"Density:"];
         _lightDensitySlider = [self createSliderMax:3.0 min:0.0];
         
-        _lightSpacularLabel = [self createLabel:@"Spacular:"];
-        _lightSpacularSlider = [self createSliderMax:3.0 min:0.0];
+        _lightSpecularLabel = [self createLabel:@"Spacular:"];
+        _lightSpecularSlider = [self createSliderMax:3.0 min:0.0];
 
         _shadowSoftenLabel = [self createLabel:@"Penumbra:"];
         _shadowSoftenSlider = [self createSliderMax:5.0 min:0.0];
@@ -127,8 +127,8 @@
     labelFrame.origin.y -= entryHeight + lineSpace;
     sliderFrame.origin.y -= entryHeight + lineSpace;
     
-    [_lightSpacularLabel setFrame:labelFrame];
-    [_lightSpacularSlider setFrame:sliderFrame];
+    [_lightSpecularLabel setFrame:labelFrame];
+    [_lightSpecularSlider setFrame:sliderFrame];
     
     labelFrame.origin.y -= entryHeight + lineSpace;
     sliderFrame.origin.y -= entryHeight + lineSpace;
@@ -165,15 +165,15 @@
 }
 
 
-- (float)lightSpacular
+- (float)lightSpecular
 {
-    return [_lightSpacularSlider floatValue];
+    return [_lightSpecularSlider floatValue];
 }
 
 
-- (void)setLightSpacular:(float)lightSpacular
+- (void)setLightSpecular:(float)lightSpacular
 {
-    [_lightSpacularSlider setFloatValue:lightSpacular];
+    [_lightSpecularSlider setFloatValue:lightSpacular];
 }
 
 - (void)setShadowEnabled:(BOOL)shadowEnabled
@@ -225,7 +225,7 @@
 - (void)updateControls:(NuoLightSource*)lightSource
 {
     [self setLightDensity:lightSource.lightingDensity];
-    [self setLightSpacular:lightSource.lightingSpacular];
+    [self setLightSpecular:lightSource.lightingSpecular];
     [self setShadowEnabled:lightSource.enableShadow];
     
     if (lightSource.enableShadow)
