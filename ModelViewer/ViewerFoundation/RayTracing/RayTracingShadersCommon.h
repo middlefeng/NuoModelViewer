@@ -66,7 +66,7 @@ constant bool kShadowOnTranslucent  [[ function_constant(0) ]];
  *  sampling / interpolation utilities
  */
 
-inline float3 interpolate_normal(device NuoRayTracingMaterial *materials, device uint* index, Intersection intersection)
+inline NuoRayTracingMaterial interpolate_material(device NuoRayTracingMaterial *materials, device uint* index, Intersection intersection)
 {
     // barycentric coordinates sum to one
     float3 uvw;
@@ -76,13 +76,31 @@ inline float3 interpolate_normal(device NuoRayTracingMaterial *materials, device
     unsigned int triangleIndex = intersection.primitiveIndex;
     index = index + triangleIndex * 3;
     
-    // Lookup value for each vertex
-    float3 n0 = materials[*(index + 0)].normal;
-    float3 n1 = materials[*(index + 1)].normal;
-    float3 n2 = materials[*(index + 2)].normal;
+    // lookup value for each vertex
+    device NuoRayTracingMaterial& material0 = materials[*(index + 0)];
+    device NuoRayTracingMaterial& material1 = materials[*(index + 1)];
+    device NuoRayTracingMaterial& material2 = materials[*(index + 2)];
     
-    // Compute sum of vertex attributes weighted by barycentric coordinates
-    return uvw.x * n0 + uvw.y * n1 + uvw.z * n2;
+    device float3& n0 = material0.normal;
+    device float3& n1 = material1.normal;
+    device float3& n2 = material2.normal;
+    
+    device float3& s0 = material0.specularColor;
+    device float3& s1 = material1.specularColor;
+    device float3& s2 = material2.specularColor;
+    
+    float sp0 = material0.shinessDisolveIllum.x;
+    float sp1 = material1.shinessDisolveIllum.x;
+    float sp2 = material2.shinessDisolveIllum.x;
+    
+    NuoRayTracingMaterial result;
+    
+    // compute sum of vertex attributes weighted by barycentric coordinates
+    result.normal = uvw.x * n0 + uvw.y * n1 + uvw.z * n2;
+    result.specularColor = uvw.x * s0 + uvw.y * s1 + uvw.z * s2;
+    result.shinessDisolveIllum.x = uvw.x * sp0 + uvw.y * sp1 + uvw.z * sp2;
+    
+    return result;
 }
 
 

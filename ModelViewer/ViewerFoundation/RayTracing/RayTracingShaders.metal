@@ -132,7 +132,7 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             shadowRayCurrent->maxDistance = maxDistance;
             shadowRayCurrent->mask = kNuoRayMask_Opaue;
             
-            float3 normal = interpolate_normal(materials, index, intersection);
+            float3 normal = interpolate_material(materials, index, intersection).normal;
             
             float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
             shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
