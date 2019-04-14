@@ -40,14 +40,22 @@ typedef struct
 NuoRayTracingLightSource;
 
 
+
+typedef struct
+{
+    float ambient;
+    float ambientRadius;
+    float illuminationStrength;
+    float specularMaterialAdjust;
+}
+NuoRayTracingGlobalIlluminationParam;
+
+
 typedef struct
 {
     NuoBoundsUniform bounds;
     NuoRayTracingLightSource lightSources[2];
-    
-    float ambient;
-    float ambientRadius;
-    float illuminationStrength;
+    NuoRayTracingGlobalIlluminationParam globalIllum;
 }
 NuoRayTracingUniforms;
 

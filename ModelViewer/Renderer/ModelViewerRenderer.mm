@@ -1056,11 +1056,15 @@
         {
             const NuoMatrixFloat44 viewTrans = [self viewMatrix];
             const NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
+            
+            NuoRayTracingGlobalIlluminationParam illumParams;
+            illumParams.ambient = _ambientDensity;
+            illumParams.ambientRadius = _deferredParameters.ambientOcclusionParams.sampleRadius;
+            illumParams.illuminationStrength = _illuminationStrength;
+            illumParams.specularMaterialAdjust = _lights[0].lightingSpecular;
 
             _rayTracingRenderer.sceneBounds = bounds;
-            _rayTracingRenderer.ambientDensity = _ambientDensity;
-            _rayTracingRenderer.ambientRadius = _deferredParameters.ambientOcclusionParams.sampleRadius;
-            _rayTracingRenderer.illuminationStrength = _illuminationStrength;
+            _rayTracingRenderer.globalIllum = illumParams;
             _rayTracingRenderer.fieldOfView = _fieldOfView;
         }
         

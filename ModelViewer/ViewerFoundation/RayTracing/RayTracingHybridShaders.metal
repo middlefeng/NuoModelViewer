@@ -199,10 +199,12 @@ void self_illumination(uint2 tid,
                        array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                        sampler samplr)
 {
+    constant NuoRayTracingGlobalIlluminationParam& globalIllum = tracingUniforms.globalIllum;
+    
     if (intersection.distance >= 0.0f)
     {
         const float maxDistance = tracingUniforms.bounds.span;
-        const float ambientRadius = maxDistance / 25.0 * (1.0 - tracingUniforms.ambientRadius * 0.5);
+        const float ambientRadius = maxDistance / 25.0 * (1.0 - globalIllum.ambientRadius * 0.5);
         
         unsigned int triangleIndex = intersection.primitiveIndex;
         device uint* vertexIndex = index + triangleIndex * 3;
@@ -217,7 +219,7 @@ void self_illumination(uint2 tid,
         int illuminate = materials[*(vertexIndex)].shinessDisolveIllum.z;
         if (illuminate == 0)
         {
-            color = color * ray.color * tracingUniforms.illuminationStrength * 10.0;
+            color = color * ray.color * globalIllum.illuminationStrength * 10.0;
             
             // old comment regarding the light source sampling vs. reflection sampling:
             //   for bounced ray, multiplied with the integral base (2 PI, or the hemisphre)
@@ -253,7 +255,7 @@ void self_illumination(uint2 tid,
         
         if (ray.bounce > 0 && !ray.ambientIlluminated && intersection.distance > ambientRadius)
         {
-            color = originalRayColor * tracingUniforms.ambient;
+            color = originalRayColor * globalIllum.ambient;
             overlayResult.write(float4(color, 1.0), tid);
             incidentRay.ambientIlluminated = true;
         }
@@ -262,7 +264,7 @@ void self_illumination(uint2 tid,
     {
         if (ray.bounce > 0 && !ray.ambientIlluminated)
         {
-            float3 color = ray.color * tracingUniforms.ambient;
+            float3 color = ray.color * globalIllum.ambient;
             overlayResult.write(float4(color, 1.0), tid);
             incidentRay.ambientIlluminated = true;
         }

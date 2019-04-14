@@ -256,9 +256,7 @@ static const uint32_t kRayBounce = 4;
     uniforms.bounds.center = NuoVectorFloat4(_sceneBounds._center._vector.x,
                                              _sceneBounds._center._vector.y,
                                              _sceneBounds._center._vector.z, 1.0)._vector;
-    uniforms.ambient = _ambientDensity;
-    uniforms.ambientRadius = _ambientRadius;
-    uniforms.illuminationStrength = _illuminationStrength;
+    uniforms.globalIllum = _globalIllum;
     
     memcpy(_rayTraceUniform[index].contents, &uniforms, sizeof(NuoRayTracingUniforms));
     [_rayTraceUniform[index] didModifyRange:NSMakeRange(0, sizeof(NuoRayTracingUniforms))];
