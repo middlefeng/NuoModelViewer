@@ -27,8 +27,12 @@ struct RayBuffer
     packed_float3 direction;
     float maxDistance;
     
-    // geometric coupling term between the two ends (pbr-book 14.14)
-    float geometricCoupling;
+    // part of the radiance scatter function over an incrementally constructed path where this ray
+    // as the latest section (pbr-book 14.16)
+    //
+    // it is the product of all BRDF and geometric coupling terms of the previous sections (pbr-book 14.14)
+    //
+    float pathScatter;
     
     packed_float3 color;
     int bounce;

@@ -113,10 +113,10 @@ void shadow_ray_emit_infinite_area(uint2 tid,
     {
         device RayBuffer* shadowRayCurrent = shadowRays[i] + rayIdx;
         
-        // initialize the buffer's geometric coupling fields
+        // initialize the buffer's path scatter fields
         // (took 2 days to figure this out after spot the problem in debugger 8/21/2018)
         //
-        shadowRayCurrent->geometricCoupling = 0.0f;
+        shadowRayCurrent->pathScatter = 0.0f;
         
         if (intersection.distance >= 0.0f)
         {
@@ -138,13 +138,13 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             shadowRayCurrent->direction = shadowVec;
             
-            // only the cosine factor is counted into the coupling term, because samples are generated
+            // only the cosine factor is counted into the path scatter term, because samples are generated
             // from an inifinit distant area light (uniform on a finit contending solid angle) and used
             // as a scale map. no need to take into account the distance (constant) and the other cosine
-            // (always 1).
+            // (always 1). BRDF diffuse is assumed 1 because this is a scale map.
             //
             // todo: brdf specular term is not considered
-            shadowRayCurrent->geometricCoupling = dot(normal, shadowVec);
+            shadowRayCurrent->pathScatter = dot(normal, shadowVec);
         }
         else
         {

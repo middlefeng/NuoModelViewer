@@ -114,10 +114,10 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
     device Intersection& intersection = intersections[rayIdx];
     device RayBuffer& shadowRay = shadowRays[rayIdx];
     
-    if (shadowRay.geometricCoupling > 0)
+    if (shadowRay.pathScatter > 0)
     {
         /**
-         *  to generate a shadow map (rather than illuminating), the geometric coupling term is integrand
+         *  to generate a shadow map (rather than illuminating), the light transportation is integrand
          *
          *  previous comment before pbr-book reading:
          *      the total diffuse (with all blockers virtually removed) and the amount that considers
@@ -127,12 +127,12 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
         if (kShadowOnTranslucent)
         {
             float r = light.read(tid).r;
-            light.write(float4(r, shadowRay.geometricCoupling, 0.0, 1.0), tid);
+            light.write(float4(r, shadowRay.pathScatter, 0.0, 1.0), tid);
         }
         else
         {
             float g = light.read(tid).g;
-            light.write(float4(shadowRay.geometricCoupling, g, 0.0, 1.0), tid);
+            light.write(float4(shadowRay.pathScatter, g, 0.0, 1.0), tid);
         }
         
         if (intersection.distance < 0.0f)
@@ -140,12 +140,12 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
             if (kShadowOnTranslucent)
             {
                 float r = lightWithBlock.read(tid).r;
-                lightWithBlock.write(float4(r, shadowRay.geometricCoupling, 0.0, 1.0), tid);
+                lightWithBlock.write(float4(r, shadowRay.pathScatter, 0.0, 1.0), tid);
             }
             else
             {
                 float g = lightWithBlock.read(tid).g;
-                lightWithBlock.write(float4(shadowRay.geometricCoupling, g, 0.0, 1.0), tid);
+                lightWithBlock.write(float4(shadowRay.pathScatter, g, 0.0, 1.0), tid);
             }
         }
     }
