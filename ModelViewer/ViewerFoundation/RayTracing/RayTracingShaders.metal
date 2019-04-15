@@ -16,6 +16,20 @@ using namespace metal;
 
 
 
+static RayBuffer primary_ray(matrix44 viewTrans, float3 endPoint)
+{
+    RayBuffer ray;
+    
+    float4 rayDirection = float4(normalize(endPoint), 0.0);
+    
+    ray.direction = (viewTrans * rayDirection).xyz;
+    ray.origin = (viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;
+    
+    return ray;
+}
+
+
+
 
 #pragma mark -- Primary / Shadow Ray Emission, General Ray Mask
 
@@ -36,10 +50,7 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     const float u = (pixelCoord.x / (float)uniforms.wViewPort) * uniforms.uRange - uniforms.uRange / 2.0;
     const float v = (pixelCoord.y / (float)uniforms.hViewPort) * uniforms.vRange - uniforms.vRange / 2.0;
     
-    float4 rayDirection = float4(normalize(float3(u, -v, -1.0)), 0.0);
-    
-    ray.direction = (uniforms.viewTrans * rayDirection).xyz;
-    ray.origin = (uniforms.viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;
+    ray = primary_ray(uniforms.viewTrans, float3(u, -v, -1.0));
     ray.color = float3(1.0, 1.0, 1.0);
     
     // primary rays are generated with mask as opaque. rays for translucent mask are got by
