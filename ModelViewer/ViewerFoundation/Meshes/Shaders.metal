@@ -385,6 +385,16 @@ float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
 }
 
 
+float3 specular_common_physically(float3 specularReflectance, float materialSpecularPower,
+                                  float3 lightDirection, float3 normal, float3 halfway)
+{
+    float cosNHPower = pow(saturate(dot(normal, halfway)), materialSpecularPower);
+    
+    return fresnel_schlick(specularReflectance, lightDirection, halfway) *
+           ((materialSpecularPower + 2) / 8) * cosNHPower;
+}
+
+
 // see p257, (7.49) real-time rendering, 3rd
 // the code embodies the half-vector based specular which is ((m + 2) / (8 * pi)) * Cspecular * power(cos(theta), m)
 //               p253 (7.47) the reflection based version is ((m + 2) / (2 * pi)) * Cspecular * power(cos(reflection), m)
@@ -403,15 +413,16 @@ float3 specular_common(float3 materialSpecularColor, float materialSpecularPower
     // the range of the slider is [0, 3.0] for historical reason, which is why it is divided by 3.0
     //
     float3 adjustedCsepcular = materialSpecularColor * lightParams.specular / 3.0;
-    float cosNHPower = pow(saturate(dot(normal, halfway)), materialSpecularPower);
     
     if (kPhysicallyReflection)
     {
-        return fresnel_schlick(adjustedCsepcular, lightParams.direction.xyz, halfway) *
-               ((materialSpecularPower + 2) / 8) * cosNHPower * cosTheta * lightParams.density;
+        return specular_common_physically(adjustedCsepcular, materialSpecularPower,
+                                          lightParams.direction.xyz, normal, halfway)
+                * cosTheta * lightParams.density;
     }
     else
     {
+        float cosNHPower = pow(saturate(dot(normal, halfway)), materialSpecularPower);
         return adjustedCsepcular * cosNHPower * cosTheta * lightParams.density;
     }
 }

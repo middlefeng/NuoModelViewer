@@ -143,6 +143,9 @@ metal::float3 specular_common(metal::float3 materialSpecularColor, float materia
                               NuoLightParameterUniformField lightParams,
                               metal::float3 normal, metal::float3 halfway, float cosTheta);
 
+metal::float3 specular_common_physically(float3 specularReflectance, float materialSpecularPower,
+                                         float3 lightDirection, float3 normal, float3 halfway);
+
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
                              NuoShadowParameterUniformField shadowParams, float cosTheta, float shadowMapSampleRadius,
