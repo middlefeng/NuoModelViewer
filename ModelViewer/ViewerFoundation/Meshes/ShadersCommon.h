@@ -111,6 +111,8 @@ struct PositionTextureSimple
 };
 
 
+#if !SIMPLE_UTILS_ONLY
+
 constant bool kAlphaChannelInTexture            [[ function_constant(0) ]];
 constant bool kAlphaChannelInSeparatedTexture   [[ function_constant(1) ]];
 constant bool kPhysicallyReflection             [[ function_constant(2) ]];
@@ -122,6 +124,8 @@ constant bool kShadowRayTracing                 [[ function_constant(7) ]];
 constant int  kMeshMode                         [[ function_constant(6) ]];
 
 constant bool kDepthPrerenderred = kMeshMode == kMeshMode_Selection;
+
+#endif
 
 
 

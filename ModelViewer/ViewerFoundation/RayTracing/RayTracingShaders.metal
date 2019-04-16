@@ -11,6 +11,9 @@
 #include "NuoRayTracingUniform.h"
 #include "RayTracingShadersCommon.h"
 
+#define SIMPLE_UTILS_ONLY 1
+#include "Meshes/ShadersCommon.h"
+
 
 using namespace metal;
 
@@ -112,7 +115,9 @@ void shadow_ray_emit_infinite_area(uint2 tid,
                                    device Intersection& intersection,
                                    constant NuoRayTracingUniforms& tracingUniforms,
                                    device float2* random,
-                                   device RayBuffer* shadowRays[2])
+                                   device RayBuffer* shadowRays[2],
+                                   metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                                   metal::sampler samplr)
 {
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     
@@ -143,19 +148,38 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             shadowRayCurrent->maxDistance = maxDistance;
             shadowRayCurrent->mask = kNuoRayMask_Opaue;
             
-            float3 normal = interpolate_material(materials, index, intersection).normal;
+            NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
             
+            float3 normal = material.normal;
             float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
             shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             shadowRayCurrent->direction = shadowVec;
             
-            // only the cosine factor is counted into the path scatter term, because samples are generated
-            // from an inifinit distant area light (uniform on a finit contending solid angle) and used
-            // as a scale map. no need to take into account the distance (constant) and the other cosine
-            // (always 1). BRDF diffuse is assumed 1 because this is a scale map.
+            // calculate a specular term which is normalized according to the diffuse term
             //
-            // todo: brdf specular term is not considered
-            shadowRayCurrent->pathScatter = dot(normal, shadowVec);
+            
+            float specularPower = material.shinessDisolveIllum.x;
+            RayBuffer eyeRay = primary_ray(uniforms.viewTrans, intersectionPoint);
+            float3 eyeDirection = -eyeRay.direction;
+            float3 halfway = normalize(normalize(shadowVec + eyeDirection));
+            
+            // try to normalize to uphold Cdiff + Cspec < 1.0
+            // this is best effort and user trial-and-error as OBJ is not always PBR
+            //
+            float3 normalizedCSpecular = material.specularColor * (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
+            
+            float3 diffuseTerm = interpolate_color(materials, diffuseTex, index, intersection, samplr);
+            float3 specularColor = normalizedCSpecular / diffuseTerm;
+            float3 specularTerm = specular_common_physically(specularColor, specularPower,
+                                                             shadowVec, normal, halfway);
+            
+            // the cosine factor is counted into the path scatter term, as the geometric coupling term,
+            // because samples are generated from an inifinit distant area light (uniform on a finit
+            // contending solid angle)
+            //
+            // specular and diffuse is normalized and scale as half-half
+            //
+            shadowRayCurrent->pathScatter = (0.5 + 0.5 * length(specularTerm)) * dot(normal, shadowVec);
         }
         else
         {

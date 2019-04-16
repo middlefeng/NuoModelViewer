@@ -212,7 +212,9 @@ void shadow_ray_emit_infinite_area(uint2 tid,
                                    device Intersection& intersection,
                                    constant NuoRayTracingUniforms& tracingUniforms,
                                    device float2* random,
-                                   device RayBuffer* shadowRays[2]);
+                                   device RayBuffer* shadowRays[2],
+                                   metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                                   metal::sampler samplr);
 
 
 

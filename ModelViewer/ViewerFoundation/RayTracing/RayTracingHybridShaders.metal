@@ -60,7 +60,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     // subtending solid angles, in far distance
     //
     shadow_ray_emit_infinite_area(tid, uniforms, cameraRay, index, materials, intersection,
-                                  tracingUniforms, random, shadowRays);
+                                  tracingUniforms, random, shadowRays, diffuseTex, samplr);
     
     self_illumination(tid, index, materials, intersection,
                       tracingUniforms, cameraRay, incidentRay,
