@@ -7,6 +7,13 @@
 #include "NuoMatrixTypes.h"
 
 
+typedef struct
+{
+    float w, h;
+}
+NuoRangeUniform;
+
+
 /**
  *  vertex shader uniform for transform. if a mesh does not cast shadow, all its transforms
  *  can be multiplied into one on the CPU side and put to a single uniform.
