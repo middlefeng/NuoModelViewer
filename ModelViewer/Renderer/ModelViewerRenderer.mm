@@ -36,7 +36,7 @@
 
 // inspect
 //
-#import "NuoCheckboardMesh.h"
+#import "NuoCheckerboardMesh.h"
 #import "NuoInspectableMaster.h"
 
 
@@ -81,7 +81,7 @@
     NuoDeferredRenderer* _deferredRenderer;
     NuoIlluminationMesh* _illuminationMesh;
     
-    NuoCheckboardMesh* _checkerboard;
+    NuoCheckerboardMesh* _checkerboard;
     
     NuoRayAccelerateStructure* _rayAccelerator;
     ModelRayTracingRenderer* _rayTracingRenderer;
@@ -118,7 +118,7 @@
         [_illuminationMesh setSampleCount:1];
         [_illuminationMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
         
-        _checkerboard = [[NuoCheckboardMesh alloc] initWithCommandQueue:commandQueue];
+        _checkerboard = [[NuoCheckerboardMesh alloc] initWithCommandQueue:commandQueue];
         
         _sceneRoot = [[NuoMeshSceneRoot alloc] init];
         _boardMeshes = [NSMutableArray new];

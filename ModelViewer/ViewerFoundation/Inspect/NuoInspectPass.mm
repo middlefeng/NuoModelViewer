@@ -8,13 +8,13 @@
 
 #import "NuoInspectPass.h"
 #import "NuoTextureMesh.h"
-#import "NuoCheckboardMesh.h"
+#import "NuoCheckerboardMesh.h"
 
 
 
 @implementation NuoInspectPass
 {
-    NuoCheckboardMesh* _checkboard;
+    NuoCheckerboardMesh* _checkboard;
     NuoTextureMesh* _inspect;
 }
 
@@ -36,7 +36,7 @@
         else
             [_inspect makePipelineAndSampler:pixelFormat withBlendMode:kBlend_Alpha];
         
-        _checkboard = [[NuoCheckboardMesh alloc] initWithCommandQueue:commandQueue];
+        _checkboard = [[NuoCheckerboardMesh alloc] initWithCommandQueue:commandQueue];
     }
     
     return self;
