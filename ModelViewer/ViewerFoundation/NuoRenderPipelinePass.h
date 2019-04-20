@@ -30,6 +30,8 @@
  */
 @property (nonatomic, weak) id<MTLTexture> sourceTexture;
 
+@property (nonatomic, assign) BOOL showCheckerboard;
+
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                      withPixelFormat:(MTLPixelFormat)pixelFormat

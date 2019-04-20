@@ -23,6 +23,7 @@ ScreenSpaceBlendMode;
 
 
 @property (nonatomic, weak) id<MTLSamplerState> samplerState;
+@property (nonatomic, assign, readonly) MTLPixelFormat pixelFormat;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;

@@ -8,11 +8,13 @@
 
 #import "NuoRenderPipelinePass.h"
 #import "NuoTextureMesh.h"
+#import "NuoCheckerboardMesh.h"
 
 
 @interface NuoRenderPipelinePass()
 
 @property (nonatomic, strong) NuoTextureMesh* textureMesh;
+@property (nonatomic, strong) NuoCheckerboardMesh* checkerboardMesh;
 
 @end
 
@@ -39,11 +41,33 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    [_textureMesh setModelTexture:self.sourceTexture];
+    if (!_showCheckerboard && !_sourceTexture)
+        return;
     
     id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
-    [_textureMesh drawMesh:renderPass indexBuffer:inFlight];
+    
+    if (_showCheckerboard)
+        [_checkerboardMesh drawMesh:renderPass indexBuffer:inFlight];
+    
+    if (_sourceTexture)
+    {
+        [_textureMesh setModelTexture:_sourceTexture];
+        [_textureMesh drawMesh:renderPass indexBuffer:inFlight];
+    }
+    
     [self releaseDefaultEncoder];
+}
+
+
+- (void)setShowCheckerboard:(BOOL)showCheckerboard
+{
+    _showCheckerboard = showCheckerboard;
+    
+    if (!_checkerboardMesh)
+        _checkerboardMesh = [[NuoCheckerboardMesh alloc] initWithCommandQueue:self.commandQueue];
+    
+    [_textureMesh makePipelineAndSampler:_textureMesh.pixelFormat
+                           withBlendMode:_showCheckerboard ? kBlend_Alpha : kBlend_None];
 }
 
 

@@ -15,9 +15,6 @@
 @interface NuoInspectPass : NuoRenderPipelinePass
 
 
-@property (nonatomic, weak) id<MTLTexture> inspectedTexture;
-
-
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                          withProcess:(NSString*)inspectMean;
