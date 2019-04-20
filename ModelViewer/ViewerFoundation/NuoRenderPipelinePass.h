@@ -33,6 +33,15 @@
 @property (nonatomic, assign) BOOL showCheckerboard;
 
 
+/**
+ *  subclass need take care of the sourceTexture
+ */
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
+
+
+/**
+ *  the sourceTexture is taken care of by default, according to the other parameters
+ */
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                      withSampleCount:(uint)sampleCount;

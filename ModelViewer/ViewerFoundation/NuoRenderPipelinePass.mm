@@ -23,6 +23,19 @@
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+{
+    self = [super init];
+    
+    if (self)
+    {
+        self.commandQueue = commandQueue;
+    }
+    
+    return self;
+}
+
+
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                      withSampleCount:(uint)sampleCount
 {

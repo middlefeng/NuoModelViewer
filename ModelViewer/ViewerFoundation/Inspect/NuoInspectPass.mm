@@ -22,16 +22,17 @@
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                          withProcess:(NSString*)inspectMean
 {
-    self = [super initWithCommandQueue:commandQueue
-                       withPixelFormat:pixelFormat withSampleCount:1];
+    self = [super initWithCommandQueue:commandQueue];
     
-    _inspect = nil;
-    
-    if (self && inspectMean)
+    if (self)
     {
         _inspect = [[NuoTextureMesh alloc] initWithCommandQueue:commandQueue];
         _inspect.sampleCount = 1;
-        [_inspect makePipelineAndSampler:pixelFormat withFragementShader:inspectMean withBlendMode:kBlend_Alpha];
+        
+        if (inspectMean)
+            [_inspect makePipelineAndSampler:pixelFormat withFragementShader:inspectMean withBlendMode:kBlend_Alpha];
+        else
+            [_inspect makePipelineAndSampler:pixelFormat withBlendMode:kBlend_Alpha];
     }
     
     return self;
@@ -41,22 +42,14 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    if (_inspect)
-    {
-        _inspect.modelTexture = self.sourceTexture;
-        self.sourceTexture = nil;
-    }
-    
     id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
     
     // super for background checker
     
     [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
-    if (_inspect)
-    {
-        [_inspect drawMesh:renderPass indexBuffer:inFlight];
-    }
+    [_inspect setModelTexture:self.sourceTexture];
+    [_inspect drawMesh:renderPass indexBuffer:inFlight];
     
     [self releaseDefaultEncoder];
 }
