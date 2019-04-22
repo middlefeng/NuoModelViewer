@@ -63,6 +63,7 @@
         renderTarget.name = @"Inspect";
         
         [_renderPass setRenderTarget:renderTarget];
+        [_renderPass setShowCheckerboard:YES];
         
         [self setupPipeline];
     }
@@ -102,7 +103,7 @@
     
     id<MTLTexture> texture = inspectable.inspectedTexture;
     inspectable.inspector = self;
-    _renderPass.inspectedTexture = texture;
+    _renderPass.sourceTexture = texture;
     
     [_inspectView render];
 }

@@ -14,10 +14,8 @@
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    if (self = [super init])
+    if (self = [super initWithCommandQueue:commandQueue])
     {
-        self.commandQueue = commandQueue;
-        
         [self createShadowSamplerState];
     }
     

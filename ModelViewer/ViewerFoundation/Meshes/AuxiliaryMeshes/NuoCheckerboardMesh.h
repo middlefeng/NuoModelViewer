@@ -10,7 +10,7 @@
 
 
 
-@interface NuoCheckboardMesh : NuoScreenSpaceMesh
+@interface NuoCheckerboardMesh : NuoScreenSpaceMesh
 
 @end
 

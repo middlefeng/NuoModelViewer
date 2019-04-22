@@ -44,6 +44,8 @@
            withFragementShader:(NSString*)shaderName
                  withBlendMode:(ScreenSpaceBlendMode)mode
 {
+    _pixelFormat = pixelFormat;
+    
     id<MTLLibrary> library = [self.device newDefaultLibrary];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
@@ -114,7 +116,6 @@
                           indexBuffer:self.indexBuffer
                     indexBufferOffset:0];
 }
-
 
 
 @end

@@ -6,9 +6,9 @@
 //  Copyright © 2018 middleware. All rights reserved.
 //
 
-#import "NuoCheckboardMesh.h"
+#import "NuoCheckerboardMesh.h"
 
-@implementation NuoCheckboardMesh
+@implementation NuoCheckerboardMesh
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue

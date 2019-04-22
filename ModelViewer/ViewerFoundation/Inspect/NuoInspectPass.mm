@@ -8,13 +8,12 @@
 
 #import "NuoInspectPass.h"
 #import "NuoTextureMesh.h"
-#import "NuoCheckboardMesh.h"
+#import "NuoCheckerboardMesh.h"
 
 
 
 @implementation NuoInspectPass
 {
-    NuoCheckboardMesh* _checkboard;
     NuoTextureMesh* _inspect;
 }
 
@@ -23,8 +22,7 @@
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                          withProcess:(NSString*)inspectMean
 {
-    self = [super initWithCommandQueue:commandQueue
-                       withPixelFormat:pixelFormat withSampleCount:1];
+    self = [super initWithCommandQueue:commandQueue];
     
     if (self)
     {
@@ -35,8 +33,6 @@
             [_inspect makePipelineAndSampler:pixelFormat withFragementShader:inspectMean withBlendMode:kBlend_Alpha];
         else
             [_inspect makePipelineAndSampler:pixelFormat withBlendMode:kBlend_Alpha];
-        
-        _checkboard = [[NuoCheckboardMesh alloc] initWithCommandQueue:commandQueue];
     }
     
     return self;
@@ -48,15 +44,12 @@
 {
     id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
     
-    // not call super as the checkboard is the background
+    // super for background checker
     
-    [_checkboard drawMesh:renderPass indexBuffer:inFlight];
+    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
-    if (_inspect)
-    {
-        [_inspect setModelTexture:_inspectedTexture];
-        [_inspect drawMesh:renderPass indexBuffer:inFlight];
-    }
+    [_inspect setModelTexture:self.sourceTexture];
+    [_inspect drawMesh:renderPass indexBuffer:inFlight];
     
     [self releaseDefaultEncoder];
 }
