@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 
+#import "NuoUniforms.h"
+
 
 @class NuoTextureMesh;
 
@@ -35,13 +37,25 @@ extern NSString* const kInspectable_ShadowOverlay;
 
 @interface NuoInspectable : NSObject
 
+/**
+ *  texture visualization
+ */
 @property (nonatomic, weak) id<MTLTexture> inspectedTexture;
+@property (nonatomic, strong) NSString* inspectingTextureMean;
+
+/**
+ *  buffer visualization
+ */
+@property (nonatomic, weak) id<MTLBuffer> inspectedBuffer;
+@property (nonatomic, assign) NuoRangeUniform inspectedBufferRange;
+@property (nonatomic, strong) NSString* inspectingBufferMean;
+
 @property (nonatomic, strong) NSString* displayTitle;
-@property (nonatomic, strong) NSString* inspectingMean;
 @property (nonatomic, strong) id<NuoInspector> inspector;
 
 
-+ (NuoInspectable*)inspectableWithTitle:(NSString*)title withMean:(NSString*)mean;
++ (NuoInspectable*)inspectableTextureWithTitle:(NSString*)title withMean:(NSString*)mean;
++ (NuoInspectable*)inspectableBufferWithTitle:(NSString*)title withMean:(NSString*)mean;
 
 @end
 

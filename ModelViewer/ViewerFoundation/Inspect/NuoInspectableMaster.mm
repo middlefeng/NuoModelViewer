@@ -25,11 +25,21 @@ NSString* const kInspectable_ShadowOverlay = @"inspectable_shadowOverlay";
 @implementation NuoInspectable
 
 
-+ (NuoInspectable*)inspectableWithTitle:(NSString*)title withMean:(NSString*)mean
++ (NuoInspectable*)inspectableTextureWithTitle:(NSString*)title withMean:(NSString*)mean
 {
     NuoInspectable* inspect = [NuoInspectable new];
     inspect.displayTitle = title;
-    inspect.inspectingMean = mean;
+    inspect.inspectingTextureMean = mean;
+    
+    return inspect;
+}
+
+
++ (NuoInspectable*)inspectableBufferWithTitle:(NSString*)title withMean:(NSString*)mean
+{
+    NuoInspectable* inspect = [NuoInspectable new];
+    inspect.displayTitle = title;
+    inspect.inspectingBufferMean = mean;
     
     return inspect;
 }
@@ -53,13 +63,13 @@ NSString* const kInspectable_ShadowOverlay = @"inspectable_shadowOverlay";
 
 + (NSDictionary<NSString*, NuoInspectable*>*)inspectableList
 {
-    return @{ kInspectable_Immediate: [NuoInspectable inspectableWithTitle:@"Immediate" withMean:nil],
-              kInspectable_ImmediateAlpha: [NuoInspectable inspectableWithTitle:@"Immediate Alpha" withMean:@"fragment_alpha"],
-              kInspectable_Illuminate: [NuoInspectable inspectableWithTitle:@"Illumination" withMean:nil],
-              kInspectable_Ambient: [NuoInspectable inspectableWithTitle:@"Ambient" withMean:nil],
-              kInspectable_Shadow: [NuoInspectable inspectableWithTitle:@"Shadow on Opaque" withMean:@"fragment_r"],
-              kInspectable_ShadowTranslucent: [NuoInspectable inspectableWithTitle:@"Shadow on Translucent" withMean:@"fragment_g"],
-              kInspectable_ShadowOverlay: [NuoInspectable inspectableWithTitle:@"Shadow Overlay" withMean:@"fragment_r"] };
+    return @{ kInspectable_Immediate: [NuoInspectable inspectableTextureWithTitle:@"Immediate" withMean:nil],
+              kInspectable_ImmediateAlpha: [NuoInspectable inspectableTextureWithTitle:@"Immediate Alpha" withMean:@"fragment_alpha"],
+              kInspectable_Illuminate: [NuoInspectable inspectableTextureWithTitle:@"Illumination" withMean:nil],
+              kInspectable_Ambient: [NuoInspectable inspectableTextureWithTitle:@"Ambient" withMean:nil],
+              kInspectable_Shadow: [NuoInspectable inspectableTextureWithTitle:@"Shadow on Opaque" withMean:@"fragment_r"],
+              kInspectable_ShadowTranslucent: [NuoInspectable inspectableTextureWithTitle:@"Shadow on Translucent" withMean:@"fragment_g"],
+              kInspectable_ShadowOverlay: [NuoInspectable inspectableTextureWithTitle:@"Shadow Overlay" withMean:@"fragment_r"] };
 }
 
 

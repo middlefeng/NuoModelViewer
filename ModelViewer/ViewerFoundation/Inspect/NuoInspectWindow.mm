@@ -51,9 +51,14 @@
         NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
         NuoInspectable* inspectable = [inspectMaster setInspector:self forName:_name];
         
+        BOOL forBuffer = inspectable.inspectingBufferMean != nil;
+        NSString* inspectingMean = forBuffer ? inspectable.inspectingBufferMean :
+                                               inspectable.inspectingTextureMean;
+        
         _renderPass = [[NuoInspectPass alloc] initWithCommandQueue:_inspectView.commandQueue
                                                    withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                       withProcess:inspectable.inspectingMean];
+                                                       withProcess:inspectingMean
+                                                         forBuffer:forBuffer];
         
         NuoRenderPassTarget* renderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:_inspectView.commandQueue
                                                                               withPixelFormat:MTLPixelFormatBGRA8Unorm

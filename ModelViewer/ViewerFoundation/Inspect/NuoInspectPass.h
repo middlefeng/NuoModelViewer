@@ -7,6 +7,7 @@
 //
 
 #import "NuoRenderPipelinePass.h"
+#import "NuoUniforms.h"
 
 
 @class NuoTextureMesh;
@@ -17,7 +18,10 @@
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                      withPixelFormat:(MTLPixelFormat)pixelFormat
-                         withProcess:(NSString*)inspectMean;
+                         withProcess:(NSString*)inspectMean
+                           forBuffer:(BOOL)forBuffer;
+
+- (void)updateBuffer:(id<MTLBuffer>)buffer withRange:(const NuoRangeUniform&)range;
 
 
 @end
