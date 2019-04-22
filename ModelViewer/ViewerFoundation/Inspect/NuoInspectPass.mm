@@ -8,7 +8,6 @@
 
 #import "NuoInspectPass.h"
 #import "NuoTextureMesh.h"
-#import "NuoCheckerboardMesh.h"
 
 
 
