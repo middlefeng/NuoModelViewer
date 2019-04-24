@@ -20,6 +20,7 @@ NSString* const kInspectable_Ambient = @"inspectable_ambient";
 NSString* const kInspectable_Shadow = @"inspectable_shadow";
 NSString* const kInspectable_ShadowTranslucent = @"inspectable_shadowTranslucent";
 NSString* const kInspectable_ShadowOverlay = @"inspectable_shadowOverlay";
+NSString* const kInspectable_PrimaryRay = @"inspectable_primaryRay";
 
 
 @implementation NuoInspectable
@@ -69,7 +70,8 @@ NSString* const kInspectable_ShadowOverlay = @"inspectable_shadowOverlay";
               kInspectable_Ambient: [NuoInspectable inspectableTextureWithTitle:@"Ambient" withMean:nil],
               kInspectable_Shadow: [NuoInspectable inspectableTextureWithTitle:@"Shadow on Opaque" withMean:@"fragment_r"],
               kInspectable_ShadowTranslucent: [NuoInspectable inspectableTextureWithTitle:@"Shadow on Translucent" withMean:@"fragment_g"],
-              kInspectable_ShadowOverlay: [NuoInspectable inspectableTextureWithTitle:@"Shadow Overlay" withMean:@"fragment_r"] };
+              kInspectable_ShadowOverlay: [NuoInspectable inspectableTextureWithTitle:@"Shadow Overlay" withMean:@"fragment_r"],
+              kInspectable_PrimaryRay: [NuoInspectable inspectableBufferWithTitle:@"Primary Ray" withMean:@"compute_visualize_ray_direction"] };
 }
 
 
@@ -108,6 +110,16 @@ NSString* const kInspectable_ShadowOverlay = @"inspectable_shadowOverlay";
 }
 
 
+- (void)updateBuffer:(id<MTLBuffer>)buffer
+            forRange:(const NuoRangeUniform&)range
+             forName:(NSString*)name
+{
+    NuoInspectable* inspectable = [self inspectableForName:name create:NO];
+    inspectable.inspectedBuffer = buffer;
+    inspectable.inspectedBufferRange = range;
+}
+
+
 
 - (void)removeInspectorForName:(NSString*)name
 {
@@ -135,6 +147,11 @@ NSString* const kInspectable_ShadowOverlay = @"inspectable_shadowOverlay";
         id<MTLTexture> inspectedTexture = _inspectables[inspectable].inspectedTexture;
         if (inspectedTexture)
             [_inspectables[inspectable].inspector setInspectAspectRatio:(float)[inspectedTexture width] / (float)[inspectedTexture height]];
+        
+        id<MTLBuffer> inspectedBuffer = _inspectables[inspectable].inspectedBuffer;
+        NuoRangeUniform range = _inspectables[inspectable].inspectedBufferRange;
+        if (inspectedBuffer)
+            [_inspectables[inspectable].inspector setInspectAspectRatio:range.w / range.h];
         
         [_inspectables[inspectable].inspector inspect];
     }

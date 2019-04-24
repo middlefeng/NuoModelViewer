@@ -18,6 +18,10 @@
 #include "NuoComputeEncoder.h"
 #include "NuoRenderPassAttachment.h"
 
+// inspect
+//
+#import "NuoInspectableMaster.h"
+
 
 
 static const uint32_t kRandomBufferSize = 256;
@@ -277,6 +281,13 @@ static const uint32_t kRayBounce = 4;
     [self updateUniforms:inFlight];
     
     [self primaryRayEmit:commandBuffer withInFlightIndex:inFlight];
+    
+    NuoRayBuffer* buffer = self.rayStructure.primaryRayBuffer;
+    NuoRangeUniform range =  NuoRangeUniform { (float)buffer.dimension.width,
+                                               (float)buffer.dimension.height };
+    NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
+    [inspectMaster updateBuffer:buffer.buffer
+                       forRange:range forName:kInspectable_PrimaryRay];
     
     if ([self primaryRayIntersect:commandBuffer withInFlightIndex:inFlight])
     {

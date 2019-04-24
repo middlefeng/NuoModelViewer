@@ -9,6 +9,7 @@
 #import "NuoInspectPass.h"
 #import "NuoTextureMesh.h"
 #import "NuoComputeEncoder.h"
+#import "NuoRenderPassAttachment.h"
 
 
 
@@ -42,12 +43,13 @@
                                                              withFunction:inspectMean withParameter:NO];
             
             _bufferVisualizeTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
-                                                                       withPixelFormat:_inspect.pixelFormat
+                                                                       withPixelFormat:pixelFormat
                                                                        withSampleCount:1];
             
             _bufferVisualizeTarget.manageTargetTexture = YES;
             _bufferVisualizeTarget.sharedTargetTexture = NO;
             _bufferVisualizeTarget.clearColor = MTLClearColor { 0, 0, 0, 0 };
+            _bufferVisualizeTarget.colorAttachments[0].needWrite = YES;
             _bufferVisualizeTarget.name = @"Buffer Visualization";
             
             [_inspect makePipelineAndSampler:pixelFormat withBlendMode:kBlend_Alpha];
@@ -76,7 +78,7 @@
     if (_bufferRange.w != range.w || _bufferRange.h != range.h)
     {
         _bufferRangeUniform = [self.commandQueue.device newBufferWithLength:sizeof(NuoRangeUniform)
-                                                                    options:MTLStorageModeManaged];
+                                                                    options:MTLResourceStorageModeManaged];
         memcpy(&_bufferRange, &range, sizeof(NuoRangeUniform));
         memcpy(_bufferRangeUniform.contents, &range, sizeof(NuoRangeUniform));
         
@@ -90,7 +92,7 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    if (_bufferVisualize)
+    if (_bufferVisualize && _inspectBuffer)
     {
         NuoComputeEncoder* computeEncoder = [_bufferVisualize encoderWithCommandBuffer:commandBuffer];
         

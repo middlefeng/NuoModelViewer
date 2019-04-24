@@ -111,6 +111,10 @@ struct PositionTextureSimple
 };
 
 
+
+#if !NO_SHADERS_COMMON_FUNCTION_CONSTANTS
+
+
 constant bool kAlphaChannelInTexture            [[ function_constant(0) ]];
 constant bool kAlphaChannelInSeparatedTexture   [[ function_constant(1) ]];
 constant bool kPhysicallyReflection             [[ function_constant(2) ]];
@@ -123,6 +127,7 @@ constant int  kMeshMode                         [[ function_constant(6) ]];
 
 constant bool kDepthPrerenderred = kMeshMode == kMeshMode_Selection;
 
+#endif
 
 
 metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,

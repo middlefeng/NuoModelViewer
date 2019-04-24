@@ -55,6 +55,8 @@ struct Intersection
 
 
 
+#if !NO_RAY_TRACING_FUNCTIONS
+
 
 constant bool kShadowOnTranslucent  [[ function_constant(0) ]];
 
@@ -191,6 +193,8 @@ void shadow_ray_emit_infinite_area(uint2 tid,
                                    constant NuoRayTracingUniforms& tracingUniforms,
                                    device float2* random,
                                    device RayBuffer* shadowRays[2]);
+
+#endif /* NO_RAY_TRACING_FUNCTIONS */
 
 
 

@@ -22,6 +22,7 @@ extern NSString* const kInspectable_Ambient;
 extern NSString* const kInspectable_Shadow;
 extern NSString* const kInspectable_ShadowTranslucent;
 extern NSString* const kInspectable_ShadowOverlay;
+extern NSString* const kInspectable_PrimaryRay;
 
 
 
@@ -73,6 +74,9 @@ extern NSString* const kInspectable_ShadowOverlay;
 - (NuoInspectable*)setInspector:(id<NuoInspector>)inspector forName:(NSString*)name;
 - (void)removeInspectorForName:(NSString*)name;
 - (void)updateTexture:(id<MTLTexture>)texture forName:(NSString*)name;
+- (void)updateBuffer:(id<MTLBuffer>)buffer
+            forRange:(const NuoRangeUniform&)range
+             forName:(NSString*)name;
 
 - (void)inspect;
 

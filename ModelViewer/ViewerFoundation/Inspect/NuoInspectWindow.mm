@@ -110,6 +110,10 @@
     inspectable.inspector = self;
     _renderPass.sourceTexture = texture;
     
+    id<MTLBuffer> buffer = inspectable.inspectedBuffer;
+    if (buffer)
+        [_renderPass updateBuffer:buffer withRange:inspectable.inspectedBufferRange];
+    
     [_inspectView render];
 }
 

@@ -7,7 +7,13 @@
 //
 
 #include <metal_stdlib>
+#include "Meshes/NuoUniforms.h"
+
+#define NO_SHADERS_COMMON_FUNCTION_CONSTANTS 1
+#define NO_RAY_TRACING_FUNCTIONS 1
+
 #include "Meshes/ShadersCommon.h"
+#include "RayTracing/RayTracingShadersCommon.h"
 
 
 using namespace metal;
@@ -50,4 +56,24 @@ fragment float4 fragment_r(PositionTextureSimple vert [[stage_in]],
 {
     float4 color = texture.sample(samplr, vert.texCoord);
     return float4(float3(0), color.r);
+}
+
+
+
+kernel void compute_visualize_ray_direction(uint2 tid [[thread_position_in_grid]],
+                                            constant NuoRangeUniform& range [[buffer(0)]],
+                                            device RayBuffer* rays [[buffer(1)]],
+                                            texture2d<float, access::read_write> result)
+{
+    if (!(tid.x < range.w && tid.y < range.h))
+        return;
+    
+    unsigned int rayIdx = tid.y * range.w + tid.x;
+    device RayBuffer& ray = rays[rayIdx];
+    
+    float3 rayNormalized = (ray.direction + 1.0) / 2.0;/*float3(0,//ray.direction[0] * 2.0 + 1.0,
+                                  0,//ray.direction[1] * 2.0 + 1.0,
+                                  ray.direction[2] * 2.0 + 1.0);*/
+    
+    result.write(float4(rayNormalized, 1.0), tid);
 }
