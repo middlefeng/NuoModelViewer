@@ -125,9 +125,18 @@ constant bool kDepthPrerenderred = kMeshMode == kMeshMode_Selection;
 
 
 
+template <int num>
+class texture_array
+{
+public:
+    typedef metal::array<metal::texture2d<float>, num> t;
+};
+
+
+
 metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                                    constant NuoLightUniforms &lighting,
-                                                   metal::texture2d<float> shadowMap[2],
+                                                   texture_array<2>::t shadowMaps,
                                                    metal::sampler samplr);
 
 metal::float4 diffuse_lighted_selection(metal::float4 vertPositionNDC,

@@ -76,17 +76,15 @@ vertex ProjectedVertex vertex_project_materialed(device Vertex *vertices [[buffe
 
 fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
                                           constant NuoLightUniforms &lightUniform [[buffer(0)]],
-                                          texture2d<float> shadowMap0 [[texture(0)]],
-                                          texture2d<float> shadowMap1 [[texture(1)]],
-                                          texture2d<float> depth      [[texture(2), function_constant(kDepthPrerenderred)]],
+                                          texture_array<2>::t shadowMaps [[texture(0)]],
+                                          texture2d<float> depth [[texture(2), function_constant(kDepthPrerenderred)]],
                                           sampler depthSamplr [[sampler(0)]])
 {
     if (kMeshMode == kMeshMode_Selection)
         return diffuse_lighted_selection(vert.positionNDC, vert.normal, depth, depthSamplr);
     
-    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
     VertexFragmentCharacters vertFrag = vertex_characters(vert);
-    return fragment_light_tex_materialed_common(vertFrag, lightUniform, shadowMap, depthSamplr);
+    return fragment_light_tex_materialed_common(vertFrag, lightUniform, shadowMaps, depthSamplr);
 }
 
 
