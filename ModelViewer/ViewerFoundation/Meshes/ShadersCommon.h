@@ -137,6 +137,7 @@ public:
 metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                                    constant NuoLightUniforms &lighting,
                                                    texture_array<2>::t shadowMaps,
+                                                   texture_array<2>::t shadowMapsExt,
                                                    metal::sampler samplr);
 
 metal::float4 diffuse_lighted_selection(metal::float4 vertPositionNDC,
@@ -155,7 +156,9 @@ metal::float3 specular_common(metal::float3 materialSpecularColor, float materia
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
                              NuoShadowParameterUniformField shadowParams, float cosTheta, float shadowMapSampleRadius,
-                             metal::texture2d<float> shadowMap, metal::sampler samplr);
+                             metal::texture2d<float> shadowMap,
+                             metal::texture2d<float> shadowMapExt,   // extra maps needed by ray-tracing
+                             metal::sampler samplr);
 
 metal::float2 rand(metal::float2 co);
 metal::float2 ndc_to_texture_coord(metal::float4 ndc);

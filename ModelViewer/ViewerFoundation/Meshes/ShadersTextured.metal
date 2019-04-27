@@ -129,8 +129,9 @@ static VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
 
 fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
                                         constant NuoLightUniforms &lightUniform [[buffer(0)]],
-                                        texture_array<2>::t shadowMaps [[texture(0)]],
-                                        texture2d<float> diffuseTexture [[texture(2)]],
+                                        texture_array<2>::t shadowMaps    [[texture(0)]],
+                                        texture_array<2>::t shadowMapsExt [[texture(2)]],
+                                        texture2d<float> diffuseTexture   [[texture(4)]],
                                         sampler depthSamplr [[sampler(0)]],
                                         sampler samplr [[sampler(1)]])
 {
@@ -141,6 +142,6 @@ fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
     outVert.diffuseColor = diffuseColor;
     outVert.opacity = diffuseTexel.a;
     
-    return fragment_light_tex_materialed_common(outVert, lightUniform, shadowMaps, depthSamplr);
+    return fragment_light_tex_materialed_common(outVert, lightUniform, shadowMaps, shadowMapsExt, depthSamplr);
 }
 

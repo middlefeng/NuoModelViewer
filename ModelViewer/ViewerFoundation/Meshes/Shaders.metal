@@ -169,8 +169,9 @@ vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)
 fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                       constant NuoLightUniforms &lightUniform [[buffer(0)]],
                                       constant NuoModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
-                                      texture_array<2>::t shadowMaps [[texture(0)]],
-                                      texture2d<float> shadowOverlayMap [[texture(2)]],
+                                      texture_array<2>::t shadowMaps    [[texture(0)]],
+                                      texture_array<2>::t shadowMapsExt [[texture(2)]],
+                                      texture2d<float> shadowOverlayMap [[texture(4)]],
                                       sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
@@ -193,7 +194,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
             const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(shadowPostionCurrent, false,
                                                    shadowParams, cosTheta, 3,
-                                                   shadowMaps[i], samplr);
+                                                   shadowMaps[i], shadowMapsExt[i], samplr);
         }
         
         if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
@@ -250,6 +251,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
 float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                             constant NuoLightUniforms &lightingUniform,
                                             texture_array<2>::t shadowMaps,
+                                            texture_array<2>::t shadowMapsExt,
                                             sampler samplr)
 {
     float3 colorForLights = 0.0;
@@ -273,7 +275,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(shadowPositionCurrent, vert.opacity < 1.0,
                                                    shadowParams, cosTheta, 3,
-                                                   shadowMaps[i], samplr);
+                                                   shadowMaps[i], shadowMapsExt[i], samplr);
             
             if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
                 return float4(shadowPercent, 0.0, 0.0, 1.0);
@@ -481,7 +483,9 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
 
 float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
                              NuoShadowParameterUniformField shadowParams, float cosTheta, float shadowMapSampleRadius,
-                             metal::texture2d<float> shadowMap, metal::sampler samplr)
+                             metal::texture2d<float> shadowMap,
+                             metal::texture2d<float> shadowMapExt,   // extra maps needed by ray-tracing
+                             metal::sampler samplr)
 {
     if (kShadowRayTracing)
     {
