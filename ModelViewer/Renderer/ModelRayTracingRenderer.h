@@ -24,7 +24,8 @@
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (void)setLightSource:(NuoLightSource*)lightSource forIndex:(uint)index;
-- (id<MTLTexture>)targetTextureForLightSource:(uint)index;
+- (id<MTLTexture>)targetTextureForLightSource:(uint)index
+                               forTranslucent:(BOOL)translucent;
 
 
 @end

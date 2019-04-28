@@ -95,6 +95,13 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
 }
 
 
+template <int num, access accessType>
+class texture_array
+{
+public:
+    typedef array<texture2d<float, accessType>, num> t;
+};
+
 
 
 kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
@@ -104,8 +111,8 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
                               device NuoRayTracingMaterial* materials [[buffer(3)]],
                               device Intersection *intersections [[buffer(4)]],
                               device RayBuffer* shadowRays [[buffer(5)]],
-                              texture2d<float, access::read_write> light [[texture(0)]],
-                              texture2d<float, access::read_write> lightWithBlock [[texture(1)]])
+                              texture_array<2, access::write>::t lightForOpaque [[texture(0)]],
+                              texture_array<2, access::write>::t lightForTrans  [[texture(2)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -116,6 +123,8 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
     
     if (shadowRay.geometricCoupling > 0)
     {
+        texture_array<2, access::write>::t light = kShadowOnTranslucent ? lightForTrans : lightForOpaque;
+        
         /**
          *  to generate a shadow map (rather than illuminating), the geometric coupling term is integrand
          *
@@ -124,45 +133,25 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
          *      blockers are recorded, and therefore accumulated by a subsequent accumulator.
          */
         
-        if (kShadowOnTranslucent)
-        {
-            float r = light.read(tid).r;
-            light.write(float4(r, shadowRay.geometricCoupling, 0.0, 1.0), tid);
-        }
-        else
-        {
-            float g = light.read(tid).g;
-            light.write(float4(shadowRay.geometricCoupling, g, 0.0, 1.0), tid);
-        }
+        light[0].write(float4(shadowRay.geometricCoupling, 0.0, 0.0, 1.0), tid);
         
         if (intersection.distance < 0.0f)
-        {
-            if (kShadowOnTranslucent)
-            {
-                float r = lightWithBlock.read(tid).r;
-                lightWithBlock.write(float4(r, shadowRay.geometricCoupling, 0.0, 1.0), tid);
-            }
-            else
-            {
-                float g = lightWithBlock.read(tid).g;
-                lightWithBlock.write(float4(shadowRay.geometricCoupling, g, 0.0, 1.0), tid);
-            }
-        }
+            light[1].write(float4(shadowRay.geometricCoupling, 0.0, 0.0, 1.0), tid);
     }
 }
 
 
 
 kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
-                              texture2d<float, access::read> light [[texture(0)]],
-                              texture2d<float, access::read> lightWithBlock [[texture(1)]],
-                              texture2d<float, access::write> dstTex [[texture(2)]])
+                              texture_array<2, access::read>::t lightForOpaque [[texture(0)]],
+                              texture_array<2, access::read>::t lightForTrans  [[texture(2)]],
+                              texture_array<2, access::write>::t dstTex [[texture(4)]])
 {
-    if (!(tid.x < dstTex.get_width() && tid.y < dstTex.get_height()))
+    if (!(tid.x < dstTex[0].get_width() && tid.y < dstTex[0].get_height()))
         return;
     
-    float illuminate = light.read(tid).r;
-    float illuminateWithBlock = lightWithBlock.read(tid).r;
+    float illuminate = lightForOpaque[0].read(tid).r;
+    float illuminateWithBlock = lightForOpaque[1].read(tid).r;
     float illuminatePercent = illuminateWithBlock;
     
     // (comment to above)
@@ -174,8 +163,8 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
         illuminatePercent = saturate(illuminateWithBlock / illuminate);
     }
     
-    illuminate = light.read(tid).g;
-    illuminateWithBlock = lightWithBlock.read(tid).g;
+    illuminate = lightForTrans[0].read(tid).r;
+    illuminateWithBlock = lightForTrans[1].read(tid).r;
     float illuminatePercentTranslucent = illuminateWithBlock;
     
     if (illuminate > 0.00001)   // avoid divided by zero
@@ -183,7 +172,8 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
         illuminatePercentTranslucent = saturate(illuminateWithBlock / illuminate);
     }
     
-    dstTex.write(float4(1 - illuminatePercent, 1 - illuminatePercentTranslucent, 0.0, 1.0), tid);
+    dstTex[0].write(float4(1 - illuminatePercent, 0.0, 0.0, 1.0), tid);
+    dstTex[1].write(float4(1 - illuminatePercentTranslucent, 0.0, 0.0, 1.0), tid);
 }
 
 

@@ -60,13 +60,17 @@
     
     [renderPass setFragmentBuffer:[provider lightingUniformBuffers][inFlight] offset:0 atIndex:0];
     [renderPass setFragmentBuffer:[provider modelCharacterUnfiromBuffer] offset:0 atIndex:1];
-    [renderPass setFragmentTexture:[provider shadowMap:0] atIndex:0];
-    [renderPass setFragmentTexture:[provider shadowMap:1] atIndex:1];
+    [renderPass setFragmentTexture:[provider shadowMap:0 withMask:kNuoSceneMask_Opaque] atIndex:0];
+    [renderPass setFragmentTexture:[provider shadowMap:1 withMask:kNuoSceneMask_Opaque] atIndex:1];
+    [renderPass setFragmentTexture:[provider shadowMap:0 withMask:kNuoSceneMask_Translucent] atIndex:2];
+    [renderPass setFragmentTexture:[provider shadowMap:1 withMask:kNuoSceneMask_Translucent] atIndex:3];
     [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
     
     NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
-    [inspectMaster updateTexture:[provider shadowMap:0] forName:kInspectable_Shadow];
-    [inspectMaster updateTexture:[provider shadowMap:0] forName:kInspectable_ShadowTranslucent];
+    [inspectMaster updateTexture:[provider shadowMap:0 withMask:kNuoSceneMask_Opaque]
+                         forName:kInspectable_Shadow];
+    [inspectMaster updateTexture:[provider shadowMap:0 withMask:kNuoSceneMask_Translucent]
+                         forName:kInspectable_ShadowTranslucent];
 }
 
 

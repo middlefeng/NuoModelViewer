@@ -32,7 +32,7 @@ static const uint32_t kRayBounce = 4;
 @property (nonatomic, readonly) id<MTLBuffer> shadowIntersectionBuffer;
 @property (nonatomic, weak) NuoLightSource* lightSource;
 
-@property (nonatomic, readonly) NuoRenderPassTarget* normalizedIllumination;
+@property (nonatomic, readonly) NSArray<NuoRenderPassTarget*>* normalizedIllumination;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
@@ -55,10 +55,11 @@ static const uint32_t kRayBounce = 4;
 {
     // use two channels for the opaque and translucent objects, respectivey
     //
-    MTLPixelFormat format = MTLPixelFormatRG32Float;
+    MTLPixelFormat format = MTLPixelFormatRGBA32Float;
     
     self = [super initWithCommandQueue:commandQueue
-                       withPixelFormat:format withTargetCount:2];
+                       withPixelFormat:format
+                       withTargetCount:4 /* 2 for opaque, 2 for translucent */];
     
     if (self)
     {
@@ -76,15 +77,23 @@ static const uint32_t kRayBounce = 4;
         _shadowShadePipelineOnTranslucent.name = @"Shadow Shade (Translucent)";
         _differentialPipeline.name = @"Illumination Normalizing";
         
-        _normalizedIllumination = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                    withPixelFormat:format
-                                                                    withSampleCount:1];
+        NuoRenderPassTarget* illumination[2];
+        for (uint i = 0; i < 2; ++i)
+        {
+            illumination[i] = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
+                                                                withPixelFormat:format
+                                                                withSampleCount:1];
+            
+            NuoRenderPassTarget* illum = illumination[i];
+            
+            illum.manageTargetTexture = YES;
+            illum.sharedTargetTexture = NO;
+            illum.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
+            illum.colorAttachments[0].needWrite = YES;
+            illum.name = @"Ray Tracing Normalized";
+        }
         
-        _normalizedIllumination.manageTargetTexture = YES;
-        _normalizedIllumination.sharedTargetTexture = NO;
-        _normalizedIllumination.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
-        _normalizedIllumination.colorAttachments[0].needWrite = YES;
-        _normalizedIllumination.name = @"Ray Tracing Normalized";
+        _normalizedIllumination = [[NSArray alloc] initWithObjects:illumination count:2];
     }
     
     return self;
@@ -99,7 +108,8 @@ static const uint32_t kRayBounce = 4;
         return;
     
     _drawableSize = drawableSize;
-    _normalizedIllumination.drawableSize = drawableSize;
+    for (uint i = 0; i < 2; ++i)
+        _normalizedIllumination[i].drawableSize = drawableSize;
     
     const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayIntersectionStride;
     
@@ -135,15 +145,22 @@ static const uint32_t kRayBounce = 4;
 {
     [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
-    [_normalizedIllumination retainRenderPassEndcoder:commandBuffer];
-    [_normalizedIllumination releaseRenderPassEndcoder];
+    for (uint i = 0; i < 2; ++i)
+    {
+        [_normalizedIllumination[i] retainRenderPassEndcoder:commandBuffer];
+        [_normalizedIllumination[i] releaseRenderPassEndcoder];
+    }
     
     NuoComputeEncoder* encoder = [_differentialPipeline encoderWithCommandBuffer:commandBuffer];
     
     NSArray<id<MTLTexture>>* textures = self.targetTextures;
-    [encoder setTexture:textures[0] atIndex:0];
-    [encoder setTexture:textures[1] atIndex:1];
-    [encoder setTexture:_normalizedIllumination.targetTexture atIndex:2];
+    
+    uint i = 0;
+    for (; i < textures.count; ++i)
+        [encoder setTexture:textures[i] atIndex:i];
+
+    [encoder setTexture:_normalizedIllumination[0].targetTexture atIndex:i];
+    [encoder setTexture:_normalizedIllumination[1].targetTexture atIndex:i+1];
     
     [encoder dispatch];
 }
@@ -330,8 +347,12 @@ static const uint32_t kRayBounce = 4;
 
 
 - (id<MTLTexture>)targetTextureForLightSource:(uint)index
+                               forTranslucent:(BOOL)translucent
 {
-    return _subRenderers[index].normalizedIllumination.targetTexture;
+    if (translucent)
+        return _subRenderers[index].normalizedIllumination[1].targetTexture;
+    else
+        return _subRenderers[index].normalizedIllumination[0].targetTexture;
 }
 
 

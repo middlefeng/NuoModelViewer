@@ -489,8 +489,9 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool transluc
 {
     if (kShadowRayTracing)
     {
-        float4 shadowCoverage = shadowMap.sample(samplr, ndc_to_texture_coord(shadowCastModelPostion));
-        return (translucent) ? shadowCoverage.g : shadowCoverage.r;
+        float4 shadowCoverage = translucent ? shadowMapExt.sample(samplr, ndc_to_texture_coord(shadowCastModelPostion)) :
+                                              shadowMap.sample(samplr, ndc_to_texture_coord(shadowCastModelPostion));
+        return shadowCoverage.r;
     }
     
     float shadowMapBias = 0.002;
