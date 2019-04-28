@@ -85,7 +85,7 @@ fragment float4 fragment_light_materialed(ProjectedVertex vert [[stage_in]],
         return diffuse_lighted_selection(vert.positionNDC, vert.normal, depth, depthSamplr);
     
     VertexFragmentCharacters vertFrag = vertex_characters(vert);
-    return fragment_light_tex_materialed_common(vertFrag, lightUniform, shadowMapsExt, shadowMaps, depthSamplr);
+    return fragment_light_tex_materialed_common(vertFrag, lightUniform, shadowMaps, shadowMapsExt, depthSamplr);
 }
 
 
