@@ -133,10 +133,10 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
          *      blockers are recorded, and therefore accumulated by a subsequent accumulator.
          */
         
-        light[0].write(float4(shadowRay.geometricCoupling, 0.0, 0.0, 1.0), tid);
+        light[0].write(float4(float3(shadowRay.geometricCoupling), 1.0), tid);
         
         if (intersection.distance < 0.0f)
-            light[1].write(float4(shadowRay.geometricCoupling, 0.0, 0.0, 1.0), tid);
+            light[1].write(float4(float3(shadowRay.geometricCoupling), 1.0), tid);
     }
 }
 
@@ -150,30 +150,32 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
     if (!(tid.x < dstTex[0].get_width() && tid.y < dstTex[0].get_height()))
         return;
     
-    float illuminate = lightForOpaque[0].read(tid).r;
-    float illuminateWithBlock = lightForOpaque[1].read(tid).r;
-    float illuminatePercent = illuminateWithBlock;
+    float3 illuminate = lightForOpaque[0].read(tid).rgb;
+    float3 illuminateWithBlock = lightForOpaque[1].read(tid).rgb;
+    float3 illuminatePercent = illuminateWithBlock;
     
     // (comment to above)
     // illuminateWithBlock won't be greater than illuminate. if the latter is too small,
     // use the former directly (rather than use zero)
     
-    if (illuminate > 0.00001)   // avoid divided by zero
+    for (uint i = 0; i < 3; ++i)
     {
-        illuminatePercent = saturate(illuminateWithBlock / illuminate);
+        if (illuminate[i] > 0.00001)   // avoid divided by zero
+            illuminatePercent[i] = saturate(illuminateWithBlock[i] / illuminate[i]);
     }
     
-    illuminate = lightForTrans[0].read(tid).r;
-    illuminateWithBlock = lightForTrans[1].read(tid).r;
-    float illuminatePercentTranslucent = illuminateWithBlock;
+    illuminate = lightForTrans[0].read(tid).rgb;
+    illuminateWithBlock = lightForTrans[1].read(tid).rgb;
+    float3 illuminatePercentTranslucent = illuminateWithBlock;
     
-    if (illuminate > 0.00001)   // avoid divided by zero
+    for (uint i = 0; i < 3; ++i)
     {
-        illuminatePercentTranslucent = saturate(illuminateWithBlock / illuminate);
+        if (illuminate[i] > 0.00001)   // avoid divided by zero
+            illuminatePercentTranslucent[i] = saturate(illuminateWithBlock[i] / illuminate[i]);
     }
     
-    dstTex[0].write(float4(1 - illuminatePercent, 0.0, 0.0, 1.0), tid);
-    dstTex[1].write(float4(1 - illuminatePercentTranslucent, 0.0, 0.0, 1.0), tid);
+    dstTex[0].write(float4((1 - illuminatePercent), 1.0), tid);
+    dstTex[1].write(float4((1 - illuminatePercentTranslucent), 1.0), tid);
 }
 
 

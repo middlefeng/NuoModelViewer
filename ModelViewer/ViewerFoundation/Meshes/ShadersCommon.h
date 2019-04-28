@@ -154,11 +154,11 @@ metal::float3 specular_common(metal::float3 materialSpecularColor, float materia
                               metal::float3 normal, metal::float3 halfway, float cosTheta);
 
 
-float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
-                             NuoShadowParameterUniformField shadowParams, float cosTheta, float shadowMapSampleRadius,
-                             metal::texture2d<float> shadowMap,
-                             metal::texture2d<float> shadowMapExt,   // extra maps needed by ray-tracing
-                             metal::sampler samplr);
+metal::float3 shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
+                                     NuoShadowParameterUniformField shadowParams, float cosTheta, float shadowMapSampleRadius,
+                                     metal::texture2d<float> shadowMap,
+                                     metal::texture2d<float> shadowMapExt,   // extra maps needed by ray-tracing
+                                     metal::sampler samplr);
 
 metal::float2 rand(metal::float2 co);
 metal::float2 ndc_to_texture_coord(metal::float4 ndc);

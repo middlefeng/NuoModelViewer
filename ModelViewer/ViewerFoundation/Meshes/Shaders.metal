@@ -187,7 +187,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         const NuoLightParameterUniformField lightParams = lightUniform.lightParams[i];
         
         float cosTheta = saturate(dot(normal, normalize(lightParams.direction.xyz)));
-        float shadowPercent = 0.0;
+        float3 shadowPercent = float3(0.0);
         if (i < 2)
         {
             float4 shadowPostionCurrent = kShadowRayTracing ? vert.positionNDC : shadowPosition[i];
@@ -198,11 +198,11 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         }
         
         if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
-            return float4(shadowPercent, 0.0, 0.0, 1.0);
+            return float4(shadowPercent.r, 0.0, 0.0, 1.0);
         
         if (kShadowOverlay)
         {
-            shadowOverlay += lightUniform.lightParams[i].density * cosTheta * shadowPercent;
+            shadowOverlay += lightUniform.lightParams[i].density * cosTheta * length(shadowPercent);
             surfaceBrightness += lightUniform.lightParams[i].density * cosTheta;
         }
         else
@@ -266,7 +266,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         float cosTheta = saturate(dot(vert.normal, lightVector));
         float3 diffuseTerm = vert.diffuseColor * cosTheta * lightParams.density;
         
-        float shadowPercent = 0.0;
+        float3 shadowPercent = float3(0.0);
         if (i < 2)
         {
             const float4 shadowPositionCurrent = kShadowRayTracing ?
@@ -278,7 +278,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                                    shadowMaps[i], shadowMapsExt[i], samplr);
             
             if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
-                return float4(shadowPercent, 0.0, 0.0, 1.0);
+                return float4(shadowPercent.r, 0.0, 0.0, 1.0);
         }
         
         float3 specularTerm(0);
@@ -289,7 +289,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             
             specularTerm = specular_common(vert.specularColor, vert.specularPower,
                                            lightParams, vert.normal, halfway, cosTheta);
-            transparency *= (1 - saturate(length(specularTerm)) * (1 - shadowPercent));
+            transparency *= (1 - saturate(length(specularTerm)) * (1 - length(shadowPercent)));
         }
         
         colorForLights += (diffuseTerm + specularTerm) * (1 - shadowPercent);
@@ -481,17 +481,17 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
 
 
 
-float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
-                             NuoShadowParameterUniformField shadowParams, float cosTheta, float shadowMapSampleRadius,
-                             metal::texture2d<float> shadowMap,
-                             metal::texture2d<float> shadowMapExt,   // extra maps needed by ray-tracing
-                             metal::sampler samplr)
+float3 shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
+                              NuoShadowParameterUniformField shadowParams, float cosTheta, float shadowMapSampleRadius,
+                              metal::texture2d<float> shadowMap,
+                              metal::texture2d<float> shadowMapExt,   // extra maps needed by ray-tracing
+                              metal::sampler samplr)
 {
     if (kShadowRayTracing)
     {
         float4 shadowCoverage = translucent ? shadowMapExt.sample(samplr, ndc_to_texture_coord(shadowCastModelPostion)) :
                                               shadowMap.sample(samplr, ndc_to_texture_coord(shadowCastModelPostion));
-        return shadowCoverage.r;
+        return shadowCoverage.rgb;
     }
     
     float shadowMapBias = 0.002;
@@ -587,16 +587,16 @@ float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool transluc
             float shadowPercent = shadowCoverage / (float)shadowSampleCount * t; */
             
             float shadowPercent = shadowCoverage / (float)shadowSampleCount;
-            return shadowPercent;
+            return float3(shadowPercent);
         }
         
-        return 0.0;
+        return float3(0.0);
     }
     else
     {
         /** simpler shadow without PCF
          */
-        return shadowMap.sample(samplr, shadowCoord).r < modelDepth ? 1 : 0;
+        return float3(shadowMap.sample(samplr, shadowCoord).r < modelDepth ? 1 : 0);
     }
 }
 
