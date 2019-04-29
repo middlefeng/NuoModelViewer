@@ -344,13 +344,10 @@ static const uint32_t kRayBounce = 4;
 }
 
 
-- (id<MTLTexture>)targetTextureForLightSource:(uint)index
-                               forTranslucent:(BOOL)translucent
+- (id<MTLTexture>)shadowForLightSource:(uint)index withMask:(NuoSceneMask)mask
 {
-    if (translucent)
-        return _subRenderers[index].normalizedIllumination[1].targetTexture;
-    else
-        return _subRenderers[index].normalizedIllumination[0].targetTexture;
+    uint i = mask == kNuoSceneMask_Opaque ? 0 : 1;
+    return _subRenderers[index].normalizedIllumination[i].targetTexture;
 }
 
 

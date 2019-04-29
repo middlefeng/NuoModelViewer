@@ -34,7 +34,7 @@ NuoSceneMask;
 - (id<MTLBuffer>)modelCharacterUnfiromBuffer;
 - (BOOL)cullEnabled;
 
-- (id<MTLTexture>)shadowMap:(NSUInteger)index withMask:(NuoSceneMask)mask;
+- (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
 - (id<MTLTexture>)depthMap;
 
 

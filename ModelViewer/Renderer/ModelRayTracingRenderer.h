@@ -7,6 +7,7 @@
 //
 
 #import "NuoRayTracingRenderer.h"
+#import "NuoMeshSceneRenderPass.h"
 
 @class NuoLightSource;
 
@@ -22,8 +23,7 @@
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (void)setLightSource:(NuoLightSource*)lightSource forIndex:(uint)index;
-- (id<MTLTexture>)targetTextureForLightSource:(uint)index
-                               forTranslucent:(BOOL)translucent;
+- (id<MTLTexture>)shadowForLightSource:(uint)index withMask:(NuoSceneMask)mask;
 
 
 @end

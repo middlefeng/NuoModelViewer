@@ -150,32 +150,26 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
     if (!(tid.x < dstTex[0].get_width() && tid.y < dstTex[0].get_height()))
         return;
     
-    float3 illuminate = lightForOpaque[0].read(tid).rgb;
-    float3 illuminateWithBlock = lightForOpaque[1].read(tid).rgb;
-    float3 illuminatePercent = illuminateWithBlock;
+    texture_array<2, access::read>::t lights[] = { lightForOpaque, lightForTrans };
     
-    // (comment to above)
-    // illuminateWithBlock won't be greater than illuminate. if the latter is too small,
-    // use the former directly (rather than use zero)
-    
-    for (uint i = 0; i < 3; ++i)
+    for (uint lightType = 0; lightType < 2; ++lightType)
     {
-        if (illuminate[i] > 0.00001)   // avoid divided by zero
-            illuminatePercent[i] = saturate(illuminateWithBlock[i] / illuminate[i]);
+        float3 illuminate = lights[lightType][0].read(tid).rgb;
+        float3 illuminateWithBlock = lights[lightType][1].read(tid).rgb;
+        float3 illuminatePercent = illuminateWithBlock;
+        
+        // (comment to above)
+        // illuminateWithBlock won't be greater than illuminate. if the latter is too small,
+        // use the former directly (rather than use zero)
+        
+        for (uint i = 0; i < 3; ++i)
+        {
+            if (illuminate[i] > 0.00001)   // avoid divided by zero
+                illuminatePercent[i] = saturate(illuminateWithBlock[i] / illuminate[i]);
+        }
+        
+        dstTex[lightType].write(float4((1 - illuminatePercent), 1.0), tid);
     }
-    
-    illuminate = lightForTrans[0].read(tid).rgb;
-    illuminateWithBlock = lightForTrans[1].read(tid).rgb;
-    float3 illuminatePercentTranslucent = illuminateWithBlock;
-    
-    for (uint i = 0; i < 3; ++i)
-    {
-        if (illuminate[i] > 0.00001)   // avoid divided by zero
-            illuminatePercentTranslucent[i] = saturate(illuminateWithBlock[i] / illuminate[i]);
-    }
-    
-    dstTex[0].write(float4((1 - illuminatePercent), 1.0), tid);
-    dstTex[1].write(float4((1 - illuminatePercentTranslucent), 1.0), tid);
 }
 
 

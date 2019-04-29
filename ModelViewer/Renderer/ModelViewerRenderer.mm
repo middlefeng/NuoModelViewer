@@ -1244,12 +1244,11 @@
 
 #pragma mark -- Protocol NuoMeshSceneParametersProvider
 
-- (id<MTLTexture>)shadowMap:(NSUInteger)index withMask:(NuoSceneMask)mask;
+- (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
 {
     if (_rayTracingRecordStatus != kRecord_Stop)
     {
-        return [_rayTracingRenderer targetTextureForLightSource:(uint)index
-                                                 forTranslucent:mask == kNuoSceneMask_Translucent];
+        return [_rayTracingRenderer shadowForLightSource:index withMask:mask];
     }
     else
     {
