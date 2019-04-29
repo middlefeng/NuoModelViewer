@@ -166,10 +166,9 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             // try to normalize to uphold Cdiff + Cspec < 1.0
             // this is best effort and user trial-and-error as OBJ is not always PBR
             //
-            float3 normalizedCSpecular = material.specularColor * (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
+            float3 specularColor = material.specularColor * (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
             
             float3 diffuseTerm = interpolate_color(materials, diffuseTex, index, intersection, samplr);
-            float3 specularColor = normalizedCSpecular / diffuseTerm;
             float3 specularTerm = specular_common_physically(specularColor, specularPower,
                                                              shadowVec, normal, halfway);
             
@@ -179,7 +178,7 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             //
             // specular and diffuse is normalized and scale as half-half
             //
-            shadowRayCurrent->pathScatter = (0.5 + 0.5 * length(specularTerm)) * dot(normal, shadowVec);
+            shadowRayCurrent->pathScatter = (0.5 * diffuseTerm + 0.5 * specularTerm) * dot(normal, shadowVec);
         }
         else
         {

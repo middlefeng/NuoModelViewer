@@ -71,7 +71,7 @@ static CIContext* sCIContext = nil;
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
     [renderPass setVertexBuffer:self.transformBuffers[index] offset:0 atIndex:3];
-    [renderPass setFragmentTexture:self.diffuseTex atIndex:2];
+    [renderPass setFragmentTexture:self.diffuseTex atIndex:4];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
     [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle

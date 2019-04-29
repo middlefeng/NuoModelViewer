@@ -96,13 +96,13 @@ vertex PositionSimple vertex_simple_tex_materialed_bump(device Vertex *vertices 
 
 fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
                                              constant NuoLightUniforms &lighting [[buffer(0)]],
-                                             texture2d<float> shadowMap0 [[texture(0)]],
-                                             texture2d<float> shadowMap1 [[texture(1)]],
-                                             texture2d<float> depth      [[texture(2), function_constant(kDepthPrerenderred)]],
-                                             texture2d<float> diffuseTexture [[texture(3)]],
-                                             texture2d<float> opacityTexture [[texture(4),
+                                             texture_array<2>::t shadowMaps    [[texture(0)]],
+                                             texture_array<2>::t shadowMapsExt [[texture(2)]],
+                                             texture2d<float> depth            [[texture(4), function_constant(kDepthPrerenderred)]],
+                                             texture2d<float> diffuseTexture   [[texture(5)]],
+                                             texture2d<float> opacityTexture   [[texture(6),
                                                                                function_constant(kAlphaChannelInSeparatedTexture)]],
-                                             texture2d<float> bumpTexture [[texture(5)]],
+                                             texture2d<float> bumpTexture [[texture(7)]],
                                              sampler depthSamplr [[sampler(0)]],
                                              sampler samplr [[sampler(1)]])
 {
@@ -123,8 +123,7 @@ fragment float4 fragment_tex_materialed_bump(ProjectedVertex vert [[stage_in]],
     float4 bumpNormal = bumpTexture.sample(samplr, vert.texCoord);
     outVert.normal = bumpped_normal(vert.normal, vert.tangent, vert.bitangent, bumpNormal.xyz);
     
-    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
-    return fragment_light_tex_materialed_common(outVert, lighting, shadowMap, depthSamplr);
+    return fragment_light_tex_materialed_common(outVert, lighting, shadowMaps, shadowMapsExt, depthSamplr);
 }
 
 

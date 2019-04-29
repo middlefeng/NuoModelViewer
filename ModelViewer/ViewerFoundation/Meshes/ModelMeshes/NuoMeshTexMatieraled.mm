@@ -223,7 +223,7 @@
     [renderPass setVertexBuffer:self.transformBuffers[index] offset:0 atIndex:3];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
-    NSUInteger texBufferIndex = 3; /* mesh texture starts after the shadow-map texture */
+    NSUInteger texBufferIndex = 5; /* mesh texture starts after the shadow-map texture */
     
     [renderPass setFragmentTexture:self.diffuseTex atIndex:texBufferIndex++];
     if (_textureOpacity)

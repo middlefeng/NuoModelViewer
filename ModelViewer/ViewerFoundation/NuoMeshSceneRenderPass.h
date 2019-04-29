@@ -16,6 +16,15 @@
 
 
 
+typedef enum
+{
+    kNuoSceneMask_Opaque,
+    kNuoSceneMask_Translucent
+}
+NuoSceneMask;
+
+
+
 @protocol NuoMeshSceneParametersProvider
 
 
@@ -25,7 +34,7 @@
 - (id<MTLBuffer>)modelCharacterUnfiromBuffer;
 - (BOOL)cullEnabled;
 
-- (id<MTLTexture>)shadowMap:(NSUInteger)index;
+- (id<MTLTexture>)shadowMap:(NSUInteger)index withMask:(NuoSceneMask)mask;
 - (id<MTLTexture>)depthMap;
 
 
