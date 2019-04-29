@@ -54,7 +54,7 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     const float v = (pixelCoord.y / (float)uniforms.hViewPort) * uniforms.vRange - uniforms.vRange / 2.0;
     
     ray = primary_ray(uniforms.viewTrans, float3(u, -v, -1.0));
-    ray.color = float3(1.0, 1.0, 1.0);
+    ray.pathScatter = float3(1.0, 1.0, 1.0);
     
     // primary rays are generated with mask as opaque. rays for translucent mask are got by
     // set the mask later by "ray_set_mask"

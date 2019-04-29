@@ -114,7 +114,7 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
     device Intersection& intersection = intersections[rayIdx];
     device RayBuffer& shadowRay = shadowRays[rayIdx];
     
-    if (shadowRay.pathScatter > 0)
+    if (shadowRay.pathScatter[0] > 0)
     {
         /**
          *  to generate a shadow map (rather than illuminating), the light transportation is integrand
@@ -127,12 +127,12 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
         if (kShadowOnTranslucent)
         {
             float r = light.read(tid).r;
-            light.write(float4(r, shadowRay.pathScatter, 0.0, 1.0), tid);
+            light.write(float4(r, shadowRay.pathScatter[0], 0.0, 1.0), tid);
         }
         else
         {
             float g = light.read(tid).g;
-            light.write(float4(shadowRay.pathScatter, g, 0.0, 1.0), tid);
+            light.write(float4(shadowRay.pathScatter[0], g, 0.0, 1.0), tid);
         }
         
         if (intersection.distance < 0.0f)
@@ -140,12 +140,12 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
             if (kShadowOnTranslucent)
             {
                 float r = lightWithBlock.read(tid).r;
-                lightWithBlock.write(float4(r, shadowRay.pathScatter, 0.0, 1.0), tid);
+                lightWithBlock.write(float4(r, shadowRay.pathScatter[0], 0.0, 1.0), tid);
             }
             else
             {
                 float g = lightWithBlock.read(tid).g;
-                lightWithBlock.write(float4(shadowRay.pathScatter, g, 0.0, 1.0), tid);
+                lightWithBlock.write(float4(shadowRay.pathScatter[0], g, 0.0, 1.0), tid);
             }
         }
     }
@@ -214,12 +214,12 @@ void self_illumination(uint2 tid,
         // incident ray (that is the output ray buffer) may be the same. so it's necessary to store the
         // color before calcuating the bounce
         //
-        float3 originalRayColor = ray.color;
+        float3 originalRayColor = ray.pathScatter;
         
         int illuminate = materials[*(vertexIndex)].shinessDisolveIllum.z;
         if (illuminate == 0)
         {
-            color = color * ray.color * globalIllum.illuminationStrength * 10.0;
+            color = color * ray.pathScatter * globalIllum.illuminationStrength * 10.0;
             
             // old comment regarding the light source sampling vs. reflection sampling:
             //   for bounced ray, multiplied with the integral base (2 PI, or the hemisphre)
@@ -250,7 +250,7 @@ void self_illumination(uint2 tid,
             incidentRay.bounce = ray.bounce + 1;
             incidentRay.ambientIlluminated = ray.ambientIlluminated;
             
-            incidentRay.color = color * ray.color;
+            incidentRay.pathScatter = color * ray.pathScatter;
         }
         
         if (ray.bounce > 0 && !ray.ambientIlluminated && intersection.distance > ambientRadius)
@@ -264,7 +264,7 @@ void self_illumination(uint2 tid,
     {
         if (ray.bounce > 0 && !ray.ambientIlluminated)
         {
-            float3 color = ray.color * globalIllum.ambient;
+            float3 color = ray.pathScatter * globalIllum.ambient;
             overlayResult.write(float4(color, 1.0), tid);
             incidentRay.ambientIlluminated = true;
         }

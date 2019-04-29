@@ -32,9 +32,8 @@ struct RayBuffer
     //
     // it is the product of all BRDF and geometric coupling terms of the previous sections (pbr-book 14.14)
     //
-    float pathScatter;
+    packed_float3 pathScatter;
     
-    packed_float3 color;
     int bounce;
     
     // determine if the ambient calculation should terminate, which is independent from
