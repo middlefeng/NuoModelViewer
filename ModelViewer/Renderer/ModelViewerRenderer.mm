@@ -1247,15 +1247,10 @@
 - (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
 {
     if (_rayTracingRecordStatus != kRecord_Stop)
-    {
         return [_rayTracingRenderer shadowForLightSource:index withMask:mask];
-    }
     else
-    {
         return _shadowMapRenderer[index].renderTarget.targetTexture;
-    }
 }
-
 
 - (NSArray<id<MTLBuffer>>*)lightCastBuffers
 {

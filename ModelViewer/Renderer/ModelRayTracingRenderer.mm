@@ -108,8 +108,8 @@ static const uint32_t kRayBounce = 4;
         return;
     
     _drawableSize = drawableSize;
-    for (uint i = 0; i < 2; ++i)
-        _normalizedIllumination[i].drawableSize = drawableSize;
+    for (NuoRenderPassTarget* illum in _normalizedIllumination)
+        illum.drawableSize = drawableSize;
     
     const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayIntersectionStride;
     
@@ -145,10 +145,10 @@ static const uint32_t kRayBounce = 4;
 {
     [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
-    for (uint i = 0; i < 2; ++i)
+    for (NuoRenderPassTarget* illum in _normalizedIllumination)
     {
-        [_normalizedIllumination[i] retainRenderPassEndcoder:commandBuffer];
-        [_normalizedIllumination[i] releaseRenderPassEndcoder];
+        [illum retainRenderPassEndcoder:commandBuffer];
+        [illum releaseRenderPassEndcoder];
     }
     
     NuoComputeEncoder* encoder = [_differentialPipeline encoderWithCommandBuffer:commandBuffer];
@@ -346,7 +346,7 @@ static const uint32_t kRayBounce = 4;
 
 - (id<MTLTexture>)shadowForLightSource:(uint)index withMask:(NuoSceneMask)mask
 {
-    uint i = mask == kNuoSceneMask_Opaque ? 0 : 1;
+    uint i = (mask == kNuoSceneMask_Opaque ? 0 : 1);
     return _subRenderers[index].normalizedIllumination[i].targetTexture;
 }
 
