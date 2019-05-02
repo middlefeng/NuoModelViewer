@@ -460,6 +460,15 @@
 			path = Inspect;
 			sourceTree = "<group>";
 		};
+		2C31679B227B4B0F0079F5E3 /* Scene */ = {
+			isa = PBXGroup;
+			children = (
+				2C9777581F7EC8B60031F188 /* NuoMeshSceneRenderPass.h */,
+				2C9777591F7EC8B60031F188 /* NuoMeshSceneRenderPass.mm */,
+			);
+			path = Scene;
+			sourceTree = "<group>";
+		};
 		2C4DE7731DFB558B00199F1D /* Scripting */ = {
 			isa = PBXGroup;
 			children = (
@@ -657,8 +666,6 @@
 				2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */,
 				2C8B80FB1E2EDB01001746FE /* NuoRenderPipelinePass.h */,
 				2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.mm */,
-				2C9777581F7EC8B60031F188 /* NuoMeshSceneRenderPass.h */,
-				2C9777591F7EC8B60031F188 /* NuoMeshSceneRenderPass.mm */,
 				2CCF9C7E1E5B7A43006EF8C4 /* NuoRenderPipeline.h */,
 				2CCF9C7F1E5B7A43006EF8C4 /* NuoRenderPipeline.mm */,
 				2C840D0C1D7001C2000D2956 /* NuoMetalView.h */,
@@ -667,6 +674,7 @@
 				2CCF9C761E5B4F77006EF8C4 /* NuoOffscreenView.m */,
 				2CC5EDEC1D8A62B100419168 /* NuoRoundedView.h */,
 				2CC5EDED1D8A62B100419168 /* NuoRoundedView.m */,
+				2C31679B227B4B0F0079F5E3 /* Scene */,
 				2C5DDAC61D6590C200A9DC9A /* Meshes */,
 				2C8B80E61E2D6636001746FE /* ShadowMap */,
 				2C9777441F7E076D0031F188 /* ScreenSpace */,
