@@ -78,7 +78,7 @@
 {
     id<MTLTexture> depthMap = [_paramsProvider depthMap];
     if (depthMap)
-        [renderPass setFragmentTexture:depthMap atIndex:2];
+        [renderPass setFragmentTexture:depthMap atIndex:4];
 }
 
 
