@@ -38,14 +38,15 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer
+                                                     withInFlight:inFlight];
     
     [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
     if (_overlay)
     {
         [_overlayMesh setModelTexture:_overlay];
-        [_overlayMesh drawMesh:renderPass indexBuffer:inFlight];
+        [_overlayMesh drawMesh:renderPass];
     }
     
     [self releaseDefaultEncoder];

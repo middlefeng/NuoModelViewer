@@ -147,7 +147,7 @@ static const uint32_t kRayBounce = 4;
     
     for (NuoRenderPassTarget* illum in _normalizedIllumination)
     {
-        [illum retainRenderPassEndcoder:commandBuffer];
+        [illum retainRenderPassEndcoder:commandBuffer withInFlight:0];
         [illum releaseRenderPassEndcoder];
     }
     

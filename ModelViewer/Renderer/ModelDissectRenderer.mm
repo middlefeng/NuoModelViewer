@@ -96,15 +96,16 @@
 {
     // get the target render pass and draw the scene
     //
-    id<MTLRenderCommandEncoder> renderPass = [_dissectRenderTarget retainRenderPassEndcoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [_dissectRenderTarget retainRenderPassEndcoder:commandBuffer
+                                                                         withInFlight:inFlight];
     if (!renderPass)
         return;
     
     renderPass.label = @"Dissection Render Pass";
     
-    [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
+    [self setSceneBuffersTo:renderPass];
     [_dissectScene setCullEnabled:[self.paramsProvider cullEnabled]];
-    [_dissectScene drawMesh:renderPass indexBuffer:inFlight];
+    [_dissectScene drawMesh:renderPass];
     
     [_dissectRenderTarget releaseRenderPassEndcoder];
 }
@@ -116,8 +117,9 @@
 {
     [_textureMesh setModelTexture:self.sourceTexture];
     
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
-    [_textureMesh drawMesh:renderPass indexBuffer:inFlight];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer
+                                                           withInFlight:inFlight];
+    [_textureMesh drawMesh:renderPass];
     [self releaseDefaultEncoder];
 }
 

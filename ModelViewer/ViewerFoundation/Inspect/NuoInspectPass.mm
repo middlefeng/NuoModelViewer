@@ -46,16 +46,17 @@
 
 - (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
 {
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer
+                                                     withInFlight:inFlight];
     
     // not call super as the checkboard is the background
     
-    [_checkboard drawMesh:renderPass indexBuffer:inFlight];
+    [_checkboard drawMesh:renderPass];
     
     if (_inspect)
     {
         [_inspect setModelTexture:_inspectedTexture];
-        [_inspect drawMesh:renderPass indexBuffer:inFlight];
+        [_inspect drawMesh:renderPass];
     }
     
     [self releaseDefaultEncoder];

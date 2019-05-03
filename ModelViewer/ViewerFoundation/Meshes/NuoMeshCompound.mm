@@ -187,7 +187,7 @@
 }
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)bufferIndex
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
     NSArray* cullModes = self.cullEnabled ?
                             @[@(MTLCullModeBack), @(MTLCullModeNone)] :
@@ -212,13 +212,13 @@
                 ((renderPassStep == 2) && [mesh hasTransparency] && [mesh reverseCommonCullMode])  /* 3/4 pass for transparent */ ||
                 ((renderPassStep == 3) && [mesh hasTransparency] && ![mesh reverseCommonCullMode]))
                 if ([mesh enabled])
-                    [mesh drawMesh:renderPass indexBuffer:bufferIndex];
+                    [mesh drawMesh:renderPass];
         }
     }
 }
 
 
-- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)bufferIndex
+- (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass
 {
     NSArray* cullModes = self.cullEnabled ?
                             @[@(MTLCullModeBack), @(MTLCullModeNone)] :
@@ -243,21 +243,21 @@
                 ((renderPassStep == 2) && [mesh hasTransparency] && [mesh reverseCommonCullMode])  /* 3/4 pass for transparent */ ||
                 ((renderPassStep == 3) && [mesh hasTransparency] && ![mesh reverseCommonCullMode]))
                 if ([mesh enabled])
-                    [mesh drawScreenSpace:renderPass indexBuffer:bufferIndex];
+                    [mesh drawScreenSpace:renderPass];
         }
     }
 }
 
 
 
-- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)bufferIndex
+- (void)drawShadow:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setCullMode:MTLCullModeNone];
     
     for (NuoMesh* mesh in _meshes)
     {
         if (![mesh hasTransparency] && [mesh enabled])
-            [mesh drawShadow:renderPass indexBuffer:bufferIndex];
+            [mesh drawShadow:renderPass];
     }
 }
 

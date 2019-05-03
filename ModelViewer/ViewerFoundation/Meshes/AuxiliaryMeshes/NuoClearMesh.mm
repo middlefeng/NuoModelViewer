@@ -71,14 +71,14 @@ struct ClearFragment
 
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setFragmentBuffer:_clearColorBuffer offset:0 atIndex:0];
-    [super drawMesh:renderPass indexBuffer:index];
+    [super drawMesh:renderPass];
 }
 
 
-- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.screenSpacePipelineState];
@@ -86,11 +86,7 @@ struct ClearFragment
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
     [renderPass setFragmentBuffer:_clearColorBuffer offset:0 atIndex:0];
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[self.indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:self.indexBuffer
-                    indexBufferOffset:0];
+    [renderPass drawWithIndices:self.indexBuffer];
 }
 
 

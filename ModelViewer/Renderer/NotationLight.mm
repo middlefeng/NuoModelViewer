@@ -152,16 +152,15 @@
 
 
 
-- (void)drawWithRenderPass:(id<MTLRenderCommandEncoder>)renderPass
-              withInFlight:(unsigned int)inFlight
+- (void)drawWithRenderPass:(NuoRenderPassEncoder*)renderPass
 {
-    [self updateUniformsForView:inFlight];
+    [self updateUniformsForView:renderPass.inFlight];
     [renderPass setFragmentBuffer:self.characterUniformBuffer offset:0 atIndex:1];
     
     // the light vector notation does not have varying uniform,
     // use only the 0th buffer
     //
-    [_lightVector drawMesh:renderPass indexBuffer:inFlight];
+    [_lightVector drawMesh:renderPass];
 }
 
 

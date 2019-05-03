@@ -132,14 +132,15 @@
 {
     [self updateUniformsForView:inFlight];
     
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer
+                                                     withInFlight:inFlight];
     if (!renderPass)
         return;
     
     renderPass.label = @"Shadow Map";
 
     [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
-    [_sceneRoot drawShadow:renderPass indexBuffer:inFlight];
+    [_sceneRoot drawShadow:renderPass];
     
     [self releaseDefaultEncoder];
 }

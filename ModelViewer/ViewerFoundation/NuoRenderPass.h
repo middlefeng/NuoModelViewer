@@ -13,6 +13,8 @@
 #import "NuoRenderPassTarget.h"
 
 
+@class NuoRenderPassEncoder;
+
 
 @interface NuoRenderPass : NSObject
 
@@ -38,7 +40,8 @@
 
 - (BOOL)isPipelinePass;
 
-- (id<MTLRenderCommandEncoder>)retainDefaultEncoder:(id<MTLCommandBuffer>)commandBuffer;
+- (NuoRenderPassEncoder*)retainDefaultEncoder:(id<MTLCommandBuffer>)commandBuffer
+                                 withInFlight:(uint)inFlight;
 - (void)releaseDefaultEncoder;
 
 

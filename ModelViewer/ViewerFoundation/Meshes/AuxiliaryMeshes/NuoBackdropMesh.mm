@@ -134,7 +134,7 @@
 }
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
@@ -142,15 +142,11 @@
     [renderPass setFragmentSamplerState:_samplerState atIndex:1];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_backdropTransformBuffers[index] offset:0 atIndex:3];
+    [renderPass setVertexBuffer:_backdropTransformBuffers[renderPass.inFlight] offset:0 atIndex:3];
     
     [renderPass setFragmentTexture:_backdropTex atIndex:2];
     
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[self.indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:self.indexBuffer
-                    indexBufferOffset:0];
+    [renderPass drawWithIndices:self.indexBuffer];
 }
 
 

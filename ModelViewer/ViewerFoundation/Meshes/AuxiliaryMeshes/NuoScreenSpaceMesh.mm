@@ -98,7 +98,7 @@
 }
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
     // leave all fragement shader related setup to the outter draw function (or subclass)
     
@@ -108,11 +108,7 @@
     [renderPass setFragmentSamplerState:_samplerState atIndex:0];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[self.indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:self.indexBuffer
-                    indexBufferOffset:0];
+    [renderPass drawWithIndices:self.indexBuffer];
 }
 
 

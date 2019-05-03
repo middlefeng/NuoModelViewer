@@ -13,6 +13,8 @@
 #import "NuoMeshTexMatieraled.h"
 #import "NuoMeshUniform.h"
 
+#import "NuoRenderPassEncoder.h"
+
 
 
 
@@ -520,43 +522,35 @@
 
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_renderPipelineState];
     [renderPass setDepthStencilState:_depthStencilState];
     
-    NSUInteger rotationIndex = _shadowPipelineState ? 3 : 2;
+    uint rotationIndex = _shadowPipelineState ? 3 : 2;
     
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:rotationIndex];
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[_indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:_indexBuffer
-                    indexBufferOffset:0];
+    [renderPass setVertexBuffer:_transformBuffers[renderPass.inFlight] offset:0 atIndex:rotationIndex];
+    [renderPass drawWithIndices:_indexBuffer];
 }
 
 
-- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_screenSpacePipelineState];
     [renderPass setDepthStencilState:_depthStencilState];
     
-    NSUInteger rotationIndex = _shadowPipelineState ? 3 : 2;
+    uint rotationIndex = _shadowPipelineState ? 3 : 2;
     
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:rotationIndex];
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[_indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:_indexBuffer
-                    indexBufferOffset:0];
+    [renderPass setVertexBuffer:_transformBuffers[renderPass.inFlight] offset:0 atIndex:rotationIndex];
+    [renderPass drawWithIndices:_indexBuffer];
 }
 
 
-- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawShadow:(NuoRenderPassEncoder*)renderPass
 {
     if (_shadowPipelineState)
     {
@@ -565,12 +559,8 @@
         [renderPass setDepthStencilState:_depthStencilState];
         
         [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-        [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:2];
-        [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                               indexCount:[_indexBuffer length] / sizeof(uint32_t)
-                                indexType:MTLIndexTypeUInt32
-                              indexBuffer:_indexBuffer
-                        indexBufferOffset:0];
+        [renderPass setVertexBuffer:_transformBuffers[renderPass.inFlight] offset:0 atIndex:2];
+        [renderPass drawWithIndices:_indexBuffer];
     }
 }
 

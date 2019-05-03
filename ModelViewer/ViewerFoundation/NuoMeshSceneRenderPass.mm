@@ -8,6 +8,9 @@
 
 #import "NuoMeshSceneRenderPass.h"
 #import "NuoInspectableMaster.h"
+#import "NuoRenderPassEncoder.h"
+
+
 
 @implementation NuoMeshSceneRenderPass
 
@@ -51,9 +54,11 @@
 }
 
 
-- (void)setSceneBuffersTo:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight
+- (void)setSceneBuffersTo:(NuoRenderPassEncoder*)renderPass
 {
     id<NuoMeshSceneParametersProvider> provider = _paramsProvider;
+    
+    const uint inFlight = renderPass.inFlight;
     
     [renderPass setVertexBuffer:[provider transUniformBuffers][inFlight] offset:0 atIndex:1];
     [renderPass setVertexBuffer:[provider lightCastBuffers][inFlight] offset:0 atIndex:2];

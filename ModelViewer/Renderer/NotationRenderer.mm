@@ -256,7 +256,8 @@
 {
     self.renderTarget.clearColor = MTLClearColorMake(0.0, 0.95, 0.95, 1);
     
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer
+                                                     withInFlight:inFlight];
     
     [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
     
@@ -289,7 +290,7 @@
     
     for (size_t i = 0; i < _lightVectors.count; ++i)
     {
-        [_lightVectors[i] drawWithRenderPass:renderPass withInFlight:inFlight];
+        [_lightVectors[i] drawWithRenderPass:renderPass];
     }
     
     [self releaseDefaultEncoder];

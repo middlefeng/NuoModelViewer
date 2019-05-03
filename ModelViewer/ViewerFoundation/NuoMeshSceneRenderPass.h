@@ -55,13 +55,13 @@ NuoSceneMask;
  *  the function sets up all common uniforms that are shared by all meshes.
  *  the actual value of those uniforms come from the NuoMeshSceneParametersProvider.
  */
-- (void)setSceneBuffersTo:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight;
+- (void)setSceneBuffersTo:(NuoRenderPassEncoder*)renderPass;
 
 /**
  *  the function set a depth map to the render pass. unlike "setSceneBuffersTo:..." which is very
  *  basic and almost always needed, this is not required by renderers which do not need a depth map
  */
-- (void)setDepthMapTo:(id<MTLRenderCommandEncoder>)renderPass;
+- (void)setDepthMapTo:(NuoRenderPassEncoder*)renderPass;
 
 
 @end

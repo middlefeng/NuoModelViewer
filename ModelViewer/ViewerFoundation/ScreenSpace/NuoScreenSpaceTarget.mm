@@ -100,7 +100,7 @@
 
 - (void)clearAction:(id<MTLRenderCommandEncoder>)encoder
 {
-    [_clearMesh drawScreenSpace:encoder indexBuffer:0];
+    [_clearMesh drawScreenSpace:encoder];
 }
 
 

@@ -48,9 +48,11 @@
 }
 
 
-- (id<MTLRenderCommandEncoder>)retainDefaultEncoder:(id<MTLCommandBuffer>)commandBuffer
+- (NuoRenderPassEncoder*)retainDefaultEncoder:(id<MTLCommandBuffer>)commandBuffer
+                                 withInFlight:(uint)inFlight
 {
-    return [_renderTarget retainRenderPassEndcoder:commandBuffer];
+    return [_renderTarget retainRenderPassEndcoder:commandBuffer
+                                      withInFlight:inFlight];
 }
 
 

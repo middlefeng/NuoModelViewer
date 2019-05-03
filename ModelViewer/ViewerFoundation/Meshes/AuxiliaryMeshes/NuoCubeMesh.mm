@@ -175,7 +175,7 @@ static uint16_t kIndices[] =
 }
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass indexBuffer:(NSInteger)index
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setCullMode:MTLCullModeBack];
@@ -187,11 +187,8 @@ static uint16_t kIndices[] =
     [renderPass setFragmentTexture:_cubeTexture atIndex:0];
     [renderPass setFragmentSamplerState:_samplerState atIndex:0];
     
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[self.indexBuffer length] / sizeof(uint16_t)
-                            indexType:MTLIndexTypeUInt16
-                          indexBuffer:self.indexBuffer
-                    indexBufferOffset:0];
+    // 16-bit packed
+    [renderPass drawPackedWithIndices:self.indexBuffer];
 }
 
 

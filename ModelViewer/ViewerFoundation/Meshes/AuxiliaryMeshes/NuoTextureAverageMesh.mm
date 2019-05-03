@@ -11,7 +11,9 @@
 #import "NuoComputeEncoder.h"
 #import "NuoRenderPassTarget.h"
 #import "NuoTextureMesh.h"
+
 #import "NuoRenderPassAttachment.h"
+#import "NuoRenderPassEncoder.h"
 
 
 
@@ -80,17 +82,18 @@
 
 - (void)accumulateTexture:(id<MTLTexture>)texture
                  onTarget:(NuoRenderPassTarget*)target
-             withInFlight:(NSUInteger)inFlight
+             withInFlight:(uint)inFlight
         withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
 {
     [self appendTexture:texture];
     
     // accumulate the texture onto the target
     
-    id<MTLRenderCommandEncoder> renderPass = [target retainRenderPassEndcoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [target retainRenderPassEndcoder:commandBuffer
+                                                           withInFlight:inFlight];
     renderPass.label = @"Motion Blur Pass";
     
-    [self drawMesh:renderPass indexBuffer:inFlight];
+    [self drawMesh:renderPass];
     [target releaseRenderPassEndcoder];
     
     // copy pixels from the render target to the accumulation texture
@@ -155,14 +158,16 @@
 
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    const uint index = renderPass.inFlight;
+    
     [self updateUniform:index withTransform:NuoMatrixFloat44Identity];
     
     [renderPass setFragmentTexture:_texturesAccumulated.targetTexture atIndex:0];
     [renderPass setFragmentTexture:_textureLatest atIndex:1];
     [renderPass setFragmentBuffer:_texCountBuffer[index] offset:0 atIndex:0];
-    [super drawMesh:renderPass indexBuffer:index];
+    [super drawMesh:renderPass];
 }
 
 
@@ -292,9 +297,10 @@
 {
     if (!target.manageTargetTexture)
     {
-        id<MTLRenderCommandEncoder> accumulatePass = [target retainRenderPassEndcoder:commandBuffer];
+        NuoRenderPassEncoder* accumulatePass = [target retainRenderPassEndcoder:commandBuffer
+                                                                   withInFlight:0];
         [_accumulatedMesh setModelTexture:_texturesAccumulated.targetTexture];
-        [_accumulatedMesh drawMesh:accumulatePass indexBuffer:0];
+        [_accumulatedMesh drawMesh:accumulatePass];
         [target releaseRenderPassEndcoder];
     }
     else

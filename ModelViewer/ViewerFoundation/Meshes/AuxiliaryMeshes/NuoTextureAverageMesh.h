@@ -20,7 +20,7 @@
 - (void)makePipelineAndSampler;
 
 - (void)accumulateTexture:(id<MTLTexture>)texture onTarget:(NuoRenderPassTarget*)target
-             withInFlight:(NSUInteger)inFlight withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
+             withInFlight:(uint)inFlight withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
 
 @end
 

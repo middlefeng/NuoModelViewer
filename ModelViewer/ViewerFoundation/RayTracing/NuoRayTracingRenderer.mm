@@ -104,7 +104,7 @@
         
         if (commandBuffer && _rayTracingAccumulates[i].targetTexture)
         {
-            [_rayTracingAccumulates[i] retainRenderPassEndcoder:commandBuffer];
+            [_rayTracingAccumulates[i] retainRenderPassEndcoder:commandBuffer withInFlight:0];
             [_rayTracingAccumulates[i] releaseRenderPassEndcoder];
         }
     }
@@ -232,7 +232,7 @@
     for (NuoRenderPassTarget* tracingTarget in _rayTracingTargets)
     {
         tracingTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
-        [tracingTarget retainRenderPassEndcoder:commandBuffer];
+        [tracingTarget retainRenderPassEndcoder:commandBuffer withInFlight:0];
         [tracingTarget releaseRenderPassEndcoder];
     }
     

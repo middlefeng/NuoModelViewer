@@ -6,12 +6,47 @@
 //  Copyright © 2019 middleware. All rights reserved.
 //
 
+
+#ifndef __NuoRenderPassEncoder_h__
+#define __NuoRenderPassEncoder_h__
+
+
 #import <Foundation/Foundation.h>
+#import <Metal/Metal.h>
+
+
+@interface NuoRenderPassEncoder  : NSObject
 
 
 
-@interface NuoRenderPassEncoder : NSObject
+@property (readonly, nonatomic) uint inFlight;
+
+
+- (instancetype)initWithEncoder:(id<MTLRenderCommandEncoder>)encoder
+              withInFlightIndex:(uint)inFlight;
+
+- (void)setLabel:(NSString*)label;
+- (void)setFrontFacingWinding:(MTLWinding)winding;
+- (void)setCullMode:(MTLCullMode)cullMode;
+- (void)setViewport:(MTLViewport)viewport;
+
+- (void)setRenderPipelineState:(id<MTLRenderPipelineState>)pipelineState;
+- (void)setDepthStencilState:(id<MTLDepthStencilState>)depthStencilState;
+- (void)setFragmentSamplerState:(id<MTLSamplerState>)samplerState atIndex:(uint)index;
+- (void)setFragmentTexture:(id<MTLTexture>)texture atIndex:(uint)index;
+- (void)setFragmentBuffer:(id<MTLBuffer>)buffer offset:(uint)offset atIndex:(uint)index;
+- (void)setVertexBuffer:(id<MTLBuffer>)vertexBuffer offset:(uint)offset atIndex:(uint)index;
+
+
+- (void)drawWithIndices:(id<MTLBuffer>)indexBuffer;
+- (void)drawPackedWithIndices:(id<MTLBuffer>)indexBuffer;
+- (void)endEncoding;
+
+
 
 @end
 
+
+
+#endif
 

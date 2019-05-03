@@ -1112,23 +1112,24 @@
 {
     // get the target render pass and draw the scene in the forward rendering
     //
-    id<MTLRenderCommandEncoder> renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer
+                                                                     withInFlight:inFlight];
     if (!renderPass)
         return;
     
     renderPass.label = @"Scene Render Pass";
     
     if (_cubeMesh)
-        [_cubeMesh drawMesh:renderPass indexBuffer:inFlight];
+        [_cubeMesh drawMesh:renderPass];
     
-    [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
+    [self setSceneBuffersTo:renderPass];
     
     BOOL rayTracingMode = (_rayTracingRecordStatus != kRecord_Stop);
     
     if (rayTracingMode)
         [_sceneRoot setShadowOverlayMap:[self shadowOverlayMap]];
     
-    [_sceneRoot drawMesh:renderPass indexBuffer:inFlight];
+    [_sceneRoot drawMesh:renderPass];
     
     [_immediateTarget releaseRenderPassEndcoder];
     
@@ -1140,14 +1141,15 @@
     
     // deferred rendering for the illumination
     
-    id<MTLRenderCommandEncoder> deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* deferredRenderPass = [self retainDefaultEncoder:commandBuffer
+                                                             withInFlight:inFlight];
     
     if (_showCheckerboard)
-        [_checkerboard drawMesh:deferredRenderPass indexBuffer:inFlight];
+        [_checkerboard drawMesh:deferredRenderPass];
     
     BOOL drawBackdrop = _backdropMesh && _backdropMesh.enabled;
     if (drawBackdrop)
-        [_backdropMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
+        [_backdropMesh drawMesh:deferredRenderPass];
 
     if (_mainModelMesh.enabled)
     {
@@ -1159,7 +1161,7 @@
             [_illuminationMesh setIlluminationMap:[self rayTracingIllumination]];
             [_illuminationMesh setShadowOverlayMap:[self shadowOverlayMap]];
             [_illuminationMesh setTranslucentCoverMap:[_deferredRenderer ambientBuffer]];
-            [_illuminationMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
+            [_illuminationMesh drawMesh:deferredRenderPass];
         }
         else
         {

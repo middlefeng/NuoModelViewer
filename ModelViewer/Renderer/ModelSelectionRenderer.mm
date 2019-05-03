@@ -64,7 +64,8 @@
         // the model renderer, has not been ready (meaning not refreshed for the current frame, still the
         // residual of the last) at that point
         
-        id<MTLRenderCommandEncoder> renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
+        NuoRenderPassEncoder* renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer
+                                                                         withInFlight:inFlight];
         
         renderPass.label = @"Selection - immediate";
         
@@ -74,17 +75,18 @@
             //  - the scene parameter
             //  - the scene's depth map (for covering effect)
             //
-            [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
+            [self setSceneBuffersTo:renderPass];
             [self setDepthMapTo:renderPass];
             
             for (NuoMesh* selectedMesh in _selectedMeshParts)
-                [selectedMesh drawMesh:renderPass indexBuffer:inFlight];
+                [selectedMesh drawMesh:renderPass];
         }
         
         [_immediateTarget releaseRenderPassEndcoder];
     }
     
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer
+                                                     withInFlight:inFlight];
     
     renderPass.label = @"Selection - overlay";
     
@@ -93,7 +95,7 @@
     
     // overlay the selection indicators
     [_textureMesh setModelTexture:_immediateTarget.targetTexture];
-    [_textureMesh drawMesh:renderPass indexBuffer:inFlight];
+    [_textureMesh drawMesh:renderPass];
     
     [self releaseDefaultEncoder];
 }

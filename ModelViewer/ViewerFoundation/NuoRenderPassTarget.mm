@@ -9,6 +9,7 @@
 #import "NuoRenderPassTarget.h"
 
 #import "NuoRenderPassAttachment.h"
+#import "NuoRenderPassEncoder.h"
 #import "NuoClearMesh.h"
 
 
@@ -17,7 +18,7 @@
 
 @implementation NuoRenderPassTarget
 {
-    id<MTLRenderCommandEncoder> _renderPassEncoder;
+    NuoRenderPassEncoder* _renderPassEncoder;
     size_t _renderPassEncoderCount;
     
     NuoClearMesh* _clearMesh;
@@ -147,7 +148,8 @@
 
 
 
-- (id<MTLRenderCommandEncoder>)retainRenderPassEndcoder:(id<MTLCommandBuffer>)commandBuffer;
+- (NuoRenderPassEncoder*)retainRenderPassEndcoder:(id<MTLCommandBuffer>)commandBuffer
+                                     withInFlight:(uint)inFlight;
 {
     if (_renderPassEncoder)
     {
@@ -156,8 +158,11 @@
     }
     
     MTLRenderPassDescriptor *passDescriptor = [self currentRenderPassDescriptor];
-    _renderPassEncoder = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
+    id<MTLRenderCommandEncoder> renderCommandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:passDescriptor];
     _renderPassEncoderCount = 1;
+    
+    _renderPassEncoder = [[NuoRenderPassEncoder alloc] initWithEncoder:renderCommandEncoder
+                                                     withInFlightIndex:inFlight];
     
 #if !BUILT_IN_LOAD_ACTION_CLEAR
     [self clearAction:_renderPassEncoder];
@@ -168,11 +173,11 @@
 
 
 
-- (void)clearAction:(id<MTLRenderCommandEncoder>)encoder
+- (void)clearAction:(NuoRenderPassEncoder*)encoder
 {
     assert(_clearMesh);
     
-    [_clearMesh drawMesh:encoder indexBuffer:0];
+    [_clearMesh drawMesh:encoder];
 }
 
 
