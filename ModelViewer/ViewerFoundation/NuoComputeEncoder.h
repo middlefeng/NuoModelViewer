@@ -12,6 +12,7 @@
 
 
 @class NuoComputeEncoder;
+@class NuoCommandBuffer;
 
 
 
@@ -26,7 +27,7 @@
                  withParameter:(BOOL)param;
 
 
-- (NuoComputeEncoder*)encoderWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
+- (NuoComputeEncoder*)encoderWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 
 
 @end

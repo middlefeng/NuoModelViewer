@@ -12,6 +12,7 @@
 #import "NuoRenderPassTarget.h"
 #import "NuoRenderPipeline.h"
 #import "NuoRenderPipelinePass.h"
+#import "NuoCommandBuffer.h"
 
 
 
@@ -62,7 +63,7 @@
 }
 
 
-- (void)renderWithCommandQueue:(id<MTLCommandBuffer>)commandBuffer
+- (void)renderWithCommandQueue:(NuoCommandBuffer*)commandBuffer
                 withCompletion:(void (^)(id<MTLTexture>))completionBlock;
 {
     NSUInteger lastRender = [_renderPasses count] - 1;
@@ -113,17 +114,15 @@
     [lastScenePass setRenderTarget:sceneTarget];
     [_renderPipeline setDrawableSize:drawSize];
     
-    if (![_renderPipeline renderWithCommandBuffer:commandBuffer inFlight:0])
+    if (![_renderPipeline renderWithCommandBuffer:commandBuffer])
         assert(false);
     
     [finalPass setSourceTexture:_sceneTarget.targetTexture];
     [finalPass setRenderTarget:exportTarget];
     [finalPass setDrawableSize:drawSize];
-    [finalPass drawWithCommandBuffer:commandBuffer withInFlightIndex:0];
+    [finalPass drawWithCommandBuffer:commandBuffer];
     
-    id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
-    [encoder synchronizeResource:exportTarget.targetTexture];
-    [encoder endEncoding];
+    [commandBuffer synchronizeResource:exportTarget.targetTexture];
     
     __block id<MTLTexture> result = exportTarget.targetTexture;
     

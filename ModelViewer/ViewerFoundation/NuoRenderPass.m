@@ -30,14 +30,12 @@
 }
 
 
-- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-               withInFlightIndex:(unsigned int)inFlight
+- (void)predrawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-            withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
 }
 
@@ -48,11 +46,9 @@
 }
 
 
-- (NuoRenderPassEncoder*)retainDefaultEncoder:(id<MTLCommandBuffer>)commandBuffer
-                                 withInFlight:(uint)inFlight
+- (NuoRenderPassEncoder*)retainDefaultEncoder:(NuoCommandBuffer*)commandBuffer
 {
-    return [_renderTarget retainRenderPassEndcoder:commandBuffer
-                                      withInFlight:inFlight];
+    return [_renderTarget retainRenderPassEndcoder:commandBuffer];
 }
 
 

@@ -3,6 +3,7 @@
 #import "NuoUniforms.h"
 #import "NuoMeshBounds.h"
 
+#import "NuoCommandBuffer.h"
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
 
@@ -1035,9 +1036,10 @@
     }
 }
 
-- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-               withInFlightIndex:(unsigned int)inFlight
+- (void)predrawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
+    const uint inFlight = commandBuffer.inFlight;
+    
     [self updateUniformsForView:inFlight];
     
     if (_rayTracingRecordStatus != kRecord_Stop)
@@ -1074,7 +1076,7 @@
     
     if (_rayTracingRecordStatus == kRecord_Start)
     {
-        [_rayTracingRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        [_rayTracingRenderer drawWithCommandBuffer:commandBuffer];
     }
     
     if (_rayTracingRecordStatus == kRecord_Stop)
@@ -1085,7 +1087,7 @@
         {
             _shadowMapRenderer[i].sceneRoot = _sceneRoot;
             _shadowMapRenderer[i].lightSource = _lights[i];
-            [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+            [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer];
         }
         
         // store the light view point projection for shadow map detection in the scene
@@ -1103,17 +1105,16 @@
         // 10.14.2 occasionally for unknown reason
         
         [_deferredRenderer setRoot:_sceneRoot];
-        [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        [_deferredRenderer predrawWithCommandBuffer:commandBuffer];
     }
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     // get the target render pass and draw the scene in the forward rendering
     //
-    NuoRenderPassEncoder* renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer
-                                                                     withInFlight:inFlight];
+    NuoRenderPassEncoder* renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
     if (!renderPass)
         return;
     
@@ -1141,8 +1142,7 @@
     
     // deferred rendering for the illumination
     
-    NuoRenderPassEncoder* deferredRenderPass = [self retainDefaultEncoder:commandBuffer
-                                                             withInFlight:inFlight];
+    NuoRenderPassEncoder* deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
     
     if (_showCheckerboard)
         [_checkerboard drawMesh:deferredRenderPass];
@@ -1167,7 +1167,7 @@
         {
             [_deferredRenderer setRenderTarget:self.renderTarget];
             [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
-            [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+            [_deferredRenderer drawWithCommandBuffer:commandBuffer];
         }
     }
     

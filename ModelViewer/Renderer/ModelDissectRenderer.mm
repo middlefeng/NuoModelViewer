@@ -91,13 +91,11 @@
 
 
 
-- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-               withInFlightIndex:(unsigned int)inFlight
+- (void)predrawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     // get the target render pass and draw the scene
     //
-    NuoRenderPassEncoder* renderPass = [_dissectRenderTarget retainRenderPassEndcoder:commandBuffer
-                                                                         withInFlight:inFlight];
+    NuoRenderPassEncoder* renderPass = [_dissectRenderTarget retainRenderPassEndcoder:commandBuffer];
     if (!renderPass)
         return;
     
@@ -112,13 +110,12 @@
 
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
             withInFlightIndex:(unsigned int)inFlight
 {
     [_textureMesh setModelTexture:self.sourceTexture];
     
-    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer
-                                                           withInFlight:inFlight];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     [_textureMesh drawMesh:renderPass];
     [self releaseDefaultEncoder];
 }

@@ -14,6 +14,7 @@
 
 @class NuoRenderPass;
 @class NuoRenderPipeline;
+@class NuoCommandBuffer;
 
 
 
@@ -28,7 +29,7 @@
                 withClearColor:(NSColor*)clearColor
                      withScene:(NSArray<NuoRenderPass*>*) renderPasses;
 
-- (void)renderWithCommandQueue:(id<MTLCommandBuffer>)commandBuffer
+- (void)renderWithCommandQueue:(NuoCommandBuffer*)commandBuffer
                 withCompletion:(void (^)(id<MTLTexture>))completionBlock;
 
 @end

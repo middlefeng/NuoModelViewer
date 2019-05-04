@@ -27,6 +27,7 @@
 
 @class NuoRenderPassAttachment;
 @class NuoRenderPassEncoder;
+@class NuoCommandBuffer;
 
 
 
@@ -89,8 +90,7 @@
  */
 - (BOOL)isTextureMatchDrawableSize:(id<MTLTexture>)texture;
 
-- (NuoRenderPassEncoder*)retainRenderPassEndcoder:(id<MTLCommandBuffer>)commandBuffer
-                                     withInFlight:(uint)inFlight;
+- (NuoRenderPassEncoder*)retainRenderPassEndcoder:(NuoCommandBuffer*)commandBuffer;
 - (void)releaseRenderPassEndcoder;
 
 - (void)clearAction:(NuoRenderPassEncoder*)encoder;

@@ -13,6 +13,7 @@
 #import "NuoComputeEncoder.h"
 #import "NuoTextureAverageMesh.h"
 #import "NuoRenderPassAttachment.h"
+#import "NuoCommandBuffer.h"
 
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
@@ -93,7 +94,7 @@
 
 
 
-- (void)resetResources:(id<MTLCommandBuffer>)commandBuffer
+- (void)resetResources:(NuoCommandBuffer*)commandBuffer
 {
     NuoTextureAccumulator* accumulators[_rayTracingTargets.count];
     
@@ -104,7 +105,7 @@
         
         if (commandBuffer && _rayTracingAccumulates[i].targetTexture)
         {
-            [_rayTracingAccumulates[i] retainRenderPassEndcoder:commandBuffer withInFlight:0];
+            [_rayTracingAccumulates[i] retainRenderPassEndcoder:commandBuffer];
             [_rayTracingAccumulates[i] releaseRenderPassEndcoder];
         }
     }
@@ -135,30 +136,29 @@
 
 
 
-- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                withInFlight:(uint)inFlight
+- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    [_rayStructure updatePrimaryRayMask:mask withCommandBuffer:commandBuffer withInFlight:inFlight];
+    [_rayStructure updatePrimaryRayMask:mask withCommandBuffer:commandBuffer];
 }
 
 
-- (void)primaryRayEmit:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)primaryRayEmit:(NuoCommandBuffer*)commandBuffer
 {
-    [_rayStructure primaryRayEmit:commandBuffer inFlight:inFlight];
+    [_rayStructure primaryRayEmit:commandBuffer];
 }
 
 
-- (BOOL)primaryRayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (BOOL)primaryRayIntersect:(NuoCommandBuffer*)commandBuffer
 {
     if (!_rayStructure || !_rayStructure.vertexBuffer)
         return NO;
     
-    [_rayStructure primaryRayIntersect:commandBuffer inFlight:inFlight withIntersection:_intersectionBuffer];
+    [_rayStructure primaryRayIntersect:commandBuffer withIntersection:_intersectionBuffer];
     return YES;
 }
 
 
-- (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer
+- (BOOL)rayIntersect:(NuoCommandBuffer*)commandBuffer
             withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection
 {
     if (!_rayStructure)
@@ -170,14 +170,13 @@
 
 
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
-         withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+         withCommandBuffer:(NuoCommandBuffer*)commandBuffer
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
           withIntersection:(id<MTLBuffer>)intersection
-         withInFlightIndex:(unsigned int)inFlight
 {
     NuoComputeEncoder* computeEncoder = [pipeline encoderWithCommandBuffer:commandBuffer];
     
-    [computeEncoder setBuffer:[_rayStructure uniformBuffer:inFlight] offset:0 atIndex:0];
+    [computeEncoder setBuffer:[_rayStructure uniformBuffer:commandBuffer.inFlight] offset:0 atIndex:0];
     [computeEncoder setBuffer:[_rayStructure primaryRayBuffer].buffer offset:0 atIndex:1];
     [computeEncoder setBuffer:[_rayStructure indexBuffer] offset:0 atIndex:2];
     [computeEncoder setBuffer:[_rayStructure materialBuffer] offset:0 atIndex:3];
@@ -208,16 +207,16 @@
 
 
 
-- (void)runRayTraceShade:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)runRayTraceShade:(NuoCommandBuffer*)commandBuffer
 {
     /* default behavior is not very useful, meant to be override */
     
     /*************************************************************/
     /*************************************************************/
-    if ([self primaryRayIntersect:commandBuffer withInFlightIndex:inFlight])
+    if ([self primaryRayIntersect:commandBuffer])
     {
         [self runRayTraceCompute:/* some shade pipeline */ nil withCommandBuffer:commandBuffer
-                   withParameter:nil withIntersection:nil withInFlightIndex:inFlight];
+                   withParameter:nil withIntersection:nil];
     }
     /*************************************************************/
     /*************************************************************/
@@ -225,24 +224,24 @@
 
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     // clear the ray tracing target
     //
     for (NuoRenderPassTarget* tracingTarget in _rayTracingTargets)
     {
         tracingTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
-        [tracingTarget retainRenderPassEndcoder:commandBuffer withInFlight:0];
+        [tracingTarget retainRenderPassEndcoder:commandBuffer];
         [tracingTarget releaseRenderPassEndcoder];
     }
     
-    [self runRayTraceShade:commandBuffer withInFlightIndex:inFlight];
+    [self runRayTraceShade:commandBuffer];
     
     for (uint i = 0; i < _rayTracingTargets.count; ++i)
     {
         [_accumulators[i] accumulateTexture:_rayTracingTargets[i].targetTexture
                                   onTexture:_rayTracingAccumulates[i].targetTexture
-                               withInFlight:inFlight withCommandBuffer:commandBuffer];
+                          withCommandBuffer:commandBuffer];
     }
 }
 

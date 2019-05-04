@@ -85,16 +85,15 @@
 }
 
 
-- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)predrawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    [_screenSpaceRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    [_screenSpaceRenderer drawWithCommandBuffer:commandBuffer];
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer
-                                                     withInFlight:inFlight];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     renderPass.label = @"Deferred Render Pass";
     
     [self drawWithRenderPass:renderPass];

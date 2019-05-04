@@ -20,6 +20,7 @@
 #import <AppKit/AppKit.h>
 
 #import "NuoMeshBounds.h"
+#import "NuoCommandBuffer.h"
 
 
 @interface NotationRenderer()
@@ -251,15 +252,13 @@
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-            withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     self.renderTarget.clearColor = MTLClearColorMake(0.0, 0.95, 0.95, 1);
     
-    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer
-                                                     withInFlight:inFlight];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     
-    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    [super drawWithCommandBuffer:commandBuffer];
     
     const float lightSettingAreaFactor = 0.28;
     const float lightSlidersHeight = 140;
@@ -281,6 +280,8 @@
     _notationArea.origin.y /= factor;
     _notationArea.size.width /= factor;
     _notationArea.size.height /= factor;
+    
+    const uint inFlight = commandBuffer.inFlight;
     
     [self updateUniformsForView:inFlight];
     

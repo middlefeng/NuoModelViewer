@@ -11,6 +11,7 @@
 
 #import "NuoLightSource.h"
 
+#import "NuoCommandBuffer.h"
 #import "NuoRayBuffer.h"
 #import "NuoRayAccelerateStructure.h"
 
@@ -124,30 +125,30 @@ static const uint32_t kRayBounce = 4;
 }
 
 
-- (void)runRayTraceShade:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)runRayTraceShade:(NuoCommandBuffer*)commandBuffer
 {
     [self rayIntersect:commandBuffer withRays:_shadowRayBuffer withIntersection:_shadowIntersectionBuffer];
     
     [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
                 withParameter:@[_shadowRayBuffer.buffer]
-            withIntersection:_shadowIntersectionBuffer withInFlightIndex:inFlight];
+            withIntersection:_shadowIntersectionBuffer];
     
     [self rayIntersect:commandBuffer withRays:_shadowRayBufferOnTranslucent withIntersection:_shadowIntersectionBuffer];
     
     [self runRayTraceCompute:_shadowShadePipelineOnTranslucent withCommandBuffer:commandBuffer
                withParameter:@[_shadowRayBufferOnTranslucent.buffer]
-            withIntersection:_shadowIntersectionBuffer withInFlightIndex:inFlight];
+            withIntersection:_shadowIntersectionBuffer];
 }
 
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    [super drawWithCommandBuffer:commandBuffer];
     
     for (NuoRenderPassTarget* illum in _normalizedIllumination)
     {
-        [illum retainRenderPassEndcoder:commandBuffer withInFlight:0];
+        [illum retainRenderPassEndcoder:commandBuffer];
         [illum releaseRenderPassEndcoder];
     }
     
@@ -243,9 +244,15 @@ static const uint32_t kRayBounce = 4;
 }
 
 
-- (void)resetResources:(id<MTLCommandBuffer>)commandBuffer
+- (void)resetResources:(NuoCommandBuffer*)commandBuffer
 {
-    id<MTLCommandBuffer> localCommandBuffer = commandBuffer ? commandBuffer : [self.commandQueue commandBuffer];
+    NuoCommandBuffer* localCommandBuffer = commandBuffer;
+    
+    if (!localCommandBuffer)
+    {
+        localCommandBuffer = [[NuoCommandBuffer alloc] initWithCommandQueue:self.commandQueue
+                                                               withInFlight:0];
+    }
     
     for (ModelRayTracingSubrenderer* renderer : _subRenderers)
         [renderer resetResources:localCommandBuffer];
@@ -284,16 +291,18 @@ static const uint32_t kRayBounce = 4;
 }
 
 
-- (void)runRayTraceShade:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)runRayTraceShade:(NuoCommandBuffer*)commandBuffer
 {
+    const uint inFlight = commandBuffer.inFlight;
+    
     // the shadow maps in the screen space are integrated by the sub renderers.
     // the master ray tracing renderer integrates the overlay result, e.g. self-illumination
     
     [self updateUniforms:inFlight];
     
-    [self primaryRayEmit:commandBuffer withInFlightIndex:inFlight];
+    [self primaryRayEmit:commandBuffer];
     
-    if ([self primaryRayIntersect:commandBuffer withInFlightIndex:inFlight])
+    if ([self primaryRayIntersect:commandBuffer])
     {
         // generate rays for the two light sources, from opaque objects
         //
@@ -303,13 +312,12 @@ static const uint32_t kRayBounce = 4;
                                    _subRenderers[0].shadowRayBuffer.buffer,
                                    _subRenderers[1].shadowRayBuffer.buffer,
                                    _incidentRaysBuffer.buffer]
-                withIntersection:self.intersectionBuffer
-               withInFlightIndex:inFlight];
+                withIntersection:self.intersectionBuffer];
     }
     
-    [self updatePrimaryRayMask:kNuoRayMask_Translucent withCommandBuffer:commandBuffer withInFlight:inFlight];
+    [self updatePrimaryRayMask:kNuoRayMask_Translucent withCommandBuffer:commandBuffer];
     
-    if ([self primaryRayIntersect:commandBuffer withInFlightIndex:inFlight])
+    if ([self primaryRayIntersect:commandBuffer])
     {
         // generate rays for the two light sources, from translucent objects
         //
@@ -319,8 +327,7 @@ static const uint32_t kRayBounce = 4;
                                    _subRenderers[0].shadowRayBufferOnTranslucent.buffer,
                                    _subRenderers[1].shadowRayBufferOnTranslucent.buffer,
                                    _incidentRaysBuffer.buffer]
-                withIntersection:self.intersectionBuffer
-               withInFlightIndex:inFlight];
+                withIntersection:self.intersectionBuffer];
         
         for (uint i = 0; i < kRayBounce; ++i)
         {
@@ -328,8 +335,7 @@ static const uint32_t kRayBounce = 4;
             
             [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
                        withParameter:@[_rayTraceUniform[inFlight], _randomBuffers[inFlight], _incidentRaysBuffer.buffer]
-                    withIntersection:self.intersectionBuffer
-                   withInFlightIndex:inFlight];
+                    withIntersection:self.intersectionBuffer];
         }
     }
         
@@ -339,7 +345,7 @@ static const uint32_t kRayBounce = 4;
         // and accumulates the samplings
         //
         [_subRenderers[i] setRayStructure:self.rayStructure];
-        [_subRenderers[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        [_subRenderers[i] drawWithCommandBuffer:commandBuffer];
     }
 }
 

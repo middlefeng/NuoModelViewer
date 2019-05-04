@@ -44,10 +44,9 @@
 
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer
-                                                     withInFlight:inFlight];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     
     // not call super as the checkboard is the background
     

@@ -14,6 +14,7 @@
 
 
 @class NuoRenderPassEncoder;
+@class NuoCommandBuffer;
 
 
 @interface NuoRenderPass : NSObject
@@ -29,19 +30,16 @@
 /**
  *  draw calls that target to their own target (e.g. shadow map texture)
  */
-- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-               withInFlightIndex:(unsigned int)inFlight;
+- (void)predrawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 
 /**
  *  draw calls that target to the *_renderTarget*
  */
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-            withInFlightIndex:(unsigned int)inFlight;
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 
 - (BOOL)isPipelinePass;
 
-- (NuoRenderPassEncoder*)retainDefaultEncoder:(id<MTLCommandBuffer>)commandBuffer
-                                 withInFlight:(uint)inFlight;
+- (NuoRenderPassEncoder*)retainDefaultEncoder:(NuoCommandBuffer*)commandBuffer;
 - (void)releaseDefaultEncoder;
 
 

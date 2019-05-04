@@ -16,12 +16,11 @@
 @implementation NuoRenderPipeline
 
 
-- (BOOL)renderWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                       inFlight:(uint)inFlight
+- (BOOL)renderWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     for (NuoRenderPass* pass in _renderPasses)
     {
-        [pass predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        [pass predrawWithCommandBuffer:commandBuffer];
     }
     
     for (size_t i = 0; i < [_renderPasses count]; ++i)
@@ -59,7 +58,7 @@
     for (size_t i = 0; i < [_renderPasses count]; ++i)
     {
         NuoRenderPass* render = [_renderPasses objectAtIndex:i];
-        [render drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        [render drawWithCommandBuffer:commandBuffer];
     }
     
     return YES;

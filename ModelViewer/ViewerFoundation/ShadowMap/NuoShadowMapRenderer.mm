@@ -8,6 +8,7 @@
 
 #import "NuoShadowMapRenderer.h"
 
+#import "NuoCommandBuffer.h"
 #import "NuoLightSource.h"
 #import "NuoShadowMapTarget.h"
 
@@ -128,12 +129,13 @@
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
+    const uint inFlight = commandBuffer.inFlight;
+    
     [self updateUniformsForView:inFlight];
     
-    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer
-                                                     withInFlight:inFlight];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     if (!renderPass)
         return;
     

@@ -14,6 +14,7 @@
 
 #import "NuoRenderPassAttachment.h"
 #import "NuoRenderPassEncoder.h"
+#import "NuoCommandBuffer.h"
 
 
 
@@ -82,15 +83,13 @@
 
 - (void)accumulateTexture:(id<MTLTexture>)texture
                  onTarget:(NuoRenderPassTarget*)target
-             withInFlight:(uint)inFlight
-        withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+        withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     [self appendTexture:texture];
     
     // accumulate the texture onto the target
     
-    NuoRenderPassEncoder* renderPass = [target retainRenderPassEndcoder:commandBuffer
-                                                           withInFlight:inFlight];
+    NuoRenderPassEncoder* renderPass = [target retainRenderPassEndcoder:commandBuffer];
     renderPass.label = @"Motion Blur Pass";
     
     [self drawMesh:renderPass];
@@ -102,7 +101,7 @@
 }
 
 
-- (void)setAccumulateTexture:(id<MTLTexture>)texture withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)setAccumulateTexture:(id<MTLTexture>)texture withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     [_texturesAccumulated setDrawableSize:CGSizeMake(texture.width, texture.height)];
     
@@ -131,13 +130,7 @@
         _texturesAccumulated = [self.device newTextureWithDescriptor:desc];
     } */
     
-    MTLOrigin origin = {0, 0, 0};
-    MTLSize size = {texture.width, texture.height, 1};
-    id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
-    [encoder copyFromTexture:texture sourceSlice:0 sourceLevel:0 sourceOrigin:origin sourceSize:size
-                   toTexture:_texturesAccumulated.targetTexture destinationSlice:0 destinationLevel:0 destinationOrigin:origin];
-    
-    [encoder endEncoding];
+    [commandBuffer copyFromTexture:texture toTexture:_texturesAccumulated.targetTexture];
 }
 
 
@@ -258,28 +251,27 @@
 
 - (void)accumulateTexture:(id<MTLTexture>)texture
                  onTarget:(NuoRenderPassTarget*)target
-             withInFlight:(NSUInteger)inFlight
-        withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+        withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    [self accumulateTexture:texture withInFlight:inFlight withCommandBuffer:commandBuffer];
+    [self accumulateTexture:texture withCommandBuffer:commandBuffer];
     [self outputAccumulateToTarget:target withCommandBuffer:commandBuffer];
 }
 
 
 - (void)accumulateTexture:(id<MTLTexture>)texture
                 onTexture:(id<MTLTexture>)targetTexture
-             withInFlight:(NSUInteger)inFlight
-        withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+        withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    [self accumulateTexture:texture withInFlight:inFlight withCommandBuffer:commandBuffer];
+    [self accumulateTexture:texture withCommandBuffer:commandBuffer];
     [self outputAccumulateToTexture:targetTexture withCommandBuffer:commandBuffer];
 }
 
 
 - (void)accumulateTexture:(id<MTLTexture>)texture
-             withInFlight:(NSUInteger)inFlight
-        withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+        withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
+    const uint inFlight = commandBuffer.inFlight;
+    
     [self appendTexture:texture];
     [self updateUniform:inFlight];
     
@@ -293,12 +285,11 @@
 }
 
 
-- (void)outputAccumulateToTarget:(NuoRenderPassTarget*)target withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)outputAccumulateToTarget:(NuoRenderPassTarget*)target withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     if (!target.manageTargetTexture)
     {
-        NuoRenderPassEncoder* accumulatePass = [target retainRenderPassEndcoder:commandBuffer
-                                                                   withInFlight:0];
+        NuoRenderPassEncoder* accumulatePass = [target retainRenderPassEndcoder:commandBuffer];
         [_accumulatedMesh setModelTexture:_texturesAccumulated.targetTexture];
         [_accumulatedMesh drawMesh:accumulatePass];
         [target releaseRenderPassEndcoder];
@@ -309,7 +300,7 @@
     }
 }
     
-- (void)outputAccumulateToTexture:(id<MTLTexture>)targetTexture withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)outputAccumulateToTexture:(id<MTLTexture>)targetTexture withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     NuoComputeEncoder* encoder = [_pipelineStateCopy encoderWithCommandBuffer:commandBuffer];
     

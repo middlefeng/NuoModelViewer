@@ -57,15 +57,14 @@
 
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     {
         // the immediate rendering must NOT be put in the predraw because the depth map, which comes from
         // the model renderer, has not been ready (meaning not refreshed for the current frame, still the
         // residual of the last) at that point
         
-        NuoRenderPassEncoder* renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer
-                                                                         withInFlight:inFlight];
+        NuoRenderPassEncoder* renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
         
         renderPass.label = @"Selection - immediate";
         
@@ -85,13 +84,12 @@
         [_immediateTarget releaseRenderPassEndcoder];
     }
     
-    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer
-                                                     withInFlight:inFlight];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     
     renderPass.label = @"Selection - overlay";
     
     // draw the scene
-    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    [super drawWithCommandBuffer:commandBuffer];
     
     // overlay the selection indicators
     [_textureMesh setModelTexture:_immediateTarget.targetTexture];

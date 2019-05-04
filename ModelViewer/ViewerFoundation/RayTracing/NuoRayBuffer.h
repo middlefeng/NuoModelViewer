@@ -12,6 +12,8 @@
 
 extern const uint kRayBufferStride;
 
+@class NuoCommandBuffer;
+
 
 @interface NuoRayBuffer : NSObject
 
@@ -26,7 +28,7 @@ extern const uint kRayBufferStride;
 - (instancetype)initWithDevice:(id<MTLDevice>)device;
 
 - (void)updateMask:(uint32_t)rayMask withUniform:(id<MTLBuffer>)uniforms
-                               withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
+                               withCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 
 
 @end

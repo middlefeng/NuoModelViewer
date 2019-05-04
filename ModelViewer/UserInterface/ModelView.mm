@@ -46,6 +46,8 @@
 #import "NuoInspectWindow.h"
 #import "OpenInspectPanel.h"
 
+#import "NuoCommandBuffer.h"
+
 
 typedef enum
 {
@@ -1247,7 +1249,8 @@ MouseDragMode;
                                                                               withScene:renders];
                  NSString* path = savePanel.URL.path;
                  
-                 [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
+                 NuoCommandBuffer* commandBuffer = [[NuoCommandBuffer alloc] initWithCommandQueue:commandQueue withInFlight:0];
+                 [offscreen renderWithCommandQueue:commandBuffer
                                     withCompletion:^(id<MTLTexture> result)
                                         {
                                             NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];

@@ -9,6 +9,7 @@
 #import "NuoPrimaryRayEmitter.h"
 #import "NuoTypes.h"
 #import "NuoComputeEncoder.h"
+#import "NuoCommandBuffer.h"
 #import "NuoRayBuffer.h"
 
 #include "NuoRandomBuffer.h"
@@ -126,9 +127,10 @@
 }
 
 
-- (void)emitToBuffer:(NuoRayBuffer*)rayBuffer withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                                                   withInFlight:(uint)inFlight
+- (void)emitToBuffer:(NuoRayBuffer*)rayBuffer withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
+    const uint inFlight = commandBuffer.inFlight;
+    
     [self updateUniform:inFlight widthRayBuffer:rayBuffer];
     
     NuoComputeEncoder* computeEncoder = [_pipeline encoderWithCommandBuffer:commandBuffer];
