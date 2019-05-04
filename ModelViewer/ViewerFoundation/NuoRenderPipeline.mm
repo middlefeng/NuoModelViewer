@@ -18,11 +18,17 @@
 
 - (BOOL)renderWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
+    // rendering that do not need the drawable (which is subject to the limit of
+    // the render surface frame buffers, therefore might cause wait)
+    //
     for (NuoRenderPass* pass in _renderPasses)
     {
         [pass predrawWithCommandBuffer:commandBuffer];
     }
     
+    // associate the source and destine texture of each step, along the course
+    // of rendering each step
+    //
     for (size_t i = 0; i < [_renderPasses count]; ++i)
     {
         NuoRenderPass* renderStep = [_renderPasses objectAtIndex:i];
@@ -45,6 +51,8 @@
             
             if (!finalResult.manageTargetTexture)
             {
+                // request the drawable only when it is immediately needed
+                //
                 id<MTLTexture> currentDrawable = [_renderPipelineDelegate nextFinalTexture];
                 if (!currentDrawable)
                     return NO;
@@ -53,12 +61,8 @@
                 [attachment setTexture:currentDrawable];
             }
         }
-    }
-    
-    for (size_t i = 0; i < [_renderPasses count]; ++i)
-    {
-        NuoRenderPass* render = [_renderPasses objectAtIndex:i];
-        [render drawWithCommandBuffer:commandBuffer];
+        
+        [renderStep drawWithCommandBuffer:commandBuffer];
     }
     
     return YES;
