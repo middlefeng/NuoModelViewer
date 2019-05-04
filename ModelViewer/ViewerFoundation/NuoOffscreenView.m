@@ -63,9 +63,12 @@
 }
 
 
-- (void)renderWithCommandQueue:(NuoCommandBuffer*)commandBuffer
+- (void)renderWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                 withCompletion:(void (^)(id<MTLTexture>))completionBlock;
 {
+    NuoCommandBuffer* commandBuffer = [[NuoCommandBuffer alloc] initWithCommandQueue:commandQueue
+                                                                        withInFlight:0];
+    
     NSUInteger lastRender = [_renderPasses count] - 1;
     NuoRenderPass* lastScenePass = _renderPasses[lastRender];
     NuoRenderPassTarget* lastTarget = lastScenePass.renderTarget;
@@ -78,7 +81,7 @@
     
     // privately managed by GPU only, same pixel format and sample-count as scene render
     //
-    NuoRenderPassTarget* sceneTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandBuffer.commandQueue
+    NuoRenderPassTarget* sceneTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
                                                                          withPixelFormat:scenePixelFormat
                                                                          withSampleCount:sceneSampleCount];
     sceneTarget.manageTargetTexture = YES;
@@ -88,7 +91,7 @@
     
     // sharely managed by GPU and CPU, export to RGBA (since PNG need it)
     //
-    NuoRenderPassTarget* exportTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandBuffer.commandQueue
+    NuoRenderPassTarget* exportTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
                                                                           withPixelFormat:MTLPixelFormatRGBA8Unorm
                                                                           withSampleCount:1];
     exportTarget.manageTargetTexture = YES;
@@ -99,7 +102,7 @@
     _sceneTarget = sceneTarget;
     
     // final pass to convert the result to RGBA
-    NuoRenderPipelinePass* finalPass = [[NuoRenderPipelinePass alloc] initWithCommandQueue:commandBuffer.commandQueue
+    NuoRenderPipelinePass* finalPass = [[NuoRenderPipelinePass alloc] initWithCommandQueue:commandQueue
                                                                            withPixelFormat:exportTarget.targetPixelFormat
                                                                            withSampleCount:1 /* no MSAA for mere conversion */];
     NuoRenderPassTarget* displayTarget = [lastScenePass renderTarget];
