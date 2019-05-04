@@ -19,6 +19,7 @@
 
 
 
+
 @implementation NuoComputePipeline
 {
     id<MTLComputePipelineState> _pipeline;
@@ -71,6 +72,9 @@
 }
 
 
+/**
+ *   internal interface, used by NuoCommandBuffer only
+ */
 - (instancetype)initWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                              withName:(NSString*)name
 {
