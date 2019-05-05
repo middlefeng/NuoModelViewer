@@ -17,6 +17,9 @@
 }
 
 
+/**
+ *  protected, used by NuoCommandBuffer only
+ */
 - (instancetype)initWithEncoder:(id<MTLRenderCommandEncoder>)encoder
               withInFlightIndex:(uint)inFlight
 {

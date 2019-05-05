@@ -22,6 +22,15 @@
 @end
 
 
+@interface NuoRenderPassEncoder()
+
+- (instancetype)initWithEncoder:(id<MTLRenderCommandEncoder>)encoder
+              withInFlightIndex:(uint)inFlight;
+
+
+@end
+
+
 
 
 @implementation NuoCommandBuffer

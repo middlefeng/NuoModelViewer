@@ -23,10 +23,6 @@
 @interface NuoRenderPassEncoder  : NSObject <NuoRenderInFlight>
 
 
-
-- (instancetype)initWithEncoder:(id<MTLRenderCommandEncoder>)encoder
-              withInFlightIndex:(uint)inFlight;
-
 - (void)setLabel:(NSString*)label;
 - (void)setFrontFacingWinding:(MTLWinding)winding;
 - (void)setCullMode:(MTLCullMode)cullMode;
