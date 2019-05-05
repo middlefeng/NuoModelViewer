@@ -30,8 +30,8 @@
     
     if (self)
     {
-        id<MTLBuffer> buffers[size];
-        for (uint i = 0; i < size; ++i)
+        id<MTLBuffer> buffers[chainSize];
+        for (uint i = 0; i < chainSize; ++i)
             buffers[i] = [device newBufferWithLength:size options:options];
         
         _buffers = [[NSArray alloc] initWithObjects:buffers count:chainSize];
