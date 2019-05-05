@@ -284,8 +284,8 @@
     [self updateUniformsForView:commandBuffer];
     
     [renderPass setCullMode:MTLCullModeNone];
-    [renderPass setVertexBufferSwapChain:self.transforms offset:0 atIndex:1];
-    [renderPass setFragmentBuffer:self.lightBuffer offset:0 atIndex:0];
+    [renderPass setVertexBufferSwapChain:_transforms offset:0 atIndex:1];
+    [renderPass setFragmentBuffer:_lightBuffer offset:0 atIndex:0];
     
     for (size_t i = 0; i < _lightVectors.count; ++i)
     {

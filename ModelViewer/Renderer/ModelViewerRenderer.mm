@@ -978,7 +978,7 @@
     uniforms.viewMatrixInverse = viewTrans.Inverse()._m;
     uniforms.viewProjectionMatrix = (_projection * viewTrans)._m;
 
-    [self.transUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&uniforms];
+    [_transUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&uniforms];
     
     NuoLightUniforms lighting;
     lighting.ambientDensity = _ambientDensity;
@@ -1000,7 +1000,7 @@
         }
     }
     
-    [self.lightingUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&lighting];
+    [_lightingUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&lighting];
     
     [_sceneRoot updateUniform:commandBuffer withTransform:NuoMatrixFloat44Identity];
     [_sceneRoot setCullEnabled:_cullEnabled];

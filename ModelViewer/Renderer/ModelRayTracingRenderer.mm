@@ -244,21 +244,10 @@ static const uint32_t kRayBounce = 4;
 
 - (void)resetResources:(NuoCommandBuffer*)commandBuffer
 {
-    NuoCommandBuffer* localCommandBuffer = commandBuffer;
-    
-    if (!localCommandBuffer)
-    {
-        localCommandBuffer = [[NuoCommandBuffer alloc] initWithCommandQueue:self.commandQueue
-                                                               withInFlight:0];
-    }
-    
     for (ModelRayTracingSubrenderer* renderer : _subRenderers)
-        [renderer resetResources:localCommandBuffer];
+        [renderer resetResources:commandBuffer];
     
     [super resetResources:commandBuffer];
-    
-    if (!commandBuffer)
-        [localCommandBuffer commit];
 }
 
 
@@ -295,7 +284,6 @@ static const uint32_t kRayBounce = 4;
     // the master ray tracing renderer integrates the overlay result, e.g. self-illumination
     
     [self updateUniforms:commandBuffer];
-    
     [self primaryRayEmit:commandBuffer];
     
     id<MTLBuffer> rayTraceUniform = [_rayTraceUniform bufferForInFlight:commandBuffer];

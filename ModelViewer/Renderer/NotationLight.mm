@@ -66,7 +66,6 @@
                                     withVerticesBuffer:arrow->Ptr() withLength:arrow->Length()
                                            withIndices:arrow->IndicesPtr() withLength:arrow->IndicesLength()];
         
-        
         // if no MSAA, shoud uncomment the following line
         // pipelineDesc.sampleCount = 1;
         

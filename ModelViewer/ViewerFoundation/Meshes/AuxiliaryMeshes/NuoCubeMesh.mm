@@ -91,7 +91,7 @@ static uint16_t kIndices[] =
         id<MTLDevice> device = commandQueue.device;
         _cubeMatrixBuffer = [[NuoBufferSwapChain alloc] initWithDevice:device
                                                         WithBufferSize:sizeof(NuoUniforms)
-                                                           withOptions:MTLResourceStorageModeShared
+                                                           withOptions:MTLResourceStorageModeManaged
                                                          withChainSize:kInFlightBufferCount];
             
         self.sampleCount = kSampleCount;

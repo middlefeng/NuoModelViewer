@@ -86,7 +86,10 @@
         samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
         _sampleState = [commandQueue.device newSamplerStateWithDescriptor:samplerDesc];
         
-        [self resetResources:nil];
+        NuoCommandBuffer* localCommandBuffer = [[NuoCommandBuffer alloc] initWithCommandQueue:commandQueue
+                                                                                 withInFlight:0];
+        [self resetResources:localCommandBuffer];
+        [localCommandBuffer commit];
     }
     
     return self;
