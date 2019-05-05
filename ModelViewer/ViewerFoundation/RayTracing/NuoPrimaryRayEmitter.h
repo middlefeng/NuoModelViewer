@@ -16,6 +16,7 @@
 
 @class NuoRayBuffer;
 @class NuoCommandBuffer;
+@protocol NuoRenderInFlight;
 
 
 @interface NuoPrimaryRayEmitter : NSObject
@@ -34,7 +35,7 @@
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (void)emitToBuffer:(NuoRayBuffer*)rayBuffer withCommandBuffer:(NuoCommandBuffer*)commandBuffer;
-- (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight;
+- (id<MTLBuffer>)uniformBuffer:(id<NuoRenderInFlight>)inFlight;
 
 
 

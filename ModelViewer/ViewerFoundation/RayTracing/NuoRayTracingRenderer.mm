@@ -176,7 +176,7 @@
 {
     NuoComputeEncoder* computeEncoder = [pipeline encoderWithCommandBuffer:commandBuffer];
     
-    [computeEncoder setBuffer:[_rayStructure uniformBuffer:commandBuffer.inFlight] offset:0 atIndex:0];
+    [computeEncoder setBuffer:[_rayStructure uniformBuffer:commandBuffer] offset:0 atIndex:0];
     [computeEncoder setBuffer:[_rayStructure primaryRayBuffer].buffer offset:0 atIndex:1];
     [computeEncoder setBuffer:[_rayStructure indexBuffer] offset:0 atIndex:2];
     [computeEncoder setBuffer:[_rayStructure materialBuffer] offset:0 atIndex:3];

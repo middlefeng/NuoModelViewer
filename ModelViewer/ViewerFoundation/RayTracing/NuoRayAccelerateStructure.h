@@ -19,6 +19,7 @@ extern const uint kRayIntersectionStride;
 @class NuoMeshSceneRoot;
 @class NuoRenderPassTarget;
 @class NuoCommandBuffer;
+@protocol NuoRenderInFlight;
 
 
 @interface NuoRayAccelerateStructure : NSObject
@@ -51,7 +52,7 @@ extern const uint kRayIntersectionStride;
             withIntersection:(id<MTLBuffer>)intersection;;
 
 
-- (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight;
+- (id<MTLBuffer>)uniformBuffer:(id<NuoRenderInFlight>)inFlight;
 
 
 @end

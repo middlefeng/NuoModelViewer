@@ -218,7 +218,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 - (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     [_primaryRayBuffer updateMask:mask
-                      withUniform:[self uniformBuffer:commandBuffer.inFlight]
+                      withUniform:[self uniformBuffer:commandBuffer]
                 withCommandBuffer:commandBuffer];
 }
 
@@ -258,7 +258,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
-- (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight
+- (id<MTLBuffer>)uniformBuffer:(id<NuoRenderInFlight>)inFlight
 {
     return [_primaryRayEmitter uniformBuffer:inFlight];
 }
