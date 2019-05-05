@@ -9,6 +9,7 @@
 #import "NuoBackdropMesh.h"
 #import "NuoMesh_Extension.h"
 #import "NuoTextureBase.h"
+#import "NuoBufferSwapChain.h"
 
 
 
@@ -16,7 +17,7 @@
 @implementation NuoBackdropMesh
 {
     id<MTLTexture> _backdropTex;
-    NSArray<id<MTLBuffer>>* _backdropTransformBuffers;
+    NuoBufferSwapChain* _backdropTransformBuffers;
     id<MTLSamplerState> _samplerState;
 }
 
@@ -56,14 +57,10 @@
     if (self)
     {
         _backdropTex = backdrop;
-        
-        id<MTLBuffer> matrix[kInFlightBufferCount];
-        for (uint i = 0; i < kInFlightBufferCount; ++i)
-        {
-            matrix[i] = [commandQueue.device newBufferWithLength:sizeof(NuoUniforms)
-                                                         options:MTLResourceStorageModeManaged];
-        }
-        _backdropTransformBuffers = [[NSArray alloc] initWithObjects:matrix count:kInFlightBufferCount];
+        _backdropTransformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
+                                                                WithBufferSize:sizeof(NuoUniforms)
+                                                                   withOptions:MTLResourceStorageModeManaged
+                                                                 withChainSize:kInFlightBufferCount];
         
         _scale = 1.0;
         _translation = CGPointMake(0, 0);
@@ -73,7 +70,7 @@
 }
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withDrawableSize:(CGSize)drawableSize
+- (void)updateUniform:(id<NuoRenderInFlight>)inFlight withDrawableSize:(CGSize)drawableSize
 {
     NuoUniforms uniforms;
     
@@ -92,8 +89,7 @@
     uniforms.viewProjectionMatrix = (matrixTrans * matrix)._m;
     uniforms.viewMatrix = uniforms.viewProjectionMatrix;
     
-    memcpy([_backdropTransformBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
-    [_backdropTransformBuffers[bufferIndex] didModifyRange:NSMakeRange(0, sizeof(uniforms))];
+    [_backdropTransformBuffers updateBufferWithInFlight:inFlight withContent:&uniforms];
 }
 
 
@@ -142,7 +138,7 @@
     [renderPass setFragmentSamplerState:_samplerState atIndex:1];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_backdropTransformBuffers[renderPass.inFlight] offset:0 atIndex:3];
+    [renderPass setVertexBufferSwapChain:_backdropTransformBuffers offset:0 atIndex:3];
     
     [renderPass setFragmentTexture:_backdropTex atIndex:2];
     

@@ -66,6 +66,7 @@
                                     withVerticesBuffer:arrow->Ptr() withLength:arrow->Length()
                                            withIndices:arrow->IndicesPtr() withLength:arrow->IndicesLength()];
         
+        
         // if no MSAA, shoud uncomment the following line
         // pipelineDesc.sampleCount = 1;
         
@@ -92,7 +93,7 @@
 }
 
 
-- (void)updateUniformsForView:(unsigned int)inFlight
+- (void)updateUniformsForView:(id<NuoRenderInFlight>)inFlight
 {
     NuoLightSource* desc = _lightSourceDesc;
     const NuoBounds bounds = _lightVector.boundsLocal.boundingBox;
@@ -154,7 +155,7 @@
 
 - (void)drawWithRenderPass:(NuoRenderPassEncoder*)renderPass
 {
-    [self updateUniformsForView:renderPass.inFlight];
+    [self updateUniformsForView:renderPass];
     [renderPass setFragmentBuffer:self.characterUniformBuffer offset:0 atIndex:1];
     
     // the light vector notation does not have varying uniform,

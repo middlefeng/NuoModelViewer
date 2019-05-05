@@ -25,12 +25,16 @@ NuoSceneMask;
 
 
 
+@class NuoBufferSwapChain;
+
+
+
 @protocol NuoMeshSceneParametersProvider
 
 
-- (NSArray<id<MTLBuffer>>*)transUniformBuffers;
-- (NSArray<id<MTLBuffer>>*)lightCastBuffers;
-- (NSArray<id<MTLBuffer>>*)lightingUniformBuffers;
+- (NuoBufferSwapChain*)transUniformBuffers;
+- (NuoBufferSwapChain*)lightCastBuffers;
+- (NuoBufferSwapChain*)lightingUniformBuffers;
 - (id<MTLBuffer>)modelCharacterUnfiromBuffer;
 - (BOOL)cullEnabled;
 

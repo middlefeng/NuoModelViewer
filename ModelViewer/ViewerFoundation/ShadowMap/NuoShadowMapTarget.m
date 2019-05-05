@@ -48,7 +48,7 @@
 
 
 
-- (void)clearAction:(id<MTLRenderCommandEncoder>)encoder
+- (void)clearAction:(NuoRenderPassEncoder*)encoder
 {
 }
 

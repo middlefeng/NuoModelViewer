@@ -7,11 +7,13 @@
 //
 
 #import "NuoRenderPassEncoder.h"
+#import "NuoBufferSwapChain.h"
 
 
 @implementation NuoRenderPassEncoder
 {
     id<MTLRenderCommandEncoder> _encoder;
+    uint _inFlight;
 }
 
 
@@ -89,6 +91,28 @@
 - (void)setVertexBuffer:(id<MTLBuffer>)vertexBuffer offset:(uint)offset atIndex:(uint)index
 {
     [_encoder setVertexBuffer:vertexBuffer offset:offset atIndex:index];
+}
+
+
+- (uint)inFlight
+{
+    return _inFlight;
+}
+
+
+- (void)setFragmentBufferSwapChain:(NuoBufferSwapChain*)buffer
+                            offset:(uint)offset atIndex:(uint)index
+{
+    [self setFragmentBuffer:[buffer bufferForInFlight:self]
+                     offset:offset atIndex:index];
+}
+
+
+- (void)setVertexBufferSwapChain:(NuoBufferSwapChain*)buffers
+                          offset:(uint)offset atIndex:(uint)index
+{
+    [self setVertexBuffer:[buffers bufferForInFlight:self]
+                   offset:offset atIndex:index];
 }
 
 

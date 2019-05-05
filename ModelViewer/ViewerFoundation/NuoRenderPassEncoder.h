@@ -14,12 +14,14 @@
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 
-
-@interface NuoRenderPassEncoder  : NSObject
-
+#import "NuoRenderInFlight.h"
 
 
-@property (readonly, nonatomic) uint inFlight;
+@class NuoBufferSwapChain;
+
+
+@interface NuoRenderPassEncoder  : NSObject <NuoRenderInFlight>
+
 
 
 - (instancetype)initWithEncoder:(id<MTLRenderCommandEncoder>)encoder
@@ -36,6 +38,11 @@
 - (void)setFragmentTexture:(id<MTLTexture>)texture atIndex:(uint)index;
 - (void)setFragmentBuffer:(id<MTLBuffer>)buffer offset:(uint)offset atIndex:(uint)index;
 - (void)setVertexBuffer:(id<MTLBuffer>)vertexBuffer offset:(uint)offset atIndex:(uint)index;
+
+- (void)setFragmentBufferSwapChain:(NuoBufferSwapChain*)buffer
+                            offset:(uint)offset atIndex:(uint)index;
+- (void)setVertexBufferSwapChain:(NuoBufferSwapChain*)buffers
+                          offset:(uint)offset atIndex:(uint)index;
 
 
 - (void)drawWithIndices:(id<MTLBuffer>)indexBuffer;

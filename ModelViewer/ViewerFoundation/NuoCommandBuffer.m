@@ -27,6 +27,7 @@
 @implementation NuoCommandBuffer
 {
     id<MTLCommandBuffer> _commandBuffer;
+    uint _inFlight;
 }
 
 
@@ -43,6 +44,12 @@
     }
     
     return self;
+}
+
+
+- (uint)inFlight
+{
+    return _inFlight;
 }
 
 

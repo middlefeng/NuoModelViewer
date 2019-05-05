@@ -4,6 +4,7 @@
 #import "NuoMeshBounds.h"
 
 #import "NuoCommandBuffer.h"
+#import "NuoBufferSwapChain.h"
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
 
@@ -72,9 +73,9 @@
 {
     // per-frame GPU buffers (confirm to protocol NuoMeshSceneParametersProvider)
     //
-    NSArray<id<MTLBuffer>>* _transUniformBuffers;
-    NSArray<id<MTLBuffer>>* _lightCastBuffers;
-    NSArray<id<MTLBuffer>>* _lightingUniformBuffers;
+    NuoBufferSwapChain* _transUniformBuffers;
+    NuoBufferSwapChain* _lightCastBuffers;
+    NuoBufferSwapChain* _lightingUniformBuffers;
     id<MTLBuffer> _modelCharacterUnfiromBuffer;
     
     NuoShadowMapRenderer* _shadowMapRenderer[2];
@@ -857,24 +858,18 @@
 
 - (void)makeResources
 {
-    id<MTLBuffer> modelBuffers[kInFlightBufferCount];
-    id<MTLBuffer> lightingBuffers[kInFlightBufferCount];
-    id<MTLBuffer> lightCastModelBuffers[kInFlightBufferCount];
-    
-    for (size_t i = 0; i < kInFlightBufferCount; ++i)
-    {
-        modelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoUniforms)
-                                                   options:MTLResourceStorageModeManaged];
-        lightingBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightUniforms)
-                                                      options:MTLResourceStorageModeManaged];
-        lightCastModelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightVertexUniforms)
-                                                        options:MTLResourceStorageModeManaged];
-        
-    }
-    
-    _transUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers count:kInFlightBufferCount];
-    _lightingUniformBuffers = [[NSArray alloc] initWithObjects:lightingBuffers count:kInFlightBufferCount];
-    _lightCastBuffers = [[NSArray alloc] initWithObjects:lightCastModelBuffers count:kInFlightBufferCount];
+    _transUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
+                                                       WithBufferSize:sizeof(NuoUniforms)
+                                                          withOptions:MTLResourceStorageModeManaged
+                                                        withChainSize:kInFlightBufferCount];
+    _lightingUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
+                                                          WithBufferSize:sizeof(NuoLightUniforms)
+                                                             withOptions:MTLResourceStorageModeManaged
+                                                           withChainSize:kInFlightBufferCount];
+    _lightCastBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
+                                                    WithBufferSize:sizeof(NuoLightVertexUniforms)
+                                                       withOptions:MTLResourceStorageModeManaged
+                                                     withChainSize:kInFlightBufferCount];
     
     NuoModelCharacterUniforms modelCharacter;
     modelCharacter.opacity = 1.0f;
@@ -953,7 +948,7 @@
 }
 
 
-- (void)updateUniformsForView:(unsigned int)inFlight
+- (void)updateUniformsForView:(NuoCommandBuffer*)commandBuffer
 {
     // move all delta position coming from the view's mouse/gesture into the matrix,
     // according to the transform mode (i.e. scene or mesh)
@@ -983,8 +978,7 @@
     uniforms.viewMatrixInverse = viewTrans.Inverse()._m;
     uniforms.viewProjectionMatrix = (_projection * viewTrans)._m;
 
-    memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
-    [self.transUniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(uniforms))];
+    [self.transUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&uniforms];
     
     NuoLightUniforms lighting;
     lighting.ambientDensity = _ambientDensity;
@@ -1006,17 +1000,16 @@
         }
     }
     
-    memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(NuoLightUniforms));
-    [self.lightingUniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(NuoLightUniforms))];
+    [self.lightingUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&lighting];
     
-    [_sceneRoot updateUniform:inFlight withTransform:NuoMatrixFloat44Identity];
+    [_sceneRoot updateUniform:commandBuffer withTransform:NuoMatrixFloat44Identity];
     [_sceneRoot setCullEnabled:_cullEnabled];
     
     if (_cubeMesh)
     {
         const NuoMatrixFloat44 projectionMatrixForCube = NuoMatrixPerspective(aspect, _fieldOfView, 0.3, 2.0);
         [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
-        [_cubeMesh updateUniform:inFlight withTransform:NuoMatrixFloat44Identity];
+        [_cubeMesh updateUniform:commandBuffer withTransform:NuoMatrixFloat44Identity];
     }
     
     if (_backdropMesh)
@@ -1028,7 +1021,7 @@
         translation.y += _backdropTransYDelta;
         [_backdropMesh setTranslation:translation];
         
-        [_backdropMesh updateUniform:inFlight withDrawableSize:self.renderTarget.drawableSize];
+        [_backdropMesh updateUniform:commandBuffer withDrawableSize:self.renderTarget.drawableSize];
         
         _backdropScaleDelta = 0.0;
         _backdropTransXDelta = 0.0;
@@ -1038,9 +1031,7 @@
 
 - (void)predrawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    const uint inFlight = commandBuffer.inFlight;
-    
-    [self updateUniformsForView:inFlight];
+    [self updateUniformsForView:commandBuffer];
     
     if (_rayTracingRecordStatus != kRecord_Stop)
     {
@@ -1095,8 +1086,8 @@
         NuoLightVertexUniforms lightUniforms;
         lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix._m;
         lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix._m;
-        memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
-        [_lightCastBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(lightUniforms))];
+        
+        [_lightCastBuffers updateBufferWithInFlight:commandBuffer withContent:&lightUniforms];
     }
     
     if (_rayTracingRecordStatus == kRecord_Stop)
@@ -1254,13 +1245,13 @@
         return _shadowMapRenderer[index].renderTarget.targetTexture;
 }
 
-- (NSArray<id<MTLBuffer>>*)lightCastBuffers
+- (NuoBufferSwapChain*)lightCastBuffers
 {
     return _lightCastBuffers;
 }
 
 
-- (NSArray<id<MTLBuffer>>*)lightingUniformBuffers
+- (NuoBufferSwapChain*)lightingUniformBuffers
 {
     return _lightingUniformBuffers;
 }
@@ -1272,7 +1263,7 @@
 }
 
 
-- (NSArray<id<MTLBuffer>>*)transUniformBuffers
+- (NuoBufferSwapChain*)transUniformBuffers
 {
     return _transUniformBuffers;
 }

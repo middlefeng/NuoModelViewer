@@ -177,13 +177,13 @@
 
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
+- (void)updateUniform:(id<NuoRenderInFlight>)inFlight withTransform:(const NuoMatrixFloat44&)transform
 {
     const NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
     const NuoMatrixFloat44 transformWorld = transform * transformLocal;
     
     for (NuoMesh* item in _meshes)
-        [item updateUniform:bufferIndex withTransform:transformWorld];
+        [item updateUniform:inFlight withTransform:transformWorld];
 }
 
 

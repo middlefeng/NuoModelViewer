@@ -14,6 +14,7 @@
 #import "NuoMeshUniform.h"
 
 #import "NuoRenderPassEncoder.h"
+#import "NuoBufferSwapChain.h"
 
 
 
@@ -79,15 +80,10 @@
         
         _rotation = NuoMeshRotation();
         
-        {
-            id<MTLBuffer> buffers[kInFlightBufferCount];
-            for (unsigned int i = 0; i < kInFlightBufferCount; ++i)
-            {
-                buffers[i] = [device newBufferWithLength:sizeof(NuoMeshUniforms)
-                                                 options:MTLResourceOptionCPUCacheModeDefault];
-            }
-            _transformBuffers = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
-        }
+        _transformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:device
+                                                        WithBufferSize:sizeof(NuoMeshUniforms)
+                                                           withOptions:MTLResourceStorageModeShared
+                                                         withChainSize:kInFlightBufferCount];
         
         _transformPoise = NuoMatrixFloat44Identity;
         _transformTranslate = NuoMatrixFloat44Identity;
@@ -510,14 +506,15 @@
 
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
+- (void)updateUniform:(id<NuoRenderInFlight>)inFlight withTransform:(const NuoMatrixFloat44&)transform
 {
     NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
     NuoMeshUniforms uniforms;
     uniforms.transform = transformWorld._m;
     uniforms.normalTransform = NuoMatrixExtractLinear(transformWorld)._m;
-    memcpy([_transformBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
+    
+    [_transformBuffers updateBufferWithInFlight:inFlight withContent:&uniforms];
 }
 
 
@@ -531,7 +528,7 @@
     uint rotationIndex = _shadowPipelineState ? 3 : 2;
     
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_transformBuffers[renderPass.inFlight] offset:0 atIndex:rotationIndex];
+    [renderPass setVertexBufferSwapChain:_transformBuffers offset:0 atIndex:rotationIndex];
     [renderPass drawWithIndices:_indexBuffer];
 }
 
@@ -545,7 +542,7 @@
     uint rotationIndex = _shadowPipelineState ? 3 : 2;
     
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_transformBuffers[renderPass.inFlight] offset:0 atIndex:rotationIndex];
+    [renderPass setVertexBufferSwapChain:_transformBuffers offset:0 atIndex:rotationIndex];
     [renderPass drawWithIndices:_indexBuffer];
 }
 
@@ -559,7 +556,7 @@
         [renderPass setDepthStencilState:_depthStencilState];
         
         [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-        [renderPass setVertexBuffer:_transformBuffers[renderPass.inFlight] offset:0 atIndex:2];
+        [renderPass setVertexBufferSwapChain:_transformBuffers offset:0 atIndex:2];
         [renderPass drawWithIndices:_indexBuffer];
     }
 }

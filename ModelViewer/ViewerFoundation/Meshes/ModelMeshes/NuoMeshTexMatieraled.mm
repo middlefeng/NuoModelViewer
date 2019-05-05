@@ -198,7 +198,7 @@
 }
 
 
-- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass
+- (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
@@ -220,7 +220,7 @@
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:self.transformBuffers[renderPass.inFlight] offset:0 atIndex:3];
+    [renderPass setVertexBufferSwapChain:self.transformBuffers offset:0 atIndex:3];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
     uint texBufferIndex = 5; /* mesh texture starts after the shadow-map texture */

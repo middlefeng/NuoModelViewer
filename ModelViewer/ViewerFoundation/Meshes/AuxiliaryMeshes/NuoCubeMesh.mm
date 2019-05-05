@@ -11,6 +11,7 @@
 
 #import "NuoUniforms.h"
 #import "NuoTextureBase.h"
+#import "NuoBufferSwapChain.h"
 
 #include "NuoTypes.h"
 #include "NuoMathVector.h"
@@ -68,7 +69,7 @@ static uint16_t kIndices[] =
 @implementation NuoCubeMesh
 {
     __weak id<MTLSamplerState> _samplerState;
-    NSArray<id<MTLBuffer>>* _cubeMatrixBuffer;
+    NuoBufferSwapChain* _cubeMatrixBuffer;
     MTLPixelFormat _format;
     
     NuoMatrixFloat44 _cubeMatrix;
@@ -87,19 +88,13 @@ static uint16_t kIndices[] =
     {
         _cubeMatrix = NuoMatrixFloat44Identity;
         
-        {
-            id<MTLBuffer> matrix[kInFlightBufferCount];
-            id<MTLDevice> device = commandQueue.device;
+        id<MTLDevice> device = commandQueue.device;
+        _cubeMatrixBuffer = [[NuoBufferSwapChain alloc] initWithDevice:device
+                                                        WithBufferSize:sizeof(NuoUniforms)
+                                                           withOptions:MTLResourceStorageModeShared
+                                                         withChainSize:kInFlightBufferCount];
             
-            for (uint i = 0; i < kInFlightBufferCount; ++i)
-            {
-                matrix[i] = [device newBufferWithLength:sizeof(NuoUniforms)
-                                                options:MTLResourceOptionCPUCacheModeDefault];
-            }
-            _cubeMatrixBuffer = [[NSArray alloc] initWithObjects:matrix count:kInFlightBufferCount];
-            
-            self.sampleCount = kSampleCount;
-        }
+        self.sampleCount = kSampleCount;
     }
     
     return self;
@@ -112,7 +107,7 @@ static uint16_t kIndices[] =
 }
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
+- (void)updateUniform:(id<NuoRenderInFlight>)inFlight withTransform:(const NuoMatrixFloat44&)transform
 {
     NuoUniforms uniforms;
     
@@ -124,7 +119,7 @@ static uint16_t kIndices[] =
     uniforms.viewMatrix = _cubeMatrix._m;
     uniforms.viewMatrixInverse = _cubeMatrix.Inverse()._m;
     
-    memcpy([_cubeMatrixBuffer[bufferIndex] contents], &uniforms, sizeof(uniforms));
+    [_cubeMatrixBuffer updateBufferWithInFlight:inFlight withContent:&uniforms];
 }
 
 
@@ -175,7 +170,7 @@ static uint16_t kIndices[] =
 }
 
 
-- (void)drawMesh:(NuoRenderPassEncoder*)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setCullMode:MTLCullModeBack];
@@ -183,7 +178,7 @@ static uint16_t kIndices[] =
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_cubeMatrixBuffer[index] offset:0 atIndex:1];
+    [renderPass setVertexBufferSwapChain:_cubeMatrixBuffer offset:0 atIndex:1];
     [renderPass setFragmentTexture:_cubeTexture atIndex:0];
     [renderPass setFragmentSamplerState:_samplerState atIndex:0];
     

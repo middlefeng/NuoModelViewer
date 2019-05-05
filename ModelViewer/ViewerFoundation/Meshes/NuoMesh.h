@@ -11,6 +11,8 @@
 
 #import "NuoRenderPassEncoder.h"
 
+@protocol NuoRenderInFlight;
+
 
 
 
@@ -69,7 +71,7 @@
 
 // all (prior view-matrix) mesh-transforms concatenate and passed to GPU
 //
-@property (nonatomic, strong) NSArray<id<MTLBuffer>>* transformBuffers;
+@property (nonatomic, strong) NuoBufferSwapChain* transformBuffers;
 
 
 
@@ -117,7 +119,7 @@
 //
 - (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers;
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform;
+- (void)updateUniform:(id<NuoRenderInFlight>)inFlight withTransform:(const NuoMatrixFloat44&)transform;
 - (void)drawMesh:(NuoRenderPassEncoder*)renderPass;
 - (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass;
 - (void)drawShadow:(NuoRenderPassEncoder*)renderPass;

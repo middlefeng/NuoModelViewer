@@ -10,8 +10,7 @@
 #import <Metal/Metal.h>
 
 
-@class NuoRenderPassEncoder;
-
+@protocol NuoRenderInFlight;
 
 
 @interface NuoBufferSwapChain : NSObject
@@ -23,8 +22,10 @@
                  withChainSize:(uint)chainSize;
 
 
-- (void)updateBufferWithRenderPass:(NuoRenderPassEncoder*)renderpass;
-- (id<MTLBuffer>)bufferForRenderPass:(NuoRenderPassEncoder*)renderpass;
+- (void)updateBufferWithInFlight:(id<NuoRenderInFlight>)inFlight
+                     withContent:(void*)content;
+
+- (id<MTLBuffer>)bufferForInFlight:(id<NuoRenderInFlight>)renderpass;
 
 
 @end

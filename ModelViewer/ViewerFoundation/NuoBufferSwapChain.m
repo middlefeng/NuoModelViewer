@@ -7,8 +7,8 @@
 //
 
 #import "NuoBufferSwapChain.h"
-#import "NuoRenderPassEncoder.h"
 
+#import "NuoRenderInFlight.h"
 
 
 
@@ -44,10 +44,9 @@
 
 
 
-- (void)updateBufferWithRenderPass:(NuoRenderPassEncoder*)renderpass
-                       withContent:(void*)content
+- (void)updateBufferWithInFlight:(id<NuoRenderInFlight>)inFlight withContent:(void*)content
 {
-    id<MTLBuffer> buffer = _buffers[renderpass.inFlight];
+    id<MTLBuffer> buffer = _buffers[[inFlight inFlight]];
     memcpy(buffer.contents, content, _contentSize);
     
     if (_options != MTLResourceStorageModeShared)
@@ -56,9 +55,9 @@
 
 
 
-- (id<MTLBuffer>)bufferForRenderPass:(NuoRenderPassEncoder*)renderpass
+- (id<MTLBuffer>)bufferForInFlight:(id<NuoRenderInFlight>)inFlight
 {
-    return _buffers[renderpass.inFlight];
+    return _buffers[inFlight.inFlight];
 }
 
 

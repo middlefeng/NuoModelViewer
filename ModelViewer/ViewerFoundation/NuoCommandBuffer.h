@@ -9,16 +9,17 @@
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 
+#import "NuoRenderInFlight.h"
+
 
 
 @class NuoComputeEncoder;
 @class NuoRenderPassEncoder;
 
 
-@interface NuoCommandBuffer : NSObject
+@interface NuoCommandBuffer : NSObject <NuoRenderInFlight>
 
 
-@property (nonatomic, readonly) uint inFlight;
 @property (nonatomic, readonly) id<MTLCommandQueue> commandQueue;
 
 

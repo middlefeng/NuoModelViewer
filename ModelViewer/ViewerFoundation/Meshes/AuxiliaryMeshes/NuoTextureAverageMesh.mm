@@ -15,6 +15,7 @@
 #import "NuoRenderPassAttachment.h"
 #import "NuoRenderPassEncoder.h"
 #import "NuoCommandBuffer.h"
+#import "NuoBufferSwapChain.h"
 
 
 
@@ -28,7 +29,7 @@
     id<MTLTexture> _textureLatest;
     uint32_t _textureCount;
     
-    NSArray<id<MTLBuffer>>* _texCountBuffer;
+    NuoBufferSwapChain* _texCountBuffer;
 }
 
 
@@ -38,12 +39,10 @@
     
     if (self)
     {
-        id<MTLBuffer> buffers[kInFlightBufferCount];
-        for (size_t i = 0; i < kInFlightBufferCount; ++i)
-            buffers[i] = [commandQueue.device newBufferWithLength:sizeof(uint32_t)
-                                                          options:MTLResourceStorageModeManaged];
-        _texCountBuffer = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
-        
+        _texCountBuffer = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
+                                                      WithBufferSize:sizeof(uint32_t)
+                                                         withOptions:MTLResourceStorageModeManaged
+                                                       withChainSize:kInFlightBufferCount];
         _textureCount = 0;
     }
     
@@ -135,7 +134,7 @@
 
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
+- (void)updateUniform:(NuoRenderPassEncoder*)renderPass withTransform:(const NuoMatrixFloat44&)transform
 {
     /*AccumulateUniform uniform;
     uniform.frameIndex = _textureCount;
@@ -145,21 +144,18 @@
     memcpy(_texCountBuffer[bufferIndex].contents, &uniform, sizeof(AccumulateUniform));
     [_texCountBuffer[bufferIndex] didModifyRange:NSMakeRange(0, sizeof(AccumulateUniform))];*/
     
-    memcpy(_texCountBuffer[bufferIndex].contents, &_textureCount, sizeof(int));
-    [_texCountBuffer[bufferIndex] didModifyRange:NSMakeRange(0, sizeof(int))];
+    [_texCountBuffer updateBufferWithInFlight:renderPass withContent:&_textureCount];
 }
 
 
 
 - (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
-    const uint index = renderPass.inFlight;
-    
-    [self updateUniform:index withTransform:NuoMatrixFloat44Identity];
+    [self updateUniform:renderPass withTransform:NuoMatrixFloat44Identity];
     
     [renderPass setFragmentTexture:_texturesAccumulated.targetTexture atIndex:0];
     [renderPass setFragmentTexture:_textureLatest atIndex:1];
-    [renderPass setFragmentBuffer:_texCountBuffer[index] offset:0 atIndex:0];
+    [renderPass setFragmentBufferSwapChain:_texCountBuffer offset:0 atIndex:0];
     [super drawMesh:renderPass];
 }
 
@@ -186,7 +182,7 @@
     id<MTLTexture> _textureLatest;
     uint32_t _textureCount;
     
-    NSArray<id<MTLBuffer>>* _texCountBuffer;
+    NuoBufferSwapChain* _texCountBuffer;
 }
 
 
@@ -197,12 +193,10 @@
     if (self)
     {
         _commandQueue = commandQueue;
-        
-        id<MTLBuffer> buffers[kInFlightBufferCount];
-        for (size_t i = 0; i < kInFlightBufferCount; ++i)
-            buffers[i] = [commandQueue.device newBufferWithLength:sizeof(uint32_t)
-                                                          options:MTLResourceStorageModeManaged];
-        _texCountBuffer = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
+        _texCountBuffer = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
+                                                      WithBufferSize:sizeof(uint32_t)
+                                                         withOptions:MTLResourceStorageModeManaged
+                                                       withChainSize:kInFlightBufferCount];
         
         _textureCount = 0;
     }
@@ -270,16 +264,14 @@
 - (void)accumulateTexture:(id<MTLTexture>)texture
         withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    const uint inFlight = commandBuffer.inFlight;
-    
     [self appendTexture:texture];
-    [self updateUniform:inFlight];
+    [self updateUniform:commandBuffer];
     
     NuoComputeEncoder* encoder = [_pipelineState encoderWithCommandBuffer:commandBuffer];
     
     [encoder setTexture:_texturesAccumulated.targetTexture atIndex:0];
     [encoder setTexture:_textureLatest atIndex:1];
-    [encoder setBuffer:_texCountBuffer[inFlight] offset:0 atIndex:0];
+    [encoder setBuffer:[_texCountBuffer bufferForInFlight:commandBuffer] offset:0 atIndex:0];
     
     [encoder dispatch];
 }
@@ -311,10 +303,9 @@
 
 
 
-- (void)updateUniform:(NSInteger)bufferIndex
+- (void)updateUniform:(id<NuoRenderInFlight>)inFlight
 {
-    memcpy(_texCountBuffer[bufferIndex].contents, &_textureCount, sizeof(uint32_t));
-    [_texCountBuffer[bufferIndex] didModifyRange:NSMakeRange(0, sizeof(uint32_t))];
+    [_texCountBuffer updateBufferWithInFlight:inFlight withContent:&_textureCount];
 }
 
 
