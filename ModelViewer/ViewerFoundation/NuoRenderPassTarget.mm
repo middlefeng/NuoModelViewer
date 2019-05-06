@@ -9,7 +9,6 @@
 #import "NuoRenderPassTarget.h"
 
 #import "NuoRenderPassAttachment.h"
-#import "NuoRenderPassEncoder.h"
 #import "NuoCommandBuffer.h"
 
 #import "NuoClearMesh.h"
