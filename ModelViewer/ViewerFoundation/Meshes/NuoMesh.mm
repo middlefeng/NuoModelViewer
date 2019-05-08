@@ -82,7 +82,7 @@
         
         _transformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:device
                                                         WithBufferSize:sizeof(NuoMeshUniforms)
-                                                           withOptions:MTLResourceStorageModeShared
+                                                           withOptions:MTLResourceStorageModeManaged
                                                          withChainSize:kInFlightBufferCount];
         
         _transformPoise = NuoMatrixFloat44Identity;
