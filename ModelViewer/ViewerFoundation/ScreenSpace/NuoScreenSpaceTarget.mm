@@ -98,9 +98,9 @@
 }
 
 
-- (void)clearAction:(id<MTLRenderCommandEncoder>)encoder
+- (void)clearAction:(NuoRenderPassEncoder*)encoder
 {
-    [_clearMesh drawScreenSpace:encoder indexBuffer:0];
+    [_clearMesh drawScreenSpace:encoder];
 }
 
 

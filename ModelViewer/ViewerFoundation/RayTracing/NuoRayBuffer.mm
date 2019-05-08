@@ -85,7 +85,7 @@ const uint kRayBufferStride = 52;  //  base fields           - 32
 
 
 - (void)updateMask:(uint32_t)rayMask withUniform:(id<MTLBuffer>)uniforms
-                               withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+                               withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     NuoComputePipeline* pipeline;
     if (rayMask & kNuoRayMask_Illuminating)

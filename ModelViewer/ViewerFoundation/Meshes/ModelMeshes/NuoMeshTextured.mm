@@ -63,31 +63,27 @@ static CIContext* sCIContext = nil;
 }
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:self.transformBuffers[index] offset:0 atIndex:3];
+    [renderPass setVertexBufferSwapChain:self.transformBuffers offset:0 atIndex:3];
     [renderPass setFragmentTexture:self.diffuseTex atIndex:4];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[self.indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:self.indexBuffer
-                    indexBufferOffset:0];
+    [renderPass drawWithIndices:self.indexBuffer];
 }
 
 
-- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
     
-    [super drawScreenSpace:renderPass indexBuffer:index];
+    [super drawScreenSpace:renderPass];
 }
 
 

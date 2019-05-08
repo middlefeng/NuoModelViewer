@@ -49,13 +49,13 @@
 
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setFragmentTexture:_illuminationMap atIndex:1];
     [renderPass setFragmentTexture:_shadowOverlayMap atIndex:2];
     [renderPass setFragmentTexture:_translucentCoverMap atIndex:3];
     [renderPass setFragmentBuffer:_paramBuffer offset:0 atIndex:0];
-    [super drawMesh:renderPass indexBuffer:index];
+    [super drawMesh:renderPass];
 }
 
 

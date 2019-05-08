@@ -1247,7 +1247,7 @@ MouseDragMode;
                                                                               withScene:renders];
                  NSString* path = savePanel.URL.path;
                  
-                 [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
+                 [offscreen renderWithCommandQueue:commandQueue
                                     withCompletion:^(id<MTLTexture> result)
                                         {
                                             NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
@@ -1293,7 +1293,7 @@ MouseDragMode;
                  
                  modelRenderer.mainModelMesh.enabled = NO;
                  
-                 [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
+                 [offscreen renderWithCommandQueue:self.commandQueue
                                     withCompletion:^(id<MTLTexture> result)
                                       {
                                           NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
@@ -1303,7 +1303,7 @@ MouseDragMode;
                  modelRenderer.mainModelMesh.enabled = YES;
                  modelRenderer.backdropMesh.enabled = NO;
                  
-                 [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
+                 [offscreen renderWithCommandQueue:self.commandQueue
                                     withCompletion:^(id<MTLTexture> result)
                                       {
                                           NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];

@@ -70,12 +70,11 @@
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-            withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     self.renderTarget.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 0.0);
     [_accumulator accumulateTexture:_latestSource onTarget:self.renderTarget
-                       withInFlight:inFlight withCommandBuffer:commandBuffer];
+                  withCommandBuffer:commandBuffer];
 }
     
 

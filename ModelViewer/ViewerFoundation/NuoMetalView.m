@@ -2,6 +2,7 @@
 #import "NuoMetalView.h"
 
 #import "NuoTypes.h"
+#import "NuoCommandBuffer.h"
 #import "NuoRenderPipeline.h"
 #import "NuoRenderPipelinePass.h"
 #import "NuoRenderPassTarget.h"
@@ -230,11 +231,12 @@ static const size_t kFrameDurationMeasureCount = 20;
     gettimeofday(&begin, NULL);
 #endif
     
-    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
+    NuoCommandBuffer* commandBuffer = [[NuoCommandBuffer alloc] initWithCommandQueue:self.commandQueue
+                                                                        withInFlight:_inFlightIndex];
     
     __block dispatch_semaphore_t displaySem = self.displaySemaphore;
     
-    if (![_renderPipeline renderWithCommandBuffer:commandBuffer inFlight:_inFlightIndex])
+    if (![_renderPipeline renderWithCommandBuffer:commandBuffer])
     {
         dispatch_semaphore_signal(displaySem);
 #if MEASURE_PERFORMANCE

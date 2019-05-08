@@ -13,6 +13,9 @@
 #import "NuoMeshTexMatieraled.h"
 #import "NuoMeshUniform.h"
 
+#import "NuoRenderPassEncoder.h"
+#import "NuoBufferSwapChain.h"
+
 
 
 
@@ -77,15 +80,10 @@
         
         _rotation = NuoMeshRotation();
         
-        {
-            id<MTLBuffer> buffers[kInFlightBufferCount];
-            for (unsigned int i = 0; i < kInFlightBufferCount; ++i)
-            {
-                buffers[i] = [device newBufferWithLength:sizeof(NuoMeshUniforms)
-                                                 options:MTLResourceOptionCPUCacheModeDefault];
-            }
-            _transformBuffers = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
-        }
+        _transformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:device
+                                                        WithBufferSize:sizeof(NuoMeshUniforms)
+                                                           withOptions:MTLResourceStorageModeManaged
+                                                         withChainSize:kInFlightBufferCount];
         
         _transformPoise = NuoMatrixFloat44Identity;
         _transformTranslate = NuoMatrixFloat44Identity;
@@ -508,55 +506,48 @@
 
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
+- (void)updateUniform:(id<NuoRenderInFlight>)inFlight withTransform:(const NuoMatrixFloat44&)transform
 {
     NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
     NuoMeshUniforms uniforms;
     uniforms.transform = transformWorld._m;
     uniforms.normalTransform = NuoMatrixExtractLinear(transformWorld)._m;
-    memcpy([_transformBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
+    
+    [_transformBuffers updateBufferWithInFlight:inFlight withContent:&uniforms];
 }
 
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_renderPipelineState];
     [renderPass setDepthStencilState:_depthStencilState];
     
-    NSUInteger rotationIndex = _shadowPipelineState ? 3 : 2;
+    uint rotationIndex = _shadowPipelineState ? 3 : 2;
     
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:rotationIndex];
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[_indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:_indexBuffer
-                    indexBufferOffset:0];
+    [renderPass setVertexBufferSwapChain:_transformBuffers offset:0 atIndex:rotationIndex];
+    [renderPass drawWithIndices:_indexBuffer];
 }
 
 
-- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_screenSpacePipelineState];
     [renderPass setDepthStencilState:_depthStencilState];
     
-    NSUInteger rotationIndex = _shadowPipelineState ? 3 : 2;
+    uint rotationIndex = _shadowPipelineState ? 3 : 2;
     
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:rotationIndex];
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[_indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:_indexBuffer
-                    indexBufferOffset:0];
+    [renderPass setVertexBufferSwapChain:_transformBuffers offset:0 atIndex:rotationIndex];
+    [renderPass drawWithIndices:_indexBuffer];
 }
 
 
-- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawShadow:(NuoRenderPassEncoder*)renderPass
 {
     if (_shadowPipelineState)
     {
@@ -565,12 +556,8 @@
         [renderPass setDepthStencilState:_depthStencilState];
         
         [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-        [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:2];
-        [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                               indexCount:[_indexBuffer length] / sizeof(uint32_t)
-                                indexType:MTLIndexTypeUInt32
-                              indexBuffer:_indexBuffer
-                        indexBufferOffset:0];
+        [renderPass setVertexBufferSwapChain:_transformBuffers offset:0 atIndex:2];
+        [renderPass drawWithIndices:_indexBuffer];
     }
 }
 

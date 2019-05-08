@@ -7,15 +7,13 @@
 //
 
 #import "NuoComputeEncoder.h"
+#import "NuoCommandBuffer.h"
 
 
 
 @interface NuoComputeEncoder()
 
-- (instancetype)initWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                         withPipeline:(id<MTLComputePipelineState>)pipeline
-                             withName:(NSString*)name;
-
+- (void)setComputePipelineState:(id<MTLComputePipelineState>)pipeline;
 
 @end
 
@@ -54,11 +52,10 @@
 }
 
 
-- (NuoComputeEncoder*)encoderWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (NuoComputeEncoder*)encoderWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
-                                                                     withPipeline:_pipeline
-                                                                         withName:_name];
+    NuoComputeEncoder* encoder = [commandBuffer computeEncoderWithName:_name];
+    [encoder setComputePipelineState:_pipeline];
     
     return encoder;
 }
@@ -75,8 +72,10 @@
 }
 
 
+/**
+ *   internal interface, used by NuoCommandBuffer only
+ */
 - (instancetype)initWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                         withPipeline:(id<MTLComputePipelineState>)pipeline
                              withName:(NSString*)name
 {
     self = [super init];
@@ -84,14 +83,18 @@
     if (self)
     {
         _encoder = [commandBuffer computeCommandEncoder];
-        
-        [_encoder setLabel:name];
-        [_encoder setComputePipelineState:pipeline];
+        _encoder.label = name;
         
         _dataSize = CGSizeZero;
     }
     
     return self;
+}
+
+
+- (void)setComputePipelineState:(id<MTLComputePipelineState>)pipeline
+{
+    [_encoder setComputePipelineState:pipeline];
 }
 
 
