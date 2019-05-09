@@ -140,7 +140,11 @@ A simple Wavefront OBJ viewer.
   * Material adjustment (specular, colors, etc).
   * List of board objects.
   * <del>Self illumination.</del>
-* Reflection.
+* Ray tracing
+  * Faster buffer construction.
+  * Ground reflection.
+  * Specular term in direct lighting shadow, and in global illumniation.
+  * Light source surface sampling.
 * <del>BRDF mode.</del>
 * <del>Ambient occlusion.</del>
 * Model visualization
