@@ -91,33 +91,32 @@
 
 
 
-- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-               withInFlightIndex:(unsigned int)inFlight
+- (void)predrawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     // get the target render pass and draw the scene
     //
-    id<MTLRenderCommandEncoder> renderPass = [_dissectRenderTarget retainRenderPassEndcoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [_dissectRenderTarget retainRenderPassEndcoder:commandBuffer];
     if (!renderPass)
         return;
     
     renderPass.label = @"Dissection Render Pass";
     
-    [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
+    [self setSceneBuffersTo:renderPass];
     [_dissectScene setCullEnabled:[self.paramsProvider cullEnabled]];
-    [_dissectScene drawMesh:renderPass indexBuffer:inFlight];
+    [_dissectScene drawMesh:renderPass];
     
     [_dissectRenderTarget releaseRenderPassEndcoder];
 }
 
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
             withInFlightIndex:(unsigned int)inFlight
 {
     [_textureMesh setModelTexture:self.sourceTexture];
     
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
-    [_textureMesh drawMesh:renderPass indexBuffer:inFlight];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
+    [_textureMesh drawMesh:renderPass];
     [self releaseDefaultEncoder];
 }
 

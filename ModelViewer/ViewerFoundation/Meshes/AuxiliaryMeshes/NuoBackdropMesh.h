@@ -20,7 +20,7 @@
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withBackdrop:(id<MTLTexture>)backdrop;
 
 - (void)makePipelineAndSampler;
-- (void)updateUniform:(NSInteger)bufferIndex withDrawableSize:(CGSize)drawableSize;
+- (void)updateUniform:(id<NuoRenderInFlight>)inFlight withDrawableSize:(CGSize)drawableSize;
 
 
 @end

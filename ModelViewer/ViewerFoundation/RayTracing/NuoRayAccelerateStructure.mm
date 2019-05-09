@@ -12,11 +12,19 @@
 #import "NuoRayBuffer.h"
 #import "NuoPrimaryRayEmitter.h"
 #import "NuoMeshSceneRoot.h"
+#import "NuoCommandBuffer.h"
 
 #include "NuoRayTracingUniform.h"
 
 
 const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndexCoordinates);
+
+
+@interface NuoCommandBuffer()
+
+- (id<MTLCommandBuffer>)commandBuffer;
+
+@end
 
 
 
@@ -138,7 +146,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
-- (void)setRoot:(NuoMeshSceneRoot *)root withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)setRoot:(NuoMeshSceneRoot *)root withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     assert(_maskBuffer != nil);
     assert(_vertexBuffer != nil);
@@ -149,7 +157,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     
     [self setWorldBuffers:buffer];
     [self setMaskBuffer:root];
-    [_accelerateStructure encodeRefitToCommandBuffer:commandBuffer];
+    [_accelerateStructure encodeRefitToCommandBuffer:commandBuffer.commandBuffer];
 }
 
 
@@ -207,22 +215,22 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
-- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                withInFlight:(uint)inFlight
+- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    [_primaryRayBuffer updateMask:mask withUniform:[self uniformBuffer:inFlight]
-                                 withCommandBuffer:commandBuffer];
+    [_primaryRayBuffer updateMask:mask
+                      withUniform:[self uniformBuffer:commandBuffer]
+                withCommandBuffer:commandBuffer];
 }
 
 
-- (void)primaryRayEmit:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight
+- (void)primaryRayEmit:(NuoCommandBuffer*)commandBuffer
 {
-    [_primaryRayEmitter emitToBuffer:_primaryRayBuffer withCommandBuffer:commandBuffer withInFlight:inFlight];
+    [_primaryRayEmitter emitToBuffer:_primaryRayBuffer withCommandBuffer:commandBuffer];
 }
 
 
-- (void)primaryRayIntersect:(id<MTLCommandBuffer>)commandBuffer
-                   inFlight:(uint32_t)inFlight withIntersection:(id<MTLBuffer>)intersection
+- (void)primaryRayIntersect:(NuoCommandBuffer*)commandBuffer
+           withIntersection:(id<MTLBuffer>)intersection
 {
     if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt)
     {
@@ -232,13 +240,13 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
-- (void)rayIntersect:(id<MTLCommandBuffer>)commandBuffer
+- (void)rayIntersect:(NuoCommandBuffer*)commandBuffer
             withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection
 {
     if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt)
     {
         [_intersector setIntersectionDataType:MPSIntersectionDataTypeDistancePrimitiveIndexCoordinates];
-        [_intersector encodeIntersectionToCommandBuffer:commandBuffer
+        [_intersector encodeIntersectionToCommandBuffer:commandBuffer.commandBuffer
                                        intersectionType:MPSIntersectionTypeNearest
                                               rayBuffer:rayBuffer.buffer
                                         rayBufferOffset:0
@@ -250,7 +258,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
-- (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight
+- (id<MTLBuffer>)uniformBuffer:(id<NuoRenderInFlight>)inFlight
 {
     return [_primaryRayEmitter uniformBuffer:inFlight];
 }

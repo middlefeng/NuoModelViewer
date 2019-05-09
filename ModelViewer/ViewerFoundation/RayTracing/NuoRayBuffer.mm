@@ -12,9 +12,8 @@
 
 
 
-const uint kRayBufferStride = 56;  //  base fields           - 32
-                                   //  illumination strength - 4
-                                   //  ray color             - 12
+const uint kRayBufferStride = 52;  //  base fields           - 32
+                                   //  path scatter          - 12
                                    //  bounce                - 4
                                    //  ambient illuminateed  - 4
 
@@ -86,7 +85,7 @@ const uint kRayBufferStride = 56;  //  base fields           - 32
 
 
 - (void)updateMask:(uint32_t)rayMask withUniform:(id<MTLBuffer>)uniforms
-                               withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+                               withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     NuoComputePipeline* pipeline;
     if (rayMask & kNuoRayMask_Illuminating)

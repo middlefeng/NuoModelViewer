@@ -3,6 +3,8 @@
 #import "NuoUniforms.h"
 #import "NuoMeshBounds.h"
 
+#import "NuoCommandBuffer.h"
+#import "NuoBufferSwapChain.h"
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
 
@@ -71,9 +73,9 @@
 {
     // per-frame GPU buffers (confirm to protocol NuoMeshSceneParametersProvider)
     //
-    NSArray<id<MTLBuffer>>* _transUniformBuffers;
-    NSArray<id<MTLBuffer>>* _lightCastBuffers;
-    NSArray<id<MTLBuffer>>* _lightingUniformBuffers;
+    NuoBufferSwapChain* _transUniformBuffers;
+    NuoBufferSwapChain* _lightCastBuffers;
+    NuoBufferSwapChain* _lightingUniformBuffers;
     id<MTLBuffer> _modelCharacterUnfiromBuffer;
     
     NuoShadowMapRenderer* _shadowMapRenderer[2];
@@ -856,24 +858,18 @@
 
 - (void)makeResources
 {
-    id<MTLBuffer> modelBuffers[kInFlightBufferCount];
-    id<MTLBuffer> lightingBuffers[kInFlightBufferCount];
-    id<MTLBuffer> lightCastModelBuffers[kInFlightBufferCount];
-    
-    for (size_t i = 0; i < kInFlightBufferCount; ++i)
-    {
-        modelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoUniforms)
-                                                   options:MTLResourceStorageModeManaged];
-        lightingBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightUniforms)
-                                                      options:MTLResourceStorageModeManaged];
-        lightCastModelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightVertexUniforms)
-                                                        options:MTLResourceStorageModeManaged];
-        
-    }
-    
-    _transUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers count:kInFlightBufferCount];
-    _lightingUniformBuffers = [[NSArray alloc] initWithObjects:lightingBuffers count:kInFlightBufferCount];
-    _lightCastBuffers = [[NSArray alloc] initWithObjects:lightCastModelBuffers count:kInFlightBufferCount];
+    _transUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
+                                                       WithBufferSize:sizeof(NuoUniforms)
+                                                          withOptions:MTLResourceStorageModeManaged
+                                                        withChainSize:kInFlightBufferCount];
+    _lightingUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
+                                                          WithBufferSize:sizeof(NuoLightUniforms)
+                                                             withOptions:MTLResourceStorageModeManaged
+                                                           withChainSize:kInFlightBufferCount];
+    _lightCastBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
+                                                    WithBufferSize:sizeof(NuoLightVertexUniforms)
+                                                       withOptions:MTLResourceStorageModeManaged
+                                                     withChainSize:kInFlightBufferCount];
     
     NuoModelCharacterUniforms modelCharacter;
     modelCharacter.opacity = 1.0f;
@@ -952,7 +948,7 @@
 }
 
 
-- (void)updateUniformsForView:(unsigned int)inFlight
+- (void)updateUniformsForView:(NuoCommandBuffer*)commandBuffer
 {
     // move all delta position coming from the view's mouse/gesture into the matrix,
     // according to the transform mode (i.e. scene or mesh)
@@ -982,8 +978,7 @@
     uniforms.viewMatrixInverse = viewTrans.Inverse()._m;
     uniforms.viewProjectionMatrix = (_projection * viewTrans)._m;
 
-    memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
-    [self.transUniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(uniforms))];
+    [_transUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&uniforms];
     
     NuoLightUniforms lighting;
     lighting.ambientDensity = _ambientDensity;
@@ -1005,17 +1000,16 @@
         }
     }
     
-    memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(NuoLightUniforms));
-    [self.lightingUniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(NuoLightUniforms))];
+    [_lightingUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&lighting];
     
-    [_sceneRoot updateUniform:inFlight withTransform:NuoMatrixFloat44Identity];
+    [_sceneRoot updateUniform:commandBuffer withTransform:NuoMatrixFloat44Identity];
     [_sceneRoot setCullEnabled:_cullEnabled];
     
     if (_cubeMesh)
     {
         const NuoMatrixFloat44 projectionMatrixForCube = NuoMatrixPerspective(aspect, _fieldOfView, 0.3, 2.0);
         [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
-        [_cubeMesh updateUniform:inFlight withTransform:NuoMatrixFloat44Identity];
+        [_cubeMesh updateUniform:commandBuffer withTransform:NuoMatrixFloat44Identity];
     }
     
     if (_backdropMesh)
@@ -1027,7 +1021,7 @@
         translation.y += _backdropTransYDelta;
         [_backdropMesh setTranslation:translation];
         
-        [_backdropMesh updateUniform:inFlight withDrawableSize:self.renderTarget.drawableSize];
+        [_backdropMesh updateUniform:commandBuffer withDrawableSize:self.renderTarget.drawableSize];
         
         _backdropScaleDelta = 0.0;
         _backdropTransXDelta = 0.0;
@@ -1035,10 +1029,9 @@
     }
 }
 
-- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-               withInFlightIndex:(unsigned int)inFlight
+- (void)predrawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    [self updateUniformsForView:inFlight];
+    [self updateUniformsForView:commandBuffer];
     
     if (_rayTracingRecordStatus != kRecord_Stop)
     {
@@ -1056,11 +1049,15 @@
         {
             const NuoMatrixFloat44 viewTrans = [self viewMatrix];
             const NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
+            
+            NuoRayTracingGlobalIlluminationParam illumParams;
+            illumParams.ambient = _ambientDensity;
+            illumParams.ambientRadius = _deferredParameters.ambientOcclusionParams.sampleRadius;
+            illumParams.illuminationStrength = _illuminationStrength;
+            illumParams.specularMaterialAdjust = _lights[0].lightingSpecular;
 
             _rayTracingRenderer.sceneBounds = bounds;
-            _rayTracingRenderer.ambientDensity = _ambientDensity;
-            _rayTracingRenderer.ambientRadius = _deferredParameters.ambientOcclusionParams.sampleRadius;
-            _rayTracingRenderer.illuminationStrength = _illuminationStrength;
+            _rayTracingRenderer.globalIllum = illumParams;
             _rayTracingRenderer.fieldOfView = _fieldOfView;
         }
         
@@ -1070,7 +1067,7 @@
     
     if (_rayTracingRecordStatus == kRecord_Start)
     {
-        [_rayTracingRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        [_rayTracingRenderer drawWithCommandBuffer:commandBuffer];
     }
     
     if (_rayTracingRecordStatus == kRecord_Stop)
@@ -1081,7 +1078,7 @@
         {
             _shadowMapRenderer[i].sceneRoot = _sceneRoot;
             _shadowMapRenderer[i].lightSource = _lights[i];
-            [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+            [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer];
         }
         
         // store the light view point projection for shadow map detection in the scene
@@ -1089,8 +1086,8 @@
         NuoLightVertexUniforms lightUniforms;
         lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix._m;
         lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix._m;
-        memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
-        [_lightCastBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(lightUniforms))];
+        
+        [_lightCastBuffers updateBufferWithInFlight:commandBuffer withContent:&lightUniforms];
     }
     
     if (_rayTracingRecordStatus == kRecord_Stop)
@@ -1099,32 +1096,32 @@
         // 10.14.2 occasionally for unknown reason
         
         [_deferredRenderer setRoot:_sceneRoot];
-        [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        [_deferredRenderer predrawWithCommandBuffer:commandBuffer];
     }
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     // get the target render pass and draw the scene in the forward rendering
     //
-    id<MTLRenderCommandEncoder> renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
     if (!renderPass)
         return;
     
     renderPass.label = @"Scene Render Pass";
     
     if (_cubeMesh)
-        [_cubeMesh drawMesh:renderPass indexBuffer:inFlight];
+        [_cubeMesh drawMesh:renderPass];
     
-    [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
+    [self setSceneBuffersTo:renderPass];
     
     BOOL rayTracingMode = (_rayTracingRecordStatus != kRecord_Stop);
     
     if (rayTracingMode)
         [_sceneRoot setShadowOverlayMap:[self shadowOverlayMap]];
     
-    [_sceneRoot drawMesh:renderPass indexBuffer:inFlight];
+    [_sceneRoot drawMesh:renderPass];
     
     [_immediateTarget releaseRenderPassEndcoder];
     
@@ -1136,14 +1133,14 @@
     
     // deferred rendering for the illumination
     
-    id<MTLRenderCommandEncoder> deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
     
     if (_showCheckerboard)
-        [_checkerboard drawMesh:deferredRenderPass indexBuffer:inFlight];
+        [_checkerboard drawMesh:deferredRenderPass];
     
     BOOL drawBackdrop = _backdropMesh && _backdropMesh.enabled;
     if (drawBackdrop)
-        [_backdropMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
+        [_backdropMesh drawMesh:deferredRenderPass];
 
     if (_mainModelMesh.enabled)
     {
@@ -1155,13 +1152,13 @@
             [_illuminationMesh setIlluminationMap:[self rayTracingIllumination]];
             [_illuminationMesh setShadowOverlayMap:[self shadowOverlayMap]];
             [_illuminationMesh setTranslucentCoverMap:[_deferredRenderer ambientBuffer]];
-            [_illuminationMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
+            [_illuminationMesh drawMesh:deferredRenderPass];
         }
         else
         {
             [_deferredRenderer setRenderTarget:self.renderTarget];
             [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
-            [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+            [_deferredRenderer drawWithCommandBuffer:commandBuffer];
         }
     }
     
@@ -1240,21 +1237,21 @@
 
 #pragma mark -- Protocol NuoMeshSceneParametersProvider
 
-- (id<MTLTexture>)shadowMap:(NSUInteger)index;
+- (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
 {
     if (_rayTracingRecordStatus != kRecord_Stop)
-        return [_rayTracingRenderer targetTextureForLightSource:(uint)index];
+        return [_rayTracingRenderer shadowForLightSource:index withMask:mask];
     else
         return _shadowMapRenderer[index].renderTarget.targetTexture;
 }
 
-- (NSArray<id<MTLBuffer>>*)lightCastBuffers
+- (NuoBufferSwapChain*)lightCastBuffers
 {
     return _lightCastBuffers;
 }
 
 
-- (NSArray<id<MTLBuffer>>*)lightingUniformBuffers
+- (NuoBufferSwapChain*)lightingUniformBuffers
 {
     return _lightingUniformBuffers;
 }
@@ -1266,7 +1263,7 @@
 }
 
 
-- (NSArray<id<MTLBuffer>>*)transUniformBuffers
+- (NuoBufferSwapChain*)transUniformBuffers
 {
     return _transUniformBuffers;
 }

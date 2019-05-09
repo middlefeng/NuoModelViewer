@@ -37,13 +37,13 @@
 
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     [_mesh setModelTexture:self.sourceTexture];
     [_mesh setIlluminationMap:_illumination];
     [_mesh setShadowOverlayMap:_shadowOverlayMap];
-    [_mesh drawMesh:renderPass indexBuffer:inFlight];
+    [_mesh drawMesh:renderPass];
     [self releaseDefaultEncoder];
 }
 

@@ -28,7 +28,7 @@
                 withClearColor:(NSColor*)clearColor
                      withScene:(NSArray<NuoRenderPass*>*) renderPasses;
 
-- (void)renderWithCommandQueue:(id<MTLCommandBuffer>)commandBuffer
+- (void)renderWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                 withCompletion:(void (^)(id<MTLTexture>))completionBlock;
 
 @end

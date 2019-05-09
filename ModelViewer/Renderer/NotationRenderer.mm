@@ -20,6 +20,8 @@
 #import <AppKit/AppKit.h>
 
 #import "NuoMeshBounds.h"
+#import "NuoCommandBuffer.h"
+#import "NuoBufferSwapChain.h"
 
 
 @interface NotationRenderer()
@@ -28,7 +30,7 @@
 //
 @property (nonatomic, strong) id<MTLBuffer> lightBuffer;
 
-@property (nonatomic, strong) NSArray<id<MTLBuffer>>* transforms;
+@property (nonatomic, strong) NuoBufferSwapChain* transforms;
 
 @property (nonatomic, strong) NSArray<NotationLight*>* lightVectors;
 @property (nonatomic, weak) NotationLight* currentLightVector;
@@ -88,11 +90,10 @@
         
         memcpy([_lightBuffer contents], &lightUniform, sizeof(NuoLightUniforms));
         
-        id<MTLBuffer> transformBuffer[kInFlightBufferCount];
-        for (unsigned int i = 0; i < kInFlightBufferCount; ++i)
-            transformBuffer[i] = [commandQueue.device newBufferWithLength:sizeof(NuoUniforms) options:MTLResourceOptionCPUCacheModeDefault];
-        
-        _transforms = [[NSArray alloc] initWithObjects:transformBuffer count:kInFlightBufferCount];
+        _transforms = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
+                                                  WithBufferSize:sizeof(NuoUniforms)
+                                                     withOptions:MTLResourceStorageModeManaged
+                                                   withChainSize:kInFlightBufferCount];
     }
     
     return self;
@@ -101,7 +102,7 @@
 
 
 
-- (void)updateUniformsForView:(unsigned int)inFlight
+- (void)updateUniformsForView:(id<NuoRenderInFlight>)inFlight
 {
     const NuoMeshBounds meshBounds = _lightVectors[0].bounds;
     const NuoBounds& bounds = meshBounds.boundingBox;
@@ -126,7 +127,7 @@
     uniforms.viewMatrixInverse = viewMatrix.Inverse()._m;
     uniforms.viewProjectionMatrix = (projectionMatrix * viewMatrix)._m;
     
-    memcpy([_transforms[inFlight] contents], &uniforms, sizeof(NuoUniforms));
+    [_transforms updateBufferWithInFlight:inFlight withContent:&uniforms];
 }
 
 
@@ -251,14 +252,13 @@
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-            withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     self.renderTarget.clearColor = MTLClearColorMake(0.0, 0.95, 0.95, 1);
     
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     
-    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    [super drawWithCommandBuffer:commandBuffer];
     
     const float lightSettingAreaFactor = 0.28;
     const float lightSlidersHeight = 140;
@@ -281,15 +281,15 @@
     _notationArea.size.width /= factor;
     _notationArea.size.height /= factor;
     
-    [self updateUniformsForView:inFlight];
+    [self updateUniformsForView:commandBuffer];
     
     [renderPass setCullMode:MTLCullModeNone];
-    [renderPass setVertexBuffer:self.transforms[inFlight] offset:0 atIndex:1];
-    [renderPass setFragmentBuffer:self.lightBuffer offset:0 atIndex:0];
+    [renderPass setVertexBufferSwapChain:_transforms offset:0 atIndex:1];
+    [renderPass setFragmentBuffer:_lightBuffer offset:0 atIndex:0];
     
     for (size_t i = 0; i < _lightVectors.count; ++i)
     {
-        [_lightVectors[i] drawWithRenderPass:renderPass withInFlight:inFlight];
+        [_lightVectors[i] drawWithRenderPass:renderPass];
     }
     
     [self releaseDefaultEncoder];

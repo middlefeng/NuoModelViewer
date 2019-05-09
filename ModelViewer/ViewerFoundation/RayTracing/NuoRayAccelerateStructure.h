@@ -18,6 +18,8 @@ extern const uint kRayIntersectionStride;
 @class NuoRayBuffer;
 @class NuoMeshSceneRoot;
 @class NuoRenderPassTarget;
+@class NuoCommandBuffer;
+@protocol NuoRenderInFlight;
 
 
 @interface NuoRayAccelerateStructure : NSObject
@@ -38,21 +40,19 @@ extern const uint kRayIntersectionStride;
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (void)setRoot:(NuoMeshSceneRoot*)root;
-- (void)setRoot:(NuoMeshSceneRoot *)root withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
+- (void)setRoot:(NuoMeshSceneRoot*)root withCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 - (void)setView:(const NuoMatrixFloat44&)viewTrans;
 
-- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                withInFlight:(uint)inFlight;
+- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 
-- (void)primaryRayEmit:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight;
+- (void)primaryRayEmit:(NuoCommandBuffer*)commandBuffer;
 
-- (void)primaryRayIntersect:(id<MTLCommandBuffer>)commandBuffer
-                   inFlight:(uint32_t)inFlight withIntersection:(id<MTLBuffer>)intersection;
-- (void)rayIntersect:(id<MTLCommandBuffer>)commandBuffer
-            withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection;
+- (void)primaryRayIntersect:(NuoCommandBuffer*)commandBuffer withIntersection:(id<MTLBuffer>)intersection;
+- (void)rayIntersect:(NuoCommandBuffer*)commandBuffer withRays:(NuoRayBuffer*)rayBuffer
+            withIntersection:(id<MTLBuffer>)intersection;;
 
 
-- (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight;
+- (id<MTLBuffer>)uniformBuffer:(id<NuoRenderInFlight>)inFlight;
 
 
 @end

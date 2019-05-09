@@ -9,6 +9,7 @@
 #import "NuoScreenSpaceRenderer.h"
 #import "NuoScreenSpaceTarget.h"
 #import "NuoMeshSceneRoot.h"
+#import "NuoRenderPassEncoder.h"
 
 
 @implementation NuoScreenSpaceRenderer
@@ -28,18 +29,18 @@
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     // get the target render pass and draw the scene
     //
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     if (!renderPass)
         return;
     
     renderPass.label = @"Screen Render Pass";
     
-    [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
-    [_sceneRoot drawScreenSpace:renderPass indexBuffer:inFlight];
+    [self setSceneBuffersTo:renderPass];
+    [_sceneRoot drawScreenSpace:renderPass];
     
     [self releaseDefaultEncoder];
 }

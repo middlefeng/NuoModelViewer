@@ -110,11 +110,11 @@
 }
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setCullMode:MTLCullModeBack];
-    [renderPass setFragmentTexture:_shadowOverlayMap atIndex:2];
-    [super drawMesh:renderPass indexBuffer:index];
+    [renderPass setFragmentTexture:_shadowOverlayMap atIndex:4];
+    [super drawMesh:renderPass];
 }
 
 

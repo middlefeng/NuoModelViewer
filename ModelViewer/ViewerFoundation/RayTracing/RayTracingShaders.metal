@@ -11,8 +11,25 @@
 #include "NuoRayTracingUniform.h"
 #include "RayTracingShadersCommon.h"
 
+#define SIMPLE_UTILS_ONLY 1
+#include "Meshes/ShadersCommon.h"
+
 
 using namespace metal;
+
+
+
+static RayBuffer primary_ray(matrix44 viewTrans, float3 endPoint)
+{
+    RayBuffer ray;
+    
+    float4 rayDirection = float4(normalize(endPoint), 0.0);
+    
+    ray.direction = (viewTrans * rayDirection).xyz;
+    ray.origin = (viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;
+    
+    return ray;
+}
 
 
 
@@ -36,11 +53,8 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     const float u = (pixelCoord.x / (float)uniforms.wViewPort) * uniforms.uRange - uniforms.uRange / 2.0;
     const float v = (pixelCoord.y / (float)uniforms.hViewPort) * uniforms.vRange - uniforms.vRange / 2.0;
     
-    float4 rayDirection = float4(normalize(float3(u, -v, -1.0)), 0.0);
-    
-    ray.direction = (uniforms.viewTrans * rayDirection).xyz;
-    ray.origin = (uniforms.viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;
-    ray.color = float3(1.0, 1.0, 1.0);
+    ray = primary_ray(uniforms.viewTrans, float3(u, -v, -1.0));
+    ray.pathScatter = float3(1.0, 1.0, 1.0);
     
     // primary rays are generated with mask as opaque. rays for translucent mask are got by
     // set the mask later by "ray_set_mask"
@@ -101,7 +115,9 @@ void shadow_ray_emit_infinite_area(uint2 tid,
                                    device Intersection& intersection,
                                    constant NuoRayTracingUniforms& tracingUniforms,
                                    device float2* random,
-                                   device RayBuffer* shadowRays[2])
+                                   device RayBuffer* shadowRays[2],
+                                   metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                                   metal::sampler samplr)
 {
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     
@@ -113,10 +129,10 @@ void shadow_ray_emit_infinite_area(uint2 tid,
     {
         device RayBuffer* shadowRayCurrent = shadowRays[i] + rayIdx;
         
-        // initialize the buffer's geometric coupling fields
+        // initialize the buffer's path scatter fields
         // (took 2 days to figure this out after spot the problem in debugger 8/21/2018)
         //
-        shadowRayCurrent->geometricCoupling = 0.0f;
+        shadowRayCurrent->pathScatter = 0.0f;
         
         if (intersection.distance >= 0.0f)
         {
@@ -132,19 +148,37 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             shadowRayCurrent->maxDistance = maxDistance;
             shadowRayCurrent->mask = kNuoRayMask_Opaue;
             
-            float3 normal = interpolate_normal(materials, index, intersection);
+            NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
             
+            float3 normal = material.normal;
             float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
             shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             shadowRayCurrent->direction = shadowVec;
             
-            // only the cosine factor is counted into the coupling term, because samples are generated
-            // from an inifinit distant area light (uniform on a finit contending solid angle) and used
-            // as a scale map. no need to take into account the distance (constant) and the other cosine
-            // (always 1).
+            // calculate a specular term which is normalized according to the diffuse term
             //
-            // todo: brdf specular term is not considered
-            shadowRayCurrent->geometricCoupling = dot(normal, shadowVec);
+            
+            float specularPower = material.shinessDisolveIllum.x;
+            RayBuffer eyeRay = primary_ray(uniforms.viewTrans, intersectionPoint);
+            float3 eyeDirection = -eyeRay.direction;
+            float3 halfway = normalize(normalize(shadowVec + eyeDirection));
+            
+            // try to normalize to uphold Cdiff + Cspec < 1.0
+            // this is best effort and user trial-and-error as OBJ is not always PBR
+            //
+            float3 specularColor = material.specularColor * (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
+            
+            float3 diffuseTerm = interpolate_color(materials, diffuseTex, index, intersection, samplr);
+            float3 specularTerm = specular_common_physically(specularColor, specularPower,
+                                                             shadowVec, normal, halfway);
+            
+            // the cosine factor is counted into the path scatter term, as the geometric coupling term,
+            // because samples are generated from an inifinit distant area light (uniform on a finit
+            // contending solid angle)
+            //
+            // specular and diffuse is normalized and scale as half-half
+            //
+            shadowRayCurrent->pathScatter = (0.5 * diffuseTerm + 0.5 * specularTerm) * dot(normal, shadowVec);
         }
         else
         {

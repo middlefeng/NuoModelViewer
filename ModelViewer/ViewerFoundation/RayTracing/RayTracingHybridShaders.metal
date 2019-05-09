@@ -60,7 +60,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     // subtending solid angles, in far distance
     //
     shadow_ray_emit_infinite_area(tid, uniforms, cameraRay, index, materials, intersection,
-                                  tracingUniforms, random, shadowRays);
+                                  tracingUniforms, random, shadowRays, diffuseTex, samplr);
     
     self_illumination(tid, index, materials, intersection,
                       tracingUniforms, cameraRay, incidentRay,
@@ -95,6 +95,13 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
 }
 
 
+template <int num, access accessType>
+class texture_array
+{
+public:
+    typedef array<texture2d<float, accessType>, num> t;
+};
+
 
 
 kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
@@ -104,8 +111,8 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
                               device NuoRayTracingMaterial* materials [[buffer(3)]],
                               device Intersection *intersections [[buffer(4)]],
                               device RayBuffer* shadowRays [[buffer(5)]],
-                              texture2d<float, access::read_write> light [[texture(0)]],
-                              texture2d<float, access::read_write> lightWithBlock [[texture(1)]])
+                              texture_array<2, access::write>::t lightForOpaque [[texture(0)]],
+                              texture_array<2, access::write>::t lightForTrans  [[texture(2)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -114,76 +121,55 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
     device Intersection& intersection = intersections[rayIdx];
     device RayBuffer& shadowRay = shadowRays[rayIdx];
     
-    if (shadowRay.geometricCoupling > 0)
+    if (length(shadowRay.pathScatter) > 0)
     {
+        texture_array<2, access::write>::t light = kShadowOnTranslucent ? lightForTrans : lightForOpaque;
+        
         /**
-         *  to generate a shadow map (rather than illuminating), the geometric coupling term is integrand
+         *  to generate a shadow map (rather than illuminating), the light transportation is integrand
          *
          *  previous comment before pbr-book reading:
          *      the total diffuse (with all blockers virtually removed) and the amount that considers
          *      blockers are recorded, and therefore accumulated by a subsequent accumulator.
          */
         
-        if (kShadowOnTranslucent)
-        {
-            float r = light.read(tid).r;
-            light.write(float4(r, shadowRay.geometricCoupling, 0.0, 1.0), tid);
-        }
-        else
-        {
-            float g = light.read(tid).g;
-            light.write(float4(shadowRay.geometricCoupling, g, 0.0, 1.0), tid);
-        }
+        light[0].write(float4(shadowRay.pathScatter, 1.0), tid);
         
         if (intersection.distance < 0.0f)
-        {
-            if (kShadowOnTranslucent)
-            {
-                float r = lightWithBlock.read(tid).r;
-                lightWithBlock.write(float4(r, shadowRay.geometricCoupling, 0.0, 1.0), tid);
-            }
-            else
-            {
-                float g = lightWithBlock.read(tid).g;
-                lightWithBlock.write(float4(shadowRay.geometricCoupling, g, 0.0, 1.0), tid);
-            }
-        }
+            light[1].write(float4(shadowRay.pathScatter, 1.0), tid);
     }
 }
 
 
 
 kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
-                              texture2d<float, access::read> light [[texture(0)]],
-                              texture2d<float, access::read> lightWithBlock [[texture(1)]],
-                              texture2d<float, access::write> dstTex [[texture(2)]])
+                              texture_array<2, access::read>::t lightForOpaque [[texture(0)]],
+                              texture_array<2, access::read>::t lightForTrans  [[texture(2)]],
+                              texture_array<2, access::write>::t dstTex [[texture(4)]])
 {
-    if (!(tid.x < dstTex.get_width() && tid.y < dstTex.get_height()))
+    if (!(tid.x < dstTex[0].get_width() && tid.y < dstTex[0].get_height()))
         return;
     
-    float illuminate = light.read(tid).r;
-    float illuminateWithBlock = lightWithBlock.read(tid).r;
-    float illuminatePercent = illuminateWithBlock;
+    texture_array<2, access::read>::t lights[] = { lightForOpaque, lightForTrans };
     
-    // (comment to above)
-    // illuminateWithBlock won't be greater than illuminate. if the latter is too small,
-    // use the former directly (rather than use zero)
-    
-    if (illuminate > 0.00001)   // avoid divided by zero
+    for (uint lightType = 0; lightType < 2; ++lightType)
     {
-        illuminatePercent = saturate(illuminateWithBlock / illuminate);
+        float3 illuminate = lights[lightType][0].read(tid).rgb;
+        float3 illuminateWithBlock = lights[lightType][1].read(tid).rgb;
+        float3 illuminatePercent = illuminateWithBlock;
+        
+        // (comment to above)
+        // illuminateWithBlock won't be greater than illuminate. if the latter is too small,
+        // use the former directly (rather than use zero)
+        
+        for (uint i = 0; i < 3; ++i)
+        {
+            if (illuminate[i] > 0.00001)   // avoid divided by zero
+                illuminatePercent[i] = saturate(illuminateWithBlock[i] / illuminate[i]);
+        }
+        
+        dstTex[lightType].write(float4((1 - illuminatePercent), 1.0), tid);
     }
-    
-    illuminate = light.read(tid).g;
-    illuminateWithBlock = lightWithBlock.read(tid).g;
-    float illuminatePercentTranslucent = illuminateWithBlock;
-    
-    if (illuminate > 0.00001)   // avoid divided by zero
-    {
-        illuminatePercentTranslucent = saturate(illuminateWithBlock / illuminate);
-    }
-    
-    dstTex.write(float4(1 - illuminatePercent, 1 - illuminatePercentTranslucent, 0.0, 1.0), tid);
 }
 
 
@@ -199,10 +185,12 @@ void self_illumination(uint2 tid,
                        array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                        sampler samplr)
 {
+    constant NuoRayTracingGlobalIlluminationParam& globalIllum = tracingUniforms.globalIllum;
+    
     if (intersection.distance >= 0.0f)
     {
         const float maxDistance = tracingUniforms.bounds.span;
-        const float ambientRadius = maxDistance / 25.0 * (1.0 - tracingUniforms.ambientRadius * 0.5);
+        const float ambientRadius = maxDistance / 25.0 * (1.0 - globalIllum.ambientRadius * 0.5);
         
         unsigned int triangleIndex = intersection.primitiveIndex;
         device uint* vertexIndex = index + triangleIndex * 3;
@@ -212,12 +200,12 @@ void self_illumination(uint2 tid,
         // incident ray (that is the output ray buffer) may be the same. so it's necessary to store the
         // color before calcuating the bounce
         //
-        float3 originalRayColor = ray.color;
+        float3 originalRayColor = ray.pathScatter;
         
-        int illuminate = materials[*(vertexIndex)].illuminate;
+        int illuminate = materials[*(vertexIndex)].shinessDisolveIllum.z;
         if (illuminate == 0)
         {
-            color = color * ray.color * tracingUniforms.illuminationStrength * 10.0;
+            color = color * ray.pathScatter * globalIllum.illuminationStrength * 10.0;
             
             // old comment regarding the light source sampling vs. reflection sampling:
             //   for bounced ray, multiplied with the integral base (2 PI, or the hemisphre)
@@ -237,7 +225,7 @@ void self_illumination(uint2 tid,
         {
             float2 r = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
             
-            float3 normal = interpolate_normal(materials, index, intersection);
+            float3 normal = interpolate_material(materials, index, intersection).normal;
             float3 sampleVec = sample_cosine_weighted_hemisphere(r);
             
             float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
@@ -248,12 +236,12 @@ void self_illumination(uint2 tid,
             incidentRay.bounce = ray.bounce + 1;
             incidentRay.ambientIlluminated = ray.ambientIlluminated;
             
-            incidentRay.color = color * ray.color;
+            incidentRay.pathScatter = color * ray.pathScatter;
         }
         
         if (ray.bounce > 0 && !ray.ambientIlluminated && intersection.distance > ambientRadius)
         {
-            color = originalRayColor * tracingUniforms.ambient;
+            color = originalRayColor * globalIllum.ambient;
             overlayResult.write(float4(color, 1.0), tid);
             incidentRay.ambientIlluminated = true;
         }
@@ -262,7 +250,7 @@ void self_illumination(uint2 tid,
     {
         if (ray.bounce > 0 && !ray.ambientIlluminated)
         {
-            float3 color = ray.color * tracingUniforms.ambient;
+            float3 color = ray.pathScatter * globalIllum.ambient;
             overlayResult.write(float4(color, 1.0), tid);
             incidentRay.ambientIlluminated = true;
         }

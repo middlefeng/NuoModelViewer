@@ -85,18 +85,18 @@
 }
 
 
-- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)predrawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    [_screenSpaceRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    [_screenSpaceRenderer drawWithCommandBuffer:commandBuffer];
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     renderPass.label = @"Deferred Render Pass";
     
-    [self drawWithRenderPass:renderPass withInFlightIndex:inFlight];
+    [self drawWithRenderPass:renderPass];
     [self releaseDefaultEncoder];
     
     NuoInspectableMaster* master = [NuoInspectableMaster sharedMaster];
@@ -104,7 +104,7 @@
 }
 
 
-- (void)drawWithRenderPass:(id<MTLRenderCommandEncoder>)renderPass withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithRenderPass:(NuoRenderPassEncoder*)renderPass
 {
     [renderPass setFragmentTexture:_screenSpaceRenderer.positionBuffer atIndex:0];
     [renderPass setFragmentTexture:_screenSpaceRenderer.normalBuffer atIndex:1];
@@ -113,7 +113,7 @@
     [renderPass setFragmentTexture:_immediateResult atIndex:4];
     [renderPass setFragmentBuffer:_deferredRenderParamBuffer offset:0 atIndex:0];
     
-    [_screenMesh drawMesh:renderPass indexBuffer:inFlight];
+    [_screenMesh drawMesh:renderPass];
 }
 
 

@@ -12,6 +12,7 @@
 
 
 @class NuoRenderPass;
+@class NuoCommandBuffer;
 
 
 
@@ -45,8 +46,7 @@
 @property (nonatomic, weak) id<NuoRenderPipelineDelegate> renderPipelineDelegate;
 
 
-- (BOOL)renderWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                       inFlight:(uint)inFlight;
+- (BOOL)renderWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 
 - (void)setDrawableSize:(CGSize)size;
 - (void)setSampleCount:(NSUInteger)sampleCount;

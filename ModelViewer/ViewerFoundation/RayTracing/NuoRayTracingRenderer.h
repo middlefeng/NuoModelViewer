@@ -36,25 +36,24 @@
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                      withTargetCount:(uint)targetCount;
 
-- (void)resetResources:(id<MTLCommandBuffer>)commandBuffer;
+- (void)resetResources:(NuoCommandBuffer*)commandBuffer;
 
 /**
  *  overridden by subclass, with compute-shader running for ray tracing
  */
-- (void)runRayTraceShade:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
+- (void)runRayTraceShade:(NuoCommandBuffer*)commandBuffer;
 
 
 /**
  *  functions called from within "- (void)runRayTraceShade:..."
  */
-- (BOOL)primaryRayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
-- (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer
+- (BOOL)primaryRayIntersect:(NuoCommandBuffer*)commandBuffer;
+- (BOOL)rayIntersect:(NuoCommandBuffer*)commandBuffer
             withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection;
 
 
-- (void)primaryRayEmit:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight;
-- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                withInFlight:(uint)inFlight;
+- (void)primaryRayEmit:(NuoCommandBuffer*)commandBuffer;
+- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 
 /**
  *  protocol with "pipeline" shader:
@@ -69,10 +68,9 @@
  *      (m+targetCount)-... model material textures
  */
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
-         withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+         withCommandBuffer:(NuoCommandBuffer*)commandBuffer
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
-          withIntersection:(id<MTLBuffer>)intersection
-         withInFlightIndex:(unsigned int)inFlight;
+          withIntersection:(id<MTLBuffer>)intersection;
 
 
 @end

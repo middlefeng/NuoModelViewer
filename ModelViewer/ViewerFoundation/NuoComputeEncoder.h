@@ -12,6 +12,7 @@
 
 
 @class NuoComputeEncoder;
+@class NuoCommandBuffer;
 
 
 
@@ -26,7 +27,7 @@
                  withParameter:(BOOL)param;
 
 
-- (NuoComputeEncoder*)encoderWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
+- (NuoComputeEncoder*)encoderWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 
 
 @end
@@ -38,6 +39,9 @@
 
 @property (nonatomic, assign) CGSize dataSize;
 
+
+- (void)pushParameterState:(NSString*)name;
+- (void)popParameterState;
 
 - (void)setTargetTexture:(id<MTLTexture>)texture atIndex:(uint)index;
 - (void)setTexture:(id<MTLTexture>)texture atIndex:(uint)index;
