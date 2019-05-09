@@ -40,6 +40,9 @@
 @property (nonatomic, assign) CGSize dataSize;
 
 
+- (void)pushParameterState:(NSString*)name;
+- (void)popParameterState;
+
 - (void)setTargetTexture:(id<MTLTexture>)texture atIndex:(uint)index;
 - (void)setTexture:(id<MTLTexture>)texture atIndex:(uint)index;
 - (void)setSamplerState:(id<MTLSamplerState>)sampler atIndex:(uint)index;

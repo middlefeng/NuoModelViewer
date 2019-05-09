@@ -200,10 +200,14 @@
 
 - (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Mesh Textured Materialed Screen Space"];
+    
     [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
     
     [super drawScreenSpace:renderPass];
+    
+    [renderPass popParameterState];
 }
 
 
@@ -215,6 +219,8 @@
 
 - (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Mesh Textured Materialed"];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
@@ -234,6 +240,8 @@
         [renderPass setFragmentTexture:_textureBump atIndex:texBufferIndex];
     
     [renderPass drawWithIndices:self.indexBuffer];
+    
+    [renderPass popParameterState];
 }
 
 

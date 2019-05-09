@@ -521,6 +521,8 @@
 
 - (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"NuoMesh"];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_renderPipelineState];
     [renderPass setDepthStencilState:_depthStencilState];
@@ -530,11 +532,15 @@
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
     [renderPass setVertexBufferSwapChain:_transformBuffers offset:0 atIndex:rotationIndex];
     [renderPass drawWithIndices:_indexBuffer];
+    
+    [renderPass popParameterState];
 }
 
 
 - (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Mesh Screen Space"];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_screenSpacePipelineState];
     [renderPass setDepthStencilState:_depthStencilState];
@@ -544,6 +550,8 @@
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
     [renderPass setVertexBufferSwapChain:_transformBuffers offset:0 atIndex:rotationIndex];
     [renderPass drawWithIndices:_indexBuffer];
+    
+    [renderPass popParameterState];
 }
 
 
@@ -551,6 +559,8 @@
 {
     if (_shadowPipelineState)
     {
+        [renderPass pushParameterState:@"Mesh Shadow"];
+        
         [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
         [renderPass setRenderPipelineState:_shadowPipelineState];
         [renderPass setDepthStencilState:_depthStencilState];
@@ -558,6 +568,8 @@
         [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
         [renderPass setVertexBufferSwapChain:_transformBuffers offset:0 atIndex:2];
         [renderPass drawWithIndices:_indexBuffer];
+        
+        [renderPass popParameterState];
     }
 }
 

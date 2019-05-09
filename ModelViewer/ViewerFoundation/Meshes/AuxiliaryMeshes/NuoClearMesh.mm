@@ -73,13 +73,19 @@ struct ClearFragment
 
 - (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Clear"];
+    
     [renderPass setFragmentBuffer:_clearColorBuffer offset:0 atIndex:0];
     [super drawMesh:renderPass];
+    
+    [renderPass popParameterState];
 }
 
 
 - (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Clear Screen Space"];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.screenSpacePipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
@@ -87,6 +93,8 @@ struct ClearFragment
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
     [renderPass setFragmentBuffer:_clearColorBuffer offset:0 atIndex:0];
     [renderPass drawWithIndices:self.indexBuffer];
+    
+    [renderPass popParameterState];
 }
 
 

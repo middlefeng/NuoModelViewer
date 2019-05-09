@@ -60,6 +60,8 @@ struct TextureMixFragment
 
 - (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Texture Mesh"];
+    
     [renderPass setFragmentTexture:_modelTexture atIndex:0];
     if (_auxiliaryTexture)
     {
@@ -68,6 +70,8 @@ struct TextureMixFragment
     }
     
     [super drawMesh:renderPass];
+    
+    [renderPass popParameterState];
 }
 
 

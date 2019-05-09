@@ -65,6 +65,8 @@ static CIContext* sCIContext = nil;
 
 - (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Mesh Textured"];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
@@ -75,15 +77,21 @@ static CIContext* sCIContext = nil;
     [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
     [renderPass drawWithIndices:self.indexBuffer];
+    
+    [renderPass popParameterState];
 }
 
 
 - (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Mesh Textured Screen Space"];
+    
     [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
     
     [super drawScreenSpace:renderPass];
+    
+    [renderPass popParameterState];
 }
 
 

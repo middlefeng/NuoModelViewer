@@ -28,6 +28,9 @@
 - (void)setCullMode:(MTLCullMode)cullMode;
 - (void)setViewport:(MTLViewport)viewport;
 
+- (void)pushParameterState:(NSString*)name;
+- (void)popParameterState;
+
 - (void)setRenderPipelineState:(id<MTLRenderPipelineState>)pipelineState;
 - (void)setDepthStencilState:(id<MTLDepthStencilState>)depthStencilState;
 - (void)setFragmentSamplerState:(id<MTLSamplerState>)samplerState atIndex:(uint)index;

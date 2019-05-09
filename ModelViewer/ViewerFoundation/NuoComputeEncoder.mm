@@ -9,6 +9,8 @@
 #import "NuoComputeEncoder.h"
 #import "NuoCommandBuffer.h"
 
+#include "NuoRenderParameterState.h"
+
 
 
 @interface NuoComputeEncoder()
@@ -69,6 +71,7 @@
 @implementation NuoComputeEncoder
 {
     id<MTLComputeCommandEncoder> _encoder;
+    NuoRenderPassParameterState _parameterState;
 }
 
 
@@ -86,10 +89,25 @@
         _encoder.label = name;
         
         _dataSize = CGSizeZero;
+        
+        [self pushParameterState:@"Compute Pass"];
     }
     
     return self;
 }
+
+
+- (void)pushParameterState:(NSString*)name
+{
+    _parameterState.PushState(name.UTF8String);
+}
+
+
+- (void)popParameterState
+{
+    _parameterState.PopState();
+}
+
 
 
 - (void)setComputePipelineState:(id<MTLComputePipelineState>)pipeline
@@ -114,8 +132,9 @@
 - (void)setTexture:(id<MTLTexture>)texture atIndex:(uint)index
 {
     CGSize textureSize = CGSizeMake(texture.width, texture.height);
-    
     _dataSize = textureSize;
+    
+    _parameterState.SetState(index, kNuoParameter_CT);
     
     [_encoder setTexture:texture atIndex:index];
 }
@@ -123,6 +142,8 @@
 
 - (void)setSamplerState:(id<MTLSamplerState>)sampler atIndex:(uint)index
 {
+    _parameterState.SetState(index, kNuoParameter_CS);
+    
     [_encoder setSamplerState:sampler atIndex:index];
 }
 
@@ -130,6 +151,8 @@
 
 - (void)setBuffer:(id<MTLBuffer>)buffer offset:(uint)offset atIndex:(uint)index
 {
+    _parameterState.SetState(index, kNuoParameter_CB);
+    
     [_encoder setBuffer:buffer offset:offset atIndex:index];
 }
 

@@ -9,11 +9,16 @@
 #import "NuoRenderPassEncoder.h"
 #import "NuoBufferSwapChain.h"
 
+#include "NuoRenderParameterState.h"
+
+
 
 @implementation NuoRenderPassEncoder
 {
     id<MTLRenderCommandEncoder> _encoder;
     uint _inFlight;
+    
+    NuoRenderPassParameterState _parameterState;
 }
 
 
@@ -29,6 +34,8 @@
     {
         _encoder = encoder;
         _inFlight = inFlight;
+        
+        [self pushParameterState:@"Render Pass"];
     }
     
     return self;
@@ -59,6 +66,18 @@
 }
 
 
+- (void)pushParameterState:(NSString*)name
+{
+    _parameterState.PushState(name.UTF8String);
+}
+
+
+- (void)popParameterState
+{
+    _parameterState.PopState();
+}
+
+
 - (void)setRenderPipelineState:(id<MTLRenderPipelineState>)pipelineState
 {
     [_encoder setRenderPipelineState:pipelineState];
@@ -75,24 +94,32 @@
 
 - (void)setFragmentSamplerState:(id<MTLSamplerState>)samplerState atIndex:(uint)index
 {
+    _parameterState.SetState(index, kNuoParameter_FS);
+    
     [_encoder setFragmentSamplerState:samplerState atIndex:index];
 }
 
 
 - (void)setFragmentTexture:(id<MTLTexture>)texture atIndex:(uint)index
 {
+    _parameterState.SetState(index, kNuoParameter_FT);
+    
     [_encoder setFragmentTexture:texture atIndex:index];
 }
 
 
 - (void)setFragmentBuffer:(id<MTLBuffer>)buffer offset:(uint)offset atIndex:(uint)index
 {
+    _parameterState.SetState(index, kNuoParameter_FB);
+    
     [_encoder setFragmentBuffer:buffer offset:offset atIndex:index];
 }
 
 
 - (void)setVertexBuffer:(id<MTLBuffer>)vertexBuffer offset:(uint)offset atIndex:(uint)index
 {
+    _parameterState.SetState(index, kNuoParameter_VB);
+    
     [_encoder setVertexBuffer:vertexBuffer offset:offset atIndex:index];
 }
 

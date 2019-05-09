@@ -153,10 +153,14 @@
 {
     [self updateUniform:renderPass withTransform:NuoMatrixFloat44Identity];
     
+    [renderPass pushParameterState:@"Texture average"];
+    
     [renderPass setFragmentTexture:_texturesAccumulated.targetTexture atIndex:0];
     [renderPass setFragmentTexture:_textureLatest atIndex:1];
     [renderPass setFragmentBufferSwapChain:_texCountBuffer offset:0 atIndex:0];
     [super drawMesh:renderPass];
+    
+    [renderPass popParameterState];
 }
 
 

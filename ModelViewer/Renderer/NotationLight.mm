@@ -154,6 +154,8 @@
 
 - (void)drawWithRenderPass:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"NotationLight"];
+    
     [self updateUniformsForView:renderPass];
     [renderPass setFragmentBuffer:self.characterUniformBuffer offset:0 atIndex:1];
     
@@ -161,6 +163,8 @@
     // use only the 0th buffer
     //
     [_lightVector drawMesh:renderPass];
+    
+    [renderPass popParameterState];
 }
 
 
