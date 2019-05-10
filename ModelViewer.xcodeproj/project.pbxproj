@@ -421,6 +421,36 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2C1A4DA42285BC3A00ECBB46 /* Render */ = {
+			isa = PBXGroup;
+			children = (
+				2CABF199227E15DB0075FF3D /* NuoBufferSwapChain.h */,
+				2CABF19A227E15DB0075FF3D /* NuoBufferSwapChain.mm */,
+				2C2A58AE1DD1457200E9F9BC /* NuoRenderPassTarget.h */,
+				2C2A58AF1DD1457200E9F9BC /* NuoRenderPassTarget.mm */,
+				2CCD521920B8C0F100F6CEFE /* NuoRenderPassAttachment.h */,
+				2CCD521A20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm */,
+				2CE8ED7F20F2549F00CD18AC /* NuoComputeEncoder.h */,
+				2CE8ED8020F2549F00CD18AC /* NuoComputeEncoder.mm */,
+				2C3167A9227C99540079F5E3 /* NuoRenderPassEncoder.h */,
+				2C3167AA227C99540079F5E3 /* NuoRenderPassEncoder.mm */,
+				2C1A4D942283E10200ECBB46 /* NuoRenderParameterState.h */,
+				2C1A4D932283E10200ECBB46 /* NuoRenderParameterState.cpp */,
+				2CA55FA71DD21D2A0000AD21 /* NuoRenderPass.h */,
+				2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */,
+				2CABF1A0227E374D0075FF3D /* NuoRenderInFlight.h */,
+				2C3167B0227CD7AE0079F5E3 /* NuoCommandBuffer.h */,
+				2C3167B1227CD7AE0079F5E3 /* NuoCommandBuffer.m */,
+				2C8B80FB1E2EDB01001746FE /* NuoRenderPipelinePass.h */,
+				2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.mm */,
+				2C9777581F7EC8B60031F188 /* NuoMeshSceneRenderPass.h */,
+				2C9777591F7EC8B60031F188 /* NuoMeshSceneRenderPass.mm */,
+				2CCF9C7E1E5B7A43006EF8C4 /* NuoRenderPipeline.h */,
+				2CCF9C7F1E5B7A43006EF8C4 /* NuoRenderPipeline.mm */,
+			);
+			path = Render;
+			sourceTree = "<group>";
+		};
 		2C26D1D71F99234A006F0DE9 /* ModelMeshes */ = {
 			isa = PBXGroup;
 			children = (
@@ -660,29 +690,7 @@
 		2C840D0B1D7001A5000D2956 /* ViewerFoundation */ = {
 			isa = PBXGroup;
 			children = (
-				2CABF199227E15DB0075FF3D /* NuoBufferSwapChain.h */,
-				2CABF19A227E15DB0075FF3D /* NuoBufferSwapChain.mm */,
-				2C2A58AE1DD1457200E9F9BC /* NuoRenderPassTarget.h */,
-				2C2A58AF1DD1457200E9F9BC /* NuoRenderPassTarget.mm */,
-				2CCD521920B8C0F100F6CEFE /* NuoRenderPassAttachment.h */,
-				2CCD521A20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm */,
-				2CE8ED7F20F2549F00CD18AC /* NuoComputeEncoder.h */,
-				2CE8ED8020F2549F00CD18AC /* NuoComputeEncoder.mm */,
-				2C3167A9227C99540079F5E3 /* NuoRenderPassEncoder.h */,
-				2C3167AA227C99540079F5E3 /* NuoRenderPassEncoder.mm */,
-				2C1A4D942283E10200ECBB46 /* NuoRenderParameterState.h */,
-				2C1A4D932283E10200ECBB46 /* NuoRenderParameterState.cpp */,
-				2CA55FA71DD21D2A0000AD21 /* NuoRenderPass.h */,
-				2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */,
-				2CABF1A0227E374D0075FF3D /* NuoRenderInFlight.h */,
-				2C3167B0227CD7AE0079F5E3 /* NuoCommandBuffer.h */,
-				2C3167B1227CD7AE0079F5E3 /* NuoCommandBuffer.m */,
-				2C8B80FB1E2EDB01001746FE /* NuoRenderPipelinePass.h */,
-				2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.mm */,
-				2C9777581F7EC8B60031F188 /* NuoMeshSceneRenderPass.h */,
-				2C9777591F7EC8B60031F188 /* NuoMeshSceneRenderPass.mm */,
-				2CCF9C7E1E5B7A43006EF8C4 /* NuoRenderPipeline.h */,
-				2CCF9C7F1E5B7A43006EF8C4 /* NuoRenderPipeline.mm */,
+				2C1A4DA42285BC3A00ECBB46 /* Render */,
 				2C840D0C1D7001C2000D2956 /* NuoMetalView.h */,
 				2C840D0D1D7001C2000D2956 /* NuoMetalView.m */,
 				2CCF9C751E5B4F77006EF8C4 /* NuoOffscreenView.h */,
