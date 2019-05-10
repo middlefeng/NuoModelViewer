@@ -13,6 +13,7 @@
 #import "NuoMeshTexMatieraled.h"
 #import "NuoMeshUniform.h"
 
+#import "NuoShaderLibrary.h"
 #import "NuoRenderPassEncoder.h"
 #import "NuoBufferSwapChain.h"
 
@@ -34,6 +35,7 @@
 
 @synthesize indexBuffer = _indexBuffer;
 @synthesize vertexBuffer = _vertexBuffer;
+@synthesize library = _library;
 
 
 
@@ -229,6 +231,17 @@
 - (id<MTLDevice>)device
 {
     return _commandQueue.device;
+}
+
+
+- (NuoShaderLibrary*)library
+{
+    if (!_library)
+    {
+        _library = [NuoShaderLibrary defaultLibraryWithDevice:_commandQueue.device];
+    }
+    
+    return _library;
 }
 
 
