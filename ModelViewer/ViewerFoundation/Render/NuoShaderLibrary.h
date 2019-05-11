@@ -15,6 +15,8 @@
 
 + (NuoShaderLibrary*)defaultLibraryWithDevice:(id<MTLDevice>)device;
 
+- (id<MTLLibrary>)library;
+
 
 @end
 

@@ -695,13 +695,13 @@
 		2C840D0B1D7001A5000D2956 /* ViewerFoundation */ = {
 			isa = PBXGroup;
 			children = (
-				2C1A4DA42285BC3A00ECBB46 /* Render */,
 				2C840D0C1D7001C2000D2956 /* NuoMetalView.h */,
 				2C840D0D1D7001C2000D2956 /* NuoMetalView.m */,
 				2CCF9C751E5B4F77006EF8C4 /* NuoOffscreenView.h */,
 				2CCF9C761E5B4F77006EF8C4 /* NuoOffscreenView.m */,
 				2CC5EDEC1D8A62B100419168 /* NuoRoundedView.h */,
 				2CC5EDED1D8A62B100419168 /* NuoRoundedView.m */,
+				2C1A4DA42285BC3A00ECBB46 /* Render */,
 				2C5DDAC61D6590C200A9DC9A /* Meshes */,
 				2C8B80E61E2D6636001746FE /* ShadowMap */,
 				2C9777441F7E076D0031F188 /* ScreenSpace */,

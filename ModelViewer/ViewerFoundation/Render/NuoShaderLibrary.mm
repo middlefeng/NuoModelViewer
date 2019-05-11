@@ -66,4 +66,10 @@ static NSMutableDictionary<KeyDevice*, NuoShaderLibrary*>* defaultLibraries = ni
 }
 
 
+- (id<MTLLibrary>)library
+{
+    return _library;
+}
+
+
 @end

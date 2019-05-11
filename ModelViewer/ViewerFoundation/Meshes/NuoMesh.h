@@ -12,7 +12,6 @@
 #import "NuoRenderPassEncoder.h"
 
 @protocol NuoRenderInFlight;
-@class NuoShaderLibrary;
 
 
 
@@ -37,7 +36,7 @@
 
 
 @property (nonatomic, readonly) id<MTLDevice> device;
-@property (nonatomic, readonly) NuoShaderLibrary* library;
+@property (nonatomic, readonly) id<MTLLibrary> library;
 @property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
 @property (nonatomic, strong) id<MTLRenderPipelineState> renderPipelineState;
 @property (nonatomic, strong) id<MTLRenderPipelineState> screenSpacePipelineState;

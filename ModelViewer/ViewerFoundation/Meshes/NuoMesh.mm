@@ -28,6 +28,7 @@
     std::shared_ptr<NuoModelBase> _rawModel;
     
     NuoMeshModeShaderParameter _meshMode;
+    NuoShaderLibrary* _library;
 }
 
 
@@ -35,7 +36,6 @@
 
 @synthesize indexBuffer = _indexBuffer;
 @synthesize vertexBuffer = _vertexBuffer;
-@synthesize library = _library;
 
 
 
@@ -234,14 +234,14 @@
 }
 
 
-- (NuoShaderLibrary*)library
+- (id<MTLLibrary>)library
 {
     if (!_library)
     {
         _library = [NuoShaderLibrary defaultLibraryWithDevice:_commandQueue.device];
     }
     
-    return _library;
+    return _library.library;
 }
 
 
@@ -350,7 +350,7 @@
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     NSString* vertexFunc = _shadowPipelineState ? @"vertex_project_shadow" : @"vertex_project";
     NSString* fragmnFunc = _shadowPipelineState ? @"fragment_light_shadow" : @"fragment_light";
@@ -421,7 +421,7 @@
                                   withFragemtnShader:(NSString*)fragmentShader
                                        withConstants:(MTLFunctionConstantValues*)constants
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
     screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShader];
@@ -450,7 +450,7 @@
     
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
     shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShadowShader];

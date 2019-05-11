@@ -8,6 +8,7 @@
 
 #import "NuoComputeEncoder.h"
 #import "NuoCommandBuffer.h"
+#import "NuoShaderLibrary.h"
 
 #include "NuoRenderParameterState.h"
 
@@ -35,7 +36,7 @@
     
     if (self)
     {
-        id<MTLLibrary> library = [device newDefaultLibrary];
+        id<MTLLibrary> library = [NuoShaderLibrary defaultLibraryWithDevice:device].library;
         
         MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
         [values setConstantValue:&param type:MTLDataTypeBool atIndex:0];
