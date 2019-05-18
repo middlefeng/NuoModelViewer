@@ -195,7 +195,7 @@ static CIContext* sCIContext = nil;
     size_t currentIndex = 0;
     if (existingItem == buffers->_textureMap.end())
     {
-        buffers->_textureMap.push_back((__bridge void*)_diffuseTex);
+        oneBuffer._textureMap.push_back((__bridge void*)_diffuseTex);
         currentIndex = buffers->_textureMap.size() - 1;
     }
     else
