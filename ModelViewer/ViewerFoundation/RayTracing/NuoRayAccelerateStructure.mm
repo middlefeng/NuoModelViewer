@@ -152,6 +152,10 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     assert(_vertexBuffer != nil);
     assert(_materialBuffer != nil);
     
+    bool changed = [root appendWorldBuffers:NuoMatrixFloat44Identity toBuffers:nullptr];
+    if (!changed)
+        return;
+    
     GlobalBuffers buffer;
     [root appendWorldBuffers:NuoMatrixFloat44Identity toBuffers:&buffer];
     

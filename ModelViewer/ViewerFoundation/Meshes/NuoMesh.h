@@ -118,7 +118,7 @@
 // the "transform" should be the outter world transform (excluding the view matrix,
 // that is, the returned buffer is in the world coordinate rather than in the camera coordinate)
 //
-- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers;
+- (bool)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers;
 
 - (void)updateUniform:(id<NuoRenderInFlight>)inFlight withTransform:(const NuoMatrixFloat44&)transform;
 - (void)drawMesh:(NuoRenderPassEncoder*)renderPass;

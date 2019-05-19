@@ -29,6 +29,8 @@
     
     NuoMeshModeShaderParameter _meshMode;
     NuoShaderLibrary* _library;
+    
+    NuoMatrixFloat44 _globalBufferCachedTrans;
 }
 
 
@@ -49,6 +51,8 @@
         _transformTranslate = NuoMatrixFloat44Identity;
         _sampleCount = kSampleCount;
         _meshMode = kMeshMode_Normal;
+        
+        memset(&_globalBufferCachedTrans, 0, sizeof(NuoMatrixFloat44));
     }
     
     return self;
@@ -90,6 +94,8 @@
         _transformPoise = NuoMatrixFloat44Identity;
         _transformTranslate = NuoMatrixFloat44Identity;
         _sampleCount = kSampleCount;
+        
+        memset(&_globalBufferCachedTrans, 0, sizeof(NuoMatrixFloat44));
     }
     
     return self;
@@ -136,6 +142,18 @@
 - (NuoMatrixFloat44)meshTransform
 {
     return _rotation.RotationMatrix() * _transformTranslate * _transformPoise;
+}
+
+
+- (void)cacheTransform:(const NuoMatrixFloat44&)transform
+{
+    _globalBufferCachedTrans = transform;
+}
+
+
+- (BOOL)isCachedTransformValid:(const NuoMatrixFloat44&)transform
+{
+    return (_globalBufferCachedTrans == transform);
 }
 
 
@@ -293,15 +311,25 @@
 }
 
 
-- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
+- (bool)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
 {
     const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
+    
+    if ([self isCachedTransformValid:transformWorld])
+        return false;
+    
+    if (!buffers)
+        return true;
+    
+    [self cacheTransform:transformWorld];
     
     GlobalBuffers buffer = _rawModel->GetGlobalBuffers();
     buffer.TransformPosition(transformWorld);
     buffer.TransformVector(NuoMatrixExtractLinear(transformWorld));
     
     buffers->Union(buffer);
+    
+    return true;
 }
 
 

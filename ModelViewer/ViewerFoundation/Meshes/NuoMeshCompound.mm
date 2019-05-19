@@ -9,6 +9,7 @@
 #import "NuoMeshCompound.h"
 #import "NuoMeshBounds.h"
 #import "NuoBoardMesh.h"
+#import "NuoMesh_Extension.h"
 
 
 @implementation NuoMeshCompound
@@ -143,15 +144,39 @@
 
 
 
-- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
+- (bool)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
 {
     const NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
     const NuoMatrixFloat44 transformWorld = transform * transformLocal;
+    
+    bool changed = false;
+    
+    if ([self isCachedTransformValid:transformWorld])
+    {
+        for (NuoMesh* mesh in _meshes)
+        {
+            if ([mesh appendWorldBuffers:transformWorld toBuffers:nullptr])
+            {
+                changed = true;
+                break;
+            }
+        }
+        
+        if (!changed)
+            return false;
+    }
+    
+    if (!buffers)
+        return true;
+    
+    [self cacheTransform:transformWorld];
     
     for (NuoMesh* mesh in _meshes)
     {
         [mesh appendWorldBuffers:transformWorld toBuffers:buffers];
     }
+    
+    return true;
 }
 
 

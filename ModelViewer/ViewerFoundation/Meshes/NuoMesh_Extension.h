@@ -35,5 +35,8 @@
 
 - (void)setupCommonPipelineFunctionConstants:(MTLFunctionConstantValues*)constants;
 
+- (void)cacheTransform:(const NuoMatrixFloat44&)transform;
+- (BOOL)isCachedTransformValid:(const NuoMatrixFloat44&)transform;
+
 
 @end

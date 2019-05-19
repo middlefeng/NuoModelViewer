@@ -14,6 +14,9 @@
 @class NuoCommandBuffer;
 
 
+#if NUO_AVERAGE_MESH
+
+
 @interface NuoTextureAverageMesh : NuoScreenSpaceMesh
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
@@ -24,6 +27,9 @@
         withCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 
 @end
+
+
+#endif  // NUO_AVERAGE_MESH
 
 
 
@@ -42,5 +48,7 @@
         withCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 - (void)accumulateTexture:(id<MTLTexture>)texture onTexture:(id<MTLTexture>)targetTexture
         withCommandBuffer:(NuoCommandBuffer*)commandBuffer;
+
+- (void)reset;
 
 @end
