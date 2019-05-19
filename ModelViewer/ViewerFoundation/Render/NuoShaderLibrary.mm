@@ -15,12 +15,25 @@
 @end
 
 @implementation KeyDevice
+
 - (id)copyWithZone:(nullable NSZone *)zone
 {
     KeyDevice* newDevice = [KeyDevice new];
     newDevice.device = _device;
     return newDevice;
 }
+
+- (BOOL)isEqual:(id)other
+{
+    return _device == ((KeyDevice*)other)->_device;
+}
+
+
+- (NSUInteger)hash
+{
+    return (NSUInteger)_device;
+}
+
 @end
 
 
