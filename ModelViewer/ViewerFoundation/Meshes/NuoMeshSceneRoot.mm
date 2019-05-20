@@ -8,14 +8,10 @@
 
 #import "NuoMeshSceneRoot.h"
 #import "NuoBoardMesh.h"
-#include "NuoModelBase.h"
 
 
 
 @implementation NuoMeshSceneRoot
-{
-    GlobalBuffers _cacheGlobalBuffer;
-}
 
 
 - (instancetype)init
@@ -77,19 +73,6 @@
     if (!haveReplaced)
         [meshes addObject:replacer];
 }
-
-
-/*- (bool)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
-{
-    if (![super appendWorldBuffers:transform toBuffers:nullptr])
-        return false;
-    
-    if (!buffers)
-        return true;
-    
-    [super appendWorldBuffers:transform toBuffers:buffers];
-    return true;
-}*/
 
 
 
