@@ -161,13 +161,10 @@
                 break;
             }
         }
-        
-        if (!changed)
-            return false;
     }
     
-    if (!buffers)
-        return true;
+    if (!buffers || !changed)
+        return changed;
     
     [self cacheTransform:transformWorld];
     
