@@ -144,27 +144,10 @@
 
 
 
-- (bool)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
+- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
 {
     const NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
     const NuoMatrixFloat44 transformWorld = transform * transformLocal;
-    
-    bool changed = false;
-    
-    if ([self isCachedTransformValid:transformWorld])
-    {
-        for (NuoMesh* mesh in _meshes)
-        {
-            if ([mesh appendWorldBuffers:transformWorld toBuffers:nullptr])
-            {
-                changed = true;
-                break;
-            }
-        }
-    }
-    
-    if (!buffers || !changed)
-        return changed;
     
     [self cacheTransform:transformWorld];
     
@@ -172,8 +155,26 @@
     {
         [mesh appendWorldBuffers:transformWorld toBuffers:buffers];
     }
+}
+
+
+- (BOOL)isCachedTransformValid:(const NuoMatrixFloat44 &)transform
+{
+    const NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
+    const NuoMatrixFloat44 transformWorld = transform * transformLocal;
     
-    return true;
+    if ([super isCachedTransformValid:transformWorld])
+    {
+        for (NuoMesh* mesh in _meshes)
+        {
+            if ([mesh isCachedTransformValid:transformWorld])
+            {
+                return true;
+            }
+        }
+    }
+    
+    return false;
 }
 
 

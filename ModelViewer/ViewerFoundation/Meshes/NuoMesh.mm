@@ -151,12 +151,6 @@
 }
 
 
-- (BOOL)isCachedTransformValid:(const NuoMatrixFloat44&)transform
-{
-    return (_globalBufferCachedTrans == transform);
-}
-
-
 - (void)shareResourcesFrom:(NuoMesh*)mesh
 {
     _commandQueue = mesh.commandQueue;
@@ -311,15 +305,9 @@
 }
 
 
-- (bool)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
+- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
 {
     const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
-    
-    if ([self isCachedTransformValid:transformWorld])
-        return false;
-    
-    if (!buffers)
-        return true;
     
     [self cacheTransform:transformWorld];
     
@@ -328,8 +316,13 @@
     buffer.TransformVector(NuoMatrixExtractLinear(transformWorld));
     
     buffers->Union(buffer);
-    
-    return true;
+}
+
+
+- (BOOL)isCachedTransformValid:(const NuoMatrixFloat44 &)transform
+{
+    const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
+    return (_globalBufferCachedTrans == transformWorld);
 }
 
 

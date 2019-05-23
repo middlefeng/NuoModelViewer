@@ -186,14 +186,8 @@ static CIContext* sCIContext = nil;
 
 
 
--  (bool)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
+-  (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
 {
-    if (![super appendWorldBuffers:transform toBuffers:nullptr])
-        return false;
-    
-    if (!buffers)
-        return true;
-    
     GlobalBuffers oneBuffer;
     [super appendWorldBuffers:transform toBuffers:&oneBuffer];
     
@@ -223,8 +217,6 @@ static CIContext* sCIContext = nil;
     // no handling to the array exceeding preset number of shader
     // argument bindings
     assert(buffers->_textureMap.size() < kTextureBindingsCap);
-    
-    return true;
 }
 
 
