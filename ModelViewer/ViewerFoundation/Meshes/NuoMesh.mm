@@ -147,7 +147,8 @@
 
 - (void)cacheTransform:(const NuoMatrixFloat44&)transform
 {
-    _globalBufferCachedTrans = transform;
+    const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
+    _globalBufferCachedTrans = transformWorld;
 }
 
 
@@ -309,7 +310,7 @@
 {
     const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
-    [self cacheTransform:transformWorld];
+    [self cacheTransform:transform];
     
     GlobalBuffers buffer = _rawModel->GetGlobalBuffers();
     buffer.TransformPosition(transformWorld);

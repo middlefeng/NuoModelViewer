@@ -167,14 +167,14 @@
     {
         for (NuoMesh* mesh in _meshes)
         {
-            if ([mesh isCachedTransformValid:transformWorld])
+            if (![mesh isCachedTransformValid:transformWorld])
             {
-                return true;
+                return false;
             }
         }
     }
     
-    return false;
+    return true;
 }
 
 

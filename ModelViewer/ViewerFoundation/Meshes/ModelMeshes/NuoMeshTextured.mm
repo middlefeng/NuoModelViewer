@@ -21,9 +21,6 @@ static CIContext* sCIContext = nil;
 
 
 @implementation NuoMeshTextured
-{
-    NuoMatrixFloat44 _globalBufferCachedTrans;
-}
 
 
 
