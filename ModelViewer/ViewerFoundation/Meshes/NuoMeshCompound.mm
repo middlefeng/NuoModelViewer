@@ -163,15 +163,15 @@
     const NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
     const NuoMatrixFloat44 transformWorld = transform * transformLocal;
     
-    if ([super isCachedTransformValid:transformWorld])
+    if (![super isCachedTransformValid:transformWorld])
     {
-        for (NuoMesh* mesh in _meshes)
-        {
-            if (![mesh isCachedTransformValid:transformWorld])
-            {
-                return false;
-            }
-        }
+        return false;
+    }
+    
+    for (NuoMesh* mesh in _meshes)
+    {
+        if (![mesh isCachedTransformValid:transformWorld])
+            return false;
     }
     
     return true;
