@@ -112,9 +112,13 @@
 
 - (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Board mesh"];
+    
     [renderPass setCullMode:MTLCullModeBack];
     [renderPass setFragmentTexture:_shadowOverlayMap atIndex:4];
     [super drawMesh:renderPass];
+    
+    [renderPass popParameterState];
 }
 
 
