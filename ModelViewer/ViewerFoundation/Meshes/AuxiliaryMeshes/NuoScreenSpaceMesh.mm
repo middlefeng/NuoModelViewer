@@ -102,6 +102,8 @@
 {
     // leave all fragement shader related setup to the outter draw function (or subclass)
     
+    [renderPass pushParameterState:@"Screen space"];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
@@ -109,6 +111,8 @@
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
     [renderPass drawWithIndices:self.indexBuffer];
+    
+    [renderPass popParameterState];
 }
 
 
