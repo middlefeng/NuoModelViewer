@@ -1156,9 +1156,13 @@
         }
         else
         {
+            [renderPass pushParameterState:@"Deferred render"];
+            
             [_deferredRenderer setRenderTarget:self.renderTarget];
             [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
             [_deferredRenderer drawWithCommandBuffer:commandBuffer];
+            
+            [renderPass popParameterState];
         }
     }
     

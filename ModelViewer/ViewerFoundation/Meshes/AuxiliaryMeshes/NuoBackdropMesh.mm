@@ -132,6 +132,8 @@
 
 - (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Backdrop mesh"];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
@@ -143,6 +145,8 @@
     [renderPass setFragmentTexture:_backdropTex atIndex:2];
     
     [renderPass drawWithIndices:self.indexBuffer];
+    
+    [renderPass popParameterState];
 }
 
 
