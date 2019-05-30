@@ -111,7 +111,7 @@
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
@@ -327,7 +327,7 @@
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];

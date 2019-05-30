@@ -114,6 +114,7 @@ struct GlobalBuffers
     void Union(const GlobalBuffers& other);
     void TransformPosition(const NuoMatrixFloat44& trans);
     void TransformVector(const NuoMatrixFloat33& trans);
+    void Clear();
 };
 
 

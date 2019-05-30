@@ -112,6 +112,17 @@ void GlobalBuffers::TransformVector(const NuoMatrixFloat33 &trans)
 
 
 
+void GlobalBuffers::Clear()
+{
+    _vertices.clear();
+    _materials.clear();
+    
+    _indices.clear();
+    _textureMap.clear();
+}
+
+
+
 void* NuoModelBase::IndicesPtr()
 {
     return _indices.data();

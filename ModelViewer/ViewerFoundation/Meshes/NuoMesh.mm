@@ -13,6 +13,7 @@
 #import "NuoMeshTexMatieraled.h"
 #import "NuoMeshUniform.h"
 
+#import "NuoShaderLibrary.h"
 #import "NuoRenderPassEncoder.h"
 #import "NuoBufferSwapChain.h"
 
@@ -27,6 +28,9 @@
     std::shared_ptr<NuoModelBase> _rawModel;
     
     NuoMeshModeShaderParameter _meshMode;
+    NuoShaderLibrary* _library;
+    
+    NuoMatrixFloat44 _globalBufferCachedTrans;
 }
 
 
@@ -47,6 +51,8 @@
         _transformTranslate = NuoMatrixFloat44Identity;
         _sampleCount = kSampleCount;
         _meshMode = kMeshMode_Normal;
+        
+        memset(&_globalBufferCachedTrans, 0, sizeof(NuoMatrixFloat44));
     }
     
     return self;
@@ -88,6 +94,8 @@
         _transformPoise = NuoMatrixFloat44Identity;
         _transformTranslate = NuoMatrixFloat44Identity;
         _sampleCount = kSampleCount;
+        
+        memset(&_globalBufferCachedTrans, 0, sizeof(NuoMatrixFloat44));
     }
     
     return self;
@@ -134,6 +142,13 @@
 - (NuoMatrixFloat44)meshTransform
 {
     return _rotation.RotationMatrix() * _transformTranslate * _transformPoise;
+}
+
+
+- (void)cacheTransform:(const NuoMatrixFloat44&)transform
+{
+    const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
+    _globalBufferCachedTrans = transformWorld;
 }
 
 
@@ -232,6 +247,17 @@
 }
 
 
+- (id<MTLLibrary>)library
+{
+    if (!_library)
+    {
+        _library = [NuoShaderLibrary defaultLibraryWithDevice:_commandQueue.device];
+    }
+    
+    return _library.library;
+}
+
+
 
 - (void)setUnifiedOpacity:(float)unifiedOpacity
 {
@@ -284,11 +310,20 @@
 {
     const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
+    [self cacheTransform:transform];
+    
     GlobalBuffers buffer = _rawModel->GetGlobalBuffers();
     buffer.TransformPosition(transformWorld);
     buffer.TransformVector(NuoMatrixExtractLinear(transformWorld));
     
     buffers->Union(buffer);
+}
+
+
+- (BOOL)isCachedTransformValid:(const NuoMatrixFloat44 &)transform
+{
+    const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
+    return (_globalBufferCachedTrans == transformWorld);
 }
 
 
@@ -337,7 +372,7 @@
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     NSString* vertexFunc = _shadowPipelineState ? @"vertex_project_shadow" : @"vertex_project";
     NSString* fragmnFunc = _shadowPipelineState ? @"fragment_light_shadow" : @"fragment_light";
@@ -408,7 +443,7 @@
                                   withFragemtnShader:(NSString*)fragmentShader
                                        withConstants:(MTLFunctionConstantValues*)constants
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
     screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShader];
@@ -437,7 +472,7 @@
     
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
     shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShadowShader];

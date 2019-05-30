@@ -26,7 +26,9 @@
     if (self = [super init])
     {
         self.commandQueue = commandQueue;
-        [self resetResources];
+        
+        _accumulator = [[NuoTextureAccumulator alloc] initWithCommandQueue:self.commandQueue];
+        [_accumulator makePipelineAndSampler];
     }
     
     return self;
@@ -49,8 +51,7 @@
 
 - (void)resetResources
 {
-    _accumulator = [[NuoTextureAccumulator alloc] initWithCommandQueue:self.commandQueue];
-    [_accumulator makePipelineAndSampler];
+    [_accumulator reset];
 }
 
 

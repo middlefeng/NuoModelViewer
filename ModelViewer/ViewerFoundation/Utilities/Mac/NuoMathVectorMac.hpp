@@ -152,6 +152,13 @@ static inline NuoMatrix<float, 4> ToMatrix(glm::mat4x4& gmat)
 }
 
 
+template <class itemType, int dimension>
+inline bool
+operator == (const NuoMatrix<itemType, dimension>& m1, const NuoMatrix<itemType, dimension>& m2)
+{
+    return matrix_equal(m1._m, m2._m);
+}
+
 
 
 typedef NuoVector<float, 4> NuoVectorFloat4;

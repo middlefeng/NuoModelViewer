@@ -190,6 +190,10 @@ NuoMatrix<float, 4> NuoMatrixLookAt(const NuoVector<float, 3>& eye,
                                     const NuoVector<float, 3>& center,
                                     const NuoVector<float, 3>& up);
 
+template <class itemType, int dimension>
+inline bool
+operator == (const NuoMatrix<itemType, dimension>& m1, const NuoMatrix<itemType, dimension>& m2);
+
 
 
 #if __APPLE__ && USE_SIMD

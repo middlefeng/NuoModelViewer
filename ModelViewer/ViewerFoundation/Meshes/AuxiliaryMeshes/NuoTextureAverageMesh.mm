@@ -6,6 +6,8 @@
 //  Copyright © 2017 middleware. All rights reserved.
 //
 
+#define NUO_AVERAGE_MESH 1
+
 #import "NuoTextureAverageMesh.h"
 
 #import "NuoComputeEncoder.h"
@@ -310,6 +312,12 @@
 - (void)updateUniform:(id<NuoRenderInFlight>)inFlight
 {
     [_texCountBuffer updateBufferWithInFlight:inFlight withContent:&_textureCount];
+}
+
+
+- (void)reset
+{
+    _textureCount = 0;
 }
 
 

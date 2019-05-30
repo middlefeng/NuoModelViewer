@@ -36,6 +36,7 @@
 
 
 @property (nonatomic, readonly) id<MTLDevice> device;
+@property (nonatomic, readonly) id<MTLLibrary> library;
 @property (nonatomic, strong) id<MTLCommandQueue> commandQueue;
 @property (nonatomic, strong) id<MTLRenderPipelineState> renderPipelineState;
 @property (nonatomic, strong) id<MTLRenderPipelineState> screenSpacePipelineState;
@@ -118,6 +119,7 @@
 // that is, the returned buffer is in the world coordinate rather than in the camera coordinate)
 //
 - (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers;
+- (BOOL)isCachedTransformValid:(const NuoMatrixFloat44&)transform;
 
 - (void)updateUniform:(id<NuoRenderInFlight>)inFlight withTransform:(const NuoMatrixFloat44&)transform;
 - (void)drawMesh:(NuoRenderPassEncoder*)renderPass;
