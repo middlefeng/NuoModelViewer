@@ -399,6 +399,10 @@ float3 specular_common_physically(float3 specularReflectance, float materialSpec
 // the code embodies the half-vector based specular which is ((m + 2) / (8 * pi)) * Cspecular * power(cos(theta), m)
 //               p253 (7.47) the reflection based version is ((m + 2) / (2 * pi)) * Cspecular * power(cos(reflection), m)
 //
+// for the details of how the above normalization term is deduced, see http://www.farbrausch.de/%7Efg/stuff/phong.pdf
+//          the reflection based version could be deduced by simple integral: cos^m(x)sin(x)dx = -cos^(m+1)d(cos(x))
+//          the half-vector based version is an approximation, to a more complicated integral form.
+//
 // specular_common() returns (radiance * pi), because that saves some calculation and the 1/pi factor
 // in radiance is usually cancelled by the outside integral
 //
