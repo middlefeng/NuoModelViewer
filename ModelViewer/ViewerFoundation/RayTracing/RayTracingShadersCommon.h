@@ -149,17 +149,27 @@ inline float3 interpolate_color(device NuoRayTracingMaterial *materials,
 // uses the inversion method to map two uniformly random numbers to a three dimensional
 // unit hemisphere where the probability of a given sample is proportional to the cosine
 // of the angle between the sample direction and the "up" direction (0, 1, 0)
-inline float3 sample_cosine_weighted_hemisphere(float2 u)
+//
+inline float3 sample_cosine_weighted_hemisphere(float2 u, int m)
 {
     float phi = 2.0f * M_PI_F * u.x;
     
     float cos_phi;
     float sin_phi = metal::sincos(phi, cos_phi);
     
-    float cos_theta = metal::sqrt(u.y);
+    float cos_theta = m == 1 ? metal::sqrt(u.y) : metal::pow(u.y, 1 / (m + 1));
     float sin_theta = metal::sqrt(1.0f - cos_theta * cos_theta);
     
     return float3(sin_theta * cos_phi, cos_theta, sin_theta * sin_phi);
+}
+
+
+inline float sampled_vector_pdf(float cos_theta, int m)
+{
+    if (m == 1)
+        return cos_theta / M_PI_F;
+    else
+        return (m + 2) / (2 * M_PI_F) * metal::pow(cos_theta, m);
 }
 
 

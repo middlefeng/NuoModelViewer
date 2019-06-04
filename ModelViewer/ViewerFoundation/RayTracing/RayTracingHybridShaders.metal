@@ -226,7 +226,7 @@ void self_illumination(uint2 tid,
             device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce].uv;
             
             float3 normal = interpolate_material(materials, index, intersection).normal;
-            float3 sampleVec = sample_cosine_weighted_hemisphere(r);
+            float3 sampleVec = sample_cosine_weighted_hemisphere(r, 1);
             
             float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
             incidentRay.direction = align_hemisphere_normal(sampleVec, normal);
