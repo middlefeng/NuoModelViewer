@@ -24,7 +24,7 @@ static void self_illumination(uint2 tid,
                               constant NuoRayTracingUniforms& tracingUniforms,
                               device RayBuffer& ray,
                               device RayBuffer& incidentRay,
-                              device float2* random,
+                              device NuoRayTracingRandomUnit* random,
                               texture2d<float, access::read_write> overlayResult,
                               array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                               sampler samplr);
@@ -38,7 +38,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 device NuoRayTracingMaterial* materials [[buffer(3)]],
                                 device Intersection *intersections [[buffer(4)]],
                                 constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
-                                device float2* random [[buffer(6)]],
+                                device NuoRayTracingRandomUnit* random [[buffer(6)]],
                                 device RayBuffer* shadowRays0 [[buffer(7)]],
                                 device RayBuffer* shadowRays1 [[buffer(8)]],
                                 device RayBuffer* incidentRaysBuffer [[buffer(9)]],
@@ -76,7 +76,7 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  device NuoRayTracingMaterial* materials [[buffer(3)]],
                                  device Intersection *intersections [[buffer(4)]],
                                  constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
-                                 device float2* random [[buffer(6)]],
+                                 device NuoRayTracingRandomUnit* random [[buffer(6)]],
                                  device RayBuffer* incidentRaysBuffer [[buffer(7)]],
                                  texture2d<float, access::read_write> overlayResult [[texture(0)]],
                                  array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(1)]],
@@ -180,7 +180,7 @@ void self_illumination(uint2 tid,
                        constant NuoRayTracingUniforms& tracingUniforms,
                        device RayBuffer& ray,
                        device RayBuffer& incidentRay,
-                       device float2* random,
+                       device NuoRayTracingRandomUnit* random,
                        texture2d<float, access::read_write> overlayResult,
                        array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                        sampler samplr)
@@ -223,7 +223,7 @@ void self_illumination(uint2 tid,
         }
         else
         {
-            float2 r = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
+            device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce].uv;
             
             float3 normal = interpolate_material(materials, index, intersection).normal;
             float3 sampleVec = sample_cosine_weighted_hemisphere(r);

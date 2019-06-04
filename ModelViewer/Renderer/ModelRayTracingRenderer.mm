@@ -7,7 +7,6 @@
 //
 
 #import "ModelRayTracingRenderer.h"
-#import "NuoRayTracingUniform.h"
 
 #import "NuoLightSource.h"
 
@@ -16,7 +15,7 @@
 #import "NuoRayBuffer.h"
 #import "NuoRayAccelerateStructure.h"
 
-#include "NuoRandomBuffer.h"
+#include "NuoRayTracingRandom.h"
 #include "NuoComputeEncoder.h"
 #include "NuoRenderPassAttachment.h"
 
@@ -186,7 +185,7 @@ static const uint32_t kRayBounce = 4;
     
     NuoRayBuffer* _incidentRaysBuffer;
     
-    PRandomGenerator _rng;
+    PNuoRayTracingRandom _rng;
 }
 
 
@@ -206,7 +205,7 @@ static const uint32_t kRayBounce = 4;
                                                           withFunction:@"incident_ray_process" withParameter:NO];
         _rayShadePipeline.name = @"Incident Ray Shading";
         
-        _rng = std::make_shared<RandomGenerator>(kRandomBufferSize, kRayBounce, 1);
+        _rng = std::make_shared<NuoRayTracingRandom>(kRandomBufferSize, kRayBounce, 1);
         _rayTraceUniform = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                        WithBufferSize:sizeof(NuoRayTracingUniforms)
                                                           withOptions:MTLResourceStorageModeManaged

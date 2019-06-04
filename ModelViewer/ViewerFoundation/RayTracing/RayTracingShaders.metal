@@ -39,7 +39,7 @@ static RayBuffer primary_ray(matrix44 viewTrans, float3 endPoint)
 kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
                              constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                              device RayBuffer* rays [[buffer(1)]],
-                             device float2* random [[buffer(2)]])
+                             device NuoRayTracingRandomUnit* random [[buffer(2)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -47,7 +47,7 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device RayBuffer& ray = rays[rayIdx];
     
-    const float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
+    device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16)].uv;
     const float2 pixelCoord = (float2)tid + r;;
     
     const float u = (pixelCoord.x / (float)uniforms.wViewPort) * uniforms.uRange - uniforms.uRange / 2.0;
@@ -114,7 +114,7 @@ void shadow_ray_emit_infinite_area(uint2 tid,
                                    device NuoRayTracingMaterial* materials,
                                    device Intersection& intersection,
                                    constant NuoRayTracingUniforms& tracingUniforms,
-                                   device float2* random,
+                                   device NuoRayTracingRandomUnit* random,
                                    device RayBuffer* shadowRays[2],
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr)
@@ -123,7 +123,7 @@ void shadow_ray_emit_infinite_area(uint2 tid,
     
     const float maxDistance = tracingUniforms.bounds.span;
     
-    float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
+    device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16)].uv;
     
     for (uint i = 0; i < 2; ++i)
     {
