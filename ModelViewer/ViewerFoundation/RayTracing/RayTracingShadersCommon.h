@@ -185,26 +185,58 @@ inline float3 sample_cone_uniform(float2 u, float cosThetaMax)
 }
 
 
+
+
+#pragma mark -- Scatter Sampling
+
+// the vectors in "world" coordinate, which are basis of a hemisphere coordinate
+//
+struct NuoHemisphereCoordinate
+{
+    float3 right, forward, up;
+};
+
+
+inline NuoHemisphereCoordinate hemi_sphere_basis(float3 normal)
+{
+    NuoHemisphereCoordinate result;
+    
+    result.up = normal;
+    
+    // Find an arbitrary direction perpendicular to the normal. This will become the
+    // "right" vector.
+    result.right = simd::normalize(simd::cross(normal, float3 { 0.0072f, 1.0f, 0.0034f }));
+    if (metal::length(result.right) < 1e-3)
+        result.right = simd::normalize(metal::cross(normal, float3 { 0.0072f, 0.0034f, 1.0f }));
+    
+    // Find a third vector perpendicular to the previous two. This will be the
+    // "forward" vector.
+    result.forward = metal::cross(result.right, result.up);
+    
+    return result;
+}
+
+
 // Aligns a direction on the unit hemisphere such that the hemisphere's "up" direction
 // (0, 1, 0) maps to the given surface normal direction
 inline float3 align_hemisphere_normal(float3 sample, float3 normal)
 {
-    // Set the "up" vector to the normal
-    float3 up = normal;
-    
-    // Find an arbitrary direction perpendicular to the normal. This will become the
-    // "right" vector.
-    float3 right = metal::normalize(metal::cross(normal, metal::float3(0.0072f, 1.0f, 0.0034f)));
-    if (metal::length(right) < 1e-3)
-        right = metal::normalize(metal::cross(normal, metal::float3(0.0072f, 0.0034f, 1.0f)));
-    
-    // Find a third vector perpendicular to the previous two. This will be the
-    // "forward" vector.
-    metal::float3 forward = metal::cross(right, up);
+    NuoHemisphereCoordinate c = hemi_sphere_basis(normal);
     
     // Map the direction on the unit hemisphere to the coordinate system aligned
     // with the normal.
-    return sample.x * right + sample.y * up + sample.z * forward;
+    return sample.x * c.right + sample.y * c.up + sample.z * c.forward;
+}
+
+
+
+inline float3 relative_to_hemisphere_normal(float3 w, float3 n)
+{
+    NuoHemisphereCoordinate c = hemi_sphere_basis(n);
+    
+    return float3 { metal::dot(w, c.right),
+                    metal::dot(w, c.up),
+                    metal::dot(w, c.forward) };
 }
 
 
