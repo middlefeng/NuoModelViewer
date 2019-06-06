@@ -10,5 +10,7 @@
 #define RayTracingShadersCommonCPU_hpp
 
 
+extern "C" void test();
+
 
 #endif /* RayTracingShadersCommonCPU_hpp */
