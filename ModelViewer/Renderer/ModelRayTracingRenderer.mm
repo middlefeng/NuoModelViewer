@@ -259,7 +259,18 @@ static const uint32_t kRayBounce = 4;
         NuoLightSource* lightSource = _subRenderers[i].lightSource;
         const NuoMatrixFloat44 matrix = NuoMatrixRotation(lightSource.lightingRotationX, lightSource.lightingRotationY);
         uniforms.lightSources[i].direction = matrix._m;
-        uniforms.lightSources[i].radius = lightSource.shadowSoften;
+        
+        // the code used to pass lightSource.shadowSoften into the shader, and the shader use it as diameter of
+        // a disk which is distant from the lighted surface by the scene's dimension (i.e. maxDistance). in this
+        // way, the calculatin is duplicated for each pixel each ray, and would even duplicate in multiple places
+        // among different shaders.
+        //
+        // now, the lightSource.shadowSoften is used as tangent of theta, with a scale factor that tries to
+        // make the effect as close to the old behavior as possible. and the consine value is calculated from that
+        // and passed to the shader. this approach need calculate the value once per render pass
+        //
+        float thetaTan = lightSource.shadowSoften / 2.0 * 0.25;
+        uniforms.lightSources[i].coneAngleCosine = (1 / sqrt(thetaTan * thetaTan + 1));
     }
     
     uniforms.bounds.span = _sceneBounds.MaxDimension();

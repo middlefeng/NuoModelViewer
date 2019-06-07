@@ -139,10 +139,7 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
             lightVec = normalize(tracingUniforms.lightSources[i].direction * lightVec);
             
-            float maxThetaTan = tracingUniforms.lightSources[i].radius / 2.0 * 0.25;  // sacle factor to maintain backward-compatibility
-            float maxThetaCos = (1 / metal::sqrt(maxThetaTan * maxThetaTan + 1));
-
-            float3 shadowVec = sample_cone_uniform(r, maxThetaCos);
+            float3 shadowVec = sample_cone_uniform(r, tracingUniforms.lightSources[i].coneAngleCosine);
             shadowVec = align_hemisphere_normal(shadowVec, lightVec.xyz);
             
             shadowRayCurrent->maxDistance = maxDistance;
