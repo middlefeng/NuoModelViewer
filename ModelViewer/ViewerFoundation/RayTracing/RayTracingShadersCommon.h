@@ -170,12 +170,24 @@ inline float3 sample_cosine_weighted_hemisphere(float2 u, int m)
 
 // normalized probability distribution of a cosine-raised-by-m-weight
 //
-inline float sampled_vector_pdf(float cos_theta, int m)
+inline float cosine_pow_pdf(float cos_theta, int m)
 {
+    // see p345, pbr-book, [5.5]
+    // dw = sin(theta)d(theta)d(phi)
+    
     if (m == 1)
+    {
+        // the factor 1/pi is got as k in normalizing the integral k*cos(x)dw
+        //
         return cos_theta / M_PI_F;
+    }
     else
+    {
+        // the factor  (m + 2) / (2 * pi) is got as k in normalizing the integral
+        // k*cos^m(x)dw
+        //
         return (m + 2) / (2 * M_PI_F) * metal::pow(cos_theta, m);
+    }
 }
 
 

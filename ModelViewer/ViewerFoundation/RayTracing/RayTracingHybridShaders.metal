@@ -23,8 +23,13 @@ using namespace metal;
 struct PathSample
 {
     float3 direction;
-    float3 cosine;
-    float3 cosinedPdfScale;
+
+    // the path scatter term contributed by the reflection where the current sample
+    // plays as incident ray. it is
+    //
+    // f * cos(theta) / pdf, see p875, pbr-book, [14.19]
+    //
+    float3 pathScatterTerm;
 };
 
 
@@ -310,6 +315,21 @@ PathSample sample_scatter(float3 Pn, float3 ray, float3 normal,      /* interact
             return result;
         }
         
+        // all the following factor omit a 1/pi factor, which would have been cancelled
+        // in the calculation of cosinedPdfScale anyway
+        //
+        // hwPdf  -   PDF of the half vector in terms of theta_h, which is a cosine-weighed
+        //            distribution based on micro-facet (and simplified by the Blinn-Phong).
+        //            see comments in cosine_pow_pdf()
+        //
+        // f      -   BRDF specular term. note the normalization factor is (m + 8) / (8 * pi) because
+        //            it is related to theta rather than theta_h.
+        //            for the details of how the above normalization term is deduced, see http://www.farbrausch.de/%7Efg/stuff/phong.pdf
+        //
+        // pdf    -   PDF of the reflection vector. note this is not a analytical form in terms of theta,
+        //            rather it is a value in terms of wo and the half-vector
+        //            see p813, pbr-book
+        //
         float hwPdf = (Mspec + 2.0) / 2.0;
         float pdf = hwPdf / (4 * dot(wo, wh));
         float3 f = Cspec + (1.0f - Cspec) * pow(1.0f - saturate(dot(result.direction, wh)), 5) * ((Mspec + 8) / 8);

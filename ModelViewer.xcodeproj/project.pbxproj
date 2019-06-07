@@ -21,7 +21,6 @@
 		2C2873071E3E77790098092C /* ModelComponentPanels.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C2873061E3E77790098092C /* ModelComponentPanels.mm */; };
 		2C2873101E3ED5A40098092C /* ModelPartPropPanel.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C28730F1E3ED5A40098092C /* ModelPartPropPanel.mm */; };
 		2C2A58B01DD1457200E9F9BC /* NuoRenderPassTarget.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C2A58AF1DD1457200E9F9BC /* NuoRenderPassTarget.mm */; };
-		2C2AC77D22A99C6F00AE6E57 /* RayTracingShadersCommonCPU.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AC77B22A99C6F00AE6E57 /* RayTracingShadersCommonCPU.cpp */; };
 		2C2ACEC01FA1B1AE0055D52D /* FrameRateView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C2ACEBF1FA1B1AE0055D52D /* FrameRateView.m */; };
 		2C2F45781F9B9C6800B05607 /* NuoBackdropMesh.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C2F45771F9B9C6800B05607 /* NuoBackdropMesh.mm */; };
 		2C30DDD22142F69400A68533 /* NuoInspectableMaster.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C30DDD12142F69400A68533 /* NuoInspectableMaster.m */; };
@@ -1045,7 +1044,6 @@
 				2C30DDD52143200900A68533 /* NuoInspectWindow.m in Sources */,
 				2C5BE8A320155A5700F36BD6 /* NuoModelLoaderGPU.mm in Sources */,
 				2C235FCD1DD6CBD700E68295 /* Shaders.metal in Sources */,
-				2C2AC77D22A99C6F00AE6E57 /* RayTracingShadersCommonCPU.cpp in Sources */,
 				2C235FD11DD6CBD700E68295 /* ShadersTextureImage.metal in Sources */,
 				2CC110751FDD233100D09716 /* NuoProgressSheetPanel.m in Sources */,
 				2C2ACEC01FA1B1AE0055D52D /* FrameRateView.m in Sources */,
