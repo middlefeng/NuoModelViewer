@@ -159,8 +159,7 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             //
             
             float specularPower = material.shinessDisolveIllum.x;
-            RayBuffer eyeRay = primary_ray(uniforms.viewTrans, intersectionPoint);
-            float3 eyeDirection = -eyeRay.direction;
+            float3 eyeDirection = -ray.direction;
             float3 halfway = normalize(normalize(shadowVec + eyeDirection));
             
             // try to normalize to uphold Cdiff + Cspec < 1.0

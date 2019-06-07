@@ -129,11 +129,11 @@ constant bool kDepthPrerenderred = kMeshMode == kMeshMode_Selection;
 
 
 
-template <int num>
+template <int num, metal::access accessType = metal::access::sample>
 class texture_array
 {
 public:
-    typedef metal::array<metal::texture2d<float>, num> t;
+    typedef metal::array<metal::texture2d<float, accessType>, num> t;
 };
 
 

@@ -11,9 +11,21 @@
 #include "NuoRayTracingUniform.h"
 #include "RayTracingShadersCommon.h"
 
+#define SIMPLE_UTILS_ONLY 1
+#include "Meshes/ShadersCommon.h"
+
 
 
 using namespace metal;
+
+
+
+struct PathSample
+{
+    float3 direction;
+    float3 cosine;
+    float3 cosinedPdfScale;
+};
 
 
 
@@ -95,15 +107,6 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
 }
 
 
-template <int num, access accessType>
-class texture_array
-{
-public:
-    typedef array<texture2d<float, accessType>, num> t;
-};
-
-
-
 kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
                               constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                               device RayBuffer* rays [[buffer(1)]],
@@ -173,6 +176,12 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
 }
 
 
+
+PathSample sample_scatter(float3 Pn, float3 wi, float3 normal,      /* interaction point */
+                          float2 sampleUV, float Cdeterminator,     /* randoms */
+                          float3 Cdiff, float3 Cspec, float Mspec   /* material spec */     );
+
+
 void self_illumination(uint2 tid,
                        device uint* index,
                        device NuoRayTracingMaterial* materials,
@@ -223,20 +232,28 @@ void self_illumination(uint2 tid,
         }
         else
         {
-            device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce].uv;
-            
-            float3 normal = interpolate_material(materials, index, intersection).normal;
-            float3 sampleVec = sample_cosine_weighted_hemisphere(r, 1);
+            device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
+            device float2& r = randomVars.uv;
+            device float& Cdeterm = randomVars.pathTermDeterminator;
             
             float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
-            incidentRay.direction = align_hemisphere_normal(sampleVec, normal);
-            incidentRay.origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
+            
+            NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
+            float3 specularColor = material.specularColor * (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
+            float specularPower = material.shinessDisolveIllum.x;
+            
+            PathSample sample = sample_scatter(intersectionPoint, -ray.direction, material.normal,
+                                               r, Cdeterm,
+                                               color, specularColor, specularPower);
+            
+            incidentRay.direction = sample.direction;
+            incidentRay.origin = intersectionPoint + normalize(material.normal) * (maxDistance / 20000.0);
             incidentRay.maxDistance = maxDistance;
             incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
             incidentRay.bounce = ray.bounce + 1;
             incidentRay.ambientIlluminated = ray.ambientIlluminated;
             
-            incidentRay.pathScatter = color * ray.pathScatter;
+            incidentRay.pathScatter = sample.cosinedPdfScale * ray.pathScatter;
         }
         
         if (ray.bounce > 0 && !ray.ambientIlluminated && intersection.distance > ambientRadius)
@@ -257,4 +274,61 @@ void self_illumination(uint2 tid,
         
         incidentRay.maxDistance = -1;
     }
+}
+
+
+inline static float3 reflection_vector(float3 wo, float3 normal);
+inline bool same_hemisphere(float3 w, float3 wp);
+
+
+PathSample sample_scatter(float3 Pn, float3 ray, float3 normal,      /* interaction point */
+                          float2 sampleUV, float Cdeterminator,     /* randoms */
+                          float3 Cdiff, float3 Cspec, float Mspec   /* material spec */     )
+{
+    PathSample result;
+    
+    float CdiffSampleProbable = max(Cdiff.x, max(Cdiff.y, Cdiff.z));
+    float CspecSampleProbable = min(Cspec.x, min(Cspec.y, Cspec.z));
+    
+    float probableTotal = CdiffSampleProbable + CspecSampleProbable;
+    
+    if (Cdeterminator < CdiffSampleProbable / probableTotal)
+    {
+        float3 wi = sample_cosine_weighted_hemisphere(sampleUV, 1);
+        result.direction = align_hemisphere_normal(wi, normal);
+        result.cosinedPdfScale = Cdiff * (probableTotal / CdiffSampleProbable);
+    }
+    else
+    {
+        float3 wo = relative_to_hemisphere_normal(ray, normal);
+        float3 wh = sample_cosine_weighted_hemisphere(sampleUV, Mspec);
+        float3 wi = reflection_vector(wo, wh);
+        
+        if (!same_hemisphere(wo, wi))
+        {
+            result.cosinedPdfScale = 0.0;
+            return result;
+        }
+        
+        float hwPdf = (Mspec + 2.0) / 2.0;
+        float pdf = hwPdf / (4 * dot(wo, wh));
+        float3 f = Cspec + (1.0f - Cspec) * pow(1.0f - saturate(dot(result.direction, wh)), 5) * ((Mspec + 8) / 8);
+        
+        result.cosinedPdfScale = f * (probableTotal / CspecSampleProbable) / pdf * dot(result.direction, normal);
+        result.direction = align_hemisphere_normal(wo, normal);
+    }
+    
+    return result;
+}
+
+
+inline static float3 reflection_vector(float3 wo, float3 normal)
+{
+    return -wo + 2 * dot(wo, normal) * normal;
+}
+
+
+inline bool same_hemisphere(float3 w, float3 wp)
+{
+    return w.y * wp.y > 0;
 }

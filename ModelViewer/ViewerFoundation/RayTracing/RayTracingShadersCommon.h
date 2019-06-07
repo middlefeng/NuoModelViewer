@@ -146,6 +146,10 @@ inline float3 interpolate_color(device NuoRayTracingMaterial *materials,
 }
 
 
+
+#pragma mark -- Scatter Sampling
+
+
 // uses the inversion method to map two uniformly random numbers to a three dimensional
 // unit hemisphere where the probability of a given sample is proportional to the cosine
 // of the angle between the sample direction and the "up" direction (0, 1, 0)
@@ -164,6 +168,8 @@ inline float3 sample_cosine_weighted_hemisphere(float2 u, int m)
 }
 
 
+// normalized probability distribution of a cosine-raised-by-m-weight
+//
 inline float sampled_vector_pdf(float cos_theta, int m)
 {
     if (m == 1)
@@ -187,7 +193,7 @@ inline float3 sample_cone_uniform(float2 u, float cosThetaMax)
 
 
 
-#pragma mark -- Scatter Sampling
+#pragma mark -- Spherical/Local Coordinate
 
 // the vectors in "world" coordinate, which are basis of a hemisphere coordinate
 //
@@ -219,9 +225,9 @@ inline NuoHemisphereCoordinate hemi_sphere_basis(float3 normal)
 
 // Aligns a direction on the unit hemisphere such that the hemisphere's "up" direction
 // (0, 1, 0) maps to the given surface normal direction
-inline float3 align_hemisphere_normal(float3 sample, float3 normal)
+inline float3 align_hemisphere_normal(float3 sample, float3 n)
 {
-    NuoHemisphereCoordinate c = hemi_sphere_basis(normal);
+    NuoHemisphereCoordinate c = hemi_sphere_basis(n);
     
     // Map the direction on the unit hemisphere to the coordinate system aligned
     // with the normal.
