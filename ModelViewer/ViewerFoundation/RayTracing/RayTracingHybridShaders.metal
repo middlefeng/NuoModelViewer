@@ -251,6 +251,16 @@ void self_illumination(uint2 tid,
                                                r, Cdeterm,
                                                color, specularColor, specularPower);
             
+            // terminate further tracing if the term is zero. this happens when the vector is out of
+            // the hemisphere in the specular sampling
+            //
+            if (sample.pathScatterTerm.x == 0 &&
+                sample.pathScatterTerm.y == 0 &&
+                sample.pathScatterTerm.z == 0)
+            {
+                incidentRay.maxDistance = -1;
+            }
+            
             incidentRay.direction = sample.direction;
             incidentRay.origin = intersectionPoint + normalize(material.normal) * (maxDistance / 20000.0);
             incidentRay.maxDistance = maxDistance;
@@ -258,7 +268,9 @@ void self_illumination(uint2 tid,
             incidentRay.bounce = ray.bounce + 1;
             incidentRay.ambientIlluminated = ray.ambientIlluminated;
             
-            incidentRay.pathScatter = sample.cosinedPdfScale * ray.pathScatter;
+            // make the term of this reflection contribute to the path scatter
+            //
+            incidentRay.pathScatter = sample.pathScatterTerm * ray.pathScatter;
         }
         
         if (ray.bounce > 0 && !ray.ambientIlluminated && intersection.distance > ambientRadius)
@@ -301,7 +313,7 @@ PathSample sample_scatter(float3 Pn, float3 ray, float3 normal,      /* interact
     {
         float3 wi = sample_cosine_weighted_hemisphere(sampleUV, 1);
         result.direction = align_hemisphere_normal(wi, normal);
-        result.cosinedPdfScale = Cdiff * (probableTotal / CdiffSampleProbable);
+        result.pathScatterTerm = Cdiff * (probableTotal / CdiffSampleProbable);
     }
     else
     {
@@ -311,7 +323,7 @@ PathSample sample_scatter(float3 Pn, float3 ray, float3 normal,      /* interact
         
         if (!same_hemisphere(wo, wi))
         {
-            result.cosinedPdfScale = 0.0;
+            result.pathScatterTerm = 0.0;
             return result;
         }
         
@@ -334,7 +346,7 @@ PathSample sample_scatter(float3 Pn, float3 ray, float3 normal,      /* interact
         float pdf = hwPdf / (4 * dot(wo, wh));
         float3 f = Cspec + (1.0f - Cspec) * pow(1.0f - saturate(dot(result.direction, wh)), 5) * ((Mspec + 8) / 8);
         
-        result.cosinedPdfScale = f * (probableTotal / CspecSampleProbable) / pdf * dot(result.direction, normal);
+        result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdf * dot(result.direction, normal);
         result.direction = align_hemisphere_normal(wo, normal);
     }
     
