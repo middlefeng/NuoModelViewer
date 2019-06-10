@@ -99,7 +99,7 @@ inline NuoRayTracingMaterial interpolate_material(device NuoRayTracingMaterial *
     NuoRayTracingMaterial result;
     
     // compute sum of vertex attributes weighted by barycentric coordinates
-    result.normal = uvw.x * n0 + uvw.y * n1 + uvw.z * n2;
+    result.normal = metal::normalize(uvw.x * n0 + uvw.y * n1 + uvw.z * n2);
     result.specularColor = uvw.x * s0 + uvw.y * s1 + uvw.z * s2;
     result.shinessDisolveIllum.x = uvw.x * sp0 + uvw.y * sp1 + uvw.z * sp2;
     
