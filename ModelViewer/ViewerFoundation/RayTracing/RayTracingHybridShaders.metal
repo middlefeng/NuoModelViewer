@@ -344,7 +344,7 @@ PathSample sample_scatter(float3 Pn, float3 ray, float3 normal,      /* interact
         //
         float hwPdf = (Mspec + 2.0) / 2.0;
         float pdf = hwPdf / (4 * dot(wo, wh));
-        float3 f = Cspec + (1.0f - Cspec) * pow(1.0f - saturate(dot(wo, wh)), 5) * ((Mspec + 8) / 8);
+        float3 f = (Cspec + (1.0f - Cspec) * pow(1.0f - saturate(dot(wo, wh)), 5)) * ((Mspec + 8) / 8);
         
         result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdf * wi.y /* cosine factor of incident ray */;
         result.direction = align_hemisphere_normal(wi, normal);
