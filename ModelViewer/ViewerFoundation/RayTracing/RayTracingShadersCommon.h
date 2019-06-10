@@ -161,7 +161,7 @@ inline float3 sample_cosine_weighted_hemisphere(float2 u, int m)
     float cos_phi;
     float sin_phi = metal::sincos(phi, cos_phi);
     
-    float cos_theta = m == 1 ? metal::sqrt(u.y) : metal::pow(u.y, 1 / (m + 1));
+    float cos_theta = m == 1 ? metal::sqrt(u.y) : metal::pow(u.y, 1.0 / (m + 1.0));
     float sin_theta = metal::sqrt(1.0f - cos_theta * cos_theta);
     
     return float3(sin_theta * cos_phi, cos_theta, sin_theta * sin_phi);
