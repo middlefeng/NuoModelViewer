@@ -298,7 +298,7 @@ inline static float3 reflection_vector(float3 wo, float3 normal);
 inline bool same_hemisphere(float3 w, float3 wp);
 
 
-PathSample sample_scatter(float3 Pn, float3 ray, float3 normal,      /* interaction point */
+PathSample sample_scatter(float3 Pn, float3 ray, float3 normal,     /* interaction point */
                           float2 sampleUV, float Cdeterminator,     /* randoms */
                           float3 Cdiff, float3 Cspec, float Mspec   /* material spec */     )
 {

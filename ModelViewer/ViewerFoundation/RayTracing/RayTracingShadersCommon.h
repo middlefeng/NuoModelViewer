@@ -31,6 +31,7 @@ struct RayBuffer
     // as the latest section (pbr-book 14.16)
     //
     // it is the product of all BRDF and geometric coupling terms of the previous sections (pbr-book 14.14)
+    // "BRDF and geometric coupling terms" -   f * cos(theta) / pdf(wo)         (14.19)
     //
     packed_float3 pathScatter;
     
