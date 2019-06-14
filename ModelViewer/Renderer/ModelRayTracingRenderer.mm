@@ -25,7 +25,7 @@ static const uint32_t kRandomBufferSize = 256;
 static const uint32_t kRayBounce = 4;
 
 
-@interface ModelRayTracingSubrenderer : NuoRayTracingRenderer
+@interface ModelRayTracingShadowPerLight : NuoRayTracingRenderer
 
 @property (nonatomic, readonly) NuoRayBuffer* shadowRayBuffer;
 @property (nonatomic, readonly) NuoRayBuffer* shadowRayBufferOnTranslucent;
@@ -42,7 +42,7 @@ static const uint32_t kRayBounce = 4;
 
 
 
-@implementation ModelRayTracingSubrenderer
+@implementation ModelRayTracingShadowPerLight
 {
     NuoComputePipeline* _shadowShadePipeline;
     NuoComputePipeline* _shadowShadePipelineOnTranslucent;
@@ -181,7 +181,7 @@ static const uint32_t kRayBounce = 4;
     NuoBufferSwapChain* _rayTraceUniform;
     NuoBufferSwapChain* _randomBuffers;
     
-    ModelRayTracingSubrenderer* _subRenderers[2];
+    ModelRayTracingShadowPerLight* _shadowPerLight[2];
     
     NuoRayBuffer* _incidentRaysBuffer;
     
@@ -216,7 +216,7 @@ static const uint32_t kRayBounce = 4;
                                                       withChainSize:kInFlightBufferCount];
         
         for (uint i = 0; i < 2; ++i)
-            _subRenderers[i] = [[ModelRayTracingSubrenderer alloc] initWithCommandQueue:commandQueue];
+            _shadowPerLight[i] = [[ModelRayTracingShadowPerLight alloc] initWithCommandQueue:commandQueue];
     }
     
     return self;
@@ -227,7 +227,7 @@ static const uint32_t kRayBounce = 4;
 {
     [super setDrawableSize:drawableSize];
     
-    for (ModelRayTracingSubrenderer* renderer : _subRenderers)
+    for (ModelRayTracingShadowPerLight* renderer : _shadowPerLight)
         [renderer setDrawableSize:drawableSize];
     
     _incidentRaysBuffer = [[NuoRayBuffer alloc] initWithDevice:self.commandQueue.device];
@@ -237,13 +237,13 @@ static const uint32_t kRayBounce = 4;
 
 - (void)setLightSource:(NuoLightSource*)lightSource forIndex:(uint)index
 {
-    [_subRenderers[index] setLightSource:lightSource];
+    [_shadowPerLight[index] setLightSource:lightSource];
 }
 
 
 - (void)resetResources:(NuoCommandBuffer*)commandBuffer
 {
-    for (ModelRayTracingSubrenderer* renderer : _subRenderers)
+    for (ModelRayTracingShadowPerLight* renderer : _shadowPerLight)
         [renderer resetResources:commandBuffer];
     
     [super resetResources:commandBuffer];
@@ -256,7 +256,7 @@ static const uint32_t kRayBounce = 4;
     
     for (uint i = 0; i < 2; ++i)
     {
-        NuoLightSource* lightSource = _subRenderers[i].lightSource;
+        NuoLightSource* lightSource = _shadowPerLight[i].lightSource;
         const NuoMatrixFloat44 matrix = NuoMatrixRotation(lightSource.lightingRotationX, lightSource.lightingRotationY);
         uniforms.lightSources[i].direction = matrix._m;
         
@@ -305,8 +305,8 @@ static const uint32_t kRayBounce = 4;
         //
         [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
-                                   _subRenderers[0].shadowRayBuffer.buffer,
-                                   _subRenderers[1].shadowRayBuffer.buffer,
+                                   _shadowPerLight[0].shadowRayBuffer.buffer,
+                                   _shadowPerLight[1].shadowRayBuffer.buffer,
                                    _incidentRaysBuffer.buffer]
                 withIntersection:self.intersectionBuffer];
     }
@@ -319,8 +319,8 @@ static const uint32_t kRayBounce = 4;
         //
         [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
-                                   _subRenderers[0].shadowRayBufferOnTranslucent.buffer,
-                                   _subRenderers[1].shadowRayBufferOnTranslucent.buffer,
+                                   _shadowPerLight[0].shadowRayBufferOnTranslucent.buffer,
+                                   _shadowPerLight[1].shadowRayBufferOnTranslucent.buffer,
                                    _incidentRaysBuffer.buffer]
                 withIntersection:self.intersectionBuffer];
         
@@ -339,8 +339,8 @@ static const uint32_t kRayBounce = 4;
         // sub renderers detect intersection for each light source
         // and accumulates the samplings
         //
-        [_subRenderers[i] setRayStructure:self.rayStructure];
-        [_subRenderers[i] drawWithCommandBuffer:commandBuffer];
+        [_shadowPerLight[i] setRayStructure:self.rayStructure];
+        [_shadowPerLight[i] drawWithCommandBuffer:commandBuffer];
     }
 }
 
@@ -348,7 +348,7 @@ static const uint32_t kRayBounce = 4;
 - (id<MTLTexture>)shadowForLightSource:(uint)index withMask:(NuoSceneMask)mask
 {
     uint i = (mask == kNuoSceneMask_Opaque ? 0 : 1);
-    return _subRenderers[index].normalizedIllumination[i].targetTexture;
+    return _shadowPerLight[index].normalizedIllumination[i].targetTexture;
 }
 
 
