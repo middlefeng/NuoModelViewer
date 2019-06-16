@@ -177,7 +177,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     float3 normal = normalize(vert.normal);
     float3 colorForLights = 0.0;
     
-    float shadowOverlay = 0.0;
+    float3 shadowOverlay = 0.0;
     float surfaceBrightness = 0.0;
     
     const float4 shadowPosition[2] = {vert.shadowPosition0, vert.shadowPosition1};
@@ -202,7 +202,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         
         if (kShadowOverlay)
         {
-            shadowOverlay += lightUniform.lightParams[i].density * cosTheta * length(shadowPercent);
+            shadowOverlay += lightUniform.lightParams[i].density * cosTheta * shadowPercent;
             surfaceBrightness += lightUniform.lightParams[i].density * cosTheta;
         }
         else
@@ -239,7 +239,8 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         // MSAA by the pipeline. to avoid this mistaken anti-aliasing double-blending, the value should be divided
         // by the primitive coverage (in order to get its pre-anti-aliasing value, at least approximately)
         //
-        return float4(0.0, 0.0, 0.0, shadowOverlay / surfaceBrightness / shadowOverlayCoverage);
+        float shadowOverlayStrength = color_to_grayscale(shadowOverlay);
+        return float4(0.0, 0.0, 0.0, shadowOverlayStrength / surfaceBrightness / shadowOverlayCoverage);
     }
     else
     {
@@ -256,7 +257,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
 {
     float3 colorForLights = 0.0;
     
-    float transparency = (1 - vert.opacity);
+    float3 transparency = (1 - vert.opacity);
     
     for (unsigned i = 0; i < 4; ++i)
     {
@@ -289,13 +290,13 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             
             specularTerm = specular_common(vert.specularColor, vert.specularPower,
                                            lightParams, vert.normal, halfway, cosTheta);
-            transparency *= (1 - saturate(length(specularTerm)) * (1 - length(shadowPercent)));
+            transparency *= 1 - saturate(specularTerm * (1 - shadowPercent));
         }
         
         colorForLights += (diffuseTerm + specularTerm) * (1 - shadowPercent);
     }
     
-    return float4(colorForLights, 1.0 - transparency);
+    return float4(colorForLights, color_to_grayscale(1.0 - transparency));
 }
 
 
@@ -629,4 +630,11 @@ float2 ndc_to_texture_coord(float4 ndc)
 {
     float2 result = ndc.xy / ndc.w;
     return float2((result.x + 1) * 0.5, (-result.y + 1) * 0.5);
+}
+
+
+
+float color_to_grayscale(float3 color)
+{
+    return color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
 }

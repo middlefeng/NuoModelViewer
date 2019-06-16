@@ -128,6 +128,8 @@ constant bool kDepthPrerenderred = kMeshMode == kMeshMode_Selection;
 #endif
 
 
+float color_to_grayscale(float3 color);
+
 
 template <int num, metal::access accessType = metal::access::sample>
 class texture_array
