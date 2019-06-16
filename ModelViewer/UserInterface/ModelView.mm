@@ -19,7 +19,6 @@
 // pipeline stages
 //
 #import "ModelViewerRenderer.h"
-#import "ModelRayTracingBlendRenderer.h"
 #import "ModelDissectRenderer.h"
 #import "ModelSelectionRenderer.h"
 #import "NotationRenderer.h"

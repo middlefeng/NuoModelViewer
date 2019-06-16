@@ -7,7 +7,6 @@
 //
 
 #import "ModelRayTracingBlendRenderer.h"
-#import "NuoIlluminationMesh.h"
 
 
 
@@ -21,18 +20,23 @@
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                      withSampleCount:(uint)sampleCount
 {
-    self = [super initWithCommandQueue:commandQueue
-                       withPixelFormat:pixelFormat withSampleCount:1];
+    self = [super init];
     
     if (self)
     {
         _mesh = [[NuoIlluminationMesh alloc] initWithCommandQueue:commandQueue];
         
         [_mesh setSampleCount:sampleCount];
-        [_mesh makePipelineAndSampler:pixelFormat withBlendMode:kBlend_None];
+        [_mesh makePipelineAndSampler:pixelFormat withBlendMode:kBlend_Alpha];
     }
     
     return self;
+}
+
+
+- (void)setGlobalIllumination:(const NuoGlobalIlluminationUniforms&)globalIllumination
+{
+    [_mesh setParameters:globalIllumination];
 }
 
 
@@ -40,9 +44,10 @@
 - (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
-    [_mesh setModelTexture:self.sourceTexture];
+    [_mesh setModelTexture:_immediateResult];
     [_mesh setIlluminationMap:_illumination];
     [_mesh setShadowOverlayMap:_shadowOverlayMap];
+    [_mesh setTranslucentCoverMap:_translucentMap];
     [_mesh drawMesh:renderPass];
     [self releaseDefaultEncoder];
 }
