@@ -86,7 +86,7 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
     // a normal object contributes to the addition of diffuse color in proportion to the ambient illumination.
     //
     float shadowOverlayFactor = shadowOverlay.sample(samplr, vert.texCoord).r;
-    float shadowOverlayAlpha = (ambientTerm.r * 0.33 + ambientTerm.g * 0.33 + ambientTerm.b * 0.33) * shadowOverlayFactor;
+    float shadowOverlayAlpha = color_to_grayscale(ambientTerm.rgb) * shadowOverlayFactor;
     
     // alpha channel composite formula: a1 + a2 - a1 * a2
     //
@@ -150,7 +150,7 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     //   alpha = C-direct / (C-direct + C-ambient-max) * S-direct + (C-ambient-max - C-ambient) / (C-direct + C-ambient)
     //
     //
-    const float ambientStrength = (illuminateEffective.r * 0.33 + illuminateEffective.g * 0.33 + illuminateEffective.b * 0.33);
+    const float ambientStrength = color_to_grayscale(illuminateEffective);
     const float shadowFactor = sourceColor.a;
     const float shadowWithAmbient = (params.directLightDensity / (params.directLightDensity + params.ambientDensity)) * shadowFactor +
                                     (params.ambientDensity - ambientStrength) / (params.directLightDensity + params.ambientDensity);
