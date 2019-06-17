@@ -13,6 +13,9 @@
 @implementation ModelRayTracingBlendRenderer
 {
     NuoIlluminationMesh* _mesh;
+    
+    id<MTLTexture> _lightingWithoutBlock;
+    id<MTLTexture> _lightingWithBlock;
 }
 
 

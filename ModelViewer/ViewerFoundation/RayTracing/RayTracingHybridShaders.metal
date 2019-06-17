@@ -182,6 +182,29 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
 
 
 
+kernel void lighting_accumulate(uint2 tid [[thread_position_in_grid]],
+                                texture_array<2, access::read>::t lightingWithoutBlock,
+                                texture_array<2, access::read>::t lightingWithBlock,
+                                texture2d<float, access::write> resultWithoutBlock,
+                                texture2d<float, access::write> resultWithBlock)
+{
+    if (!(tid.x < resultWithoutBlock.get_width() && tid.y < resultWithoutBlock.get_height()))
+        return;
+    
+    for (uint i = 0; i < 2; ++i)
+    {
+        float3 illuminate = lightingWithoutBlock[0].read(tid).rgb +
+                            lightingWithoutBlock[1].read(tid).rgb;
+        resultWithoutBlock.write(float4(illuminate, 1.0), tid);
+        
+        illuminate = lightingWithBlock[0].read(tid).rgb +
+                     lightingWithBlock[1].read(tid).rgb;
+        resultWithBlock.write(float4(illuminate, 1.0), tid);
+    }
+}
+
+
+
 PathSample sample_scatter(float3 Pn, float3 wi, float3 normal,      /* interaction point */
                           float2 sampleUV, float Cdeterminator,     /* randoms */
                           float3 Cdiff, float3 Cspec, float Mspec   /* material spec */     );

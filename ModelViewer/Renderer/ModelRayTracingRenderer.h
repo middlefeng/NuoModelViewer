@@ -9,7 +9,17 @@
 #import "NuoRayTracingRenderer.h"
 #import "NuoMeshSceneRenderPass.h"
 
+
 @class NuoLightSource;
+
+
+
+@interface ModelDirectLighting : NSObject
+
+@property (nonatomic, weak) id<MTLTexture> lightingWithoutBlock;
+@property (nonatomic, weak) id<MTLTexture> lightingWithBlock;
+
+@end
 
 
 
@@ -24,6 +34,7 @@
 
 - (void)setLightSource:(NuoLightSource*)lightSource forIndex:(uint)index;
 - (id<MTLTexture>)shadowForLightSource:(uint)index withMask:(NuoSceneMask)mask;
+- (NSArray<ModelDirectLighting*>*)directLight;
 
 
 @end

@@ -11,6 +11,9 @@
 
 
 
+@class ModelDirectLighting;
+
+
 
 @interface ModelRayTracingBlendRenderer : NuoRenderPass
 
@@ -19,6 +22,8 @@
 @property (nonatomic, weak) id<MTLTexture> illumination;
 @property (nonatomic, weak) id<MTLTexture> shadowOverlayMap;
 @property (nonatomic, weak) id<MTLTexture> translucentMap;
+
+@property (nonatomic, strong) NSArray<ModelDirectLighting*>* directLighting;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue

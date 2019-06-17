@@ -25,6 +25,11 @@ static const uint32_t kRandomBufferSize = 256;
 static const uint32_t kRayBounce = 4;
 
 
+@implementation ModelDirectLighting
+
+@end
+
+
 @interface ModelRayTracingShadowPerLight : NuoRayTracingRenderer
 
 @property (nonatomic, readonly) NuoRayBuffer* shadowRayBuffer;
@@ -351,6 +356,20 @@ static const uint32_t kRayBounce = 4;
     return _shadowPerLight[index].normalizedIllumination[i].targetTexture;
 }
 
+
+
+- (NSArray<ModelDirectLighting*>*)directLight
+{
+    ModelDirectLighting* lighting[2];
+    
+    for (uint i = 0; i < 2; ++i)
+    {
+        lighting[i].lightingWithoutBlock = _shadowPerLight[i].targetTextures[0];
+        lighting[i].lightingWithBlock = _shadowPerLight[i].targetTextures[1];
+    }
+    
+    return [[NSArray alloc] initWithObjects:lighting count:2];
+}
 
 
 
