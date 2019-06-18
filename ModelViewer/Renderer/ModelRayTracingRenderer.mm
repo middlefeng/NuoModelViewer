@@ -263,7 +263,11 @@ static const uint32_t kRayBounce = 4;
     {
         NuoLightSource* lightSource = _shadowPerLight[i].lightSource;
         const NuoMatrixFloat44 matrix = NuoMatrixRotation(lightSource.lightingRotationX, lightSource.lightingRotationY);
-        uniforms.lightSources[i].direction = matrix._m;
+        
+        NuoRayTracingLightSource* lightSourceRayTracing = &(uniforms.lightSources[i]);
+        
+        lightSourceRayTracing->direction = matrix._m;
+        lightSourceRayTracing->density = lightSource.lightingDensity;
         
         // the code used to pass lightSource.shadowSoften into the shader, and the shader use it as diameter of
         // a disk which is distant from the lighted surface by the scene's dimension (i.e. maxDistance). in this
@@ -275,7 +279,7 @@ static const uint32_t kRayBounce = 4;
         // and passed to the shader. this approach need calculate the value once per render pass
         //
         float thetaTan = lightSource.shadowSoften / 2.0 * 0.25;
-        uniforms.lightSources[i].coneAngleCosine = (1 / sqrt(thetaTan * thetaTan + 1));
+        lightSourceRayTracing->coneAngleCosine = (1 / sqrt(thetaTan * thetaTan + 1));
     }
     
     uniforms.bounds.span = _sceneBounds.MaxDimension();
@@ -364,8 +368,10 @@ static const uint32_t kRayBounce = 4;
     
     for (uint i = 0; i < 2; ++i)
     {
-        lighting[i].lightingWithoutBlock = _shadowPerLight[i].targetTextures[0];
-        lighting[i].lightingWithBlock = _shadowPerLight[i].targetTextures[1];
+        NSArray* textures = _shadowPerLight[i].targetTextures;
+        
+        lighting[i].lightingWithoutBlock = textures[0];
+        lighting[i].lightingWithBlock = textures[1];
     }
     
     return [[NSArray alloc] initWithObjects:lighting count:2];

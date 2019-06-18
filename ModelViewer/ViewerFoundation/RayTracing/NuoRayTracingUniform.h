@@ -35,6 +35,7 @@ NuoBoundsUniform;
 typedef struct
 {
     matrix44 direction;
+    float density;
     float coneAngleCosine;
 }
 NuoRayTracingLightSource;

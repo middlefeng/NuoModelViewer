@@ -174,7 +174,8 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             //
             // specular and diffuse is normalized and scale as half-half
             //
-            shadowRayCurrent->pathScatter = (0.5 * diffuseTerm + 0.5 * specularTerm) * dot(normal, shadowVec);
+            shadowRayCurrent->pathScatter = (diffuseTerm + specularTerm) * dot(normal, shadowVec);
+            shadowRayCurrent->pathScatter *= tracingUniforms.lightSources[i].density;
         }
         else
         {
