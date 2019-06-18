@@ -618,12 +618,16 @@ float3 shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translu
 }
 
 
+
+#pragma mark -- Utility Functions
+
+
+
 float2 rand(float2 co)
 {
     return normalize(float2(fract(sin(dot(float2(co.x, co.y / 2.0), float2(12.9898, 78.233))) * 43758.5453),
                             fract(sin(dot(float2(co.y, co.x / 2.0), float2(12.9898, 78.233))) * 43758.5453)));
 }
-
 
 
 float2 ndc_to_texture_coord(float4 ndc)
@@ -633,8 +637,24 @@ float2 ndc_to_texture_coord(float4 ndc)
 }
 
 
-
 float color_to_grayscale(float3 color)
 {
     return color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
+}
+
+
+float3 safe_divide(float3 dividee, float3 divider)
+{
+    // if dividee is never greater than the divider, and the latter is too small,
+    // use the former directly (rather than use zero)
+    
+    float3 result = dividee;
+    
+    for (uint i = 0; i < 3; ++i)
+    {
+        if (divider[i] > 0.00001)   // avoid divided by zero
+            result[i] = saturate(dividee[i] / divider[i]);
+    }
+    
+    return result;
 }

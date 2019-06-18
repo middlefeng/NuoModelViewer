@@ -130,6 +130,10 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     const float shadowOverlayFactor = shadowOverlayMap.sample(samplr, vert.texCoord).r;
     const float3 color = (sourceColor.rgb + illuminateEffective) * (1 - shadowOverlayFactor);
     
+    /**
+     *  the old comments and code which is based on the pre-normalized S-direct. in fact, the C-direct is available
+     *  at the time of sampling shadow rays so the code switched to an approach need no more user trial-and-error
+     */
     // calculate the ambient-affected shadow overlay
     //
     // physically based equation:
@@ -152,17 +156,23 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     //   alpha = C-direct / (C-direct + C-ambient-max) * S-direct + (C-ambient-max - C-ambient) / (C-direct + C-ambient)
     //
     //
+    /*
     const float ambientStrength = color_to_grayscale(illuminateEffective);
     const float shadowFactor = sourceColor.a;
     const float shadowWithAmbient = (params.directLightDensity / (params.directLightDensity + params.ambientDensity)) * shadowFactor +
                                     (params.ambientDensity - ambientStrength) / (params.directLightDensity + params.ambientDensity);
-    
+     */
+
+    const float3 direct = directLighting.sample(samplr, vert.texCoord).rgb;
+    const float3 directWithShadow = directLightingWithShadow.sample(samplr, vert.texCoord).rgb;
+    const float ambientStrength = color_to_grayscale(illuminateEffective);
+    const float shadowFactor = color_to_grayscale(1.0 - safe_divide(directWithShadow + ambientStrength, direct + params.ambientDensity));
     
     // shadowOverlayFactor being 1.0 means it is an overlay-only object and shadowWithAmbient is used, being
     // 0.0 means it is a normal object and sourceColor.a is used (the forward-rendering result using the ray-tracing-based
     // direct light shadowing)
     //
-    float alpha = sourceColor.a * (1 - shadowOverlayFactor) + shadowWithAmbient * shadowOverlayFactor;
+    float alpha = sourceColor.a * (1 - shadowOverlayFactor) + shadowFactor * shadowOverlayFactor;
     
     return (float4(color, alpha));
 }

@@ -171,6 +171,7 @@ metal::float3 shadow_coverage_common(metal::float4 shadowCastModelPostion, bool 
 
 metal::float2 rand(metal::float2 co);
 metal::float2 ndc_to_texture_coord(metal::float4 ndc);
+metal::float3 safe_divide(metal::float3 dividee, metal::float3 divider);
 
 
 
