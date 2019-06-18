@@ -166,6 +166,7 @@
     [_deferredRenderer setDrawableSize:drawableSize];
     [_rayAccelerator setDrawableSize:drawableSize];
     [_rayTracingRenderer setDrawableSize:drawableSize];
+    [_illuminationRenderer setDrawableSize:drawableSize];
 }
 
 
@@ -1068,6 +1069,9 @@
     if (_rayTracingRecordStatus == kRecord_Start)
     {
         [_rayTracingRenderer drawWithCommandBuffer:commandBuffer];
+        
+        [_illuminationRenderer setDirectLighting:_rayTracingRenderer.directLight];
+        [_illuminationRenderer predrawWithCommandBuffer:commandBuffer];
     }
     
     if (_rayTracingRecordStatus == kRecord_Stop)

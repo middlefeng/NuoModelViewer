@@ -16,6 +16,8 @@
 
 
 @property (nonatomic, weak) id<MTLTexture> illuminationMap;
+@property (nonatomic, weak) id<MTLTexture> directLighting;
+@property (nonatomic, weak) id<MTLTexture> directLightingWithShadow;
 @property (nonatomic, weak) id<MTLTexture> shadowOverlayMap;
 @property (nonatomic, weak) id<MTLTexture> translucentCoverMap;
 

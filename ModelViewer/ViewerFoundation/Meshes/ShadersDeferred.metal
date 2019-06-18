@@ -113,8 +113,10 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
                                    constant NuoGlobalIlluminationUniforms& params [[buffer(0)]],
                                    texture2d<float> source [[texture(0)]],
                                    texture2d<float> illumination [[texture(1)]],
-                                   texture2d<float> shadowOverlayMap [[texture(2)]],
-                                   texture2d<float> translucentCoverMap [[texture(3)]],
+                                   texture2d<float> directLighting [[texture(2)]],
+                                   texture2d<float> directLightingWithShadow [[texture(3)]],
+                                   texture2d<float> shadowOverlayMap [[texture(4)]],
+                                   texture2d<float> translucentCoverMap [[texture(5)]],
                                    sampler samplr [[sampler(0)]])
 {
     const float4 sourceColor = source.sample(samplr, vert.texCoord);

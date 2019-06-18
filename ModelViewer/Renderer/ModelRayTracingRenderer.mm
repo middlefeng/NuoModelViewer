@@ -370,6 +370,7 @@ static const uint32_t kRayBounce = 4;
     {
         NSArray* textures = _shadowPerLight[i].targetTextures;
         
+        lighting[i] = [ModelDirectLighting new];
         lighting[i].lightingWithoutBlock = textures[0];
         lighting[i].lightingWithBlock = textures[1];
     }
