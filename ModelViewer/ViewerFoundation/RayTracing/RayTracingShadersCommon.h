@@ -35,7 +35,13 @@ struct RayBuffer
     //
     packed_float3 pathScatter;
     
+    // number of surface in the constructed path
+    //
     int bounce;
+    
+    // mask type of the first hit surface
+    //
+    unsigned int primary_hit_mask;
     
     // determine if the ambient calculation should terminate, which is independent from
     // whether boucing should terminate
