@@ -59,7 +59,7 @@
  *  protocol with "pipeline" shader:
  *  parameter buffers:
  *      0. ray volume uniform
- *      1. camera rays
+ *      1. exitant rays (if null, parmiary/camera ray for the first sub-path)
  *      2. model index buffer
  *      3. model materials (per vertex)
  *      4. intersections
@@ -70,6 +70,7 @@
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
+            withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection;
 
 

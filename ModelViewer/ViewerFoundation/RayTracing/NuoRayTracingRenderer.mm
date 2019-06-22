@@ -169,12 +169,14 @@
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
+            withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection
 {
     NuoComputeEncoder* computeEncoder = [pipeline encoderWithCommandBuffer:commandBuffer];
+    exitantRay = exitantRay ? exitantRay : [_rayStructure primaryRayBuffer].buffer;
     
     [computeEncoder setBuffer:[_rayStructure uniformBuffer:commandBuffer] offset:0 atIndex:0];
-    [computeEncoder setBuffer:[_rayStructure primaryRayBuffer].buffer offset:0 atIndex:1];
+    [computeEncoder setBuffer:exitantRay offset:0 atIndex:1];
     [computeEncoder setBuffer:[_rayStructure indexBuffer] offset:0 atIndex:2];
     [computeEncoder setBuffer:[_rayStructure materialBuffer] offset:0 atIndex:3];
     [computeEncoder setBuffer:intersection offset:0 atIndex:4];
@@ -213,7 +215,7 @@
     if ([self primaryRayIntersect:commandBuffer])
     {
         [self runRayTraceCompute:/* some shade pipeline */ nil withCommandBuffer:commandBuffer
-                   withParameter:nil withIntersection:nil];
+                   withParameter:nil withExitantRay:nil withIntersection:nil];
     }
     /*************************************************************/
     /*************************************************************/

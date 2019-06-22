@@ -131,13 +131,15 @@ static const uint32_t kRayBounce = 4;
     [self rayIntersect:commandBuffer withRays:_shadowRayBuffer withIntersection:_shadowIntersectionBuffer];
     
     [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
-                withParameter:@[_shadowRayBuffer.buffer]
+               withParameter:nil
+              withExitantRay:_shadowRayBuffer.buffer
             withIntersection:_shadowIntersectionBuffer];
     
     [self rayIntersect:commandBuffer withRays:_shadowRayBufferOnTranslucent withIntersection:_shadowIntersectionBuffer];
     
     [self runRayTraceCompute:_shadowShadePipelineOnTranslucent withCommandBuffer:commandBuffer
-               withParameter:@[_shadowRayBufferOnTranslucent.buffer]
+               withParameter:nil
+              withExitantRay:_shadowRayBufferOnTranslucent.buffer
             withIntersection:_shadowIntersectionBuffer];
 }
 
@@ -309,6 +311,7 @@ static const uint32_t kRayBounce = 4;
                                    _subRenderers[0].shadowRayBuffer.buffer,
                                    _subRenderers[1].shadowRayBuffer.buffer,
                                    _incidentRaysBuffer.buffer]
+                  withExitantRay:nil
                 withIntersection:self.intersectionBuffer];
     }
     
@@ -323,6 +326,7 @@ static const uint32_t kRayBounce = 4;
                                    _subRenderers[0].shadowRayBufferOnTranslucent.buffer,
                                    _subRenderers[1].shadowRayBufferOnTranslucent.buffer,
                                    _incidentRaysBuffer.buffer]
+                  withExitantRay:nil
                 withIntersection:self.intersectionBuffer];
         
         for (uint i = 0; i < kRayBounce; ++i)
@@ -330,7 +334,8 @@ static const uint32_t kRayBounce = 4;
             [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.intersectionBuffer];
             
             [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
-                       withParameter:@[rayTraceUniform, randomBuffer, _incidentRaysBuffer.buffer]
+                       withParameter:@[rayTraceUniform, randomBuffer]
+                      withExitantRay:_incidentRaysBuffer.buffer
                     withIntersection:self.intersectionBuffer];
         }
     }
