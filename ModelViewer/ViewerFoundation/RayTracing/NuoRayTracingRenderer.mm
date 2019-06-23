@@ -169,12 +169,14 @@
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
+            withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection
 {
     NuoComputeEncoder* computeEncoder = [pipeline encoderWithCommandBuffer:commandBuffer];
+    id<MTLBuffer> effectiveRay = exitantRay ? exitantRay : [_rayStructure primaryRayBuffer].buffer;
     
     [computeEncoder setBuffer:[_rayStructure uniformBuffer:commandBuffer] offset:0 atIndex:0];
-    [computeEncoder setBuffer:[_rayStructure primaryRayBuffer].buffer offset:0 atIndex:1];
+    [computeEncoder setBuffer:effectiveRay offset:0 atIndex:1];
     [computeEncoder setBuffer:[_rayStructure indexBuffer] offset:0 atIndex:2];
     [computeEncoder setBuffer:[_rayStructure materialBuffer] offset:0 atIndex:3];
     [computeEncoder setBuffer:intersection offset:0 atIndex:4];
@@ -183,6 +185,16 @@
     {
         for (uint i = 0; i < paramterBuffers.count; ++i)
             [computeEncoder setBuffer:paramterBuffers[i] offset:0 atIndex:5 + i];
+    }
+    
+    // for primary rays, pass in the mask buffer to detect of the intersected
+    // surface character (which corresponds to screen space directly, and would be used
+    // for post-process)
+    //
+    if (!exitantRay)
+    {
+        [computeEncoder setBuffer:[_rayStructure maskBuffer] offset:0
+                          atIndex:5 + (uint)paramterBuffers.count];
     }
     
     uint i = 0;
@@ -213,7 +225,7 @@
     if ([self primaryRayIntersect:commandBuffer])
     {
         [self runRayTraceCompute:/* some shade pipeline */ nil withCommandBuffer:commandBuffer
-                   withParameter:nil withIntersection:nil];
+                   withParameter:nil withExitantRay:nil withIntersection:nil];
     }
     /*************************************************************/
     /*************************************************************/

@@ -59,6 +59,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 device RayBuffer* shadowRays0 [[buffer(7)]],
                                 device RayBuffer* shadowRays1 [[buffer(8)]],
                                 device RayBuffer* incidentRaysBuffer [[buffer(9)]],
+                                device uint* masks [[buffer(10)]],
                                 texture2d<float, access::read_write> overlayResult [[texture(0)]],
                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(1)]],
                                 sampler samplr [[sampler(0)]])
@@ -70,6 +71,9 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     device Intersection & intersection = intersections[rayIdx];
     device RayBuffer& cameraRay = cameraRays[rayIdx];
     device RayBuffer& incidentRay = incidentRaysBuffer[rayIdx];
+    
+    unsigned int triangleIndex = intersection.primitiveIndex;
+    cameraRay.primaryHitMask = masks[triangleIndex];
     
     device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
     
@@ -88,13 +92,12 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
 
 kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                                 device RayBuffer* cameraRays [[buffer(1)]],
+                                 device RayBuffer* incidentRaysBuffer [[buffer(1)]],
                                  device uint* index [[buffer(2)]],
                                  device NuoRayTracingMaterial* materials [[buffer(3)]],
                                  device Intersection *intersections [[buffer(4)]],
                                  constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
                                  device NuoRayTracingRandomUnit* random [[buffer(6)]],
-                                 device RayBuffer* incidentRaysBuffer [[buffer(7)]],
                                  texture2d<float, access::read_write> overlayResult [[texture(0)]],
                                  array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(1)]],
                                  sampler samplr [[sampler(0)]])
@@ -114,11 +117,10 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
 
 kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
                               constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                              device RayBuffer* rays [[buffer(1)]],
+                              device RayBuffer* shadowRays [[buffer(1)]],
                               device uint* index [[buffer(2)]],
                               device NuoRayTracingMaterial* materials [[buffer(3)]],
                               device Intersection *intersections [[buffer(4)]],
-                              device RayBuffer* shadowRays [[buffer(5)]],
                               texture_array<2, access::write>::t lightForOpaque [[texture(0)]],
                               texture_array<2, access::write>::t lightForTrans  [[texture(2)]])
 {
