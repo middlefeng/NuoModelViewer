@@ -131,6 +131,9 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
     device Intersection& intersection = intersections[rayIdx];
     device RayBuffer& shadowRay = shadowRays[rayIdx];
     
+    if (shadowRay.primaryHitMask & kNuoRayMask_ShadowOverlay)
+        return;
+    
     if (length(shadowRay.pathScatter) > 0)
     {
         texture_array<2, access::write>::t light = kShadowOnTranslucent ? lightForTrans : lightForOpaque;
