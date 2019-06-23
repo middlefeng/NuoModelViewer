@@ -63,9 +63,10 @@
  *      2. model index buffer
  *      3. model materials (per vertex)
  *      4. intersections
- *      5-m. "paramterBuffers" (e.g. shadow rays and/or random incidential rays)
- *      m-(m+targetCount). target textures
- *      (m+targetCount)-... model material textures
+ *      5 .. m. "paramterBuffers" (e.g. shadow rays and/or random incidential rays)
+ *      m+1. surface mask (when exiteant ray is nil only)
+ *      m+1 .. (m+1+targetCount). target textures
+ *      (m+1+targetCount)-... model material textures
  */
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer

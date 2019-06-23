@@ -62,6 +62,7 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     ray.mask = kNuoRayMask_Opaue;
     
     ray.bounce = 0;
+    ray.primaryHitMask = 0;
     ray.ambientIlluminated = false;
     
     ray.maxDistance = INFINITY;
@@ -151,13 +152,13 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
             shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
             shadowRayCurrent->direction = shadowVec;
+            shadowRayCurrent->primaryHitMask = ray.primaryHitMask;
             
             // calculate a specular term which is normalized according to the diffuse term
             //
             
             float specularPower = material.shinessDisolveIllum.x;
-            RayBuffer eyeRay = primary_ray(uniforms.viewTrans, intersectionPoint);
-            float3 eyeDirection = -eyeRay.direction;
+            float3 eyeDirection = -ray.direction;
             float3 halfway = normalize(normalize(shadowVec + eyeDirection));
             
             // try to normalize to uphold Cdiff + Cspec < 1.0
