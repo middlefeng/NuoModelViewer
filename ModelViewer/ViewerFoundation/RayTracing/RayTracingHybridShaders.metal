@@ -83,9 +83,15 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     shadow_ray_emit_infinite_area(tid, uniforms, cameraRay, index, materials, intersection,
                                   tracingUniforms, random, shadowRays, diffuseTex, samplr);
     
-    self_illumination(tid, index, materials, intersection,
-                      tracingUniforms, cameraRay, incidentRay,
-                      random, overlayResult, diffuseTex, samplr);
+    // the primary rays are processed according to surface types, only at the last time, scatter-sample
+    // based illumination shall be calculated
+    //
+    if (cameraRay.mask & kNuoRayMask_Translucent)
+    {
+        self_illumination(tid, index, materials, intersection,
+                          tracingUniforms, cameraRay, incidentRay,
+                          random, overlayResult, diffuseTex, samplr);
+    }
 }
 
 
