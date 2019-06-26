@@ -32,10 +32,10 @@ static const uint32_t kRayBounce = 4;
 
 @interface ModelRayTracingShadowPerLight : NuoRayTracingRenderer
 
-@property (nonatomic, readonly) NuoRayBuffer* shadowRayBuffer;
-@property (nonatomic, readonly) NuoRayBuffer* shadowRayBufferOnTranslucent;
+@property (nonatomic, readonly) NSArray<NuoRayBuffer*>* shadowRays;
+@property (nonatomic, readonly) NSArray<id<MTLBuffer>>* shadowRayBuffers;
+@property (nonatomic, readonly) NSArray<id<MTLBuffer>>* shadowIntersectionBuffers;
 
-@property (nonatomic, readonly) id<MTLBuffer> shadowIntersectionBuffer;
 @property (nonatomic, weak) NuoLightSource* lightSource;
 
 @property (nonatomic, readonly) NSArray<NuoRenderPassTarget*>* normalizedIllumination;
@@ -50,8 +50,6 @@ static const uint32_t kRayBounce = 4;
 @implementation ModelRayTracingShadowPerLight
 {
     NuoComputePipeline* _shadowShadePipeline;
-    NuoComputePipeline* _shadowShadePipelineOnTranslucent;
-    
     NuoComputePipeline* _differentialPipeline;
     CGSize _drawableSize;
 }
@@ -72,15 +70,11 @@ static const uint32_t kRayBounce = 4;
         _shadowShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
                                                              withFunction:@"shadow_contribute"
                                                             withParameter:NO];
-        _shadowShadePipelineOnTranslucent = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                                          withFunction:@"shadow_contribute"
-                                                                         withParameter:YES];
         _differentialPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
                                                               withFunction:@"shadow_illuminate"
                                                              withParameter:YES];
         
         _shadowShadePipeline.name = @"Shadow Shade (Opaque)";
-        _shadowShadePipelineOnTranslucent.name = @"Shadow Shade (Translucent)";
         _differentialPipeline.name = @"Illumination Normalizing";
         
         NuoRenderPassTarget* illumination[2];
@@ -119,32 +113,35 @@ static const uint32_t kRayBounce = 4;
     
     const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayIntersectionStride;
     
-    _shadowRayBuffer = [[NuoRayBuffer alloc] initWithDevice:self.commandQueue.device];
-    _shadowRayBuffer.dimension = _drawableSize;
+    NuoRayBuffer* shadowRayBuffers[kNuoRayIndex_Size];
+    id<MTLBuffer> intersectBuffers[kNuoRayIndex_Size];
     
-    _shadowRayBufferOnTranslucent = [[NuoRayBuffer alloc] initWithDevice:self.commandQueue.device];
-    _shadowRayBufferOnTranslucent.dimension = _drawableSize;
-    
-    _shadowIntersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
-                                                                      options:MTLResourceStorageModePrivate];
+    for (uint i = 0; i < kNuoRayIndex_Size; ++i)
+    {
+        shadowRayBuffers[i] = [[NuoRayBuffer alloc] initWithDevice:self.commandQueue.device];
+        shadowRayBuffers[i].dimension = _drawableSize;
+        
+        intersectBuffers[i] = [self.commandQueue.device newBufferWithLength:intersectionSize
+                                                                    options:MTLResourceStorageModePrivate];
+    }
+    _shadowRays = [[NSArray alloc] initWithObjects:shadowRayBuffers count:kNuoRayIndex_Size];
+    _shadowIntersectionBuffers = [[NSArray alloc] initWithObjects:intersectBuffers count:kNuoRayIndex_Size];
+    _shadowRayBuffers = @[_shadowRays[0].buffer, _shadowRays[1].buffer];
 }
 
 
 - (void)runRayTraceShade:(NuoCommandBuffer*)commandBuffer
 {
-    [self rayIntersect:commandBuffer withRays:_shadowRayBuffer withIntersection:_shadowIntersectionBuffer];
+    for (uint i = 0; i < kNuoRayIndex_Size; ++i)
+    {
+        [self rayIntersect:commandBuffer withRays:_shadowRays[i]
+                                 withIntersection:_shadowIntersectionBuffers[i]];
+    }
     
     [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
                withParameter:nil
-              withExitantRay:_shadowRayBuffer.buffer
-            withIntersection:_shadowIntersectionBuffer];
-    
-    [self rayIntersect:commandBuffer withRays:_shadowRayBufferOnTranslucent withIntersection:_shadowIntersectionBuffer];
-    
-    [self runRayTraceCompute:_shadowShadePipelineOnTranslucent withCommandBuffer:commandBuffer
-               withParameter:nil
-              withExitantRay:_shadowRayBufferOnTranslucent.buffer
-            withIntersection:_shadowIntersectionBuffer];
+              withExitantRay:_shadowRayBuffers
+            withIntersection:_shadowIntersectionBuffers];
 }
 
 
@@ -316,11 +313,11 @@ static const uint32_t kRayBounce = 4;
         //
         [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
-                                   _shadowPerLight[0].shadowRayBuffer.buffer,
-                                   _shadowPerLight[1].shadowRayBuffer.buffer,
+                                   _shadowPerLight[0].shadowRayBuffers[kNuoRayIndex_OnOpaque],
+                                   _shadowPerLight[1].shadowRayBuffers[kNuoRayIndex_OnOpaque],
                                    _incidentRaysBuffer.buffer]
                   withExitantRay:nil
-                withIntersection:self.intersectionBuffer];
+                withIntersection:@[self.intersectionBuffer]];
     }
     
     [self updatePrimaryRayMask:kNuoRayMask_Translucent withCommandBuffer:commandBuffer];
@@ -331,11 +328,11 @@ static const uint32_t kRayBounce = 4;
         //
         [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
-                                   _shadowPerLight[0].shadowRayBufferOnTranslucent.buffer,
-                                   _shadowPerLight[1].shadowRayBufferOnTranslucent.buffer,
+                                   _shadowPerLight[0].shadowRayBuffers[kNuoRayIndex_OnTranslucent],
+                                   _shadowPerLight[1].shadowRayBuffers[kNuoRayIndex_OnTranslucent],
                                    _incidentRaysBuffer.buffer]
                   withExitantRay:nil
-                withIntersection:self.intersectionBuffer];
+                withIntersection:@[self.intersectionBuffer]];
         
         for (uint i = 0; i < kRayBounce; ++i)
         {
@@ -343,8 +340,8 @@ static const uint32_t kRayBounce = 4;
             
             [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
                        withParameter:@[rayTraceUniform, randomBuffer]
-                      withExitantRay:_incidentRaysBuffer.buffer
-                    withIntersection:self.intersectionBuffer];
+                      withExitantRay:@[_incidentRaysBuffer.buffer]
+                    withIntersection:@[self.intersectionBuffer]];
         }
     }
         

@@ -15,6 +15,16 @@
 
 typedef enum
 {
+    kNuoRayIndex_OnOpaque = 0,
+    kNuoRayIndex_OnTranslucent,
+    kNuoRayIndex_Size
+}
+NuoRayIndex;
+
+
+
+typedef enum
+{
     kNuoRayMask_Opaue           = 1,
     kNuoRayMask_Translucent     = 2,
     kNuoRayMask_Illuminating    = 4,

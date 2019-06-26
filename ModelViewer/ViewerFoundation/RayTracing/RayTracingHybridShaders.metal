@@ -50,9 +50,9 @@ static void self_illumination(uint2 tid,
 
 kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                                device RayBuffer* cameraRays [[buffer(1)]],
-                                device uint* index [[buffer(2)]],
-                                device NuoRayTracingMaterial* materials [[buffer(3)]],
+                                device uint* index [[buffer(1)]],
+                                device NuoRayTracingMaterial* materials [[buffer(2)]],
+                                device RayBuffer* cameraRays [[buffer(3)]],
                                 device Intersection *intersections [[buffer(4)]],
                                 constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
                                 device NuoRayTracingRandomUnit* random [[buffer(6)]],
@@ -92,9 +92,9 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
 
 kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                                 device RayBuffer* incidentRaysBuffer [[buffer(1)]],
-                                 device uint* index [[buffer(2)]],
-                                 device NuoRayTracingMaterial* materials [[buffer(3)]],
+                                 device uint* index [[buffer(1)]],
+                                 device NuoRayTracingMaterial* materials [[buffer(2)]],
+                                 device RayBuffer* incidentRaysBuffer [[buffer(3)]],
                                  device Intersection *intersections [[buffer(4)]],
                                  constant NuoRayTracingUniforms& tracingUniforms [[buffer(5)]],
                                  device NuoRayTracingRandomUnit* random [[buffer(6)]],
@@ -117,10 +117,12 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
 
 kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
                               constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                              device RayBuffer* shadowRays [[buffer(1)]],
-                              device uint* index [[buffer(2)]],
-                              device NuoRayTracingMaterial* materials [[buffer(3)]],
-                              device Intersection *intersections [[buffer(4)]],
+                              device uint* index [[buffer(1)]],
+                              device NuoRayTracingMaterial* materials [[buffer(2)]],
+                              device RayBuffer* shadowRaysForOpaque [[buffer(3)]],
+                              device RayBuffer* shadowRaysForTrans  [[buffer(4)]],
+                              device Intersection *intersectionsForOpaque [[buffer(5)]],
+                              device Intersection *intersectionsForTrans  [[buffer(6)]],
                               texture_array<2, access::write>::t lightForOpaque [[texture(0)]],
                               texture_array<2, access::write>::t lightForTrans  [[texture(2)]])
 {
@@ -128,25 +130,28 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
         return;
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    device Intersection& intersection = intersections[rayIdx];
-    device RayBuffer& shadowRay = shadowRays[rayIdx];
     
-    if (length(shadowRay.pathScatter) > 0)
+    Intersection intersection[] = { intersectionsForOpaque[rayIdx], intersectionsForTrans[rayIdx] };
+    RayBuffer shadowRay[] = { shadowRaysForOpaque[rayIdx], shadowRaysForTrans[rayIdx] };
+    texture_array<2, access::write>::t lightsDst[] = { lightForOpaque, lightForTrans };
+    
+    for (uint i = 0; i < 2; ++i)
     {
-        texture_array<2, access::write>::t light = kShadowOnTranslucent ? lightForTrans : lightForOpaque;
-        
-        /**
-         *  to generate a shadow map (rather than illuminating), the light transportation is integrand
-         *
-         *  previous comment before pbr-book reading:
-         *      the total diffuse (with all blockers virtually removed) and the amount that considers
-         *      blockers are recorded, and therefore accumulated by a subsequent accumulator.
-         */
-        
-        light[0].write(float4(shadowRay.pathScatter, 1.0), tid);
-        
-        if (intersection.distance < 0.0f)
-            light[1].write(float4(shadowRay.pathScatter, 1.0), tid);
+        if (length(shadowRay[i].pathScatter) > 0)
+        {
+            /**
+             *  to generate a shadow map (rather than illuminating), the light transportation is integrand
+             *
+             *  previous comment before pbr-book reading:
+             *      the total diffuse (with all blockers virtually removed) and the amount that considers
+             *      blockers are recorded, and therefore accumulated by a subsequent accumulator.
+             */
+            
+            lightsDst[i][0].write(float4(shadowRay[i].pathScatter, 1.0), tid);
+            
+            if (intersection[i].distance < 0.0f)
+                lightsDst[i][1].write(float4(shadowRay[i].pathScatter, 1.0), tid);
+        }
     }
 }
 
