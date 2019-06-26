@@ -89,10 +89,10 @@
     
     //
     //
-    [encoder setTexture:_directLighting[0].lightingWithoutBlock atIndex:0];
-    [encoder setTexture:_directLighting[1].lightingWithoutBlock atIndex:1];
-    [encoder setTexture:_directLighting[0].lightingWithBlock atIndex:2];
-    [encoder setTexture:_directLighting[1].lightingWithBlock atIndex:3];
+    [encoder setTexture:_directLighting[0].lighting atIndex:0];
+    [encoder setTexture:_directLighting[1].lighting atIndex:1];
+    [encoder setTexture:_directLighting[0].blocked atIndex:2];
+    [encoder setTexture:_directLighting[1].blocked atIndex:3];
     
     [encoder setTexture:_lightingWithoutBlock.targetTexture atIndex:4];
     [encoder setTexture:_lightingWithBlock.targetTexture atIndex:5];

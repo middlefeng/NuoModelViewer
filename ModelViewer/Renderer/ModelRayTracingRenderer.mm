@@ -373,8 +373,8 @@ static const uint32_t kRayBounce = 4;
         NSArray* textures = _shadowPerLight[i].targetTextures;
         
         lighting[i] = [ModelDirectLighting new];
-        lighting[i].lightingWithoutBlock = textures[0];
-        lighting[i].lightingWithBlock = textures[1];
+        lighting[i].lighting = textures[0];
+        lighting[i].blocked = textures[1];
     }
     
     return [[NSArray alloc] initWithObjects:lighting count:2];

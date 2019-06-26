@@ -114,7 +114,7 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
                                    texture2d<float> source [[texture(0)]],
                                    texture2d<float> illumination [[texture(1)]],
                                    texture2d<float> directLighting [[texture(2)]],
-                                   texture2d<float> directLightingWithShadow [[texture(3)]],
+                                   texture2d<float> directBlock [[texture(3)]],
                                    texture2d<float> shadowOverlayMap [[texture(4)]],
                                    texture2d<float> translucentCoverMap [[texture(5)]],
                                    sampler samplr [[sampler(0)]])
@@ -164,9 +164,9 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
      */
 
     const float3 direct = directLighting.sample(samplr, vert.texCoord).rgb;
-    const float3 directWithShadow = directLightingWithShadow.sample(samplr, vert.texCoord).rgb;
-    const float ambientStrength = color_to_grayscale(illuminateEffective);
-    const float shadowFactor = color_to_grayscale(1.0 - safe_divide(directWithShadow + ambientStrength, direct + params.ambientDensity));
+    const float3 directBlocked = directBlock.sample(samplr, vert.texCoord).rgb;
+    const float shadowFactor = color_to_grayscale(safe_divide(directBlocked - illuminateEffective + params.ambientDensity,
+                                                              direct + params.ambientDensity));
     
     // shadowOverlayFactor being 1.0 means it is an overlay-only object and shadowWithAmbient is used, being
     // 0.0 means it is a normal object and sourceColor.a is used (the forward-rendering result using the ray-tracing-based

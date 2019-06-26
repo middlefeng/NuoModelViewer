@@ -155,7 +155,7 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
             
             lightsDst[i][0].write(float4(shadowRay[i].pathScatter, 1.0), tid);
             
-            if (intersection[i].distance < 0.0f)
+            if (intersection[i].distance > 0.0f)
                 lightsDst[i][1].write(float4(shadowRay[i].pathScatter, 1.0), tid);
         }
     }
@@ -176,8 +176,8 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
     for (uint lightType = 0; lightType < 2; ++lightType)
     {
         float3 illuminate = lights[lightType][0].read(tid).rgb;
-        float3 illuminateWithBlock = lights[lightType][1].read(tid).rgb;
-        float3 illuminatePercent = illuminateWithBlock;
+        float3 block = lights[lightType][1].read(tid).rgb;
+        float3 shadowPercent = block;
         
         // (comment to above)
         // illuminateWithBlock won't be greater than illuminate. if the latter is too small,
@@ -186,10 +186,10 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
         for (uint i = 0; i < 3; ++i)
         {
             if (illuminate[i] > 0.00001)   // avoid divided by zero
-                illuminatePercent[i] = saturate(illuminateWithBlock[i] / illuminate[i]);
+                shadowPercent[i] = saturate(block[i] / illuminate[i]);
         }
         
-        dstTex[lightType].write(float4((1 - illuminatePercent), 1.0), tid);
+        dstTex[lightType].write(float4((shadowPercent), 1.0), tid);
     }
 }
 

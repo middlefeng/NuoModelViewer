@@ -16,8 +16,8 @@
 
 @interface ModelDirectLighting : NSObject
 
-@property (nonatomic, weak) id<MTLTexture> lightingWithoutBlock;
-@property (nonatomic, weak) id<MTLTexture> lightingWithBlock;
+@property (nonatomic, weak) id<MTLTexture> lighting;
+@property (nonatomic, weak) id<MTLTexture> blocked;
 
 @end
 
