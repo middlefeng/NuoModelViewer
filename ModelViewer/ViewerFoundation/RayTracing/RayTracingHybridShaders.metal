@@ -125,23 +125,34 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
                               constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                               device uint* index [[buffer(1)]],
                               device NuoRayTracingMaterial* materials [[buffer(2)]],
-                              device RayBuffer* shadowRaysForOpaque [[buffer(3)]],
-                              device RayBuffer* shadowRaysForTrans  [[buffer(4)]],
-                              device Intersection *intersectionsForOpaque [[buffer(5)]],
-                              device Intersection *intersectionsForTrans  [[buffer(6)]],
-                              texture_array<2, access::write>::t lightForOpaque [[texture(0)]],
-                              texture_array<2, access::write>::t lightForTrans  [[texture(2)]])
+                              device RayBuffer* shadowRaysForOpaque  [[buffer(3)]],
+                              device RayBuffer* shadowRaysForTrans   [[buffer(4)]],
+                              device RayBuffer* shadowRaysForVirtual [[buffer(5)]],
+                              device Intersection *intersectionsForOpaque  [[buffer(6)]],
+                              device Intersection *intersectionsForTrans   [[buffer(7)]],
+                              device Intersection *intersectionsForVirtual [[buffer(8)]],
+                              texture_array<2, access::write>::t lightForOpaque  [[texture(0)]],
+                              texture_array<2, access::write>::t lightForTrans   [[texture(2)]],
+                              texture_array<2, access::write>::t lightForVirtual [[texture(4)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     
-    Intersection intersection[] = { intersectionsForOpaque[rayIdx], intersectionsForTrans[rayIdx] };
-    RayBuffer shadowRay[] = { shadowRaysForOpaque[rayIdx], shadowRaysForTrans[rayIdx] };
-    texture_array<2, access::write>::t lightsDst[] = { lightForOpaque, lightForTrans };
+    Intersection intersection[] = { intersectionsForOpaque[rayIdx],
+                                    intersectionsForTrans[rayIdx],
+                                    intersectionsForVirtual[rayIdx] };
     
-    for (uint i = 0; i < 2; ++i)
+    RayBuffer shadowRay[] = { shadowRaysForOpaque[rayIdx],
+                              shadowRaysForTrans[rayIdx],
+                              shadowRaysForVirtual[rayIdx] };
+    
+    texture_array<2, access::write>::t lightsDst[] = { lightForOpaque,
+                                                       lightForTrans,
+                                                       lightForVirtual };
+    
+    for (uint i = 0; i < 3; ++i)
     {
         if (length(shadowRay[i].pathScatter) > 0)
         {
