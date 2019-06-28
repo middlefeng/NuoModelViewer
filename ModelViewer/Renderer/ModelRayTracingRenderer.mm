@@ -63,7 +63,7 @@ static const uint32_t kRayBounce = 4;
     
     self = [super initWithCommandQueue:commandQueue
                        withPixelFormat:format
-                       withTargetCount:4 /* 2 for opaque, 2 for translucent */];
+                       withTargetCount:6 /* 2 for opaque, 2 for translucent, 2 for virtual */];
     
     if (self)
     {
@@ -115,18 +115,20 @@ static const uint32_t kRayBounce = 4;
     
     NuoRayBuffer* shadowRayBuffers[kNuoRayIndex_Size];
     id<MTLBuffer> intersectBuffers[kNuoRayIndex_Size];
+    id<MTLBuffer> shadowRayMTL[kNuoRayIndex_Size];
     
     for (uint i = 0; i < kNuoRayIndex_Size; ++i)
     {
         shadowRayBuffers[i] = [[NuoRayBuffer alloc] initWithDevice:self.commandQueue.device];
         shadowRayBuffers[i].dimension = _drawableSize;
+        shadowRayMTL[i] = shadowRayBuffers[i].buffer;
         
         intersectBuffers[i] = [self.commandQueue.device newBufferWithLength:intersectionSize
                                                                     options:MTLResourceStorageModePrivate];
     }
     _shadowRays = [[NSArray alloc] initWithObjects:shadowRayBuffers count:kNuoRayIndex_Size];
     _shadowIntersectionBuffers = [[NSArray alloc] initWithObjects:intersectBuffers count:kNuoRayIndex_Size];
-    _shadowRayBuffers = @[_shadowRays[0].buffer, _shadowRays[1].buffer];
+    _shadowRayBuffers = [[NSArray alloc] initWithObjects:shadowRayMTL count:kNuoRayIndex_Size];
 }
 
 
