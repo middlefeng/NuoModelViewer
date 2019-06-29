@@ -163,7 +163,10 @@ static const uint32_t kRayBounce = 4;
     NSArray<id<MTLTexture>>* textures = self.targetTextures;
     
     uint i = 0;
-    for (; i < textures.count; ++i)
+    
+    // only opaque and translucent surfaces need normalization
+    //
+    for (; i < 4; ++i)
         [encoder setTexture:textures[i] atIndex:i];
 
     [encoder setTexture:_normalizedIllumination[0].targetTexture atIndex:i];
