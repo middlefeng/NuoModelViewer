@@ -223,7 +223,11 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         }
     }
     
-    if (kShadowOverlay)
+    if (kShadowOverlay && kShadowRayTracing)
+    {
+        return float4(0.0);
+    }
+    else if (kShadowOverlay)
     {
         // the primitive coverage on the pixel
         float shadowOverlayCoverage = shadowOverlayMap.sample(samplr, ndc_to_texture_coord(vert.positionNDC)).r;
@@ -646,9 +650,9 @@ float color_to_grayscale(float3 color)
 float3 safe_divide(float3 dividee, float3 divider)
 {
     // if dividee is never greater than the divider, and the latter is too small,
-    // use the former directly (rather than use zero)
+    // use 1.0 (rather than use zero)
     
-    float3 result = dividee;
+    float3 result = float3(1.0);
     
     for (uint i = 0; i < 3; ++i)
     {

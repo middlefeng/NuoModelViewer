@@ -188,17 +188,7 @@ kernel void shadow_illuminate(uint2 tid [[thread_position_in_grid]],
     {
         float3 illuminate = lights[lightType][0].read(tid).rgb;
         float3 block = lights[lightType][1].read(tid).rgb;
-        float3 shadowPercent = block;
-        
-        // (comment to above)
-        // illuminateWithBlock won't be greater than illuminate. if the latter is too small,
-        // use the former directly (rather than use zero)
-        
-        for (uint i = 0; i < 3; ++i)
-        {
-            if (illuminate[i] > 0.00001)   // avoid divided by zero
-                shadowPercent[i] = saturate(block[i] / illuminate[i]);
-        }
+        float3 shadowPercent = safe_divide(block, illuminate);
         
         dstTex[lightType].write(float4((shadowPercent), 1.0), tid);
     }
