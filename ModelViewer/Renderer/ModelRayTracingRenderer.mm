@@ -68,11 +68,9 @@ static const uint32_t kRayBounce = 4;
     if (self)
     {
         _shadowShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                             withFunction:@"shadow_contribute"
-                                                            withParameter:NO];
+                                                             withFunction:@"shadow_contribute"];
         _differentialPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                              withFunction:@"shadow_illuminate"
-                                                             withParameter:YES];
+                                                              withFunction:@"shadow_illuminate"];
         
         _shadowShadePipeline.name = @"Shadow Shade (Opaque)";
         _differentialPipeline.name = @"Illumination Normalizing";
@@ -119,7 +117,7 @@ static const uint32_t kRayBounce = 4;
     
     for (uint i = 0; i < kNuoRayIndex_Size; ++i)
     {
-        shadowRayBuffers[i] = [[NuoRayBuffer alloc] initWithDevice:self.commandQueue.device];
+        shadowRayBuffers[i] = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
         shadowRayBuffers[i].dimension = _drawableSize;
         shadowRayMTL[i] = shadowRayBuffers[i].buffer;
         
@@ -206,12 +204,11 @@ static const uint32_t kRayBounce = 4;
     if (self)
     {
         _primaryRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                               withFunction:@"primary_ray_process"
-                                                              withParameter:NO];
+                                                               withFunction:@"primary_ray_process"];
         _primaryRaysPipeline.name = @"Primary Ray Process";
         
         _rayShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                          withFunction:@"incident_ray_process" withParameter:NO];
+                                                          withFunction:@"incident_ray_process"];
         _rayShadePipeline.name = @"Incident Ray Shading";
         
         _rng = std::make_shared<NuoRayTracingRandom>(kRandomBufferSize, kRayBounce, 1);
@@ -239,7 +236,7 @@ static const uint32_t kRayBounce = 4;
     for (ModelRayTracingShadowPerLight* renderer : _shadowPerLight)
         [renderer setDrawableSize:drawableSize];
     
-    _incidentRaysBuffer = [[NuoRayBuffer alloc] initWithDevice:self.commandQueue.device];
+    _incidentRaysBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
     _incidentRaysBuffer.dimension = drawableSize;
 }
 
@@ -325,7 +322,7 @@ static const uint32_t kRayBounce = 4;
                 withIntersection:@[self.intersectionBuffer]];
     }
     
-    [self updatePrimaryRayMask:kNuoRayMask_Translucent withCommandBuffer:commandBuffer];
+    [self updatePrimaryRayMask:kNuoRayIndex_OnTranslucent withCommandBuffer:commandBuffer];
     
     if ([self primaryRayIntersect:commandBuffer])
     {

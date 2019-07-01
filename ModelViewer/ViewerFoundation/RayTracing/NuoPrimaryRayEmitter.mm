@@ -65,8 +65,7 @@
 - (void)setupPipeline
 {
     // Generates rays according to view/projection matrices
-    _pipeline = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"primary_ray_emit"
-                                             withParameter:NO];
+    _pipeline = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"primary_ray_emit"];
     _pipeline.name = @"Primary Ray Emit";
 }
 

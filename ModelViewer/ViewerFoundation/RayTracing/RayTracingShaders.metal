@@ -72,7 +72,8 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
 
 kernel void ray_set_mask(uint2 tid [[thread_position_in_grid]],
                          constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                         device RayBuffer* rays [[buffer(1)]])
+                         device uint* rayMask [[buffer(1)]],
+                         device RayBuffer* rays [[buffer(2)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -80,17 +81,10 @@ kernel void ray_set_mask(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device RayBuffer& ray = rays[rayIdx];
     
-    if (kShadowOnTranslucent)
-    {
-        // rays are used for calculate the ambient, so both translucent and opaque are detected upon.
-        // this implies the ambient of objects behind translucent objects is ignored
-        //
-        ray.mask = kNuoRayMask_Translucent | kNuoRayMask_Opaue;
-    }
-    else
-    {
-        ray.mask = kNuoRayMask_Opaue;
-    }
+    // rays are used for calculate the ambient, so both translucent and opaque are detected upon.
+    // this implies the ambient of objects behind translucent objects is ignored
+    //
+    ray.mask = *rayMask;
 }
 
 

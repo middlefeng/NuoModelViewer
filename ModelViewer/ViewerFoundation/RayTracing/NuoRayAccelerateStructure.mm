@@ -54,7 +54,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
         _accelerateStructure.usage = MPSAccelerationStructureUsageRefit;
         
         _primaryRayEmitter = [[NuoPrimaryRayEmitter alloc] initWithCommandQueue:commandQueue];
-        _primaryRayBuffer = [[NuoRayBuffer alloc] initWithDevice:commandQueue.device];
+        _primaryRayBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:commandQueue];
         
         _commandQueue = commandQueue;
     }

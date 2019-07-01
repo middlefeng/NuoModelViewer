@@ -23,8 +23,7 @@
 @property (nonatomic, strong) NSString* name;
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device withFunction:(NSString*)function
-                 withParameter:(BOOL)param;
+- (instancetype)initWithDevice:(id<MTLDevice>)device withFunction:(NSString*)function;
 
 
 - (NuoComputeEncoder*)encoderWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;

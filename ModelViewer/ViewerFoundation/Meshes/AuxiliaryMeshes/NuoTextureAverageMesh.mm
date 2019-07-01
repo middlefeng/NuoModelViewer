@@ -228,10 +228,8 @@
     _accumulatedMesh.sampleCount = 1;
     [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_None];
     
-    _pipelineState = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:shaderName
-                                                  withParameter:NO];
-    _pipelineStateCopy = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"compute_texture_copy"
-                                                      withParameter:NO];
+    _pipelineState = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:shaderName];
+    _pipelineStateCopy = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"compute_texture_copy"];
     
     _pipelineState.name = @"Average Accumulation";
     _pipelineStateCopy.name = @"Texture Copy";

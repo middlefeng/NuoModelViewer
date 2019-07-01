@@ -244,7 +244,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         // by the primitive coverage (in order to get its pre-anti-aliasing value, at least approximately)
         //
         float shadowOverlayStrength = color_to_grayscale(shadowOverlay);
-        return float4(0.0, 0.0, 0.0, shadowOverlayStrength / surfaceBrightness / shadowOverlayCoverage);
+        return float4(0.0, 0.0, 0.0, shadowOverlayStrength / surfaceBrightness);
     }
     else
     {

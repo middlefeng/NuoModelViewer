@@ -42,7 +42,7 @@
         [_mesh makePipelineAndSampler:pixelFormat withBlendMode:kBlend_Alpha];
         
         _lightingPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                          withFunction:@"lighting_accumulate" withParameter:NO];
+                                                          withFunction:@"lighting_accumulate"];
         
         NuoRenderPassTarget* target[2];
         for (uint i = 0; i < 2; ++i)
