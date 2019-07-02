@@ -138,6 +138,10 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             shadowVec = align_hemisphere_normal(shadowVec, lightVec.xyz);
             
             shadowRayCurrent->maxDistance = maxDistance;
+            
+            // either opaque blocker is checked, or no blocker is considered at all (for getting the
+            // denominator light amount)
+            //
             shadowRayCurrent->mask = kNuoRayMask_Opaue;
             
             NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);

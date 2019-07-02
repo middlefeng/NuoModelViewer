@@ -14,11 +14,20 @@
 
 @interface NuoIlluminationMesh : NuoTextureMesh
 
+//  all values below are relative to "directLighting" therefore physically based
 
-@property (nonatomic, weak) id<MTLTexture> illuminationMap;
+/**
+ *  local light source and ambient
+ */
+@property (nonatomic, weak) id<MTLTexture> illumination;
+@property (nonatomic, weak) id<MTLTexture> illuminationOnVirtual;
+
+/**
+ *  direct lighting by the major sources
+ */
 @property (nonatomic, weak) id<MTLTexture> directLighting;
 @property (nonatomic, weak) id<MTLTexture> directLightingWithShadow;
-@property (nonatomic, weak) id<MTLTexture> shadowOverlayMap;
+
 @property (nonatomic, weak) id<MTLTexture> translucentCoverMap;
 
 - (void)setParameters:(const NuoGlobalIlluminationUniforms&)params;

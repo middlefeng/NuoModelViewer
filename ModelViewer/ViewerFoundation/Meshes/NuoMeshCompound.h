@@ -13,7 +13,6 @@
 
 
 @property (nonatomic, strong) NSArray<NuoMesh*>* meshes;
-@property (nonatomic, weak) id<MTLTexture> shadowOverlayMap;
 
 
 @end

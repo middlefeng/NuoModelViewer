@@ -171,7 +171,6 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                       constant NuoModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
                                       texture_array<2>::t shadowMaps    [[texture(0)]],
                                       texture_array<2>::t shadowMapsExt [[texture(2)]],
-                                      texture2d<float> shadowOverlayMap [[texture(4)]],
                                       sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
@@ -229,6 +228,10 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
     }
     else if (kShadowOverlay)
     {
+        /**
+         *  the old shadowOverlayMap is abandaned (see comments in the deferred-blending shader),
+         *  though they should never have been used in the real-time result in the first place
+         *
         // the primitive coverage on the pixel
         float shadowOverlayCoverage = shadowOverlayMap.sample(samplr, ndc_to_texture_coord(vert.positionNDC)).r;
         
@@ -242,7 +245,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         // computed through ray tracing. if being returned from this fragement shader, it will be subject to the
         // MSAA by the pipeline. to avoid this mistaken anti-aliasing double-blending, the value should be divided
         // by the primitive coverage (in order to get its pre-anti-aliasing value, at least approximately)
-        //
+        // */
         float shadowOverlayStrength = color_to_grayscale(shadowOverlay);
         return float4(0.0, 0.0, 0.0, shadowOverlayStrength / surfaceBrightness);
     }

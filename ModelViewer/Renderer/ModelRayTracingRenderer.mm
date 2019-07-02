@@ -199,7 +199,8 @@ static const uint32_t kRayBounce = 4;
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
     self = [super initWithCommandQueue:commandQueue
-                       withPixelFormat:MTLPixelFormatRGBA32Float withTargetCount:1];
+                       withPixelFormat:MTLPixelFormatRGBA32Float
+                       withTargetCount:2 /* for normal and virtual surfaces */ ];
     
     if (self)
     {
@@ -322,6 +323,21 @@ static const uint32_t kRayBounce = 4;
                 withIntersection:@[self.intersectionBuffer]];
     }
     
+    [self updatePrimaryRayMask:kNuoRayIndex_OnVirtual withCommandBuffer:commandBuffer];
+    
+    if ([self primaryRayIntersect:commandBuffer])
+    {
+        // generate rays for the two light sources, from opaque objects
+        //
+        [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
+                   withParameter:@[rayTraceUniform, randomBuffer,
+                                   _shadowPerLight[0].shadowRayBuffers[kNuoRayIndex_OnVirtual],
+                                   _shadowPerLight[1].shadowRayBuffers[kNuoRayIndex_OnVirtual],
+                                   _incidentRaysBuffer.buffer]
+                  withExitantRay:nil
+                withIntersection:@[self.intersectionBuffer]];
+    }
+    
     [self updatePrimaryRayMask:kNuoRayIndex_OnTranslucent withCommandBuffer:commandBuffer];
     
     if ([self primaryRayIntersect:commandBuffer])
@@ -375,8 +391,8 @@ static const uint32_t kRayBounce = 4;
         NSArray* textures = _shadowPerLight[i].targetTextures;
         
         lighting[i] = [ModelDirectLighting new];
-        lighting[i].lighting = textures[0];
-        lighting[i].blocked = textures[1];
+        lighting[i].lighting = textures[kNuoRayIndex_OnVirtual * 2];
+        lighting[i].blocked  = textures[kNuoRayIndex_OnVirtual * 2 + 1];
     }
     
     return [[NSArray alloc] initWithObjects:lighting count:2];

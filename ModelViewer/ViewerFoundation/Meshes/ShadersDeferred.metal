@@ -107,29 +107,38 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
 
 /**
  *  illumination and ambient from the ray tracer
+ *
+ *  params: "illumination" and "direct" are on virtual surfaces only.
+ *          color/shadow/ambient for normal all have been calculated into "source", and "source"
+ *          is for normal surfaces only.
+ *
+ *    (above is the reason "shadowOverlayMap is abandanded. info of different types of surfaces are
+ *     stored separatedly and there is no need for a map to distinguish them as they were stored in
+ *     the same texute)
  */
 
 fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
                                    constant NuoGlobalIlluminationUniforms& params [[buffer(0)]],
                                    texture2d<float> source [[texture(0)]],
                                    texture2d<float> illumination [[texture(1)]],
-                                   texture2d<float> directLighting [[texture(2)]],
-                                   texture2d<float> directBlock [[texture(3)]],
-                                   texture2d<float> shadowOverlayMap [[texture(4)]],
+                                   texture2d<float> illuminationOnVirtual [[texture(2)]],
+                                   texture2d<float> directLighting [[texture(3)]],
+                                   texture2d<float> directBlock [[texture(4)]],
                                    texture2d<float> translucentCoverMap [[texture(5)]],
                                    sampler samplr [[sampler(0)]])
 {
     const float4 sourceColor = source.sample(samplr, vert.texCoord);
     const float3 illumiColor = illumination.sample(samplr, vert.texCoord).rgb;
+    const float3 illumiOnVirtual = illuminationOnVirtual.sample(samplr, vert.texCoord).rgb;
     
     // reduce the ambient reflected by a translucent surface according to its opacity.
     // the ambient of objects covered (semi-blocked) by it is ignored, for it's too hard to calculate in the screen space
     const float translucentCover = translucentCoverMap.sample(samplr, vert.texCoord).a;
     const float3 illuminateEffective = illumiColor * translucentCover;
     
-    const float shadowOverlayFactor = shadowOverlayMap.sample(samplr, vert.texCoord).r;
-    const float3 color = (sourceColor.rgb + illuminateEffective) * (1 - shadowOverlayFactor);
+    const float3 color = sourceColor.rgb + illuminateEffective;
     
+    if (0 /* to fold comments */) {
     /**
      *  the old comments and code which is based on the pre-normalized S-direct. in fact, the C-direct is available
      *  at the time of sampling shadow rays so the code switched to an approach need no more user trial-and-error
@@ -161,18 +170,32 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     const float shadowFactor = sourceColor.a;
     const float shadowWithAmbient = (params.directLightDensity / (params.directLightDensity + params.ambientDensity)) * shadowFactor +
                                     (params.ambientDensity - ambientStrength) / (params.directLightDensity + params.ambientDensity);
-     */
+     */ }
 
     const float3 direct = directLighting.sample(samplr, vert.texCoord).rgb;
     const float3 directBlocked = directBlock.sample(samplr, vert.texCoord).rgb;
-    const float shadowFactor = color_to_grayscale(safe_divide(directBlocked - illuminateEffective + params.ambientDensity,
-                                                              direct + params.ambientDensity));
+    const float ambientWithoutBlock = params.ambientDensity;
     
+    // numerator should be masked by normal object, denominator shoud not
+    //
+    // all terms in the numerator have already been masked (because they are stored in "virtual-only" results), except
+    // the ambientWithoutBlock
+    //
+    const float shadowFactor = color_to_grayscale(safe_divide(directBlocked - illumiOnVirtual + ambientWithoutBlock * (1 - sourceColor.a),
+                                                              direct + ambientWithoutBlock));
+    
+    if (0 /* to fold comments */) {
+    /**
+     *  this old comment has been obsoleted. shadowOverlayFactor is abandoned as normal/virtual surface results are
+     *  stored separatedly, and the result could be added directly to get correct blending
+     *
     // shadowOverlayFactor being 1.0 means it is an overlay-only object and shadowWithAmbient is used, being
     // 0.0 means it is a normal object and sourceColor.a is used (the forward-rendering result using the ray-tracing-based
     // direct light shadowing)
     //
-    float alpha = sourceColor.a * (1 - shadowOverlayFactor) + shadowFactor * shadowOverlayFactor;
+     */ }
+    
+    float alpha = sourceColor.a + shadowFactor;
     
     return (float4(color, alpha));
 }

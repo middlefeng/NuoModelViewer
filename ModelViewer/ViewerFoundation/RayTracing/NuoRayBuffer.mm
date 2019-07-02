@@ -54,10 +54,11 @@ const uint kRayBufferStride = 56;  //  base fields           - 32
 {
     id<MTLDevice> device = _commandQueue.device;
     
-    uint32 pipelineMask[] = { kNuoRayMask_Opaue,
-                              kNuoRayMask_Opaue | kNuoRayMask_Translucent,
-                              kNuoRayMask_Illuminating,
-                              kNuoRayMask_Virtual };
+    uint32 pipelineMask[] = { kNuoRayMask_Opaue | kNuoRayIndex_OnVirtual,
+                              kNuoRayMask_Opaue | kNuoRayIndex_OnVirtual | kNuoRayMask_Translucent,
+                              kNuoRayMask_Virtual,
+                              kNuoRayMask_Illuminating };
+    
     id<MTLBuffer> mask = [device newBufferWithBytes:&pipelineMask length:sizeof(pipelineMask)
                                              options:MTLResourceStorageModeShared];
     

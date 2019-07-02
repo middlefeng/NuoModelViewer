@@ -1122,9 +1122,6 @@
     
     BOOL rayTracingMode = (_rayTracingRecordStatus != kRecord_Stop);
     
-    if (rayTracingMode)
-        [_sceneRoot setShadowOverlayMap:[self shadowOverlayMap]];
-    
     [_sceneRoot drawMesh:renderPass];
     
     [_immediateTarget releaseRenderPassEndcoder];
@@ -1132,8 +1129,6 @@
     NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
     [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_Immediate];
     [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_ImmediateAlpha];
-    [inspectMaster updateTexture:[self shadowOverlayMap] forName:kInspectable_ShadowOverlay];
-    
     
     // deferred rendering for the illumination
     
@@ -1150,12 +1145,14 @@
     {
         if (rayTracingMode)
         {
-            [inspectMaster updateTexture:[self rayTracingIllumination] forName:kInspectable_Illuminate];
+            NSArray* textures = _rayTracingRenderer.targetTextures;
+            
+            [inspectMaster updateTexture:textures[0] forName:kInspectable_Illuminate];
             
             [_illuminationRenderer setRenderTarget:self.renderTarget];
             [_illuminationRenderer setImmediateResult:_immediateTarget.targetTexture];
-            [_illuminationRenderer setIllumination:[self rayTracingIllumination]];
-            [_illuminationRenderer setShadowOverlayMap:[self shadowOverlayMap]];
+            [_illuminationRenderer setIllumination:textures[0]];
+            [_illuminationRenderer setIlluminationOnVirtual:textures[1]];
             [_illuminationRenderer setTranslucentMap:[_deferredRenderer ambientBuffer]];
             
             [_illuminationRenderer drawWithCommandBuffer:commandBuffer];
@@ -1230,18 +1227,6 @@
 - (void)setResolveDepth:(BOOL)resolveDepth
 {
     [_immediateTarget setResolveDepth:resolveDepth];
-}
-
-
-- (id<MTLTexture>)rayTracingIllumination
-{
-    return _rayTracingRenderer.targetTextures[0];
-}
-
-
-- (id<MTLTexture>)shadowOverlayMap
-{
-    return _deferredRenderer.shadowOverlayMap;
 }
 
 
