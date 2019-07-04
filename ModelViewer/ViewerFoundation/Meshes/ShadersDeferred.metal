@@ -109,8 +109,8 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
  *  illumination and ambient from the ray tracer
  *
  *  params: "illumination" and "direct" are on virtual surfaces only.
- *          color/shadow/ambient for normal all have been calculated into "source", and "source"
- *          is for normal surfaces only.
+ *          "source" is for normal surfaces only.
+ *          info about color/shadow/ambient for normal surfaces have been calculated into "source"
  *
  *    (above is the reason "shadowOverlayMap is abandanded. info of different types of surfaces are
  *     stored separatedly and there is no need for a map to distinguish them as they were stored in
@@ -181,7 +181,8 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     // all terms in the numerator have already been masked (because they are stored in "virtual-only" results), except
     // the ambientWithoutBlock
     //
-    const float shadowFactor = color_to_grayscale(safe_divide(directBlocked - illumiOnVirtual + ambientWithoutBlock * (1 - sourceColor.a),
+    const float objectMask = 1.0 - sourceColor.a;
+    const float shadowFactor = color_to_grayscale(safe_divide(directBlocked - illumiOnVirtual + ambientWithoutBlock * objectMask,
                                                               direct + ambientWithoutBlock));
     
     if (0 /* to fold comments */) {
@@ -195,7 +196,5 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     //
      */ }
     
-    float alpha = sourceColor.a + shadowFactor;
-    
-    return (float4(color, alpha));
+    return (float4(color, sourceColor.a + shadowFactor));
 }
