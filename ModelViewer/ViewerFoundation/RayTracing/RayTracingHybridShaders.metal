@@ -312,6 +312,13 @@ void self_illumination(uint2 tid,
             // if (ray.bounce > 0)
             //     color = 2.0f * M_PI_F * color;
             
+            // clap the value or the anti-alias on object discontinuity will fail.
+            // (the problem exists on bounced path as well, but monte carlo does not have a way
+            // to handle that case, becuase it cannot predict the converged value)
+            //
+            if (ray.bounce == 0)
+                color = saturate(color);
+            
             overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid,
                          overlayResult, overlayForVirtual);
             
