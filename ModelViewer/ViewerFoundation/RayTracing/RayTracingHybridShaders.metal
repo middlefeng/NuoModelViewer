@@ -137,12 +137,9 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
                               constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                               device uint* index [[buffer(1)]],
                               device NuoRayTracingMaterial* materials [[buffer(2)]],
-                              device RayBuffer* shadowRaysForOpaque  [[buffer(3)]],
-                              device RayBuffer* shadowRaysForTrans   [[buffer(4)]],
-                              device RayBuffer* shadowRaysForVirtual [[buffer(5)]],
-                              device Intersection *intersectionsForOpaque  [[buffer(6)]],
-                              device Intersection *intersectionsForTrans   [[buffer(7)]],
-                              device Intersection *intersectionsForVirtual [[buffer(8)]],
+                              device RayBuffer* shadowRays [[buffer(3)]],
+                              device Intersection *intersections [[buffer(4)]],
+                              device uint* shadeIndex [[buffer(5)]],
                               texture_array<2, access::write>::t lightForOpaque  [[texture(0)]],
                               texture_array<2, access::write>::t lightForTrans   [[texture(2)]],
                               texture_array<2, access::write>::t lightForVirtual [[texture(4)]])
@@ -152,23 +149,20 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     
-    Intersection intersection[] = { intersectionsForOpaque[rayIdx],
-                                    intersectionsForTrans[rayIdx],
-                                    intersectionsForVirtual[rayIdx] };
-    
-    RayBuffer shadowRay[] = { shadowRaysForOpaque[rayIdx],
-                              shadowRaysForTrans[rayIdx],
-                              shadowRaysForVirtual[rayIdx] };
+    device Intersection& intersection = intersections[rayIdx];
+    device RayBuffer& shadowRay = shadowRays[rayIdx];
     
     texture_array<2, access::write>::t lightsDst[] = { lightForOpaque,
                                                        lightForTrans,
                                                        lightForVirtual };
     
+    device uint& targetIndex = *shadeIndex;
+    
     // normal surfaces
     //
-    for (uint i = 0; i < 2; ++i)
+    if (targetIndex < 2)
     {
-        if (color_to_grayscale(shadowRay[i].pathScatter) > 0)
+        if (color_to_grayscale(shadowRay.pathScatter) > 0)
         {
             /**
              *  to generate a shadow map (rather than illuminating), the light transportation is integrand
@@ -177,19 +171,19 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
              *      the total diffuse (with all blockers virtually removed) and the amount that considers
              *      blockers are recorded, and therefore accumulated by a subsequent accumulator.
              */
-            if ((shadowRay[i].primaryHitMask & kNuoRayMask_Virtual) == 0)
-                lightsDst[i][kLighting_WithoutBlock].write(float4(shadowRay[i].pathScatter, 1.0), tid);
+            if ((shadowRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
+                lightsDst[targetIndex][kLighting_WithoutBlock].write(float4(shadowRay.pathScatter, 1.0), tid);
             
-            if (intersection[i].distance > 0.0f)
+            if (intersection.distance > 0.0f)
             {
-                if (shadowRay[i].primaryHitMask & kNuoRayMask_Virtual)
+                if (shadowRay.primaryHitMask & kNuoRayMask_Virtual)
                 {
-                    lightsDst[kNuoRayIndex_OnVirtual][kLighting_WithBlock].write(float4(shadowRay[i].pathScatter, 1.0), tid);
-                    lightsDst[i][kLighting_WithBlock].write(float4(float3(0.0), 1.0), tid);
+                    lightsDst[kNuoRayIndex_OnVirtual][kLighting_WithBlock].write(float4(shadowRay.pathScatter, 1.0), tid);
+                    lightsDst[targetIndex][kLighting_WithBlock].write(float4(float3(0.0), 1.0), tid);
                 }
                 else
                 {
-                    lightsDst[i][1].write(float4(shadowRay[i].pathScatter, 1.0), tid);
+                    lightsDst[targetIndex][1].write(float4(shadowRay.pathScatter, 1.0), tid);
                 }
             }
         }
@@ -197,11 +191,14 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
     
     // virtual surfaces (not considering block)
     
-    if (color_to_grayscale(shadowRay[kNuoRayIndex_OnVirtual].pathScatter) > 0.0)
-        lightsDst[kNuoRayIndex_OnVirtual][kLighting_WithoutBlock].write(float4(shadowRay[kNuoRayIndex_OnVirtual].pathScatter, 1.0), tid);
-    
-    if (shadowRay[kNuoRayIndex_OnVirtual].maxDistance < 0.0)
-        lightsDst[kNuoRayIndex_OnVirtual][kLighting_WithoutBlock].write(float4(float3(1.0), 1.0), tid);
+    if (targetIndex == kNuoRayIndex_OnVirtual)
+    {
+        if (color_to_grayscale(shadowRay.pathScatter) > 0.0)
+            lightsDst[kNuoRayIndex_OnVirtual][kLighting_WithoutBlock].write(float4(shadowRay.pathScatter, 1.0), tid);
+        
+        if (shadowRay.maxDistance < 0.0)
+            lightsDst[kNuoRayIndex_OnVirtual][kLighting_WithoutBlock].write(float4(float3(1.0), 1.0), tid);
+    }
 }
 
 

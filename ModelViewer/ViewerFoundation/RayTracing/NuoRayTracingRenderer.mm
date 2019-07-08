@@ -169,22 +169,18 @@
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
-            withExitantRay:(NSArray<id<MTLBuffer>>*)exitantRay
-          withIntersection:(NSArray<id<MTLBuffer>>*)intersection
+            withExitantRay:(id<MTLBuffer>)exitantRay
+          withIntersection:(id<MTLBuffer>)intersection
 {
     NuoComputeEncoder* computeEncoder = [pipeline encoderWithCommandBuffer:commandBuffer];
-    NSArray<id<MTLBuffer>>* effectiveRay = exitantRay ? exitantRay : @[[_rayStructure primaryRayBuffer].buffer];
-
+    id<MTLBuffer> effectiveRay = exitantRay ? exitantRay : [_rayStructure primaryRayBuffer].buffer;
+    
     uint i = 0;
     [computeEncoder setBuffer:[_rayStructure uniformBuffer:commandBuffer] offset:0 atIndex:i];
     [computeEncoder setBuffer:[_rayStructure indexBuffer] offset:0 atIndex:++i];
     [computeEncoder setBuffer:[_rayStructure materialBuffer] offset:0 atIndex:++i];
-    
-    for (id<MTLBuffer> ray in effectiveRay)
-        [computeEncoder setBuffer:ray offset:0 atIndex:++i];
-    
-    for (id<MTLBuffer> intersect in intersection)
-        [computeEncoder setBuffer:intersect offset:0 atIndex:++i];
+    [computeEncoder setBuffer:effectiveRay offset:0 atIndex:++i];
+    [computeEncoder setBuffer:intersection offset:0 atIndex:++i];
     
     if (paramterBuffers)
     {
