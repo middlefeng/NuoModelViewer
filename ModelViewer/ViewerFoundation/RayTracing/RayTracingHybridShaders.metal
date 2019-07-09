@@ -345,19 +345,22 @@ void self_illumination(uint2 tid,
                 sample.pathScatterTerm.z == 0)
             {
                 incidentRay.maxDistance = -1;
+                incidentRay.pathScatter = 0.0;
             }
-            
-            incidentRay.direction = sample.direction;
-            incidentRay.origin = intersectionPoint + normalize(material.normal) * (maxDistance / 20000.0);
-            incidentRay.maxDistance = maxDistance;
-            incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
-            incidentRay.primaryHitMask = ray.primaryHitMask;
-            incidentRay.bounce = ray.bounce + 1;
-            incidentRay.ambientIlluminated = ray.ambientIlluminated;
-            
-            // make the term of this reflection contribute to the path scatter
-            //
-            incidentRay.pathScatter = sample.pathScatterTerm * ray.pathScatter;
+            else
+            {
+                incidentRay.direction = sample.direction;
+                incidentRay.origin = intersectionPoint + normalize(material.normal) * (maxDistance / 20000.0);
+                incidentRay.maxDistance = maxDistance;
+                incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
+                incidentRay.primaryHitMask = ray.primaryHitMask;
+                incidentRay.bounce = ray.bounce + 1;
+                incidentRay.ambientIlluminated = ray.ambientIlluminated;
+                
+                // make the term of this reflection contribute to the path scatter
+                //
+                incidentRay.pathScatter = sample.pathScatterTerm * ray.pathScatter;
+            }
         }
         
         if (ray.bounce > 0 && !ray.ambientIlluminated && intersection.distance > ambientRadius)
