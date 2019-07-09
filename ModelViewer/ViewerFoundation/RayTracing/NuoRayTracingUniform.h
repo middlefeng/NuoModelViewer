@@ -15,10 +15,22 @@
 
 typedef enum
 {
+    kNuoRayIndex_OnOpaque = 0,
+    kNuoRayIndex_OnTranslucent,
+    kNuoRayIndex_OnVirtual,
+    kNuoRayIndex_Size
+}
+NuoRayIndex;
+
+
+
+typedef enum
+{
     kNuoRayMask_Opaue           = 1,
     kNuoRayMask_Translucent     = 2,
     kNuoRayMask_Illuminating    = 4,
-    kNuoRayMask_Disabled        = 8,
+    kNuoRayMask_Virtual         = 8,
+    kNuoRayMask_Disabled        = 16,
 }
 NuoRayMask;
 
@@ -35,6 +47,7 @@ NuoBoundsUniform;
 typedef struct
 {
     matrix44 direction;
+    float density;
     float coneAngleCosine;
 }
 NuoRayTracingLightSource;
@@ -88,6 +101,14 @@ NuoRayVolumeUniform;
 
 #define kTextureBindingsCap 15
 
+
+
+typedef struct
+{
+    vector2 uv;                    // two-dimension random
+    float pathTermDeterminator;    // random to determine which term in reflection is used
+}
+NuoRayTracingRandomUnit;
 
 
 

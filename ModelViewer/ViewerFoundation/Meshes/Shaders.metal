@@ -171,7 +171,6 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                       constant NuoModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
                                       texture_array<2>::t shadowMaps    [[texture(0)]],
                                       texture_array<2>::t shadowMapsExt [[texture(2)]],
-                                      texture2d<float> shadowOverlayMap [[texture(4)]],
                                       sampler samplr [[sampler(0)]])
 {
     float3 normal = normalize(vert.normal);
@@ -223,8 +222,16 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         }
     }
     
-    if (kShadowOverlay)
+    if (kShadowOverlay && kShadowRayTracing)
     {
+        return float4(0.0);
+    }
+    else if (kShadowOverlay)
+    {
+        /**
+         *  the old shadowOverlayMap is abandaned (see comments in the deferred-blending shader),
+         *  though they should never have been used in the real-time result in the first place
+         *
         // the primitive coverage on the pixel
         float shadowOverlayCoverage = shadowOverlayMap.sample(samplr, ndc_to_texture_coord(vert.positionNDC)).r;
         
@@ -238,9 +245,9 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         // computed through ray tracing. if being returned from this fragement shader, it will be subject to the
         // MSAA by the pipeline. to avoid this mistaken anti-aliasing double-blending, the value should be divided
         // by the primitive coverage (in order to get its pre-anti-aliasing value, at least approximately)
-        //
+        // */
         float shadowOverlayStrength = color_to_grayscale(shadowOverlay);
-        return float4(0.0, 0.0, 0.0, shadowOverlayStrength / surfaceBrightness / shadowOverlayCoverage);
+        return float4(0.0, 0.0, 0.0, shadowOverlayStrength / surfaceBrightness);
     }
     else
     {
@@ -618,12 +625,16 @@ float3 shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translu
 }
 
 
+
+#pragma mark -- Utility Functions
+
+
+
 float2 rand(float2 co)
 {
     return normalize(float2(fract(sin(dot(float2(co.x, co.y / 2.0), float2(12.9898, 78.233))) * 43758.5453),
                             fract(sin(dot(float2(co.y, co.x / 2.0), float2(12.9898, 78.233))) * 43758.5453)));
 }
-
 
 
 float2 ndc_to_texture_coord(float4 ndc)
@@ -633,8 +644,24 @@ float2 ndc_to_texture_coord(float4 ndc)
 }
 
 
-
 float color_to_grayscale(float3 color)
 {
     return color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
+}
+
+
+float3 safe_divide(float3 dividee, float3 divider)
+{
+    // if dividee is never greater than the divider, and the latter is too small,
+    // use 1.0 (rather than use zero)
+    
+    float3 result = float3(1.0);
+    
+    for (uint i = 0; i < 3; ++i)
+    {
+        if (divider[i] > 0.00001)   // avoid divided by zero
+            result[i] = saturate(dividee[i] / divider[i]);
+    }
+    
+    return result;
 }

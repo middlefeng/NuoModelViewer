@@ -175,16 +175,17 @@
     NuoComputeEncoder* computeEncoder = [pipeline encoderWithCommandBuffer:commandBuffer];
     id<MTLBuffer> effectiveRay = exitantRay ? exitantRay : [_rayStructure primaryRayBuffer].buffer;
     
-    [computeEncoder setBuffer:[_rayStructure uniformBuffer:commandBuffer] offset:0 atIndex:0];
-    [computeEncoder setBuffer:effectiveRay offset:0 atIndex:1];
-    [computeEncoder setBuffer:[_rayStructure indexBuffer] offset:0 atIndex:2];
-    [computeEncoder setBuffer:[_rayStructure materialBuffer] offset:0 atIndex:3];
-    [computeEncoder setBuffer:intersection offset:0 atIndex:4];
+    uint i = 0;
+    [computeEncoder setBuffer:[_rayStructure uniformBuffer:commandBuffer] offset:0 atIndex:i];
+    [computeEncoder setBuffer:[_rayStructure indexBuffer] offset:0 atIndex:++i];
+    [computeEncoder setBuffer:[_rayStructure materialBuffer] offset:0 atIndex:++i];
+    [computeEncoder setBuffer:effectiveRay offset:0 atIndex:++i];
+    [computeEncoder setBuffer:intersection offset:0 atIndex:++i];
     
     if (paramterBuffers)
     {
-        for (uint i = 0; i < paramterBuffers.count; ++i)
-            [computeEncoder setBuffer:paramterBuffers[i] offset:0 atIndex:5 + i];
+        for (id<MTLBuffer> param in paramterBuffers)
+            [computeEncoder setBuffer:param offset:0 atIndex:++i];
     }
     
     // for primary rays, pass in the mask buffer to detect of the intersected
@@ -194,19 +195,20 @@
     if (!exitantRay)
     {
         [computeEncoder setBuffer:[_rayStructure maskBuffer] offset:0
-                          atIndex:5 + (uint)paramterBuffers.count];
+                          atIndex:++i];
     }
     
-    uint i = 0;
-    for (i = 0; i < _rayTracingTargets.count; ++i)
+    uint targetIndex = 0;
+    for (NuoRenderPassTarget* target in _rayTracingTargets)
     {
-        [computeEncoder setTargetTexture:_rayTracingTargets[i].targetTexture atIndex:i];
+        [computeEncoder setTargetTexture:target.targetTexture atIndex:targetIndex];
+        targetIndex += 1;
     }
     
     for (id<MTLTexture> diffuseTexture in _rayStructure.diffuseTextures)
     {
-        [computeEncoder setTexture:diffuseTexture atIndex:i];
-        ++i;
+        [computeEncoder setTexture:diffuseTexture atIndex:targetIndex];
+        targetIndex += 1;
     }
     
     [computeEncoder setSamplerState:_sampleState atIndex:0];

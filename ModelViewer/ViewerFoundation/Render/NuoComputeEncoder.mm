@@ -30,7 +30,6 @@
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withFunction:(NSString*)function
-                 withParameter:(BOOL)param
 {
     self = [super init];
     
@@ -39,8 +38,6 @@
         id<MTLLibrary> library = [NuoShaderLibrary defaultLibraryWithDevice:device].library;
         
         MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
-        [values setConstantValue:&param type:MTLDataTypeBool atIndex:0];
-        
         MTLComputePipelineDescriptor *descriptor = [MTLComputePipelineDescriptor new];
         descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
         

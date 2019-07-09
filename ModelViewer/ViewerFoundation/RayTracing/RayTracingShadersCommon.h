@@ -31,6 +31,7 @@ struct RayBuffer
     // as the latest section (pbr-book 14.16)
     //
     // it is the product of all BRDF and geometric coupling terms of the previous sections (pbr-book 14.14)
+    // "BRDF and geometric coupling terms" -   f * cos(theta) / pdf(wo)         (14.19)
     //
     packed_float3 pathScatter;
     
@@ -150,20 +151,48 @@ inline float3 interpolate_color(device NuoRayTracingMaterial *materials,
 }
 
 
+
+#pragma mark -- Scatter Sampling
+
+
 // uses the inversion method to map two uniformly random numbers to a three dimensional
 // unit hemisphere where the probability of a given sample is proportional to the cosine
 // of the angle between the sample direction and the "up" direction (0, 1, 0)
-inline float3 sample_cosine_weighted_hemisphere(float2 u)
+//
+inline float3 sample_cosine_weighted_hemisphere(float2 u, int m)
 {
     float phi = 2.0f * M_PI_F * u.x;
     
     float cos_phi;
     float sin_phi = metal::sincos(phi, cos_phi);
     
-    float cos_theta = metal::sqrt(u.y);
+    float cos_theta = m == 1 ? metal::sqrt(u.y) : metal::pow(u.y, 1.0 / (m + 1.0));
     float sin_theta = metal::sqrt(1.0f - cos_theta * cos_theta);
     
     return float3(sin_theta * cos_phi, cos_theta, sin_theta * sin_phi);
+}
+
+
+// normalized probability distribution of a cosine-raised-by-m-weight
+//
+inline float cosine_pow_pdf(float cos_theta, int m)
+{
+    // see p345, pbr-book, [5.5]
+    // dw = sin(theta)d(theta)d(phi)
+    
+    if (m == 1)
+    {
+        // the factor 1/pi is got as k in normalizing the integral k*cos(x)dw
+        //
+        return cos_theta / M_PI_F;
+    }
+    else
+    {
+        // the factor  (m + 2) / (2 * pi) is got as k in normalizing the integral
+        // k*cos^m(x)dw
+        //
+        return (m + 2) / (2 * M_PI_F) * metal::pow(cos_theta, m);
+    }
 }
 
 
@@ -179,26 +208,58 @@ inline float3 sample_cone_uniform(float2 u, float cosThetaMax)
 }
 
 
-// Aligns a direction on the unit hemisphere such that the hemisphere's "up" direction
-// (0, 1, 0) maps to the given surface normal direction
-inline float3 align_hemisphere_normal(float3 sample, float3 normal)
+
+
+#pragma mark -- Spherical/Local Coordinate
+
+// the vectors in "world" coordinate, which are basis of a hemisphere coordinate
+//
+struct NuoHemisphereCoordinate
 {
-    // Set the "up" vector to the normal
-    float3 up = normal;
+    float3 right, forward, up;
+};
+
+
+inline NuoHemisphereCoordinate hemi_sphere_basis(float3 normal)
+{
+    NuoHemisphereCoordinate result;
+    
+    result.up = normal;
     
     // Find an arbitrary direction perpendicular to the normal. This will become the
     // "right" vector.
-    float3 right = metal::normalize(metal::cross(normal, metal::float3(0.0072f, 1.0f, 0.0034f)));
-    if (metal::length(right) < 1e-3)
-        right = metal::normalize(metal::cross(normal, metal::float3(0.0072f, 0.0034f, 1.0f)));
+    result.right = simd::normalize(simd::cross(normal, float3 { 0.0072f, 1.0f, 0.0034f }));
+    if (metal::length(result.right) < 1e-3)
+        result.right = simd::normalize(metal::cross(normal, float3 { 0.0072f, 0.0034f, 1.0f }));
     
     // Find a third vector perpendicular to the previous two. This will be the
     // "forward" vector.
-    metal::float3 forward = metal::cross(right, up);
+    result.forward = metal::cross(result.right, result.up);
+    
+    return result;
+}
+
+
+// Aligns a direction on the unit hemisphere such that the hemisphere's "up" direction
+// (0, 1, 0) maps to the given surface normal direction
+inline float3 align_hemisphere_normal(float3 sample, float3 n)
+{
+    NuoHemisphereCoordinate c = hemi_sphere_basis(n);
     
     // Map the direction on the unit hemisphere to the coordinate system aligned
     // with the normal.
-    return sample.x * right + sample.y * up + sample.z * forward;
+    return sample.x * c.right + sample.y * c.up + sample.z * c.forward;
+}
+
+
+
+inline float3 relative_to_hemisphere_normal(float3 w, float3 n)
+{
+    NuoHemisphereCoordinate c = hemi_sphere_basis(n);
+    
+    return float3 { metal::dot(w, c.right),
+                    metal::dot(w, c.up),
+                    metal::dot(w, c.forward) };
 }
 
 
@@ -214,7 +275,7 @@ void shadow_ray_emit_infinite_area(uint2 tid,
                                    device NuoRayTracingMaterial* materials,
                                    device Intersection& intersection,
                                    constant NuoRayTracingUniforms& tracingUniforms,
-                                   device float2* random,
+                                   device NuoRayTracingRandomUnit* random,
                                    device RayBuffer* shadowRays[2],
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr);

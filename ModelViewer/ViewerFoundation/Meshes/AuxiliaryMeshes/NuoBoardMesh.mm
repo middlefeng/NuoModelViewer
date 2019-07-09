@@ -115,7 +115,6 @@
     [renderPass pushParameterState:@"Board mesh"];
     
     [renderPass setCullMode:MTLCullModeBack];
-    [renderPass setFragmentTexture:_shadowOverlayMap atIndex:4];
     [super drawMesh:renderPass];
     
     [renderPass popParameterState];
@@ -125,6 +124,20 @@
 - (const NuoVectorFloat3&)dimensions
 {
     return _dimensions;
+}
+
+
+- (std::vector<uint32_t>)maskBuffer
+{
+    std::vector<uint32_t> oneBuffer = [super maskBuffer];
+    
+    if (self.shadowOverlayOnly)
+    {
+        for (uint32& item : oneBuffer)
+            item |= kNuoRayMask_Virtual;
+    }
+    
+    return oneBuffer;
 }
 
 

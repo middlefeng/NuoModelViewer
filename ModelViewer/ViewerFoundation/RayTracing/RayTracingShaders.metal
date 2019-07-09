@@ -39,7 +39,7 @@ static RayBuffer primary_ray(matrix44 viewTrans, float3 endPoint)
 kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
                              constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                              device RayBuffer* rays [[buffer(1)]],
-                             device float2* random [[buffer(2)]])
+                             device NuoRayTracingRandomUnit* random [[buffer(2)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -47,7 +47,7 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device RayBuffer& ray = rays[rayIdx];
     
-    const float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
+    device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16)].uv;
     const float2 pixelCoord = (float2)tid + r;;
     
     const float u = (pixelCoord.x / (float)uniforms.wViewPort) * uniforms.uRange - uniforms.uRange / 2.0;
@@ -72,7 +72,8 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
 
 kernel void ray_set_mask(uint2 tid [[thread_position_in_grid]],
                          constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                         device RayBuffer* rays [[buffer(1)]])
+                         device uint* rayMask [[buffer(1)]],
+                         device RayBuffer* rays [[buffer(2)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -80,17 +81,10 @@ kernel void ray_set_mask(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device RayBuffer& ray = rays[rayIdx];
     
-    if (kShadowOnTranslucent)
-    {
-        // rays are used for calculate the ambient, so both translucent and opaque are detected upon.
-        // this implies the ambient of objects behind translucent objects is ignored
-        //
-        ray.mask = kNuoRayMask_Translucent | kNuoRayMask_Opaue;
-    }
-    else
-    {
-        ray.mask = kNuoRayMask_Opaue;
-    }
+    // rays are used for calculate the ambient, so both translucent and opaque are detected upon.
+    // this implies the ambient of objects behind translucent objects is ignored
+    //
+    ray.mask = *rayMask;
 }
 
 
@@ -115,7 +109,7 @@ void shadow_ray_emit_infinite_area(uint2 tid,
                                    device NuoRayTracingMaterial* materials,
                                    device Intersection& intersection,
                                    constant NuoRayTracingUniforms& tracingUniforms,
-                                   device float2* random,
+                                   device NuoRayTracingRandomUnit* random,
                                    device RayBuffer* shadowRays[2],
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr)
@@ -124,7 +118,7 @@ void shadow_ray_emit_infinite_area(uint2 tid,
     
     const float maxDistance = tracingUniforms.bounds.span;
     
-    float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
+    device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16)].uv;
     
     for (uint i = 0; i < 2; ++i)
     {
@@ -144,6 +138,10 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             shadowVec = align_hemisphere_normal(shadowVec, lightVec.xyz);
             
             shadowRayCurrent->maxDistance = maxDistance;
+            
+            // either opaque blocker is checked, or no blocker is considered at all (for getting the
+            // denominator light amount)
+            //
             shadowRayCurrent->mask = kNuoRayMask_Opaue;
             
             NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
@@ -176,7 +174,8 @@ void shadow_ray_emit_infinite_area(uint2 tid,
             //
             // specular and diffuse is normalized and scale as half-half
             //
-            shadowRayCurrent->pathScatter = (0.5 * diffuseTerm + 0.5 * specularTerm) * dot(normal, shadowVec);
+            shadowRayCurrent->pathScatter = (diffuseTerm + specularTerm) * dot(normal, shadowVec);
+            shadowRayCurrent->pathScatter *= tracingUniforms.lightSources[i].density;
         }
         else
         {

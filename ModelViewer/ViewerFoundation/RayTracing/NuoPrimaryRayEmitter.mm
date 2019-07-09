@@ -13,8 +13,7 @@
 #import "NuoBufferSwapChain.h"
 #import "NuoRayBuffer.h"
 
-#include "NuoRandomBuffer.h"
-#include "NuoRayTracingUniform.h"
+#include "NuoRayTracingRandom.h"
 
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
@@ -32,7 +31,7 @@
     NuoBufferSwapChain* _randomBuffers;
     
     NuoComputePipeline* _pipeline;
-    PRandomGenerator _rng;
+    PNuoRayTracingRandom _rng;
 }
 
 
@@ -44,7 +43,7 @@
     {
         _device = commandQueue.device;
         
-        _rng = std::make_shared<RandomGenerator>(256, 1, 1);
+        _rng = std::make_shared<NuoRayTracingRandom>(256, 1, 1);
         
         _uniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:_device
                                                       WithBufferSize:sizeof(NuoRayVolumeUniform)
@@ -66,8 +65,7 @@
 - (void)setupPipeline
 {
     // Generates rays according to view/projection matrices
-    _pipeline = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"primary_ray_emit"
-                                             withParameter:NO];
+    _pipeline = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"primary_ray_emit"];
     _pipeline.name = @"Primary Ray Emit";
 }
 

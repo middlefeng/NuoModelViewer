@@ -22,7 +22,7 @@ const uint kRayBufferStride = 56;  //  base fields           - 32
 
 @interface NuoRayBuffer()
 
-@property (nonatomic, weak) id<MTLDevice> device;
+@property (nonatomic, weak) id<MTLCommandQueue> commandQueue;
 
 @end
 
@@ -30,20 +30,19 @@ const uint kRayBufferStride = 56;  //  base fields           - 32
 
 @implementation NuoRayBuffer
 {
-    NuoComputePipeline* _pipelineMaskOpaque;
-    NuoComputePipeline* _pipelineMaskTranslucent;
-    NuoComputePipeline* _pipelineMaskIllum;
+    NuoComputePipeline* _pipeline;
+    id<MTLBuffer> _pipelineMask;
 }
 
 
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 {
     self = [super init];
     
     if (self)
     {
-        _device = device;
+        _commandQueue = commandQueue;
         [self setupPipeline];
     }
     
@@ -53,15 +52,27 @@ const uint kRayBufferStride = 56;  //  base fields           - 32
 
 - (void)setupPipeline
 {
-    _pipelineMaskOpaque = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"ray_set_mask" withParameter:NO];
-    _pipelineMaskTranslucent = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"ray_set_mask" withParameter:YES];
+    id<MTLDevice> device = _commandQueue.device;
     
-    _pipelineMaskIllum = [[NuoComputePipeline alloc] initWithDevice:_device
-                                                       withFunction:@"ray_set_mask_illuminating"
-                                                      withParameter:NO];
+    uint32 pipelineMask[] = { kNuoRayMask_Opaue | kNuoRayIndex_OnVirtual,
+                              kNuoRayMask_Opaue | kNuoRayIndex_OnVirtual | kNuoRayMask_Translucent,
+                              kNuoRayMask_Virtual,
+                              kNuoRayMask_Illuminating };
     
-    _pipelineMaskOpaque.name = @"Ray Mask (Opaque)";
-    _pipelineMaskTranslucent.name = @"Ray Mask (Translucent)";
+    id<MTLBuffer> mask = [device newBufferWithBytes:&pipelineMask length:sizeof(pipelineMask)
+                                             options:MTLResourceStorageModeShared];
+    
+    _pipelineMask = [device newBufferWithLength:sizeof(pipelineMask)
+                                        options:MTLResourceStorageModePrivate];
+    
+    id<MTLCommandBuffer> commandBuffer = [self.commandQueue commandBuffer];
+    id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
+    [encoder copyFromBuffer:mask sourceOffset:0 toBuffer:_pipelineMask destinationOffset:0 size:sizeof(pipelineMask)];
+    [encoder endEncoding];
+    [commandBuffer commit];
+    
+    _pipeline = [[NuoComputePipeline alloc] initWithDevice:device withFunction:@"ray_set_mask"];
+    _pipeline.name = @"Ray Mask";
 }
 
 
@@ -80,27 +91,21 @@ const uint kRayBufferStride = 56;  //  base fields           - 32
     
     const uint rayCount = [self rayCount];
     const uint rayBufferSize = kRayBufferStride * rayCount;
-    _buffer = [_device newBufferWithLength:rayBufferSize options:MTLResourceStorageModePrivate];
+    
+    _buffer = [_commandQueue.device newBufferWithLength:rayBufferSize options:MTLResourceStorageModePrivate];
 }
 
 
 
-- (void)updateMask:(uint32_t)rayMask withUniform:(id<MTLBuffer>)uniforms
+- (void)updateMask:(uint32_t)rayMaskSet withUniform:(id<MTLBuffer>)uniforms
                                withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    NuoComputePipeline* pipeline;
-    if (rayMask & kNuoRayMask_Illuminating)
-        pipeline = _pipelineMaskIllum;
-    else if (rayMask & kNuoRayMask_Translucent)
-        pipeline = _pipelineMaskTranslucent;
-    else
-        pipeline = _pipelineMaskOpaque;
-    
-    NuoComputeEncoder* encoder = [pipeline encoderWithCommandBuffer:commandBuffer];
+    NuoComputeEncoder* encoder = [_pipeline encoderWithCommandBuffer:commandBuffer];
     
     [encoder setDataSize:_dimension];
     [encoder setBuffer:uniforms offset:0 atIndex:0];
-    [encoder setBuffer:_buffer offset:0 atIndex:1];
+    [encoder setBuffer:_pipelineMask offset:rayMaskSet * sizeof(uint32) atIndex:1];
+    [encoder setBuffer:_buffer offset:0 atIndex:2];
     [encoder dispatch];
 }
 

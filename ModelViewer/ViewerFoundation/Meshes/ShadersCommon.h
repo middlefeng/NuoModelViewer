@@ -131,11 +131,11 @@ constant bool kDepthPrerenderred = kMeshMode == kMeshMode_Selection;
 float color_to_grayscale(float3 color);
 
 
-template <int num>
+template <int num, metal::access accessType = metal::access::sample>
 class texture_array
 {
 public:
-    typedef metal::array<metal::texture2d<float>, num> t;
+    typedef metal::array<metal::texture2d<float, accessType>, num> t;
 };
 
 
@@ -171,6 +171,7 @@ metal::float3 shadow_coverage_common(metal::float4 shadowCastModelPostion, bool 
 
 metal::float2 rand(metal::float2 co);
 metal::float2 ndc_to_texture_coord(metal::float4 ndc);
+metal::float3 safe_divide(metal::float3 dividee, metal::float3 divider);
 
 
 

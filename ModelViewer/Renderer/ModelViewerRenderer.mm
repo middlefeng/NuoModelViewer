@@ -31,7 +31,7 @@
 #import "NuoDeferredRenderer.h"
 #import "NuoRayAccelerateStructure.h"
 #import "ModelRayTracingRenderer.h"
-#import "NuoIlluminationmesh.h"
+#import "ModelRayTracingBlendRenderer.h"
 
 #import "NuoDirectoryUtils.h"
 #import "NuoModelLoaderGPU.h"
@@ -81,7 +81,7 @@
     NuoShadowMapRenderer* _shadowMapRenderer[2];
     NuoRenderPassTarget* _immediateTarget;
     NuoDeferredRenderer* _deferredRenderer;
-    NuoIlluminationMesh* _illuminationMesh;
+    ModelRayTracingBlendRenderer* _illuminationRenderer;
     
     NuoCheckboardMesh* _checkerboard;
     
@@ -116,9 +116,9 @@
         
         _deferredRenderer = [[NuoDeferredRenderer alloc] initWithCommandQueue:commandQueue withSceneParameter:self];
         
-        _illuminationMesh = [[NuoIlluminationMesh alloc] initWithCommandQueue:commandQueue];
-        [_illuminationMesh setSampleCount:1];
-        [_illuminationMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
+        _illuminationRenderer = [[ModelRayTracingBlendRenderer alloc] initWithCommandQueue:commandQueue
+                                                                           withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                           withSampleCount:1];
         
         _checkerboard = [[NuoCheckboardMesh alloc] initWithCommandQueue:commandQueue];
         
@@ -166,6 +166,7 @@
     [_deferredRenderer setDrawableSize:drawableSize];
     [_rayAccelerator setDrawableSize:drawableSize];
     [_rayTracingRenderer setDrawableSize:drawableSize];
+    [_illuminationRenderer setDrawableSize:drawableSize];
 }
 
 
@@ -852,7 +853,7 @@
     NuoGlobalIlluminationUniforms globalIllum;
     globalIllum.directLightDensity = deferredParameters.ambientOcclusionParams.scale / 3.0 * 2.0;
     globalIllum.ambientDensity = _ambientDensity;
-    [_illuminationMesh setParameters:globalIllum];
+    [_illuminationRenderer setGlobalIllumination:globalIllum];
 }
 
 
@@ -1068,6 +1069,9 @@
     if (_rayTracingRecordStatus == kRecord_Start)
     {
         [_rayTracingRenderer drawWithCommandBuffer:commandBuffer];
+        
+        [_illuminationRenderer setDirectLighting:_rayTracingRenderer.directLight];
+        [_illuminationRenderer predrawWithCommandBuffer:commandBuffer];
     }
     
     if (_rayTracingRecordStatus == kRecord_Stop)
@@ -1118,9 +1122,6 @@
     
     BOOL rayTracingMode = (_rayTracingRecordStatus != kRecord_Stop);
     
-    if (rayTracingMode)
-        [_sceneRoot setShadowOverlayMap:[self shadowOverlayMap]];
-    
     [_sceneRoot drawMesh:renderPass];
     
     [_immediateTarget releaseRenderPassEndcoder];
@@ -1128,8 +1129,6 @@
     NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
     [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_Immediate];
     [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_ImmediateAlpha];
-    [inspectMaster updateTexture:[self shadowOverlayMap] forName:kInspectable_ShadowOverlay];
-    
     
     // deferred rendering for the illumination
     
@@ -1146,13 +1145,17 @@
     {
         if (rayTracingMode)
         {
-            [inspectMaster updateTexture:[self rayTracingIllumination] forName:kInspectable_Illuminate];
+            NSArray* textures = _rayTracingRenderer.targetTextures;
             
-            [_illuminationMesh setModelTexture:_immediateTarget.targetTexture];
-            [_illuminationMesh setIlluminationMap:[self rayTracingIllumination]];
-            [_illuminationMesh setShadowOverlayMap:[self shadowOverlayMap]];
-            [_illuminationMesh setTranslucentCoverMap:[_deferredRenderer ambientBuffer]];
-            [_illuminationMesh drawMesh:deferredRenderPass];
+            [inspectMaster updateTexture:textures[0] forName:kInspectable_Illuminate];
+            
+            [_illuminationRenderer setRenderTarget:self.renderTarget];
+            [_illuminationRenderer setImmediateResult:_immediateTarget.targetTexture];
+            [_illuminationRenderer setIllumination:textures[0]];
+            [_illuminationRenderer setIlluminationOnVirtual:textures[1]];
+            [_illuminationRenderer setTranslucentMap:[_deferredRenderer ambientBuffer]];
+            
+            [_illuminationRenderer drawWithCommandBuffer:commandBuffer];
         }
         else
         {
@@ -1224,18 +1227,6 @@
 - (void)setResolveDepth:(BOOL)resolveDepth
 {
     [_immediateTarget setResolveDepth:resolveDepth];
-}
-
-
-- (id<MTLTexture>)rayTracingIllumination
-{
-    return _rayTracingRenderer.targetTextures[0];
-}
-
-
-- (id<MTLTexture>)shadowOverlayMap
-{
-    return _deferredRenderer.shadowOverlayMap;
 }
 
 
