@@ -94,9 +94,9 @@ NuoMaterial NuoModelTextured::GetMaterial(size_t primtiveIndex) const
 }
 
 
-GlobalBuffers NuoModelTextured::GetGlobalBuffers() const
+NuoGlobalBuffers NuoModelTextured::GetGlobalBuffers() const
 {
-    GlobalBuffers result;
+    NuoGlobalBuffers result;
     
     for (const NuoItemTextured& item : _buffer)
     {

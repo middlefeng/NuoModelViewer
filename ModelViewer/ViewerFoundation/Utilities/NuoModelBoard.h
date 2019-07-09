@@ -51,7 +51,7 @@ public:
     
     NuoModelBoard(float width, float height, float thickness);
     
-    virtual GlobalBuffers GetGlobalBuffers() const override;
+    virtual NuoGlobalBuffers GetGlobalBuffers() const override;
     
 };
 

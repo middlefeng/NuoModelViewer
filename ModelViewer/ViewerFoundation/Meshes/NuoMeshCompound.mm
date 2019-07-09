@@ -131,7 +131,7 @@
 
 
 
-- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
+- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(NuoGlobalBuffers*)buffers
 {
     const NuoMatrixFloat44 transformLocal = self.transformTranslate * self.transformPoise;
     const NuoMatrixFloat44 transformWorld = transform * transformLocal;

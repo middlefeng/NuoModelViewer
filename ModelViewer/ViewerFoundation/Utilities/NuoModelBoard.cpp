@@ -18,9 +18,9 @@ NuoModelBoard::NuoModelBoard(float width, float height, float thickness)
 }
 
 
-GlobalBuffers NuoModelBoard::GetGlobalBuffers() const
+NuoGlobalBuffers NuoModelBoard::GetGlobalBuffers() const
 {
-    GlobalBuffers result;
+    NuoGlobalBuffers result;
     
     for (const NuoItemSimple& item : NuoModelCommon<NuoItemSimple>::_buffer)
     {

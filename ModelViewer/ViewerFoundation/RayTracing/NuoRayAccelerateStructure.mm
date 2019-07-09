@@ -106,7 +106,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     // all coordinates are in the world system, with primary rays following the same rule as
     // they are transformed through the inverse of the view matrix
     
-    GlobalBuffers buffer;
+    NuoGlobalBuffers buffer;
     
     [root appendWorldBuffers:NuoMatrixFloat44Identity toBuffers:&buffer];
     uint32_t triangleCount = (uint32_t)buffer._indices.size() / 3;
@@ -156,7 +156,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     if (unchanged)
         return;
     
-    GlobalBuffers buffer;
+    NuoGlobalBuffers buffer;
     [root appendWorldBuffers:NuoMatrixFloat44Identity toBuffers:&buffer];
     
     [self setWorldBuffers:buffer];
@@ -166,7 +166,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 
 
 
-- (void)setWorldBuffers:(const GlobalBuffers&)buffers
+- (void)setWorldBuffers:(const NuoGlobalBuffers&)buffers
 {
     uint32_t vertexBufferSize = (uint32_t)(buffers._vertices.size() * sizeof(NuoVectorFloat3::_typeTrait::_vectorType));
     uint32_t materialBufferSize = (uint32_t)(buffers._vertices.size() * sizeof(NuoRayTracingMaterial));

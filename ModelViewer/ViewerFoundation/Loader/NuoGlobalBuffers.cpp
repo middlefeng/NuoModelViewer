@@ -10,7 +10,7 @@
 
 
 
-void GlobalBuffers::Union(const GlobalBuffers& other)
+void NuoGlobalBuffers::Union(const NuoGlobalBuffers& other)
 {
     const uint32_t prevCount = (uint32_t)_vertices.size();
     _vertices.insert(_vertices.end(), other._vertices.begin(), other._vertices.end());
@@ -23,7 +23,7 @@ void GlobalBuffers::Union(const GlobalBuffers& other)
 
 
 
-void GlobalBuffers::TransformPosition(const NuoMatrixFloat44 &trans)
+void NuoGlobalBuffers::TransformPosition(const NuoMatrixFloat44 &trans)
 {
     for (auto& vertex : _vertices)
     {
@@ -38,7 +38,7 @@ void GlobalBuffers::TransformPosition(const NuoMatrixFloat44 &trans)
 
 
 
-void GlobalBuffers::TransformVector(const NuoMatrixFloat33 &trans)
+void NuoGlobalBuffers::TransformVector(const NuoMatrixFloat33 &trans)
 {
     for (auto& material : _materials)
     {
@@ -52,7 +52,7 @@ void GlobalBuffers::TransformVector(const NuoMatrixFloat33 &trans)
 
 
 
-void GlobalBuffers::Clear()
+void NuoGlobalBuffers::Clear()
 {
     _vertices.clear();
     _materials.clear();

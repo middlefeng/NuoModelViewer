@@ -23,17 +23,17 @@
  *  shaders for global algorithms
  */
 
-typedef std::vector<NuoVectorFloat3::_typeTrait::_vectorType> VectorBufferItem;
+typedef std::vector<NuoVectorFloat3::_typeTrait::_vectorType> NuoVectorBufferItem;
 
-struct GlobalBuffers
+struct NuoGlobalBuffers
 {
-    VectorBufferItem _vertices;
+    NuoVectorBufferItem _vertices;
     std::vector<NuoRayTracingMaterial> _materials;
     
     std::vector<uint32_t> _indices;
     std::vector<void*> _textureMap;
     
-    void Union(const GlobalBuffers& other);
+    void Union(const NuoGlobalBuffers& other);
     void TransformPosition(const NuoMatrixFloat44& trans);
     void TransformVector(const NuoMatrixFloat33& trans);
     void Clear();

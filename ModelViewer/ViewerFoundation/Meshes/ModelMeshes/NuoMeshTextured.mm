@@ -183,9 +183,9 @@ static CIContext* sCIContext = nil;
 
 
 
--  (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
+-  (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(NuoGlobalBuffers*)buffers
 {
-    GlobalBuffers oneBuffer;
+    NuoGlobalBuffers oneBuffer;
     [super appendWorldBuffers:transform toBuffers:&oneBuffer];
     
     auto existingItem = std::find(buffers->_textureMap.begin(),
