@@ -14,8 +14,8 @@
 #include <map>
 #include <sys/types.h>
 
+#include "NuoGlobalBuffers.h"
 #include "NuoBounds.h"
-#include "NuoRayTracingUniform.h"
 
 
 
@@ -88,34 +88,6 @@ bool ItemTexCoordEequal(const ItemBase& i1, const ItemBase& i2)
     return  fabs(i1._texCoord.x - i2._texCoord.x) < 1e-3 &&
     fabs(i1._texCoord.y - i2._texCoord.y) < 1e-3;
 }
-
-
-
-
-/**
- *  buffers which are, or could be concatenated to, a continous buffer set used for
- *  global algorithm, e.g. ray tracing, global illuminating
- *
- *  the buffer is a per-vertex buffer. it cannot be passed to the MSP structure which
- *  requires per-primitive buffer. instead, it is for the subsequent custom computer
- *  shaders for global algorithms
- */
-
-typedef std::vector<NuoVectorFloat3::_typeTrait::_vectorType> VectorBufferItem;
-
-struct GlobalBuffers
-{
-    VectorBufferItem _vertices;
-    std::vector<NuoRayTracingMaterial> _materials;
-    
-    std::vector<uint32_t> _indices;
-    std::vector<void*> _textureMap;
-    
-    void Union(const GlobalBuffers& other);
-    void TransformPosition(const NuoMatrixFloat44& trans);
-    void TransformVector(const NuoMatrixFloat33& trans);
-    void Clear();
-};
 
 
 
