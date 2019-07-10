@@ -27,6 +27,7 @@
 
 
 - (NuoComputeEncoder*)encoderWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
+- (id<MTLArgumentEncoder>)argumentEncoder:(NSUInteger)index;
 
 
 @end
