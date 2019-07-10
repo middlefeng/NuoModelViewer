@@ -14,6 +14,7 @@
 		2C1A4DAB2285D2B100ECBB46 /* NuoShaderLibrary.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C1A4DAA2285D2B100ECBB46 /* NuoShaderLibrary.mm */; };
 		2C1B28081D95FF17009F5912 /* NuoTextureBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C1B28061D95FF17009F5912 /* NuoTextureBase.m */; };
 		2C22EEA922D4D9DC002472E6 /* NuoGlobalBuffers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C22EEA722D4D9DC002472E6 /* NuoGlobalBuffers.cpp */; };
+		2C22EEB222D6310C002472E6 /* NuoArgumentBuffer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C22EEB122D6310C002472E6 /* NuoArgumentBuffer.mm */; };
 		2C235FCD1DD6CBD700E68295 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C235FC71DD6CBD700E68295 /* Shaders.metal */; };
 		2C235FCE1DD6CBD700E68295 /* ShadersMaterialed.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C235FC91DD6CBD700E68295 /* ShadersMaterialed.metal */; };
 		2C235FCF1DD6CBD700E68295 /* ShadersTextured.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C235FCA1DD6CBD700E68295 /* ShadersTextured.metal */; };
@@ -199,6 +200,8 @@
 		2C1B28071D95FF17009F5912 /* NuoTextureBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoTextureBase.h; sourceTree = "<group>"; };
 		2C22EEA722D4D9DC002472E6 /* NuoGlobalBuffers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NuoGlobalBuffers.cpp; sourceTree = "<group>"; };
 		2C22EEA822D4D9DC002472E6 /* NuoGlobalBuffers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoGlobalBuffers.h; sourceTree = "<group>"; };
+		2C22EEB022D6310C002472E6 /* NuoArgumentBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoArgumentBuffer.h; sourceTree = "<group>"; };
+		2C22EEB122D6310C002472E6 /* NuoArgumentBuffer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoArgumentBuffer.mm; sourceTree = "<group>"; };
 		2C235FC71DD6CBD700E68295 /* Shaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		2C235FC81DD6CBD700E68295 /* ShadersCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadersCommon.h; sourceTree = "<group>"; };
 		2C235FC91DD6CBD700E68295 /* ShadersMaterialed.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ShadersMaterialed.metal; sourceTree = "<group>"; };
@@ -445,6 +448,8 @@
 				2CCD521A20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm */,
 				2CE8ED7F20F2549F00CD18AC /* NuoComputeEncoder.h */,
 				2CE8ED8020F2549F00CD18AC /* NuoComputeEncoder.mm */,
+				2C22EEB022D6310C002472E6 /* NuoArgumentBuffer.h */,
+				2C22EEB122D6310C002472E6 /* NuoArgumentBuffer.mm */,
 				2C3167A9227C99540079F5E3 /* NuoRenderPassEncoder.h */,
 				2C3167AA227C99540079F5E3 /* NuoRenderPassEncoder.mm */,
 				2C1A4D942283E10200ECBB46 /* NuoRenderParameterState.h */,
@@ -1006,6 +1011,7 @@
 				2C45386E21345F04001DC263 /* NuoIlluminationMesh.mm in Sources */,
 				2C5DDACC1D6590DB00A9DC9A /* NuoMesh.mm in Sources */,
 				2C8B80ED1E2D6654001746FE /* NuoShadowMapTarget.m in Sources */,
+				2C22EEB222D6310C002472E6 /* NuoArgumentBuffer.mm in Sources */,
 				2C5A58371ECEB7CA00121A82 /* NuoMeshCompound.mm in Sources */,
 				2C22EEA922D4D9DC002472E6 /* NuoGlobalBuffers.cpp in Sources */,
 				2C3876A620DD97D40064ECC5 /* ModelRayTracingRenderer.mm in Sources */,
