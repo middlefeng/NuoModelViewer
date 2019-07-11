@@ -9,6 +9,7 @@
 #import "NuoComputeEncoder.h"
 #import "NuoCommandBuffer.h"
 #import "NuoShaderLibrary.h"
+#import "NuoArgumentBuffer.h"
 
 #include "NuoRenderParameterState.h"
 
@@ -161,6 +162,17 @@
     _parameterState.SetState(index, kNuoParameter_CB);
     
     [_encoder setBuffer:buffer offset:offset atIndex:index];
+}
+
+
+- (void)setArgumentBuffer:(NuoArgumentBuffer*)buffer atIndex:(uint)index
+{
+    _parameterState.SetState(index, kNuoParameter_CB);
+    
+    [_encoder setBuffer:buffer.buffer offset:0 atIndex:index];
+    
+    for (NuoArgumentUsage* usage in buffer.argumentsUsage)
+        [_encoder useResource:usage.argument usage:usage.usage];
 }
 
 

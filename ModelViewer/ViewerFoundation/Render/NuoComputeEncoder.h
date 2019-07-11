@@ -13,6 +13,7 @@
 
 @class NuoComputeEncoder;
 @class NuoCommandBuffer;
+@class NuoArgumentBuffer;
 
 
 
@@ -47,6 +48,7 @@
 - (void)setTexture:(id<MTLTexture>)texture atIndex:(uint)index;
 - (void)setSamplerState:(id<MTLSamplerState>)sampler atIndex:(uint)index;
 - (void)setBuffer:(id<MTLBuffer>)buffer offset:(uint)offset atIndex:(uint)index;
+- (void)setArgumentBuffer:(NuoArgumentBuffer*)buffer atIndex:(uint)index;
 
 - (void)dispatch;
 
