@@ -1037,9 +1037,14 @@
     if (_rayTracingRecordStatus != kRecord_Stop)
     {
         if (_rayAcceleratorNeedRebuild)
+        {
             [_rayAccelerator setRoot:_sceneRoot];
+            [_rayTracingRenderer rayStructUpdated];
+        }
         else if (_rayAcceleratorOutOfSync)
+        {
             [_rayAccelerator setRoot:_sceneRoot withCommandBuffer:commandBuffer];
+        }
         
         [_rayAccelerator setView:[self viewMatrix]];
         

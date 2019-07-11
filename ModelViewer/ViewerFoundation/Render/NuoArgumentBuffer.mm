@@ -34,6 +34,8 @@
 
 - (void)encodeWith:(id<MTLArgumentEncoder>)encoder
 {
+    _buffer = [encoder.device newBufferWithLength:encoder.encodedLength options:0];
+    
     [encoder setArgumentBuffer:_buffer offset:0];
     _encoder = encoder;
 }
