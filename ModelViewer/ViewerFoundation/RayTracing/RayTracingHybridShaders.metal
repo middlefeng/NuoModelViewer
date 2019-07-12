@@ -37,7 +37,7 @@ struct PathSample
 static void self_illumination(uint2 tid,
                               device RayStructureUniform& structUniform,
                               constant NuoRayTracingUniforms& tracingUniforms,
-                              device RayBuffer& incidentRay,
+                              device RayBuffer* incidentRays,
                               device NuoRayTracingRandomUnit* random,
                               texture2d<float, access::read_write> overlayResult,
                               texture2d<float, access::read_write> overlayForVirtual,
@@ -67,7 +67,6 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & intersection = structUniform.intersections[rayIdx];
     device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
-    device RayBuffer& incidentRay = incidentRaysBuffer[rayIdx];
     
     unsigned int triangleIndex = intersection.primitiveIndex;
     cameraRay.primaryHitMask = masks[triangleIndex];
@@ -86,7 +85,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     if (cameraRay.mask & kNuoRayMask_Translucent)
     {
         self_illumination(tid, structUniform,
-                          tracingUniforms, incidentRay,
+                          tracingUniforms, incidentRaysBuffer,
                           random, overlayResult, overlayForVirtual, diffuseTex, samplr);
     }
 }
@@ -107,11 +106,9 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
     
-    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    device RayBuffer& incidentRay = structUniform.exitantRays[rayIdx];
-    
     self_illumination(tid, structUniform,
-                      tracingUniforms, incidentRay,
+                      tracingUniforms, structUniform.exitantRays /* incident rays are the
+                                                                    exitant rays of the next path */,
                       random, overlayResult, overlayForVirtual, diffuseTex, samplr);
 }
 
@@ -257,7 +254,7 @@ void overlayWrite(uint hitType, float4 value, uint2 tid,
 void self_illumination(uint2 tid,
                        device RayStructureUniform& structUniform,
                        constant NuoRayTracingUniforms& tracingUniforms,
-                       device RayBuffer& incidentRay,
+                       device RayBuffer* incidentRays,
                        device NuoRayTracingRandomUnit* random,
                        texture2d<float, access::read_write> overlayResult,
                        texture2d<float, access::read_write> overlayForVirtual,
@@ -270,6 +267,7 @@ void self_illumination(uint2 tid,
     device Intersection& intersection = structUniform.intersections[rayIdx];
     device NuoRayTracingMaterial* materials = structUniform.materials;
     device uint* index = structUniform.index;
+    device RayBuffer& incidentRay = incidentRays[rayIdx];
     RayBuffer ray = structUniform.exitantRays[rayIdx];
     
     if (intersection.distance >= 0.0f)
