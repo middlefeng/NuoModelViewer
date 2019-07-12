@@ -103,18 +103,20 @@ kernel void ray_set_mask_illuminating(uint2 tid [[thread_position_in_grid]],
 
 
 void shadow_ray_emit_infinite_area(uint2 tid,
-                                   constant NuoRayVolumeUniform& uniforms,
-                                   device RayBuffer& ray,
-                                   device uint* index,
-                                   device NuoRayTracingMaterial* materials,
-                                   device Intersection& intersection,
+                                   device RayStructureUniform& structUniform,
                                    constant NuoRayTracingUniforms& tracingUniforms,
                                    device NuoRayTracingRandomUnit* random,
                                    device RayBuffer* shadowRays[2],
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr)
 {
+    constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    
+    device Intersection& intersection = structUniform.intersections[rayIdx];
+    device NuoRayTracingMaterial* materials = structUniform.materials;
+    device uint* index = structUniform.index;
+    RayBuffer ray = structUniform.exitantRays[rayIdx];
     
     const float maxDistance = tracingUniforms.bounds.span;
     

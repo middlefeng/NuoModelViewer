@@ -35,11 +35,8 @@ struct PathSample
 
 
 static void self_illumination(uint2 tid,
-                              device uint* index,
-                              device NuoRayTracingMaterial* materials,
-                              device Intersection& intersection,
+                              device RayStructureUniform& structUniform,
                               constant NuoRayTracingUniforms& tracingUniforms,
-                              device RayBuffer& ray,
                               device RayBuffer& incidentRay,
                               device NuoRayTracingRandomUnit* random,
                               texture2d<float, access::read_write> overlayResult,
@@ -80,7 +77,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     // directional light sources in the scene definition are considered area lights with finite
     // subtending solid angles, in far distance
     //
-    shadow_ray_emit_infinite_area(tid, uniforms, cameraRay, structUniform.index, structUniform.materials, intersection,
+    shadow_ray_emit_infinite_area(tid, structUniform,
                                   tracingUniforms, random, shadowRays, diffuseTex, samplr);
     
     // the primary rays are processed according to surface types, only at the last time, scatter-sample
@@ -88,8 +85,8 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     //
     if (cameraRay.mask & kNuoRayMask_Translucent)
     {
-        self_illumination(tid, structUniform.index, structUniform.materials, intersection,
-                          tracingUniforms, cameraRay, incidentRay,
+        self_illumination(tid, structUniform,
+                          tracingUniforms, incidentRay,
                           random, overlayResult, overlayForVirtual, diffuseTex, samplr);
     }
 }
@@ -111,11 +108,10 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
         return;
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    device Intersection & intersection = structUniform.intersections[rayIdx];
     device RayBuffer& incidentRay = structUniform.exitantRays[rayIdx];
     
-    self_illumination(tid, structUniform.index, structUniform.materials, intersection,
-                      tracingUniforms, incidentRay, incidentRay,
+    self_illumination(tid, structUniform,
+                      tracingUniforms, incidentRay,
                       random, overlayResult, overlayForVirtual, diffuseTex, samplr);
 }
 
@@ -136,7 +132,7 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
                               texture_array<2, access::write>::t lightForTrans   [[texture(2)]],
                               texture_array<2, access::write>::t lightForVirtual [[texture(4)]])
 {
-     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
+    constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
     
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -259,11 +255,8 @@ void overlayWrite(uint hitType, float4 value, uint2 tid,
 
 
 void self_illumination(uint2 tid,
-                       device uint* index,
-                       device NuoRayTracingMaterial* materials,
-                       device Intersection& intersection,
+                       device RayStructureUniform& structUniform,
                        constant NuoRayTracingUniforms& tracingUniforms,
-                       device RayBuffer& ray,
                        device RayBuffer& incidentRay,
                        device NuoRayTracingRandomUnit* random,
                        texture2d<float, access::read_write> overlayResult,
@@ -272,6 +265,12 @@ void self_illumination(uint2 tid,
                        sampler samplr)
 {
     constant NuoRayTracingGlobalIlluminationParam& globalIllum = tracingUniforms.globalIllum;
+    
+    unsigned int rayIdx = tid.y * structUniform.rayUniform.wViewPort + tid.x;
+    device Intersection& intersection = structUniform.intersections[rayIdx];
+    device NuoRayTracingMaterial* materials = structUniform.materials;
+    device uint* index = structUniform.index;
+    RayBuffer ray = structUniform.exitantRays[rayIdx];
     
     if (intersection.distance >= 0.0f)
     {
