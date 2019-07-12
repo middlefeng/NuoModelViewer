@@ -63,6 +63,17 @@ struct Intersection
 
 
 
+struct RayStructureUniform
+{
+    constant NuoRayVolumeUniform& rayUniform [[id(0)]];
+    device uint* index [[id(1)]];
+    device NuoRayTracingMaterial* materials[[id(2)]];
+    device RayBuffer* exitantRays [[id(3)]];
+    device Intersection *intersections [[id(4)]];
+};
+
+
+
 
 constant bool kShadowOnTranslucent  [[ function_constant(0) ]];
 

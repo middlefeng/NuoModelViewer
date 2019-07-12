@@ -11,11 +11,56 @@
 
 #import "NuoRayBuffer.h"
 #import "NuoComputeEncoder.h"
+#import "NuoArgumentBuffer.h"
 #import "NuoTextureAverageMesh.h"
 #import "NuoRenderPassAttachment.h"
 #import "NuoCommandBuffer.h"
 
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
+
+
+
+@interface NuoArgumentBufferKey : NSObject < NSCopying >
+
+@property (assign) uint64_t pipeline;
+@property (assign) uint64_t rayUniform;
+@property (assign) uint64_t rayBuffer;
+@property (assign) uint64_t intersectionBuffer;
+
+@end
+
+
+@implementation NuoArgumentBufferKey
+
+- (id)copyWithZone:(nullable NSZone *)zone
+{
+    NuoArgumentBufferKey* newKey = [NuoArgumentBufferKey new];
+    newKey.pipeline = _pipeline;
+    newKey.rayUniform = _rayUniform;
+    newKey.rayBuffer = _rayBuffer;
+    newKey.intersectionBuffer = _intersectionBuffer;
+    
+    return newKey;
+}
+
+- (BOOL)isEqual:(id)other
+{
+    NuoArgumentBufferKey* otherKey = (NuoArgumentBufferKey*)other;
+    
+    return _pipeline == otherKey.pipeline &&
+           _rayUniform == otherKey.rayUniform &&
+           _rayBuffer == otherKey.rayBuffer &&
+           _intersectionBuffer == otherKey.intersectionBuffer;
+}
+
+
+- (NSUInteger)hash
+{
+    return _pipeline + _rayUniform + _rayBuffer + _intersectionBuffer;
+}
+
+@end
+
 
 
 
@@ -28,6 +73,7 @@
     CGSize _drawableSize;
     
     id<MTLSamplerState> _sampleState;
+    NSMutableDictionary<NuoArgumentBufferKey*, NuoArgumentBuffer*>* _rayStructUniform;
 }
 
 
@@ -175,12 +221,13 @@
     NuoComputeEncoder* computeEncoder = [pipeline encoderWithCommandBuffer:commandBuffer];
     id<MTLBuffer> effectiveRay = exitantRay ? exitantRay : [_rayStructure primaryRayBuffer].buffer;
     
+    NuoArgumentBuffer* argumentBuffer = [self raystructUniform:pipeline
+                                                  withInFlight:commandBuffer
+                                                withExitantRay:effectiveRay
+                                              withIntersection:intersection];
+    
     uint i = 0;
-    [computeEncoder setBuffer:[_rayStructure uniformBuffer:commandBuffer] offset:0 atIndex:i];
-    [computeEncoder setBuffer:[_rayStructure indexBuffer] offset:0 atIndex:++i];
-    [computeEncoder setBuffer:[_rayStructure materialBuffer] offset:0 atIndex:++i];
-    [computeEncoder setBuffer:effectiveRay offset:0 atIndex:++i];
-    [computeEncoder setBuffer:intersection offset:0 atIndex:++i];
+    [computeEncoder setArgumentBuffer:argumentBuffer atIndex:i];
     
     if (paramterBuffers)
     {
@@ -265,6 +312,48 @@
         textures[i] = _rayTracingAccumulates[i].targetTexture;
     
     return [[NSArray alloc] initWithObjects:textures count:_rayTracingAccumulates.count];
+}
+
+
+
+- (void)rayStructUpdated
+{
+    _rayStructUniform = [NSMutableDictionary new];
+}
+
+
+
+- (NuoArgumentBuffer*)raystructUniform:(NuoComputePipeline*)pipeline
+                          withInFlight:(id<NuoRenderInFlight>)inFlight
+                        withExitantRay:(id<MTLBuffer>)exitantRay
+                      withIntersection:(id<MTLBuffer>)intersection
+{
+    id<MTLBuffer> uniform = [_rayStructure uniformBuffer:inFlight];
+    
+    NuoArgumentBufferKey* key = [NuoArgumentBufferKey new];
+    key.rayUniform = (uint64_t)uniform;
+    key.pipeline = (uint64_t)pipeline;
+    key.rayBuffer = (uint64_t)exitantRay;
+    
+    NuoArgumentBuffer* buffer = [_rayStructUniform objectForKey:key];
+    
+    if (buffer)
+        return buffer;
+    
+    id<MTLArgumentEncoder> encoder = [pipeline argumentEncoder:0];
+    buffer = [NuoArgumentBuffer new];
+    
+    uint i = 0;
+    [buffer encodeWith:encoder];
+    [buffer setBuffer:uniform for:MTLResourceUsageRead atIndex:i];
+    [buffer setBuffer:[_rayStructure indexBuffer] for:MTLResourceUsageRead atIndex:++i];
+    [buffer setBuffer:[_rayStructure materialBuffer] for:MTLResourceUsageRead atIndex:++i];
+    [buffer setBuffer:exitantRay for:MTLResourceUsageRead | MTLResourceUsageWrite atIndex:++i];
+    [buffer setBuffer:intersection for:MTLResourceUsageRead atIndex:++i];
+    
+    [_rayStructUniform setObject:buffer forKey:key];
+    
+    return buffer;
 }
 
 

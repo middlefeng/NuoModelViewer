@@ -75,6 +75,9 @@
           withIntersection:(id<MTLBuffer>)intersection;
 
 
+- (void)rayStructUpdated;
+
+
 @end
 
 

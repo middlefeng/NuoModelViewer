@@ -20,6 +20,17 @@
 
 
 
+- (instancetype)init
+{
+    self = [super init];
+    
+    if (self)
+        _usages = [NSMutableArray new];
+    
+    return self;
+}
+
+
 - (id<MTLBuffer>)buffer
 {
     return _buffer;
