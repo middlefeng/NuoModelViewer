@@ -19,6 +19,7 @@
 #ifndef Metal
 
 #include "NuoMathVector.h"
+#include <sys/types.h>
 
 typedef NuoMatrixFloat44::_typeTrait::_matrixType matrix44;
 typedef NuoMatrixFloat33::_typeTrait::_matrixType matrix33;

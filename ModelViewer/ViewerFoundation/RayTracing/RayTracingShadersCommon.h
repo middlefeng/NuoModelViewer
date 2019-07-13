@@ -63,6 +63,17 @@ struct Intersection
 
 
 
+struct RayStructureUniform
+{
+    constant NuoRayVolumeUniform& rayUniform [[id(0)]];
+    device uint* index [[id(1)]];
+    device NuoRayTracingMaterial* materials[[id(2)]];
+    device RayBuffer* exitantRays [[id(3)]];
+    device Intersection *intersections [[id(4)]];
+};
+
+
+
 
 constant bool kShadowOnTranslucent  [[ function_constant(0) ]];
 
@@ -269,11 +280,7 @@ inline float3 relative_to_hemisphere_normal(float3 w, float3 n)
  */
 
 void shadow_ray_emit_infinite_area(uint2 tid,
-                                   constant NuoRayVolumeUniform& uniforms,
-                                   device RayBuffer& ray,
-                                   device uint* index,
-                                   device NuoRayTracingMaterial* materials,
-                                   device Intersection& intersection,
+                                   device RayStructureUniform& structUniform,
                                    constant NuoRayTracingUniforms& tracingUniforms,
                                    device NuoRayTracingRandomUnit* random,
                                    device RayBuffer* shadowRays[2],

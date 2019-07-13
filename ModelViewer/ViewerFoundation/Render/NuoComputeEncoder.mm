@@ -9,6 +9,7 @@
 #import "NuoComputeEncoder.h"
 #import "NuoCommandBuffer.h"
 #import "NuoShaderLibrary.h"
+#import "NuoArgumentBuffer.h"
 
 #include "NuoRenderParameterState.h"
 
@@ -26,6 +27,7 @@
 @implementation NuoComputePipeline
 {
     id<MTLComputePipelineState> _pipeline;
+    id<MTLFunction> _function;
 }
 
 
@@ -42,8 +44,10 @@
         descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
         
         NSError* error;
-        descriptor.computeFunction = [library newFunctionWithName:function constantValues:values error:&error];
+        _function = [library newFunctionWithName:function constantValues:values error:&error];
         assert(error == nil);
+        
+        descriptor.computeFunction = _function;
         _pipeline = [device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
         assert(error == nil);
     }
@@ -58,6 +62,12 @@
     [encoder setComputePipelineState:_pipeline];
     
     return encoder;
+}
+
+
+- (id<MTLArgumentEncoder>)argumentEncoder:(NSUInteger)index
+{
+    return [_function newArgumentEncoderWithBufferIndex:index];
 }
 
 
@@ -152,6 +162,17 @@
     _parameterState.SetState(index, kNuoParameter_CB);
     
     [_encoder setBuffer:buffer offset:offset atIndex:index];
+}
+
+
+- (void)setArgumentBuffer:(NuoArgumentBuffer*)buffer atIndex:(uint)index
+{
+    _parameterState.SetState(index, kNuoParameter_CB);
+    
+    [_encoder setBuffer:buffer.buffer offset:0 atIndex:index];
+    
+    for (NuoArgumentUsage* usage in buffer.argumentsUsage)
+        [_encoder useResource:usage.argument usage:usage.usage];
 }
 
 

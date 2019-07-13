@@ -14,8 +14,8 @@
 #include <map>
 #include <sys/types.h>
 
+#include "NuoGlobalBuffers.h"
 #include "NuoBounds.h"
-#include "NuoRayTracingUniform.h"
 
 
 
@@ -92,34 +92,6 @@ bool ItemTexCoordEequal(const ItemBase& i1, const ItemBase& i2)
 
 
 
-/**
- *  buffers which are, or could be concatenated to, a continous buffer set used for
- *  global algorithm, e.g. ray tracing, global illuminating
- *
- *  the buffer is a per-vertex buffer. it cannot be passed to the MSP structure which
- *  requires per-primitive buffer. instead, it is for the subsequent custom computer
- *  shaders for global algorithms
- */
-
-typedef std::vector<NuoVectorFloat3::_typeTrait::_vectorType> VectorBufferItem;
-
-struct GlobalBuffers
-{
-    VectorBufferItem _vertices;
-    std::vector<NuoRayTracingMaterial> _materials;
-    
-    std::vector<uint32_t> _indices;
-    std::vector<void*> _textureMap;
-    
-    void Union(const GlobalBuffers& other);
-    void TransformPosition(const NuoMatrixFloat44& trans);
-    void TransformVector(const NuoMatrixFloat33& trans);
-    void Clear();
-};
-
-
-
-
 class NuoModelBase : public std::enable_shared_from_this<NuoModelBase>
 {
 protected:
@@ -154,7 +126,7 @@ public:
     virtual NuoMaterial GetMaterial(size_t primtiveIndex) const = 0;
     virtual NuoBounds GetBoundingBox();
     
-    virtual GlobalBuffers GetGlobalBuffers() const = 0;
+    virtual NuoGlobalBuffers GetGlobalBuffers() const = 0;
     
     virtual void* Ptr() = 0;
     virtual size_t Length() = 0;
@@ -197,7 +169,7 @@ public:
     virtual size_t GetIndicesNumber() const override;
     virtual NuoVectorFloat4 GetPosition(size_t index) override;
     
-    virtual GlobalBuffers GetGlobalBuffers() const override;
+    virtual NuoGlobalBuffers GetGlobalBuffers() const override;
     
     virtual void* Ptr() override;
     virtual size_t Length() override;
@@ -459,9 +431,9 @@ NuoVectorFloat4 NuoModelCommon<ItemBase>::GetPosition(size_t index)
 
 
 template <class ItemBase>
-GlobalBuffers NuoModelCommon<ItemBase>::GetGlobalBuffers() const
+NuoGlobalBuffers NuoModelCommon<ItemBase>::GetGlobalBuffers() const
 {
-    GlobalBuffers result;
+    NuoGlobalBuffers result;
     
     for (const ItemBase& item : _buffer)
     {

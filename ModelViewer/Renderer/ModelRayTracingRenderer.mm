@@ -414,5 +414,14 @@ static const uint32_t kRayBounce = 4;
 }
 
 
+- (void)rayStructUpdated
+{
+    [super rayStructUpdated];
+    
+    for (uint i = 0; i < 2; ++i)
+        [_shadowPerLight[i] rayStructUpdated];
+}
+
+
 
 @end

@@ -38,7 +38,7 @@ public:
     
     virtual void AddMaterial(const NuoMaterial& material) override;
     virtual NuoMaterial GetMaterial(size_t primtiveIndex) const override;
-    virtual GlobalBuffers GetGlobalBuffers() const override;
+    virtual NuoGlobalBuffers GetGlobalBuffers() const override;
     
     virtual bool HasTransparent() override;
     virtual std::shared_ptr<NuoMaterial> GetUnifiedMaterial() override;
@@ -250,9 +250,9 @@ NuoMaterial NuoModelMaterialedBasicBase<ItemBase>::GetMaterial(size_t primtiveIn
 
 
 template <class ItemBase>
-GlobalBuffers NuoModelMaterialedBasicBase<ItemBase>::GetGlobalBuffers() const
+NuoGlobalBuffers NuoModelMaterialedBasicBase<ItemBase>::GetGlobalBuffers() const
 {
-    GlobalBuffers result;
+    NuoGlobalBuffers result;
     
     for (const ItemBase& item : NuoModelCommon<ItemBase>::_buffer)
     {
@@ -291,7 +291,7 @@ GlobalBuffers NuoModelMaterialedBasicBase<ItemBase>::GetGlobalBuffers() const
 
 
 template <>
-GlobalBuffers NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>::GetGlobalBuffers() const;
+NuoGlobalBuffers NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>::GetGlobalBuffers() const;
 
 
 #endif /* NuoModelMaterialed_hpp */

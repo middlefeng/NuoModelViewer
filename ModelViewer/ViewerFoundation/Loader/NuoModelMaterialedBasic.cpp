@@ -185,9 +185,9 @@ std::string NuoModelMaterialed::GetTexturePathBump()
 
 
 template <>
-GlobalBuffers NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>::GetGlobalBuffers() const
+NuoGlobalBuffers NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>::GetGlobalBuffers() const
 {
-    GlobalBuffers result;
+    NuoGlobalBuffers result;
     
     for (const NuoItemMaterialedBasic& item : NuoModelCommon<NuoItemMaterialedBasic>::_buffer)
     {
