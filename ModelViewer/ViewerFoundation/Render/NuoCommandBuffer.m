@@ -94,6 +94,14 @@
 }
 
 
+- (void)copyFromBuffer:(id<MTLBuffer>)src toBuffer:(id<MTLBuffer>)dst
+{
+    id<MTLBlitCommandEncoder> encoder = [_commandBuffer blitCommandEncoder];
+    [encoder copyFromBuffer:src sourceOffset:0 toBuffer:dst destinationOffset:0 size:src.length];
+    [encoder endEncoding];
+}
+
+
 - (NuoRenderPassEncoder*)renderCommandEncoderWithDescriptor:(MTLRenderPassDescriptor*)descriptor
 {
     id<MTLRenderCommandEncoder> encoder = [_commandBuffer renderCommandEncoderWithDescriptor:descriptor];

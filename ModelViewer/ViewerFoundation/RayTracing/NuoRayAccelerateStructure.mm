@@ -129,7 +129,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     _vertexBuffer = nil;
     _maskBuffer = nil;
     
-    [self setWorldBuffers:buffer];
+    [self setWorldBuffers:buffer withEncoder:encoder];
     [self setMaskBuffer:root];
     
     [encoder endEncoding];
@@ -159,14 +159,17 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     NuoGlobalBuffers buffer;
     [root appendWorldBuffers:NuoMatrixFloat44Identity toBuffers:&buffer];
     
-    [self setWorldBuffers:buffer];
+    id<MTLBlitCommandEncoder> encoder = [commandBuffer.commandBuffer blitCommandEncoder];
+    [self setWorldBuffers:buffer withEncoder:encoder];
+    [encoder endEncoding];
+    
     [self setMaskBuffer:root];
     [_accelerateStructure encodeRefitToCommandBuffer:commandBuffer.commandBuffer];
 }
 
 
 
-- (void)setWorldBuffers:(const NuoGlobalBuffers&)buffers
+- (void)setWorldBuffers:(const NuoGlobalBuffers&)buffers withEncoder:(id<MTLBlitCommandEncoder>)encoder
 {
     uint32_t vertexBufferSize = (uint32_t)(buffers._vertices.size() * sizeof(NuoVectorFloat3::_typeTrait::_vectorType));
     uint32_t materialBufferSize = (uint32_t)(buffers._vertices.size() * sizeof(NuoRayTracingMaterial));
@@ -174,26 +177,33 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     if (!_materialBuffer)
     {
         _materialBuffer = [_commandQueue.device newBufferWithLength:materialBufferSize
-                                                            options:MTLResourceStorageModeManaged];
+                                                            options:MTLResourceStorageModePrivate];
     }
     
-    memcpy(_materialBuffer.contents, &buffers._materials[0], materialBufferSize);
-    [_materialBuffer didModifyRange:NSMakeRange(0, materialBufferSize)];
-     
+    id<MTLBuffer> materialBuffer = [_commandQueue.device newBufferWithBytes:&buffers._materials[0]
+                                                                     length:materialBufferSize
+                                                                    options:MTLResourceStorageModeShared];
+    [encoder copyFromBuffer:materialBuffer sourceOffset:0
+                   toBuffer:_materialBuffer destinationOffset:0 size:materialBufferSize];
+    
     if (!_vertexBuffer)
     {
         _vertexBuffer = [_commandQueue.device newBufferWithLength:vertexBufferSize
-                                                          options:MTLResourceStorageModeManaged];
+                                                          options:MTLResourceStorageModePrivate];
     }
+    
+    id<MTLBuffer> vertexBuffer = [_commandQueue.device newBufferWithBytes:&buffers._vertices[0]
+                                                                   length:vertexBufferSize
+                                                                  options:MTLResourceStorageModeShared];
+    
+    [encoder copyFromBuffer:vertexBuffer sourceOffset:0
+                   toBuffer:_vertexBuffer destinationOffset:0 size:vertexBufferSize];
     
     _diffuseTextures = [NSMutableArray new];
     for (void* textureOne : buffers._textureMap)
     {
         [((NSMutableArray*)_diffuseTextures) addObject:(__bridge id<MTLTexture>)textureOne];
     }
-     
-    memcpy(_vertexBuffer.contents, &buffers._vertices[0], vertexBufferSize);
-    [_vertexBuffer didModifyRange:NSMakeRange(0, vertexBufferSize)];
 }
 
     

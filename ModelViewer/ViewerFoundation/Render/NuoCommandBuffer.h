@@ -28,6 +28,7 @@
 
 - (void)synchronizeResource:(id<MTLResource>)resource;
 - (void)copyFromTexture:(id<MTLTexture>)src toTexture:(id<MTLTexture>)dst;
+- (void)copyFromBuffer:(id<MTLBuffer>)src toBuffer:(id<MTLBuffer>)dst;
 
 - (void)addCompletedHandler:(MTLCommandBufferHandler)block;
 - (void)commit;
