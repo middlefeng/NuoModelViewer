@@ -348,6 +348,7 @@
     [buffer setBuffer:uniform for:MTLResourceUsageRead atIndex:i];
     [buffer setBuffer:[_rayStructure indexBuffer] for:MTLResourceUsageRead atIndex:++i];
     [buffer setBuffer:[_rayStructure indexLightSourceBuffer] for:MTLResourceUsageRead atIndex:++i];
+    [buffer setBuffer:[_rayStructure vertexBuffer] for:MTLResourceUsageRead atIndex:++i];
     [buffer setInt:(uint32_t)[_rayStructure indexLightSourceBuffer].length atIndex:++i];
     [buffer setBuffer:[_rayStructure materialBuffer] for:MTLResourceUsageRead atIndex:++i];
     [buffer setBuffer:exitantRay for:MTLResourceUsageRead | MTLResourceUsageWrite atIndex:++i];
