@@ -67,9 +67,11 @@ struct RayStructureUniform
 {
     constant NuoRayVolumeUniform& rayUniform [[id(0)]];
     device uint* index [[id(1)]];
-    device NuoRayTracingMaterial* materials[[id(2)]];
-    device RayBuffer* exitantRays [[id(3)]];
-    device Intersection *intersections [[id(4)]];
+    device uint* indexLightSource [[id(2)]];
+    uint lightSourceSize [[id(3)]];
+    device NuoRayTracingMaterial* materials[[id(4)]];
+    device RayBuffer* exitantRays [[id(5)]];
+    device Intersection *intersections [[id(6)]];
 };
 
 

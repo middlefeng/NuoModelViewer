@@ -60,3 +60,17 @@ void NuoGlobalBuffers::Clear()
     _indices.clear();
     _textureMap.clear();
 }
+
+
+
+void NuoGlobalBuffers::UpdateLightSourceIndices()
+{
+    _indicesLightSource.clear();
+    
+    for (auto itr = _indices.begin(); itr != _indices.end(); ++itr)
+    {
+        uint32_t index = *itr;
+        if (_materials[index].shinessDisolveIllum.z == 0)
+            _indicesLightSource.push_back(index);
+    }
+}

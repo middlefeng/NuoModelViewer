@@ -31,6 +31,7 @@ extern const uint kRayIntersectionStride;
 @property (nonatomic, readonly) NuoRayBuffer* primaryRayBuffer;
 
 @property (nonatomic, readonly) id<MTLBuffer> indexBuffer;
+@property (nonatomic, readonly) id<MTLBuffer> indexLightSourceBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> vertexBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> materialBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> maskBuffer;

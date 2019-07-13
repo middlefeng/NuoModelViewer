@@ -109,21 +109,32 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     NuoGlobalBuffers buffer;
     
     [root appendWorldBuffers:NuoMatrixFloat44Identity toBuffers:&buffer];
+    buffer.UpdateLightSourceIndices();
+    
     uint32_t triangleCount = (uint32_t)buffer._indices.size() / 3;
-    uint32_t indexBufferSize = (uint32_t)(buffer._indices.size() * sizeof(uint32));
+    uint32_t indexBufferSize = (uint32_t)(buffer._indices.size() * sizeof(uint32_t));
+    uint32_t indexLightSourceBufferSize = (uint32_t)
+                                (buffer._indicesLightSource.size() * sizeof(uint32_t));
     
     id<MTLBuffer> indexBuffer = [_commandQueue.device newBufferWithBytes:&buffer._indices[0]
                                                                   length:indexBufferSize
                                                                  options:MTLResourceStorageModeShared];
+    id<MTLBuffer> indexLightBuffer = [_commandQueue.device newBufferWithBytes:&buffer._indicesLightSource[0]
+                                                                       length:indexLightSourceBufferSize
+                                                                      options:MTLResourceStorageModeShared];
     
     _indexBuffer = [_commandQueue.device newBufferWithLength:indexBufferSize
                                                      options:MTLResourceStorageModePrivate];
+    _indexLightSourceBuffer = [_commandQueue.device newBufferWithLength:indexLightSourceBufferSize
+                                                                options:MTLResourceStorageModePrivate];
     
     id<MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
     id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
     
     [encoder copyFromBuffer:indexBuffer sourceOffset:0
                    toBuffer:_indexBuffer destinationOffset:0 size:indexBufferSize];
+    [encoder copyFromBuffer:indexLightBuffer sourceOffset:0
+                   toBuffer:_indexLightSourceBuffer destinationOffset:0 size:indexLightSourceBufferSize];
     
     _materialBuffer = nil;
     _vertexBuffer = nil;

@@ -31,12 +31,15 @@ struct NuoGlobalBuffers
     std::vector<NuoRayTracingMaterial> _materials;
     
     std::vector<uint32_t> _indices;
+    std::vector<uint32_t> _indicesLightSource;
     std::vector<void*> _textureMap;
     
     void Union(const NuoGlobalBuffers& other);
     void TransformPosition(const NuoMatrixFloat44& trans);
     void TransformVector(const NuoMatrixFloat33& trans);
     void Clear();
+    
+    void UpdateLightSourceIndices();
 };
 
 
