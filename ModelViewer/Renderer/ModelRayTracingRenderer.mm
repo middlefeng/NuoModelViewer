@@ -198,6 +198,7 @@ static const uint32_t kRayBounce = 4;
 @implementation ModelRayTracingRenderer
 {
     NuoComputePipeline* _primaryRaysPipeline;
+    NuoComputePipeline* _primaryAndIncidentRaysPipeline;
     NuoComputePipeline* _rayShadePipeline;
     
     NuoBufferSwapChain* _rayTraceUniform;
@@ -222,6 +223,10 @@ static const uint32_t kRayBounce = 4;
         _primaryRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
                                                                withFunction:@"primary_ray_process"];
         _primaryRaysPipeline.name = @"Primary Ray Process";
+        
+        _primaryAndIncidentRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
+                                                                        withFunction:@"primary_and_incident_ray_process"];
+        _primaryAndIncidentRaysPipeline.name = @"Primary/Incident Ray Process";
         
         _rayShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
                                                           withFunction:@"incident_ray_process"];
@@ -332,8 +337,7 @@ static const uint32_t kRayBounce = 4;
         [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowPerLight[0].shadowRays[kNuoRayIndex_OnOpaque].buffer,
-                                   _shadowPerLight[1].shadowRays[kNuoRayIndex_OnOpaque].buffer,
-                                   _incidentRaysBuffer.buffer]
+                                   _shadowPerLight[1].shadowRays[kNuoRayIndex_OnOpaque].buffer]
                   withExitantRay:nil
                 withIntersection:self.intersectionBuffer];
     }
@@ -347,8 +351,7 @@ static const uint32_t kRayBounce = 4;
         [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowPerLight[0].shadowRays[kNuoRayIndex_OnVirtual].buffer,
-                                   _shadowPerLight[1].shadowRays[kNuoRayIndex_OnVirtual].buffer,
-                                   _incidentRaysBuffer.buffer]
+                                   _shadowPerLight[1].shadowRays[kNuoRayIndex_OnVirtual].buffer]
                   withExitantRay:nil
                 withIntersection:self.intersectionBuffer];
     }
@@ -359,7 +362,7 @@ static const uint32_t kRayBounce = 4;
     {
         // generate rays for the two light sources, from translucent objects
         //
-        [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
+        [self runRayTraceCompute:_primaryAndIncidentRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowPerLight[0].shadowRays[kNuoRayIndex_OnTranslucent].buffer,
                                    _shadowPerLight[1].shadowRays[kNuoRayIndex_OnTranslucent].buffer,
