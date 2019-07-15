@@ -34,6 +34,14 @@ struct PathSample
 
 
 
+struct SurfaceInteraction
+{
+    float3 p;
+    NuoRayTracingMaterial material;
+};
+
+
+
 static void self_illumination(uint2 tid,
                               device RayStructureUniform& structUniform,
                               constant NuoRayTracingUniforms& tracingUniforms,
@@ -235,9 +243,8 @@ kernel void lighting_accumulate(uint2 tid [[thread_position_in_grid]],
 
 
 
-PathSample sample_scatter(float3 Pn, float3 wi, float3 normal,      /* interaction point */
-                          float2 sampleUV, float Cdeterminator,     /* randoms */
-                          float3 Cdiff, float3 Cspec, float Mspec   /* material spec */     );
+static PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 ray,
+                                 float2 sampleUV, float Cdeterminator  /* randoms */ );
 
 
 void overlayWrite(uint hitType, float4 value, uint2 tid,
@@ -321,12 +328,11 @@ void self_illumination(uint2 tid,
             float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
             
             NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
-            float3 specularColor = material.specularColor * (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
-            float specularPower = material.shinessDisolveIllum.x;
+            material.diffuseColor = color;
+            material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
             
-            PathSample sample = sample_scatter(intersectionPoint, -ray.direction, material.normal,
-                                               r, Cdeterm,
-                                               color, specularColor, specularPower);
+            const SurfaceInteraction interaction = { intersectionPoint, material };
+            PathSample sample = sample_scatter(interaction, -ray.direction, r, Cdeterm);
             
             // terminate further tracing if the term is zero. this happens when the vector is out of
             // the hemisphere in the specular sampling
@@ -384,11 +390,15 @@ inline static float3 reflection_vector(float3 wo, float3 normal);
 inline bool same_hemisphere(float3 w, float3 wp);
 
 
-PathSample sample_scatter(float3 Pn, float3 ray, float3 normal,     /* interaction point */
-                          float2 sampleUV, float Cdeterminator,     /* randoms */
-                          float3 Cdiff, float3 Cspec, float Mspec   /* material spec */     )
+PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 ray,
+                          float2 sampleUV, float Cdeterminator  /* randoms */ )
 {
     PathSample result;
+    
+    const float3 Cdiff = interaction.material.diffuseColor;
+    const float3 Cspec = interaction.material.specularColor;
+    const float Mspec = interaction.material.shinessDisolveIllum.x;
+    const float3 normal = interaction.material.normal;
     
     float CdiffSampleProbable = max(Cdiff.x, max(Cdiff.y, Cdiff.z));
     float CspecSampleProbable = min(Cspec.x, min(Cspec.y, Cspec.z));
