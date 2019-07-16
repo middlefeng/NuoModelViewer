@@ -107,6 +107,9 @@ typedef struct
 {
     vector2 uv;                    // two-dimension random
     float pathTermDeterminator;    // random to determine which term in reflection is used
+    
+    vector2 lightSource;
+    float lightSourceSelect;
 }
 NuoRayTracingRandomUnit;
 

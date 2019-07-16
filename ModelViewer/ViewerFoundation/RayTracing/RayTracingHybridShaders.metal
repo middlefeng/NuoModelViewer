@@ -45,6 +45,7 @@ struct SurfaceInteraction
 static void self_illumination(uint2 tid,
                               device RayStructureUniform& structUniform,
                               constant NuoRayTracingUniforms& tracingUniforms,
+                              device RayBuffer* shadowRay,
                               device RayBuffer* incidentRays,
                               device NuoRayTracingRandomUnit* random,
                               texture2d<float, access::read_write> overlayResult,
@@ -92,6 +93,7 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
                                              device RayStructureUniform& structUniform [[buffer(0)]],
                                              constant NuoRayTracingUniforms& tracingUniforms,
                                              device NuoRayTracingRandomUnit* random,
+                                             device RayBuffer* shadowRayMain,
                                              device RayBuffer* shadowRays0,
                                              device RayBuffer* shadowRays1,
                                              device RayBuffer* incidentRaysBuffer,
@@ -122,7 +124,7 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
                                   tracingUniforms, random, shadowRays, diffuseTex, samplr);
     
     self_illumination(tid, structUniform,
-                      tracingUniforms, incidentRaysBuffer,
+                      tracingUniforms, shadowRayMain, incidentRaysBuffer,
                       random, overlayResult, overlayForVirtual, diffuseTex, samplr);
 }
 
@@ -132,6 +134,7 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  device RayStructureUniform& structUniform [[buffer(0)]],
                                  constant NuoRayTracingUniforms& tracingUniforms,
                                  device NuoRayTracingRandomUnit* random,
+                                 device RayBuffer* shadowRayMain,
                                  texture2d<float, access::read_write> overlayResult [[texture(0)]],
                                  texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
                                  array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
@@ -142,9 +145,9 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
     
-    self_illumination(tid, structUniform,
-                      tracingUniforms, structUniform.exitantRays /* incident rays are the
-                                                                    exitant rays of the next path */,
+    self_illumination(tid, structUniform, tracingUniforms,
+                      shadowRayMain, structUniform.exitantRays /* incident rays are the
+                                                                  exitant rays of the next path */,
                       random, overlayResult, overlayForVirtual, diffuseTex, samplr);
 }
 
@@ -274,6 +277,12 @@ kernel void lighting_accumulate(uint2 tid [[thread_position_in_grid]],
 static PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 ray,
                                  float2 sampleUV, float Cdeterminator  /* randoms */ );
 
+static PathSample sample_light_source(const thread SurfaceInteraction& interaction, float3 ray,
+                                      device RayStructureUniform& structUniform,
+                                      device NuoRayTracingRandomUnit* random,
+                                      metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                                      metal::sampler samplr);
+
 
 void overlayWrite(uint hitType, float4 value, uint2 tid,
                   texture2d<float, access::read_write> overlayResult,
@@ -289,6 +298,7 @@ void overlayWrite(uint hitType, float4 value, uint2 tid,
 void self_illumination(uint2 tid,
                        device RayStructureUniform& structUniform,
                        constant NuoRayTracingUniforms& tracingUniforms,
+                       device RayBuffer* shadowRays,
                        device RayBuffer* incidentRays,
                        device NuoRayTracingRandomUnit* random,
                        texture2d<float, access::read_write> overlayResult,
@@ -303,6 +313,7 @@ void self_illumination(uint2 tid,
     device NuoRayTracingMaterial* materials = structUniform.materials;
     device uint* index = structUniform.index;
     device RayBuffer& incidentRay = incidentRays[rayIdx];
+    device RayBuffer& shadowRay = shadowRays[rayIdx];
     RayBuffer ray = structUniform.exitantRays[rayIdx];
     
     if (intersection.distance >= 0.0f)
@@ -358,9 +369,18 @@ void self_illumination(uint2 tid,
             NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
             material.diffuseColor = color;
             material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
+            intersectionPoint += normalize(material.normal) * (maxDistance / 20000.0);
             
             const SurfaceInteraction interaction = { intersectionPoint, material };
             PathSample sample = sample_scatter(interaction, -ray.direction, r, Cdeterm);
+            
+            PathSample shadowRaySample = sample_light_source(interaction, -ray.direction,
+                                                             structUniform, random, diffuseTex,samplr);
+            shadowRay.direction = shadowRaySample.direction;
+            shadowRay.origin = intersectionPoint;
+            
+            shadowRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
+            shadowRay.pathScatter = shadowRaySample.pathScatterTerm;
             
             // terminate further tracing if the term is zero. this happens when the vector is out of
             // the hemisphere in the specular sampling
@@ -375,7 +395,7 @@ void self_illumination(uint2 tid,
             else
             {
                 incidentRay.direction = sample.direction;
-                incidentRay.origin = intersectionPoint + normalize(material.normal) * (maxDistance / 20000.0);
+                incidentRay.origin = intersectionPoint;
                 incidentRay.maxDistance = maxDistance;
                 incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
                 incidentRay.primaryHitMask = ray.primaryHitMask;
@@ -474,6 +494,61 @@ PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 r
         result.direction = align_hemisphere_normal(wi, normal);
     }
     
+    return result;
+}
+    
+PathSample sample_light_source(const thread SurfaceInteraction& interaction, float3 ray,
+                               device RayStructureUniform& structUniform,
+                               device NuoRayTracingRandomUnit* random,
+                               metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                               metal::sampler samplr)
+{
+    const uint lightIndex = (uint)(random->lightSourceSelect * structUniform.lightSourceSize);
+    device uint* lightVertexIndex = structUniform.indexLightSource + lightIndex * 3;
+    device float3* vertices = structUniform.vertices;
+    const float3 triangle[3] = { vertices[*(lightVertexIndex)],
+                                 vertices[*(lightVertexIndex + 1)],
+                                 vertices[*(lightVertexIndex + 2)] };
+    
+    const float2 uv = uniform_sample_triangle(random->lightSource);
+    const float3 intersectPoint = triangle[0] * uv[0] + triangle[1] * uv[1]
+                                                      + triangle[2] * (1 - uv[0] - uv[1]);
+    
+    Intersection intersection;
+    intersection.coordinates = uv;
+    intersection.primitiveIndex = lightIndex;
+    
+    const float3 color = interpolate_color(structUniform.materials, diffuseTex,
+                                           structUniform.indexLightSource, intersection, samplr);
+    NuoRayTracingMaterial material = interpolate_material(structUniform.materials,
+                                                          structUniform.indexLightSource, intersection);
+    
+    const float3 direction = intersectPoint - interaction.p;
+    
+    PathSample result;
+    result.direction = normalize(direction);
+    
+    const float area = triangle_area(triangle);
+    const float distanceSquared = length_squared(direction);
+    const float3 normal = material.normal;
+    
+    const float pdfInverse = structUniform.lightSourceSize *
+                                area * abs(dot(-result.direction, normal)) /
+                                max(distanceSquared, 1e-6);
+    
+    result.pathScatterTerm = color * pdfInverse;
+    
+    const float3 Cdiff = interaction.material.diffuseColor;
+    const float3 Cspec = interaction.material.specularColor;
+    const float Mspec = interaction.material.shinessDisolveIllum.x;
+    const float3 n = interaction.material.normal;
+    
+    const float3 wh = (ray + result.direction) / 2.0;
+    float3 f = Cdiff + (Cspec + (1.0f - Cspec) * pow(1.0f - saturate(dot(result.direction, wh)), 5.0)) * ((Mspec + 8.0) / 8.0);
+    f *= dot(n, result.direction) / M_PI_F;
+    
+    result.pathScatterTerm *= f;
+
     return result;
 }
 

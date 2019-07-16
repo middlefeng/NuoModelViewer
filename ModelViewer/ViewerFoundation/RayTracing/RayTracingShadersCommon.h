@@ -223,6 +223,23 @@ inline float3 sample_cone_uniform(float2 u, float cosThetaMax)
 
 
 
+#pragma mark -- Surface Sampling
+
+
+inline float triangle_area(const float3 triganlge[3])
+{
+    return 0.5 * metal::length(metal::cross(triganlge[1] - triganlge[0], triganlge[2] - triganlge[0]));
+}
+
+
+inline float2 uniform_sample_triangle(float2 u)
+{
+    float su0 = metal::sqrt(u[0]);
+    return float2(1 - su0, u[1] * su0);
+}
+
+
+
 
 #pragma mark -- Spherical/Local Coordinate
 

@@ -343,13 +343,15 @@
     id<MTLArgumentEncoder> encoder = [pipeline argumentEncoder:0];
     buffer = [NuoArgumentBuffer new];
     
+    assert([_rayStructure indexLightSourceBuffer].length % 3 == 0);
+    
     uint i = 0;
     [buffer encodeWith:encoder];
     [buffer setBuffer:uniform for:MTLResourceUsageRead atIndex:i];
     [buffer setBuffer:[_rayStructure indexBuffer] for:MTLResourceUsageRead atIndex:++i];
     [buffer setBuffer:[_rayStructure indexLightSourceBuffer] for:MTLResourceUsageRead atIndex:++i];
     [buffer setBuffer:[_rayStructure vertexBuffer] for:MTLResourceUsageRead atIndex:++i];
-    [buffer setInt:(uint32_t)[_rayStructure indexLightSourceBuffer].length atIndex:++i];
+    [buffer setInt:(uint32_t)[_rayStructure indexLightSourceBuffer].length / 3 atIndex:++i];
     [buffer setBuffer:[_rayStructure materialBuffer] for:MTLResourceUsageRead atIndex:++i];
     [buffer setBuffer:exitantRay for:MTLResourceUsageRead | MTLResourceUsageWrite atIndex:++i];
     [buffer setBuffer:intersection for:MTLResourceUsageRead atIndex:++i];
