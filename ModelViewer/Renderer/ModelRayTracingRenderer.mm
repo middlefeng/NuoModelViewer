@@ -208,6 +208,8 @@ static const uint32_t kRayBounce = 4;
     
     NuoRayBuffer* _incidentRaysBuffer;
     NuoRayBuffer* _shadowRaysBuffer;
+    id<MTLBuffer> _shadowIntersectionBuffer;
+
     
     PNuoRayTracingRandom _rng;
 }
@@ -263,6 +265,10 @@ static const uint32_t kRayBounce = 4;
     
     _shadowRaysBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
     _shadowRaysBuffer.dimension = drawableSize;
+    
+    const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayIntersectionStride;
+    _shadowIntersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
+                                                                      options:MTLResourceStorageModePrivate];
 }
 
 
@@ -377,11 +383,13 @@ static const uint32_t kRayBounce = 4;
         
         for (uint i = 0; i < kRayBounce; ++i)
         {
+            [self rayIntersect:commandBuffer withRays:_shadowRaysBuffer withIntersection:_shadowIntersectionBuffer];
             [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.intersectionBuffer];
             
             [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
                        withParameter:@[rayTraceUniform, randomBuffer,
-                                       _shadowRaysBuffer.buffer]
+                                       _shadowRaysBuffer.buffer,
+                                       _shadowIntersectionBuffer]
                       withExitantRay:_incidentRaysBuffer.buffer
                     withIntersection:self.intersectionBuffer];
         }
