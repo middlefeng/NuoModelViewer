@@ -569,9 +569,10 @@ PathSample sample_light_source(const thread SurfaceInteraction& interaction, flo
     const float Mspec = interaction.material.shinessDisolveIllum.x;
     const float3 n = interaction.material.normal;
     
-    const float3 wh = (ray + result.direction) / 2.0;
-    float3 f = Cdiff + (Cspec + (1.0f - Cspec) * pow(1.0f - saturate(dot(result.direction, wh)), 5.0)) * ((Mspec + 8.0) / 8.0);
-    f *= dot(n, result.direction) / M_PI_F;
+    const float3 wh = normalize(ray + result.direction);
+    float cosNHPower = pow(saturate(dot(n, wh)), Mspec);
+    float3 f = Cdiff + (Cspec + (1.0f - Cspec) * pow(1.0f - saturate(dot(result.direction, wh)), 5.0)) * ((Mspec + 8.0) / 8.0) * cosNHPower;
+    f *= saturate(dot(n, result.direction)) / M_PI_F;
     
     result.pathScatterTerm *= f;
 
