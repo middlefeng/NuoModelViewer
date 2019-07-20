@@ -246,15 +246,20 @@ kernel void lighting_accumulate(uint2 tid [[thread_position_in_grid]],
 static PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 ray,
                                  float2 sampleUV, float Cdeterminator  /* randoms */ );
 
-
+    
+/**
+ *  write the result of illuminating surface and ambient
+ */
 void overlayWrite(uint hitType, float4 value, uint2 tid,
                   texture2d<float, access::read_write> overlayResult,
                   texture2d<float, access::read_write> overlayForVirtual)
 {
-    if (hitType & kNuoRayMask_Virtual)
-        overlayForVirtual.write(value, tid);
-    else
-        overlayResult.write(value, tid);
+    texture2d<float, access::read_write> texture = (hitType & kNuoRayMask_Virtual)?
+                                                    overlayForVirtual : overlayResult;
+    
+    const float4 color = texture.read(tid);
+    const float4 result = float4(color.rgb + value.rgb, saturate(color.a + value.a));
+    texture.write(result, tid);
 }
 
 
