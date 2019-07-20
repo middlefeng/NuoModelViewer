@@ -64,6 +64,13 @@
 }
 
 
+- (void)setInt:(uint32_t)value atIndex:(uint)index
+{
+    uint32_t* addr = (uint32_t*)[_encoder constantDataAtIndex:index];
+    *addr = value;
+}
+
+
 
 @end
 

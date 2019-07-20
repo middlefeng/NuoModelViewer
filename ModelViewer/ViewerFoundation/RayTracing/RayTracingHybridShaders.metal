@@ -60,7 +60,6 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 device NuoRayTracingRandomUnit* random,
                                 device RayBuffer* shadowRays0,
                                 device RayBuffer* shadowRays1,
-                                device RayBuffer* incidentRaysBuffer,
                                 device uint* masks,
                                 texture2d<float, access::read_write> overlayResult [[texture(0)]],
                                 texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
@@ -86,16 +85,45 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     //
     shadow_ray_emit_infinite_area(tid, structUniform,
                                   tracingUniforms, random, shadowRays, diffuseTex, samplr);
+}
+
+
+kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid]],
+                                             device RayStructureUniform& structUniform [[buffer(0)]],
+                                             constant NuoRayTracingUniforms& tracingUniforms,
+                                             device NuoRayTracingRandomUnit* random,
+                                             device RayBuffer* shadowRays0,
+                                             device RayBuffer* shadowRays1,
+                                             device RayBuffer* incidentRaysBuffer,
+                                             device uint* masks,
+                                             texture2d<float, access::read_write> overlayResult [[texture(0)]],
+                                             texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
+                                             array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
+                                             sampler samplr [[sampler(0)]])
+{
+    constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
     
-    // the primary rays are processed according to surface types, only at the last time, scatter-sample
-    // based illumination shall be calculated
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device Intersection & intersection = structUniform.intersections[rayIdx];
+    device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
+    
+    unsigned int triangleIndex = intersection.primitiveIndex;
+    cameraRay.primaryHitMask = masks[triangleIndex];
+    
+    device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
+    
+    // directional light sources in the scene definition are considered area lights with finite
+    // subtending solid angles, in far distance
     //
-    if (cameraRay.mask & kNuoRayMask_Translucent)
-    {
-        self_illumination(tid, structUniform,
-                          tracingUniforms, incidentRaysBuffer,
-                          random, overlayResult, overlayForVirtual, diffuseTex, samplr);
-    }
+    shadow_ray_emit_infinite_area(tid, structUniform,
+                                  tracingUniforms, random, shadowRays, diffuseTex, samplr);
+    
+    self_illumination(tid, structUniform,
+                      tracingUniforms, incidentRaysBuffer,
+                      random, overlayResult, overlayForVirtual, diffuseTex, samplr);
 }
 
 
