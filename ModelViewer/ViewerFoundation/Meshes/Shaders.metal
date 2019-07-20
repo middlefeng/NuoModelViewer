@@ -389,7 +389,15 @@ float4 diffuse_common(float4 diffuseTexel, float extraOpacity)
 //
 float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
 {
-    return specularColor + (1.0f - specularColor) * pow(1.0f - saturate(dot(lightVector, halfway)), 5);
+    return specularColor + (1.0f - specularColor) * pow(1.0f - saturate(dot(lightVector, halfway)), 5.0);
+}
+
+
+float3 specular_refectance_normalized(float3 specularReflectance, float materialSpecularPower,
+                                      float3 lightDirection, float3 halfway)
+{
+    return fresnel_schlick(specularReflectance, lightDirection, halfway) *
+            ((materialSpecularPower + 8.0) / 8.0);
 }
 
 
@@ -406,9 +414,8 @@ float3 specular_common_physically(float3 specularReflectance, float materialSpec
                                   float3 lightDirection, float3 normal, float3 halfway)
 {
     float cosNHPower = pow(saturate(dot(normal, halfway)), materialSpecularPower);
-    
-    return fresnel_schlick(specularReflectance, lightDirection, halfway) *
-           ((materialSpecularPower + 8) / 8) * cosNHPower;
+    return specular_refectance_normalized(specularReflectance, materialSpecularPower,
+                                          lightDirection, halfway) * cosNHPower;
 }
 
 

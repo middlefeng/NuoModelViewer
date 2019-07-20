@@ -159,6 +159,8 @@ metal::float3 specular_common(metal::float3 materialSpecularColor, float materia
                               NuoLightParameterUniformField lightParams,
                               metal::float3 normal, metal::float3 halfway, float cosTheta);
 
+metal::float3 specular_refectance_normalized(float3 specularReflectance, float materialSpecularPower,
+                                             float3 lightDirection, float3 halfway);
 metal::float3 specular_common_physically(float3 specularReflectance, float materialSpecularPower,
                                          float3 lightDirection, float3 normal, float3 halfway);
 

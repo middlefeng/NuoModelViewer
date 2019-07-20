@@ -473,7 +473,7 @@ PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 r
         //
         float hwPdf = (Mspec + 2.0) / 2.0;
         float pdf = hwPdf / (4.0 * dot(wo, wh));
-        float3 f = (Cspec + (1.0f - Cspec) * pow(1.0f - saturate(dot(wo, wh)), 5.0)) * ((Mspec + 8.0) / 8.0);
+        float3 f = specular_refectance_normalized(Cspec, Mspec, wo, wh);
         
         result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdf * wi.y /* cosine factor of incident ray */;
         result.direction = align_hemisphere_normal(wi, normal);
