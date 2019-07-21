@@ -181,7 +181,7 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     // all terms in the numerator have already been masked (because they are stored in "virtual-only" results), except
     // the ambientWithoutBlock
     //
-    const float objectMask = 1.0 - sourceColor.a;
+    const float objectMask = translucentCover - sourceColor.a;
     const float shadowFactor = color_to_grayscale(safe_divide(directBlocked - illumiOnVirtual + ambientWithoutBlock * objectMask,
                                                               direct + ambientWithoutBlock));
     
@@ -196,5 +196,12 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     //
      */ }
     
-    return (float4(color, sourceColor.a + shadowFactor));
+    // shadowAdd is intended for the object edge anti-alias, ahdowBlend is intended for transparent object with
+    // virutal shadow as background. the dichotomy approach of choosing between them might have neglectable
+    // artifact but there seems no way of "blending" them properly.
+    //
+    float shadowAdd = sourceColor.a + shadowFactor;
+    float shadowBlend = shadowAdd - sourceColor.a * shadowFactor;
+    
+    return (float4(color, (objectMask < 1e-9 ? shadowBlend : shadowAdd)));
 }
