@@ -46,6 +46,7 @@
 
 @property (nonatomic, strong) NSButton* rayTracingRecord;
 @property (nonatomic, strong) NSButton* rayTracingPause;
+@property (nonatomic, strong) NSButton* rayTracingHybrid;
 
 @property (nonatomic, strong) NSPopUpButton* deviceList;
 
@@ -149,7 +150,7 @@
     
     CGRect docViewFrame = CGRectMake(0, 0, 0, 0);
     docViewFrame.size = rootViewFrame.size;
-    docViewFrame.size.height += 305.0;
+    docViewFrame.size.height += 336.0;
     
     rootScroll.frame = rootViewFrame;
     scrollDocumentView.frame = docViewFrame;
@@ -504,9 +505,21 @@
     [scrollDocumentView addSubview:pauseButtonRayTracing];
     _rayTracingPause = pauseButtonRayTracing;
     
-    // ray tracing illumination stregth
+    // ray tracing hybrid with rasterization
     
     rowCoord += 1.0;
+    
+    NSRect rayHybridFrame = [self buttonLoactionAtRow:rowCoord
+                                          withLeading:0 inView:scrollDocumentView];
+    NSButton* rayTracingHybrid = [self createSwitchButtonWithLabel:@"Hybrid Rendering"
+                                                         withFrame:rayHybridFrame
+                                                      withSelector:@selector(rayTracingUpdate:)];
+    [scrollDocumentView addSubview:rayTracingHybrid];
+    _rayTracingHybrid = rayTracingHybrid;
+    
+    // ray tracing illumination stregth
+    
+    rowCoord += 1.2;
     
     NSTextField* illumStregthLabel = [NSTextField new];
     [illumStregthLabel setEditable:NO];
