@@ -147,7 +147,7 @@
     _rayTracingRecordStatus = rayTracingRecordStatus;
     
     if (rayTracingRecordStatus == kRecord_Stop)
-        [_rayTracingRenderer resetResources:nil];
+        [_rayTracingRenderer resetResources];
     
     if (changed)
     {

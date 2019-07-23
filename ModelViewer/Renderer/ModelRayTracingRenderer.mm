@@ -268,12 +268,12 @@ static const uint32_t kRayBounce = 4;
 }
 
 
-- (void)resetResources:(NuoCommandBuffer*)commandBuffer
+- (void)resetResources
 {
     for (ModelRayTracingShadowPerLight* renderer : _shadowPerLight)
-        [renderer resetResources:commandBuffer];
+        [renderer resetResources];
     
-    [super resetResources:commandBuffer];
+    [super resetResources];
 }
 
 
