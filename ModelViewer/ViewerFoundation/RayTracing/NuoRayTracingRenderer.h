@@ -36,7 +36,7 @@
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                      withTargetCount:(uint)targetCount;
 
-- (void)resetResources:(NuoCommandBuffer*)commandBuffer;
+- (void)resetResources;
 
 /**
  *  overridden by subclass, with compute-shader running for ray tracing

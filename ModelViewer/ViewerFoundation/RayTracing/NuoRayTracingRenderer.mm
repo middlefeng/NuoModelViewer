@@ -137,10 +137,7 @@
         samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
         _sampleState = [commandQueue.device newSamplerStateWithDescriptor:samplerDesc];
         
-        NuoCommandBuffer* localCommandBuffer = [[NuoCommandBuffer alloc] initWithCommandQueue:commandQueue
-                                                                                 withInFlight:0];
-        [self resetResources:localCommandBuffer];
-        [localCommandBuffer commit];
+        [self resetResources];
     }
     
     return self;
@@ -148,7 +145,7 @@
 
 
 
-- (void)resetResources:(NuoCommandBuffer*)commandBuffer
+- (void)resetResources
 {
     for (NuoTextureAccumulator* accumulator in _accumulators)
     {
