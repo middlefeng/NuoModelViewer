@@ -102,7 +102,7 @@ class NuoLua;
 @property (nonatomic, assign) BOOL showCheckerboard;
 
 @property (nonatomic, strong, readonly) NuoMeshOption* modelOptions;
-@property (nonatomic, assign) NuoDeferredRenderUniforms deferredParameters;
+@property (nonatomic, assign) NuoAmbientUniformField ambientParameters;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;

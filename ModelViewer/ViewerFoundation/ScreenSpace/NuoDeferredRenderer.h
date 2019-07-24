@@ -36,7 +36,7 @@
 
 - (void)setRoot:(NuoMeshSceneRoot*)root;
 
-- (void)setParameters:(NuoDeferredRenderUniforms*)params;
+- (void)setParameters:(NuoAmbientUniformField*)params;
 
 
 @end

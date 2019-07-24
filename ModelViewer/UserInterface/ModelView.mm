@@ -274,7 +274,7 @@ MouseDragMode;
     }
     
     [self showHideFrameRate:_modelPanel.showFrameRate];
-    [_modelRender setDeferredParameters:_modelPanel.deferredRenderParameters];
+    [_modelRender setAmbientParameters:_modelPanel.ambientParameters];
     [_modelRender setCullEnabled:_modelPanel.cullEnabled];
     [_modelRender setFieldOfView:_modelPanel.fieldOfViewRadian];
     [_modelRender setAmbientDensity:_modelPanel.ambientDensity];

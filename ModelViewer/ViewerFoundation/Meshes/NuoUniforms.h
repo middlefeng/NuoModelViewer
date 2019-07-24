@@ -92,15 +92,7 @@ typedef struct
     float bias;
     float intensity;
 }
-NuoAmbientOcclusionUniformField;
-
-
-typedef struct
-{
-    NuoAmbientOcclusionUniformField ambientOcclusionParams;
-    vector4 clearColor;
-}
-NuoDeferredRenderUniforms;
+NuoAmbientUniformField;
 
 
 typedef struct
