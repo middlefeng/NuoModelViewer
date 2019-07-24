@@ -849,10 +849,8 @@
     _ambientParameters = ambientParameters;
     [_deferredRenderer setParameters:&ambientParameters];
     
-    NuoGlobalIlluminationUniforms globalIllum;
-    globalIllum.directLightDensity = ambientParameters.scale / 3.0 * 2.0;
-    globalIllum.ambientDensity = _ambientDensity;
-    [_illuminationRenderer setGlobalIllumination:globalIllum];
+    NuoVectorFloat3 ambient(_ambientDensity, _ambientDensity, _ambientDensity);
+    [_illuminationRenderer setAmbient:ambient];
 }
 
 

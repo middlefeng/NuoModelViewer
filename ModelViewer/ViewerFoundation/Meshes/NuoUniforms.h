@@ -95,22 +95,6 @@ typedef struct
 NuoAmbientUniformField;
 
 
-typedef struct
-{
-    // the contribution of direct light in relative to ambient lighting on a
-    // surface which is not part of the scene but part of the blend-in background.
-    // there is no way to calculate so it has to be estimated by user through trial-and-error
-    //
-    float directLightDensity;
-    
-    // a ray's color when it intersect with nothing after bouncing enough
-    // number of times, or travel enough distance
-    //
-    float ambientDensity;
-}
-NuoGlobalIlluminationUniforms;
-
-
 typedef enum
 {
     kPipeline_AlphaEmbeded,

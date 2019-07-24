@@ -10,6 +10,7 @@
 
 #import "NuoTextureMesh.h"
 
+#include "NuoMathVector.h"
 
 
 @interface NuoIlluminationMesh : NuoTextureMesh
@@ -30,7 +31,7 @@
 
 @property (nonatomic, weak) id<MTLTexture> translucentCoverMap;
 
-- (void)setParameters:(const NuoGlobalIlluminationUniforms&)params;
+- (void)setAmbient:(const NuoVectorFloat3&)ambient;
 
 
 @end

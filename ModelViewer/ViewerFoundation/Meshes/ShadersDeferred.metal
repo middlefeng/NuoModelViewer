@@ -112,7 +112,7 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
  */
 
 fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
-                                   constant NuoGlobalIlluminationUniforms& params [[buffer(0)]],
+                                   constant float3& ambient [[buffer(0)]],
                                    texture2d<float> source [[texture(0)]],
                                    texture2d<float> illumination [[texture(1)]],
                                    texture2d<float> illuminationOnVirtual [[texture(2)]],
@@ -168,7 +168,7 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
 
     const float3 direct = directLighting.sample(samplr, vert.texCoord).rgb;
     const float3 directBlocked = directBlock.sample(samplr, vert.texCoord).rgb;
-    const float ambientWithoutBlock = params.ambientDensity;
+    const float3 ambientWithoutBlock = ambient;
     
     // numerator should be masked by normal object, denominator shoud not
     //
