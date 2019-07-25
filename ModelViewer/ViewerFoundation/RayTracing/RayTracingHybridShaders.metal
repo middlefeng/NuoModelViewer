@@ -410,7 +410,7 @@ void self_illumination(uint2 tid,
         }
         else if (ray.bounce == 0)
         {
-            overlayForVirtual.write(float4(float3(globalIllum.ambient), 1.0), tid);
+            overlayForVirtual.write(float4(globalIllum.ambient, 1.0), tid);
             incidentRay.ambientIlluminated = true;
         }
         
