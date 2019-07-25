@@ -90,6 +90,8 @@
     
     BOOL _rayAcceleratorOutOfSync;
     BOOL _rayAcceleratorNeedRebuild;
+    
+    NuoAmbientUniformField _ambientParameters;
 }
 
 
@@ -844,10 +846,10 @@
 }
 
 
-- (void)setAmbientParameters:(NuoAmbientUniformField)ambientParameters
+- (void)setAmbientParameters:(const NuoAmbientUniformField&)ambientParameters
 {
     _ambientParameters = ambientParameters;
-    [_deferredRenderer setParameters:&ambientParameters];
+    [_deferredRenderer setParameters:ambientParameters];
     
     NuoVectorFloat3 ambient(_ambientDensity, _ambientDensity, _ambientDensity);
     [_illuminationRenderer setAmbient:ambient];

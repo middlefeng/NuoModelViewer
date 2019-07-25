@@ -41,7 +41,7 @@
                               withBlendMode:kBlend_Alpha];
         
         _deferredRenderParamBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoAmbientUniformField)
-                                                                      options:MTLResourceOptionCPUCacheModeDefault];
+                                                                      options:MTLResourceStorageModeManaged];
     }
     
     return self;
@@ -79,9 +79,10 @@
 }
 
 
-- (void)setParameters:(NuoAmbientUniformField*)params
+- (void)setParameters:(const NuoAmbientUniformField&)params
 {
-    memcpy(_deferredRenderParamBuffer.contents, params, sizeof(NuoAmbientUniformField));
+    memcpy(_deferredRenderParamBuffer.contents, &params, sizeof(NuoAmbientUniformField));
+    [_deferredRenderParamBuffer didModifyRange:NSMakeRange(0, sizeof(NuoAmbientUniformField))];
 }
 
 
