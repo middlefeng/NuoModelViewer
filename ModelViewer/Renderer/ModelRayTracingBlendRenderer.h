@@ -30,7 +30,7 @@
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                      withSampleCount:(uint)sampleCount;
 
-- (void)setGlobalIllumination:(const NuoGlobalIlluminationUniforms&)globalIllumination;
+- (void)setAmbient:(const NuoVectorFloat3&)ambient;
 
 
 @end

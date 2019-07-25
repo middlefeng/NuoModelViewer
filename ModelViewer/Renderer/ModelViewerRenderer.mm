@@ -90,6 +90,8 @@
     
     BOOL _rayAcceleratorOutOfSync;
     BOOL _rayAcceleratorNeedRebuild;
+    
+    NuoAmbientUniformField _ambientParameters;
 }
 
 
@@ -654,19 +656,19 @@
             
             {
                 exporter.StartEntry("bias");
-                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.bias);
+                exporter.SetEntryValueFloat(_ambientParameters.bias);
                 exporter.EndEntry(false);
                 
                 exporter.StartEntry("intensity");
-                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.intensity);
+                exporter.SetEntryValueFloat(_ambientParameters.intensity);
                 exporter.EndEntry(false);
                 
                 exporter.StartEntry("range");
-                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.sampleRadius);
+                exporter.SetEntryValueFloat(_ambientParameters.sampleRadius);
                 exporter.EndEntry(false);
                 
                 exporter.StartEntry("scale");
-                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.scale);
+                exporter.SetEntryValueFloat(_ambientParameters.scale);
                 exporter.EndEntry(false);
             }
             
@@ -797,12 +799,11 @@
         
         if (!lua->IsNil(-1))
         {
-            NuoDeferredRenderUniforms params = _deferredParameters;
-            params.ambientOcclusionParams.bias = lua->GetFieldAsNumber("bias", -1);
-            params.ambientOcclusionParams.intensity = lua->GetFieldAsNumber("intensity", -1);
-            params.ambientOcclusionParams.sampleRadius = lua->GetFieldAsNumber("range", -1);
-            params.ambientOcclusionParams.scale = lua->GetFieldAsNumber("scale", -1);
-            [self setDeferredParameters:params];
+            _ambientParameters.bias = lua->GetFieldAsNumber("bias", -1);
+            _ambientParameters.intensity = lua->GetFieldAsNumber("intensity", -1);
+            _ambientParameters.sampleRadius = lua->GetFieldAsNumber("range", -1);
+            _ambientParameters.scale = lua->GetFieldAsNumber("scale", -1);
+            [self setAmbientParameters:_ambientParameters];
         }
         lua->RemoveField();
     }
@@ -845,15 +846,19 @@
 }
 
 
-- (void)setDeferredParameters:(NuoDeferredRenderUniforms)deferredParameters
+- (void)setAmbientParameters:(const NuoAmbientUniformField&)ambientParameters
 {
-    _deferredParameters = deferredParameters;
-    [_deferredRenderer setParameters:&deferredParameters];
+    _ambientParameters = ambientParameters;
+    [_deferredRenderer setParameters:ambientParameters];
     
-    NuoGlobalIlluminationUniforms globalIllum;
-    globalIllum.directLightDensity = deferredParameters.ambientOcclusionParams.scale / 3.0 * 2.0;
-    globalIllum.ambientDensity = _ambientDensity;
-    [_illuminationRenderer setGlobalIllumination:globalIllum];
+    NuoVectorFloat3 ambient(_ambientDensity, _ambientDensity, _ambientDensity);
+    [_illuminationRenderer setAmbient:ambient];
+}
+
+
+- (const NuoAmbientUniformField&)ambientParameters
+{
+    return _ambientParameters;
 }
 
 
@@ -1058,7 +1063,7 @@
             
             NuoRayTracingGlobalIlluminationParam illumParams;
             illumParams.ambient = _ambientDensity;
-            illumParams.ambientRadius = _deferredParameters.ambientOcclusionParams.sampleRadius;
+            illumParams.ambientRadius = _ambientParameters.sampleRadius;
             illumParams.illuminationStrength = _illuminationStrength;
             illumParams.specularMaterialAdjust = _lights[0].lightingSpecular;
 

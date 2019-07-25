@@ -22,7 +22,7 @@
     
     if (self)
     {
-        _paramBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoGlobalIlluminationUniforms)
+        _paramBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoVectorFloat3::_vector)
                                                         options:MTLResourceStorageModeManaged];
     }
     
@@ -41,10 +41,10 @@
 
 
 
-- (void)setParameters:(const NuoGlobalIlluminationUniforms&)params
+- (void)setAmbient:(const NuoVectorFloat3&)ambient
 {
-    memcpy(_paramBuffer.contents, &params, sizeof(NuoGlobalIlluminationUniforms));
-    [_paramBuffer didModifyRange:NSMakeRange(0, sizeof(NuoGlobalIlluminationUniforms))];
+    memcpy(_paramBuffer.contents, &ambient._vector, sizeof(NuoVectorFloat3::_vector));
+    [_paramBuffer didModifyRange:NSMakeRange(0, sizeof(NuoVectorFloat3::_vector))];
 }
 
 

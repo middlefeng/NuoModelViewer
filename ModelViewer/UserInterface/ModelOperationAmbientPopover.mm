@@ -163,30 +163,29 @@
     [sliderScale setAction:@selector(slidersChanged:)];
     _sliderScale = sliderScale;
     
-    [self setupSliders:_sourcePanel.deferredRenderParameters];
+    [self setupSliders:_sourcePanel.ambientParameters];
 }
 
 
-- (void)setupSliders:(NuoDeferredRenderUniforms)params
+- (void)setupSliders:(NuoAmbientUniformField)params
 {
-    _sliderBias.floatValue = params.ambientOcclusionParams.bias;
-    _sliderIntensity.floatValue = params.ambientOcclusionParams.intensity;
-    _sliderRadius.floatValue = params.ambientOcclusionParams.sampleRadius;
-    _sliderScale.floatValue = params.ambientOcclusionParams.scale;
+    _sliderBias.floatValue = params.bias;
+    _sliderIntensity.floatValue = params.intensity;
+    _sliderRadius.floatValue = params.sampleRadius;
+    _sliderScale.floatValue = params.scale;
 }
 
 
 - (void)slidersChanged:(id)sender
 {
-    NuoDeferredRenderUniforms newParams;
+    NuoAmbientUniformField newParams;
     
-    newParams.ambientOcclusionParams.bias = _sliderBias.floatValue;
-    newParams.ambientOcclusionParams.intensity = _sliderIntensity.floatValue;
-    newParams.ambientOcclusionParams.sampleRadius = _sliderRadius.floatValue;
-    newParams.ambientOcclusionParams.scale = _sliderScale.floatValue;
-    newParams.clearColor = NuoVectorFloat4(0.0, 0.0, 0.0, 0.0)._vector;
+    newParams.bias = _sliderBias.floatValue;
+    newParams.intensity = _sliderIntensity.floatValue;
+    newParams.sampleRadius = _sliderRadius.floatValue;
+    newParams.scale = _sliderScale.floatValue;
     
-    [_sourcePanel setDeferredRenderParameters:newParams];
+    [_sourcePanel setAmbientParameters:newParams];
     [_updateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
 
