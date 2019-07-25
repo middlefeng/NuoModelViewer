@@ -20,7 +20,7 @@ using namespace metal;
 
 static float do_ambient_occlusion(texture2d<float> positionBuffer, sampler samplr,
                                   float2 tcoord, float2 uv, float3 p, float3 cnorm,
-                                  constant NuoAmbientOcclusionUniformField& occlusionUniforms)
+                                  constant NuoAmbientUniformField& occlusionUniforms)
 {
     float3 diff = positionBuffer.sample(samplr, tcoord + uv).xyz - p;
     const float3 v = normalize(diff);
@@ -36,7 +36,7 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
                                    texture2d<float> shadowOverlay               [[ texture(3) ]],
                                    texture2d<float> immediateResult             [[ texture(4) ]],
                                    sampler samplr                               [[ sampler(0) ]],
-                                   constant NuoDeferredRenderUniforms& params   [[ buffer(0)  ]])
+                                   constant NuoAmbientUniformField& params      [[ buffer(0)  ]])
 {
     const float2 vec[4] =
     {
@@ -44,13 +44,11 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
         float2(0, 1), float2(0, -1),
     };
     
-    constant NuoAmbientOcclusionUniformField& occlusionUniforms = params.ambientOcclusionParams;
-    
     float3 p = positionBuffer.sample(samplr, vert.texCoord).xyz;
     float3 n = normalBuffer.sample(samplr, vert.texCoord).xyz;
     float2 ran = rand(vert.texCoord);
     float ao = 0.0f;
-    float rad = occlusionUniforms.sampleRadius / p.z;
+    float rad = params.sampleRadius / p.z;
     
     // SSAO Calculation
     // -- https://www.gamedev.net/articles/programming/graphics/a-simple-and-practical-approach-to-ssao-r2753/
@@ -60,10 +58,10 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
         float2 coord1 = reflect(vec[j], ran) * rad;
         float2 coord2 = float2(coord1.x * 0.707 - coord1.y * 0.707, coord1.x * 0.707 + coord1.y * 0.707);
         
-        ao += do_ambient_occlusion(positionBuffer, samplr, vert.texCoord, coord1 * 0.25, p, n, occlusionUniforms);
-        ao += do_ambient_occlusion(positionBuffer, samplr, vert.texCoord, coord2 * 0.5, p, n, occlusionUniforms);
-        ao += do_ambient_occlusion(positionBuffer, samplr, vert.texCoord, coord1 * 0.75, p, n, occlusionUniforms);
-        ao += do_ambient_occlusion(positionBuffer, samplr, vert.texCoord, coord2, p, n, occlusionUniforms);
+        ao += do_ambient_occlusion(positionBuffer, samplr, vert.texCoord, coord1 * 0.25, p, n, params);
+        ao += do_ambient_occlusion(positionBuffer, samplr, vert.texCoord, coord2 * 0.5, p, n, params);
+        ao += do_ambient_occlusion(positionBuffer, samplr, vert.texCoord, coord1 * 0.75, p, n, params);
+        ao += do_ambient_occlusion(positionBuffer, samplr, vert.texCoord, coord2, p, n, params);
     }
     
     ao /= (float)iterations * 4.0;
@@ -88,17 +86,13 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
     float shadowOverlayFactor = shadowOverlay.sample(samplr, vert.texCoord).r;
     float shadowOverlayAlpha = color_to_grayscale(ambientTerm.rgb) * shadowOverlayFactor;
     
-    // alpha channel composite formula: a1 + a2 - a1 * a2
-    //
-    float resultAlpha = (params.clearColor.a + immediateTerm.a - params.clearColor.a * immediateTerm.a)
-                                             - shadowOverlayAlpha /* reduction of alpha by board objects */;
+    float resultAlpha = immediateTerm.a - shadowOverlayAlpha /* reduction of alpha by board objects */;
     
     // color channels composite formula: c1 * a1 + c2 * a2 * (1 - a1)        ; the value is alpha-premultiplied
     //
     float3 resultColor = (ambientTerm.rgb * (1.0 - shadowOverlayFactor) /* addition of diffuse          // these two terms are alpha-premultiplied
                                                                            color by normal objects */   //
-                                                   + immediateTerm.rgb) +                               //
-                         (params.clearColor.rgb * params.clearColor.a) * (1.0 - immediateTerm.a);
+                                                   + immediateTerm.rgb);
     
     return float4(resultColor, resultAlpha);
 }
@@ -118,7 +112,7 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
  */
 
 fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
-                                   constant NuoGlobalIlluminationUniforms& params [[buffer(0)]],
+                                   constant float3& ambient [[buffer(0)]],
                                    texture2d<float> source [[texture(0)]],
                                    texture2d<float> illumination [[texture(1)]],
                                    texture2d<float> illuminationOnVirtual [[texture(2)]],
@@ -174,7 +168,7 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
 
     const float3 direct = directLighting.sample(samplr, vert.texCoord).rgb;
     const float3 directBlocked = directBlock.sample(samplr, vert.texCoord).rgb;
-    const float ambientWithoutBlock = params.ambientDensity;
+    const float3 ambientWithoutBlock = ambient;
     
     // numerator should be masked by normal object, denominator shoud not
     //
@@ -197,7 +191,7 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
      */ }
     
     // shadowAdd is intended for the object edge anti-alias, ahdowBlend is intended for transparent object with
-    // virutal shadow as background. the dichotomy approach of choosing between them might have neglectable
+    // virutal shadow as background. the dichotomy approach of choosing between them might have neglectable 
     // artifact but there seems no way of "blending" them properly.
     //
     float shadowAdd = sourceColor.a + shadowFactor;

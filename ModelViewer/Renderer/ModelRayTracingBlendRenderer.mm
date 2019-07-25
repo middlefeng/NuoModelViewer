@@ -68,9 +68,9 @@
 }
 
 
-- (void)setGlobalIllumination:(const NuoGlobalIlluminationUniforms&)globalIllumination
+- (void)setAmbient:(const NuoVectorFloat3&)ambient
 {
-    [_mesh setParameters:globalIllumination];
+    [_mesh setAmbient:ambient];
 }
 
 

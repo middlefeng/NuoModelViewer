@@ -102,7 +102,6 @@ class NuoLua;
 @property (nonatomic, assign) BOOL showCheckerboard;
 
 @property (nonatomic, strong, readonly) NuoMeshOption* modelOptions;
-@property (nonatomic, assign) NuoDeferredRenderUniforms deferredParameters;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
@@ -126,6 +125,8 @@ class NuoLua;
 - (void)selectMeshWithScreen:(CGPoint)point;
 
 - (void)setResolveDepth:(BOOL)resolveDepth;
+- (void)setAmbientParameters:(const NuoAmbientUniformField&)ambientParameters;
+- (const NuoAmbientUniformField&)ambientParameters;
 
 - (NuoMeshSceneRoot*)cloneSceneFor:(NuoMeshModeShaderParameter)mode;
 - (void)rebuildRayTracingBuffers;

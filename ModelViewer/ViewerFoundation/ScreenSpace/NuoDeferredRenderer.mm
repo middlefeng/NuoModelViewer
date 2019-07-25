@@ -40,8 +40,8 @@
                         withFragementShader:@"fragement_deferred"
                               withBlendMode:kBlend_Alpha];
         
-        _deferredRenderParamBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoDeferredRenderUniforms)
-                                                                      options:MTLResourceOptionCPUCacheModeDefault];
+        _deferredRenderParamBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoAmbientUniformField)
+                                                                      options:MTLResourceStorageModeManaged];
     }
     
     return self;
@@ -79,9 +79,10 @@
 }
 
 
-- (void)setParameters:(NuoDeferredRenderUniforms*)params
+- (void)setParameters:(const NuoAmbientUniformField&)params
 {
-    memcpy(_deferredRenderParamBuffer.contents, params, sizeof(NuoDeferredRenderUniforms));
+    memcpy(_deferredRenderParamBuffer.contents, &params, sizeof(NuoAmbientUniformField));
+    [_deferredRenderParamBuffer didModifyRange:NSMakeRange(0, sizeof(NuoAmbientUniformField))];
 }
 
 
