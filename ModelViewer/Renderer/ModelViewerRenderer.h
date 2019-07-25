@@ -126,6 +126,7 @@ class NuoLua;
 
 - (void)setResolveDepth:(BOOL)resolveDepth;
 - (void)setAmbientParameters:(const NuoAmbientUniformField&)ambientParameters;
+- (const NuoAmbientUniformField&)ambientParameters;
 
 - (NuoMeshSceneRoot*)cloneSceneFor:(NuoMeshModeShaderParameter)mode;
 - (void)rebuildRayTracingBuffers;

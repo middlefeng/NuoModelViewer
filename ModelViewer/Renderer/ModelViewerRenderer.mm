@@ -856,6 +856,12 @@
 }
 
 
+- (const NuoAmbientUniformField&)ambientParameters
+{
+    return _ambientParameters;
+}
+
+
 - (void)makeResources
 {
     _transUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
