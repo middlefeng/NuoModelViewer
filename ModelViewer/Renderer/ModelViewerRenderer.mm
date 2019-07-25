@@ -211,13 +211,6 @@
 }
 
 
-- (void)setRenderTarget:(NuoRenderPassTarget *)renderTarget
-{
-    [super setRenderTarget:renderTarget];
-    [_shadowMapRenderer[0].renderTarget setSampleCount:1/*renderTarget.sampleCount*/];
-    [_shadowMapRenderer[1].renderTarget setSampleCount:1/*renderTarget.sampleCount*/];
-}
-
 
 - (void)loadMesh:(NSString*)path withProgress:(NuoProgressFunction)progress
 {
