@@ -193,11 +193,11 @@
     // count of the final target is always 1
     
     // no calling to shadow map render. they are not MSAA-ed
+    // no calling to cube/backdrop render. they are not MSAA-ed
     
     [_immediateTarget setSampleCount:sampleCount];
     [_deferredRenderer setSampleCount:sampleCount];
     [_sceneRoot setSampleCount:sampleCount];
-    [_cubeMesh setSampleCount:sampleCount];
 }
 
 
@@ -1117,9 +1117,6 @@
     
     renderPass.label = @"Scene Render Pass";
     
-    if (_cubeMesh)
-        [_cubeMesh drawMesh:renderPass];
-    
     [self setSceneBuffersTo:renderPass];
     
     BOOL rayTracingMode = (_rayTracingRecordStatus != kRecord_Stop);
@@ -1138,6 +1135,9 @@
     
     if (_showCheckerboard)
         [_checkerboard drawMesh:deferredRenderPass];
+    
+    if (_cubeMesh)
+        [_cubeMesh drawMesh:deferredRenderPass];
     
     BOOL drawBackdrop = _backdropMesh && _backdropMesh.enabled;
     if (drawBackdrop)
