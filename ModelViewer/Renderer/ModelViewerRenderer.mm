@@ -1034,22 +1034,21 @@
     
     if (_rayTracingRecordStatus != kRecord_Stop)
     {
+        // updat to the intersector accelerating sturcture
+        
         if (_rayAcceleratorNeedRebuild)
-        {
             [_rayAccelerator setRoot:_sceneRoot];
-            [_rayTracingRenderer rayStructUpdated];
-        }
         else if (_rayAcceleratorOutOfSync)
-        {
             [_rayAccelerator setRoot:_sceneRoot withCommandBuffer:commandBuffer];
-        }
         
         [_rayAccelerator setView:[self viewMatrix]];
         
-        for (uint i = 0; i < 2; ++i)
-            [_rayTracingRenderer setLightSource:_lights[i] forIndex:i];
+        // update to the ray tracer renderer
         
-        if (_rayTracingRecordStatus || _rayAcceleratorOutOfSync)
+        if (_rayAcceleratorNeedRebuild)
+            [_rayTracingRenderer rayStructUpdated];
+        
+        if (_rayAcceleratorOutOfSync)
         {
             const NuoMatrixFloat44 viewTrans = [self viewMatrix];
             const NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
@@ -1059,11 +1058,14 @@
             illumParams.ambientRadius = _ambientParameters.sampleRadius;
             illumParams.illuminationStrength = _illuminationStrength;
             illumParams.specularMaterialAdjust = _lights[0].lightingSpecular;
-
+            
             _rayTracingRenderer.sceneBounds = bounds;
             _rayTracingRenderer.globalIllum = illumParams;
             _rayTracingRenderer.fieldOfView = _fieldOfView;
         }
+        
+        for (uint i = 0; i < 2; ++i)
+            [_rayTracingRenderer setLightSource:_lights[i] forIndex:i];
         
         _rayAcceleratorNeedRebuild = NO;
         _rayAcceleratorOutOfSync = NO;
@@ -1095,10 +1097,7 @@
         lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix._m;
         
         [_lightCastBuffers updateBufferWithInFlight:commandBuffer withContent:&lightUniforms];
-    }
     
-    if (_rayTracingRecordStatus == kRecord_Stop)
-    {
         // seems unnecessary with ray tracing running, and it slows down ray tracing on
         // 10.14.2 occasionally for unknown reason
         
