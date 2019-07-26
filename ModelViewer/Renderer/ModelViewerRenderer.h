@@ -5,6 +5,8 @@
 #import "NuoTypes.h"
 #import "NuoMeshSceneRenderPass.h"
 
+#import "ModelRenderDelegate.h"
+
 
 @class NuoMeshOption;
 @class NuoMeshCompound;
@@ -51,20 +53,11 @@ typedef enum
 TransformMode;
 
 
-typedef enum
-{
-    kRecord_Start,
-    kRecord_Stop,
-    kRecord_Pause
-}
-RecordStatus;
-
-
 class NuoLua;
 
 
 
-@interface ModelRenderer : NuoMeshSceneRenderPass <NuoMeshSceneParametersProvider> 
+@interface ModelRenderer : NuoRenderPipelinePass <NuoMeshSceneParametersProvider> 
 
 
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lights;

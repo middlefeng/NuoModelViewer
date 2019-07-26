@@ -27,11 +27,9 @@
 
 // sub renderers
 //
-#import "NuoShadowMapRenderer.h"
-#import "NuoDeferredRenderer.h"
 #import "NuoRayAccelerateStructure.h"
-#import "ModelRayTracingRenderer.h"
-#import "ModelRayTracingBlendRenderer.h"
+#import "ModelRenderDelegate.h"
+#import "ModelHybridRenderDelegate.h"
 
 #import "NuoDirectoryUtils.h"
 #import "NuoModelLoaderGPU.h"
@@ -74,19 +72,16 @@
     // per-frame GPU buffers (confirm to protocol NuoMeshSceneParametersProvider)
     //
     NuoBufferSwapChain* _transUniformBuffers;
-    NuoBufferSwapChain* _lightCastBuffers;
     NuoBufferSwapChain* _lightingUniformBuffers;
     id<MTLBuffer> _modelCharacterUnfiromBuffer;
-    
-    NuoShadowMapRenderer* _shadowMapRenderer[2];
-    NuoRenderPassTarget* _immediateTarget;
-    NuoDeferredRenderer* _deferredRenderer;
-    ModelRayTracingBlendRenderer* _illuminationRenderer;
     
     NuoCheckboardMesh* _checkerboard;
     
     NuoRayAccelerateStructure* _rayAccelerator;
-    ModelRayTracingRenderer* _rayTracingRenderer;
+    
+    id<ModelRenderDelegate> _renderDelegate;
+    
+    ModelHybridRenderDelegate* _hybridRenderer;
     
     BOOL _rayAcceleratorOutOfSync;
     BOOL _rayAcceleratorNeedRebuild;
@@ -98,29 +93,15 @@
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    if ((self = [super initWithCommandQueue:commandQueue]))
+    if (self = [super init])
     {
+        self.commandQueue = commandQueue;
+        
         [self makeResources];
         
         _modelOptions = [NuoMeshOption new];
         _cullEnabled = YES;
         _fieldOfView = (2 * M_PI) / 8;
-        
-        _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 0"];
-        _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 1"];
-        
-        _immediateTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                             withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                             withSampleCount:kSampleCount];
-        _immediateTarget.name = @"immediate";
-        _immediateTarget.manageTargetTexture = YES;
-        _immediateTarget.sharedTargetTexture = NO;
-        
-        _deferredRenderer = [[NuoDeferredRenderer alloc] initWithCommandQueue:commandQueue withSceneParameter:self];
-        
-        _illuminationRenderer = [[ModelRayTracingBlendRenderer alloc] initWithCommandQueue:commandQueue
-                                                                           withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                           withSampleCount:1];
         
         _checkerboard = [[NuoCheckboardMesh alloc] initWithCommandQueue:commandQueue];
         
@@ -130,11 +111,13 @@
         _viewRotation = NuoMatrixFloat44Identity;
         _viewTranslation = NuoMatrixFloat44Identity;
         
-        self.paramsProvider = self;
-        
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
-        _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:commandQueue];
-        _rayTracingRenderer.rayStructure = _rayAccelerator;
+        
+        _hybridRenderer = [[ModelHybridRenderDelegate alloc] initWithCommandQueue:commandQueue
+                                                                  withAccelerator:_rayAccelerator
+                                                                    withSceneRoot:_sceneRoot
+                                                              withSceneParameters:self];
+        _renderDelegate = _hybridRenderer;
     }
 
     return self;
@@ -144,31 +127,17 @@
 
 - (void)setRayTracingRecordStatus:(RecordStatus)rayTracingRecordStatus
 {
-    BOOL changed = (_rayTracingRecordStatus != rayTracingRecordStatus);
-    
     _rayTracingRecordStatus = rayTracingRecordStatus;
-    
-    if (rayTracingRecordStatus == kRecord_Stop)
-        [_rayTracingRenderer resetResources];
-    
-    if (changed)
-    {
-        [_sceneRoot setShadowOptionRayTracing:_rayTracingRecordStatus != kRecord_Stop];
-        [_sceneRoot makeGPUStates];
-    }
+    _renderDelegate.rayTracingRecordStatus = rayTracingRecordStatus;
 }
 
 
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
-    [_immediateTarget setDrawableSize:drawableSize];
-    [_shadowMapRenderer[0] setDrawableSize:drawableSize];
-    [_shadowMapRenderer[1] setDrawableSize:drawableSize];
-    [_deferredRenderer setDrawableSize:drawableSize];
     [_rayAccelerator setDrawableSize:drawableSize];
-    [_rayTracingRenderer setDrawableSize:drawableSize];
-    [_illuminationRenderer setDrawableSize:drawableSize];
+    
+    [_renderDelegate setDrawableSize:drawableSize];
 }
 
 
@@ -195,8 +164,7 @@
     // no calling to shadow map render. they are not MSAA-ed
     // no calling to cube/backdrop render. they are not MSAA-ed
     
-    [_immediateTarget setSampleCount:sampleCount];
-    [_deferredRenderer setSampleCount:sampleCount];
+    [_renderDelegate setSampleCount:sampleCount];
     [_sceneRoot setSampleCount:sampleCount];
 }
 
@@ -842,10 +810,11 @@
 - (void)setAmbientParameters:(const NuoAmbientUniformField&)ambientParameters
 {
     _ambientParameters = ambientParameters;
-    [_deferredRenderer setParameters:ambientParameters];
+    
+    [_renderDelegate setAmbientParameters:ambientParameters];
     
     NuoVectorFloat3 ambient(_ambientDensity, _ambientDensity, _ambientDensity);
-    [_illuminationRenderer setAmbient:ambient];
+    [_renderDelegate setAmbient:ambient];
 }
 
 
@@ -865,10 +834,6 @@
                                                           WithBufferSize:sizeof(NuoLightUniforms)
                                                              withOptions:MTLResourceStorageModeManaged
                                                            withChainSize:kInFlightBufferCount];
-    _lightCastBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
-                                                    WithBufferSize:sizeof(NuoLightVertexUniforms)
-                                                       withOptions:MTLResourceStorageModeManaged
-                                                     withChainSize:kInFlightBufferCount];
     
     NuoModelCharacterUniforms modelCharacter;
     modelCharacter.opacity = 1.0f;
@@ -1032,6 +997,8 @@
 {
     [self updateUniformsForView:commandBuffer];
     
+    _renderDelegate.rayTracingRecordStatus = _rayTracingRecordStatus;
+    
     if (_rayTracingRecordStatus != kRecord_Stop)
     {
         // updat to the intersector accelerating sturcture
@@ -1043,91 +1010,32 @@
         
         [_rayAccelerator setView:[self viewMatrix]];
         
-        // update to the ray tracer renderer
-        
-        if (_rayAcceleratorNeedRebuild)
-            [_rayTracingRenderer rayStructUpdated];
-        
         if (_rayAcceleratorOutOfSync)
         {
-            const NuoMatrixFloat44 viewTrans = [self viewMatrix];
-            const NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
-            
-            NuoRayTracingGlobalIlluminationParam illumParams;
-            illumParams.ambient = _ambientDensity;
-            illumParams.ambientRadius = _ambientParameters.sampleRadius;
-            illumParams.illuminationStrength = _illuminationStrength;
-            illumParams.specularMaterialAdjust = _lights[0].lightingSpecular;
-            
-            _rayTracingRenderer.sceneBounds = bounds;
-            _rayTracingRenderer.globalIllum = illumParams;
-            _rayTracingRenderer.fieldOfView = _fieldOfView;
+            [_renderDelegate setViewMatrix:[self viewMatrix]];
+            [_renderDelegate setAmbient:_ambientDensity];
+            [_renderDelegate setAmbientParameters:_ambientParameters];
+            [_renderDelegate setIlluminationStrength:_illuminationStrength];
         }
-        
-        for (uint i = 0; i < 2; ++i)
-            [_rayTracingRenderer setLightSource:_lights[i] forIndex:i];
-        
+    }
+    
+    [_renderDelegate setLights:_lights];
+    [_renderDelegate setDelegateTarget:self.renderTarget];
+    [_renderDelegate predrawWithCommandBuffer:commandBuffer
+                         withRayStructChanged:_rayAcceleratorNeedRebuild
+                        withRayStructAdjusted:_rayAcceleratorOutOfSync];
+    
+    if (_rayTracingRecordStatus != kRecord_Stop)
+    {
         _rayAcceleratorNeedRebuild = NO;
         _rayAcceleratorOutOfSync = NO;
-    }
-    
-    if (_rayTracingRecordStatus == kRecord_Start)
-    {
-        [_rayTracingRenderer drawWithCommandBuffer:commandBuffer];
-        
-        [_illuminationRenderer setDirectLighting:_rayTracingRenderer.directLight];
-        [_illuminationRenderer predrawWithCommandBuffer:commandBuffer];
-    }
-    
-    if (_rayTracingRecordStatus == kRecord_Stop)
-    {
-        // generate shadow map
-        //
-        for (unsigned int i = 0; i < 2 /* for two light sources only */; ++i)
-        {
-            _shadowMapRenderer[i].sceneRoot = _sceneRoot;
-            _shadowMapRenderer[i].lightSource = _lights[i];
-            [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer];
-        }
-        
-        // store the light view point projection for shadow map detection in the scene
-        //
-        NuoLightVertexUniforms lightUniforms;
-        lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix._m;
-        lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix._m;
-        
-        [_lightCastBuffers updateBufferWithInFlight:commandBuffer withContent:&lightUniforms];
-    
-        // seems unnecessary with ray tracing running, and it slows down ray tracing on
-        // 10.14.2 occasionally for unknown reason
-        
-        [_deferredRenderer setRoot:_sceneRoot];
-        [_deferredRenderer predrawWithCommandBuffer:commandBuffer];
     }
 }
 
 
 - (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    // get the target render pass and draw the scene in the forward rendering
-    //
-    NuoRenderPassEncoder* renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
-    if (!renderPass)
-        return;
-    
-    renderPass.label = @"Scene Render Pass";
-    
-    [self setSceneBuffersTo:renderPass];
-    
-    BOOL rayTracingMode = (_rayTracingRecordStatus != kRecord_Stop);
-    
-    [_sceneRoot drawMesh:renderPass];
-    
-    [_immediateTarget releaseRenderPassEndcoder];
-    
-    NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
-    [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_Immediate];
-    [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_ImmediateAlpha];
+    [_renderDelegate drawWithCommandBufferPriorBackdrop:commandBuffer];
     
     // deferred rendering for the illumination
     
@@ -1145,30 +1053,11 @@
 
     if (_mainModelMesh.enabled)
     {
-        if (rayTracingMode)
-        {
-            NSArray* textures = _rayTracingRenderer.targetTextures;
-            
-            [inspectMaster updateTexture:textures[0] forName:kInspectable_Illuminate];
-            
-            [_illuminationRenderer setRenderTarget:self.renderTarget];
-            [_illuminationRenderer setImmediateResult:_immediateTarget.targetTexture];
-            [_illuminationRenderer setIllumination:textures[0]];
-            [_illuminationRenderer setIlluminationOnVirtual:textures[1]];
-            [_illuminationRenderer setTranslucentMap:[_deferredRenderer ambientBuffer]];
-            
-            [_illuminationRenderer drawWithCommandBuffer:commandBuffer];
-        }
-        else
-        {
-            [renderPass pushParameterState:@"Deferred render"];
-            
-            [_deferredRenderer setRenderTarget:self.renderTarget];
-            [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
-            [_deferredRenderer drawWithCommandBuffer:commandBuffer];
-            
-            [renderPass popParameterState];
-        }
+        [deferredRenderPass pushParameterState:@"Deferred render"];
+        
+        [_renderDelegate drawWithCommandBuffer:commandBuffer];
+        
+        [deferredRenderPass popParameterState];
     }
     
     [self releaseDefaultEncoder];
@@ -1228,7 +1117,7 @@
 
 - (void)setResolveDepth:(BOOL)resolveDepth
 {
-    [_immediateTarget setResolveDepth:resolveDepth];
+    [_renderDelegate setResolveDepth:resolveDepth];
 }
 
 
@@ -1236,15 +1125,12 @@
 
 - (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
 {
-    if (_rayTracingRecordStatus != kRecord_Stop)
-        return [_rayTracingRenderer shadowForLightSource:index withMask:mask];
-    else
-        return _shadowMapRenderer[index].renderTarget.targetTexture;
+    return [_renderDelegate shadowMap:index withMask:mask];
 }
 
 - (NuoBufferSwapChain*)lightCastBuffers
 {
-    return _lightCastBuffers;
+    return [_renderDelegate lightCastBuffers];
 }
 
 
@@ -1268,7 +1154,7 @@
 
 - (id<MTLTexture>)depthMap
 {
-    return _immediateTarget.depthTexture;
+    return [_renderDelegate depthMap];
 }
 
 
