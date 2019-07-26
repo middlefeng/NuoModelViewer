@@ -930,7 +930,7 @@
     [_renderDelegate updateUniforms:commandBuffer];
     
     NuoLightUniforms lighting;
-    lighting.ambientDensity = _ambientDensity;
+    lighting.ambient = _ambientDensity;
     for (unsigned int i = 0; i < 4; ++i)
     {
         const NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(_lights[i].lightingRotationX,

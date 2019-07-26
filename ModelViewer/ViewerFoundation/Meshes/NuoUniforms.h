@@ -73,7 +73,7 @@ typedef struct
     NuoLightParameterUniformField lightParams[4];
     NuoShadowParameterUniformField shadowParams[2];
     
-    float ambientDensity;
+    vector3 ambient;
 }
 NuoLightUniforms;
 
