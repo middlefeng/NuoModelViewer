@@ -73,7 +73,6 @@
     //
     NuoBufferSwapChain* _transUniformBuffers;
     NuoBufferSwapChain* _lightingUniformBuffers;
-    id<MTLBuffer> _modelCharacterUnfiromBuffer;
     
     NuoCheckboardMesh* _checkerboard;
     
@@ -834,12 +833,6 @@
                                                           WithBufferSize:sizeof(NuoLightUniforms)
                                                              withOptions:MTLResourceStorageModeManaged
                                                            withChainSize:kInFlightBufferCount];
-    
-    NuoModelCharacterUniforms modelCharacter;
-    modelCharacter.opacity = 1.0f;
-    _modelCharacterUnfiromBuffer = [self.commandQueue.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
-                                                                         options:MTLResourceOptionCPUCacheModeDefault];
-    memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(NuoModelCharacterUniforms));
 }
 
 - (void)handleDeltaPosition
@@ -1142,7 +1135,7 @@
 
 - (id<MTLBuffer>)modelCharacterUnfiromBuffer
 {
-    return _modelCharacterUnfiromBuffer;
+    return [_renderDelegate modelCharacterUnfiromBuffer];
 }
 
 

@@ -29,9 +29,11 @@ RecordStatus;
 @property (assign, nonatomic) float fieldOfView;
 @property (assign, nonatomic) NuoMatrixFloat44 viewMatrix;
 @property (assign, nonatomic) float illuminationStrength;
-@property (readonly, nonatomic) NuoBufferSwapChain* lightCastBuffers;
+
 
 @property (weak, nonatomic) NSArray<NuoLightSource*>* lights;
+@property (readonly, nonatomic) NuoBufferSwapChain* lightCastBuffers;
+@property (readonly, nonatomic) id<MTLBuffer> modelCharacterUnfiromBuffer;
 
 
 - (void)setDrawableSize:(CGSize)drawableSize;

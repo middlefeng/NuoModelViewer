@@ -41,6 +41,8 @@
 @synthesize viewMatrix;
 @synthesize illuminationStrength;
 @synthesize rayTracingRecordStatus = _rayTracingRecordStatus;
+
+@synthesize modelCharacterUnfiromBuffer = _modelCharacterUnfiromBuffer;
 @synthesize lights;
 @synthesize lightCastBuffers = _lightCastBuffers;
 
@@ -80,6 +82,12 @@
         _sceneRoot = sceneRoot;
         
         self.paramsProvider = sceneParam;
+        
+        NuoModelCharacterUniforms modelCharacter;
+        modelCharacter.opacity = 1.0f;
+        _modelCharacterUnfiromBuffer = [self.commandQueue.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
+                                                                             options:MTLResourceOptionCPUCacheModeDefault];
+        memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(NuoModelCharacterUniforms));
     }
     
     return self;
