@@ -32,8 +32,14 @@ RecordStatus;
 
 
 @property (weak, nonatomic) NSArray<NuoLightSource*>* lights;
+
+// per-frame GPU buffers (confirm to protocol NuoMeshSceneParametersProvider)
+//
 @property (readonly, nonatomic) NuoBufferSwapChain* lightCastBuffers;
 @property (readonly, nonatomic) NuoBufferSwapChain* transUniformBuffers;
+@property (readonly, nonatomic) NuoBufferSwapChain* lightingUniformBuffers;
+
+
 @property (readonly, nonatomic) id<MTLBuffer> modelCharacterUnfiromBuffer;
 
 

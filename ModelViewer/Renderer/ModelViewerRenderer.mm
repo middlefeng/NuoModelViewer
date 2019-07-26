@@ -69,10 +69,6 @@
 
 @implementation ModelRenderer
 {
-    // per-frame GPU buffers (confirm to protocol NuoMeshSceneParametersProvider)
-    //
-    NuoBufferSwapChain* _lightingUniformBuffers;
-    
     NuoCheckboardMesh* _checkerboard;
     
     NuoRayAccelerateStructure* _rayAccelerator;
@@ -94,8 +90,6 @@
     if (self = [super init])
     {
         self.commandQueue = commandQueue;
-        
-        [self makeResources];
         
         _modelOptions = [NuoMeshOption new];
         _cullEnabled = YES;
@@ -822,14 +816,6 @@
 }
 
 
-- (void)makeResources
-{
-    _lightingUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
-                                                          WithBufferSize:sizeof(NuoLightUniforms)
-                                                             withOptions:MTLResourceStorageModeManaged
-                                                           withChainSize:kInFlightBufferCount];
-}
-
 - (void)handleDeltaPosition
 {
     if (_transMode == kTransformMode_Model && [self viewTransformReset])
@@ -927,29 +913,8 @@
 
     [_renderDelegate setFieldOfView:_fieldOfView];
     [_renderDelegate setViewMatrix:[self viewMatrix]];
+    [_renderDelegate setAmbient:_ambientDensity];
     [_renderDelegate updateUniforms:commandBuffer];
-    
-    NuoLightUniforms lighting;
-    lighting.ambient = _ambientDensity;
-    for (unsigned int i = 0; i < 4; ++i)
-    {
-        const NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(_lights[i].lightingRotationX,
-                                                                  _lights[i].lightingRotationY);
-        
-        const NuoVectorFloat4 lightVector(rotationMatrix * NuoVectorFloat4(0, 0, 1, 0));
-        lighting.lightParams[i].direction = lightVector._vector;
-        lighting.lightParams[i].density = _lights[i].lightingDensity;
-        lighting.lightParams[i].specular = _lights[i].lightingSpecular;
-        
-        if (i < 2)
-        {
-            lighting.shadowParams[i].soften = _lights[i].shadowSoften;
-            lighting.shadowParams[i].bias = _lights[i].shadowBias;
-            lighting.shadowParams[i].occluderRadius = _lights[i].shadowOccluderRadius;
-        }
-    }
-    
-    [_lightingUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&lighting];
     
     [_sceneRoot updateUniform:commandBuffer withTransform:NuoMatrixFloat44Identity];
     [_sceneRoot setCullEnabled:_cullEnabled];
@@ -1121,7 +1086,7 @@
 
 - (NuoBufferSwapChain*)lightingUniformBuffers
 {
-    return _lightingUniformBuffers;
+    return [_renderDelegate lightingUniformBuffers];
 }
 
 

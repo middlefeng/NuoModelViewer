@@ -45,6 +45,7 @@
 @synthesize modelCharacterUnfiromBuffer = _modelCharacterUnfiromBuffer;
 @synthesize lights;
 @synthesize lightCastBuffers = _lightCastBuffers;
+@synthesize lightingUniformBuffers = _lightingUniformBuffers;
 @synthesize transUniformBuffers = _transUniformBuffers;
 
 
@@ -84,6 +85,11 @@
                                                         WithBufferSize:sizeof(NuoLightVertexUniforms)
                                                            withOptions:MTLResourceStorageModeManaged
                                                          withChainSize:kInFlightBufferCount];
+        
+        _lightingUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
+                                                              WithBufferSize:sizeof(NuoLightUniforms)
+                                                                 withOptions:MTLResourceStorageModeManaged
+                                                               withChainSize:kInFlightBufferCount];
         
         _sceneRoot = sceneRoot;
         
@@ -205,6 +211,28 @@
     uniforms.viewProjectionMatrix = (projection * viewTrans)._m;
     
     [_transUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&uniforms];
+    
+    NuoLightUniforms lighting;
+    lighting.ambient = _ambient._vector;
+    for (unsigned int i = 0; i < 4; ++i)
+    {
+        const NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(self.lights[i].lightingRotationX,
+                                                                  self.lights[i].lightingRotationY);
+        
+        const NuoVectorFloat4 lightVector(rotationMatrix * NuoVectorFloat4(0, 0, 1, 0));
+        lighting.lightParams[i].direction = lightVector._vector;
+        lighting.lightParams[i].density = self.lights[i].lightingDensity;
+        lighting.lightParams[i].specular = self.lights[i].lightingSpecular;
+        
+        if (i < 2)
+        {
+            lighting.shadowParams[i].soften = self.lights[i].shadowSoften;
+            lighting.shadowParams[i].bias = self.lights[i].shadowBias;
+            lighting.shadowParams[i].occluderRadius = self.lights[i].shadowOccluderRadius;
+        }
+    }
+    
+    [_lightingUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&lighting];
 }
 
 
