@@ -71,7 +71,6 @@
 {
     // per-frame GPU buffers (confirm to protocol NuoMeshSceneParametersProvider)
     //
-    NuoBufferSwapChain* _transUniformBuffers;
     NuoBufferSwapChain* _lightingUniformBuffers;
     
     NuoCheckboardMesh* _checkerboard;
@@ -825,10 +824,6 @@
 
 - (void)makeResources
 {
-    _transUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
-                                                       WithBufferSize:sizeof(NuoUniforms)
-                                                          withOptions:MTLResourceStorageModeManaged
-                                                        withChainSize:kInFlightBufferCount];
     _lightingUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
                                                           WithBufferSize:sizeof(NuoLightUniforms)
                                                              withOptions:MTLResourceStorageModeManaged
@@ -930,12 +925,9 @@
     
     _projection = NuoMatrixPerspective(aspect, _fieldOfView, near, far);
 
-    NuoUniforms uniforms;
-    uniforms.viewMatrix = viewTrans._m;
-    uniforms.viewMatrixInverse = viewTrans.Inverse()._m;
-    uniforms.viewProjectionMatrix = (_projection * viewTrans)._m;
-
-    [_transUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&uniforms];
+    [_renderDelegate setFieldOfView:_fieldOfView];
+    [_renderDelegate setViewMatrix:[self viewMatrix]];
+    [_renderDelegate updateUniforms:commandBuffer];
     
     NuoLightUniforms lighting;
     lighting.ambientDensity = _ambientDensity;
@@ -1141,7 +1133,7 @@
 
 - (NuoBufferSwapChain*)transUniformBuffers
 {
-    return _transUniformBuffers;
+    return [_renderDelegate transUniformBuffers];
 }
 
 

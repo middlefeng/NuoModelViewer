@@ -45,6 +45,7 @@
 @synthesize modelCharacterUnfiromBuffer = _modelCharacterUnfiromBuffer;
 @synthesize lights;
 @synthesize lightCastBuffers = _lightCastBuffers;
+@synthesize transUniformBuffers = _transUniformBuffers;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
@@ -73,6 +74,11 @@
         
         _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:commandQueue];
         _rayTracingRenderer.rayStructure = accelerateSturcture;
+        
+        _transUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
+                                                           WithBufferSize:sizeof(NuoUniforms)
+                                                              withOptions:MTLResourceStorageModeManaged
+                                                            withChainSize:kInFlightBufferCount];
         
         _lightCastBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
                                                         WithBufferSize:sizeof(NuoLightVertexUniforms)
@@ -170,6 +176,35 @@
 - (void)rayStructUpdated
 {
     [_rayTracingRenderer rayStructUpdated];
+}
+
+
+- (void)updateUniforms:(NuoCommandBuffer*)commandBuffer
+{
+    // rotation is around the center of a previous scene snapshot
+    //
+    const NuoMatrixFloat44 viewTrans = [self viewMatrix];
+    
+    const CGSize drawableSize = _immediateTarget.drawableSize;
+    const float aspect = drawableSize.width / drawableSize.height;
+    
+    // bounding box transform and determining the near/far
+    //
+    NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
+    
+    float near = -bounds._center.z() - bounds._span.z() / 2.0 + 0.01;
+    float far = near + bounds._span.z() + 0.02;
+    near = std::max<float>(0.001, near);
+    far = std::max<float>(near + 0.001, far);
+    
+    NuoMatrixFloat44 projection = NuoMatrixPerspective(aspect, self.fieldOfView, near, far);
+    
+    NuoUniforms uniforms;
+    uniforms.viewMatrix = viewTrans._m;
+    uniforms.viewMatrixInverse = viewTrans.Inverse()._m;
+    uniforms.viewProjectionMatrix = (projection * viewTrans)._m;
+    
+    [_transUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&uniforms];
 }
 
 

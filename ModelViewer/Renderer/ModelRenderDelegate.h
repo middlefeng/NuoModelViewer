@@ -33,6 +33,7 @@ RecordStatus;
 
 @property (weak, nonatomic) NSArray<NuoLightSource*>* lights;
 @property (readonly, nonatomic) NuoBufferSwapChain* lightCastBuffers;
+@property (readonly, nonatomic) NuoBufferSwapChain* transUniformBuffers;
 @property (readonly, nonatomic) id<MTLBuffer> modelCharacterUnfiromBuffer;
 
 
@@ -45,6 +46,8 @@ RecordStatus;
 - (void)setResolveDepth:(BOOL)resolveDepth;
 - (id<MTLTexture>)depthMap;
 - (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
+
+- (void)updateUniforms:(NuoCommandBuffer*)commandBuffer;
 
 - (void)predrawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
             withRayStructChanged:(BOOL)changed
