@@ -276,13 +276,13 @@ MouseDragMode;
     
     [self showHideFrameRate:_modelPanel.showFrameRate];
     [_modelRender setAmbientParameters:_modelPanel.ambientParameters];
+    [_modelRender setFieldOfView:_modelPanel.fieldOfViewRadian];
+    [_modelRender setAmbientDensity:_modelPanel.ambientDensity];
     [_modelRender setTransMode:_modelPanel.transformMode];
     [_modelRender setIlluminationStrength:_modelPanel.illumination];
     [_modelRender setShowCheckerboard:_modelPanel.showModelParts];
     
     [_modelRender.sceneParameters setCullEnabled:_modelPanel.cullEnabled];
-    [_modelRender.sceneParameters setFieldOfView:_modelPanel.fieldOfViewRadian];
-    [_modelRender.sceneParameters setAmbient:_modelPanel.ambientDensity];
     
     [_modelSelectionRenderer setEnabled:_modelPanel.showModelParts];
     [_modelComponentPanels setHidden:!_modelPanel.showModelParts];

@@ -100,6 +100,7 @@ class NuoLua;
 
 @property (nonatomic, assign) float fieldOfView;
 @property (nonatomic, assign) float illuminationStrength;
+@property (nonatomic, assign) float ambientDensity;
 
 @property (nonatomic, assign) BOOL showCheckerboard;
 

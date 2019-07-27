@@ -639,7 +639,7 @@
         
         {
             exporter.StartEntry("ambient");
-            exporter.SetEntryValueFloat(_sceneParameters.ambient[0]);
+            exporter.SetEntryValueFloat(_ambientDensity);
             exporter.EndEntry(true);
             
             exporter.StartEntry("ambientParams");
@@ -711,7 +711,7 @@
     lua->RemoveField();
     
     lua->GetField("view", -1);
-    _fieldOfView = lua->GetFieldAsNumber("FOV", -1);
+    self.fieldOfView = lua->GetFieldAsNumber("FOV", -1);
     lua->RemoveField();
     
     lua->GetField("models", -1);
@@ -783,8 +783,7 @@
     
     lua->GetField("lights", -1);
     
-    float ambient = lua->GetFieldAsNumber("ambient", -1);
-    _sceneParameters.ambient = NuoVectorFloat3(ambient, ambient, ambient);
+    self.ambientDensity = lua->GetFieldAsNumber("ambient", -1);
     
     {
         lua->GetField("ambientParams", -1);
@@ -835,6 +834,15 @@
         board.shadowOverlayOnly = [modelOptions basicMaterialized];
         [board makePipelineState];
     }
+}
+
+
+- (void)setAmbientDensity:(float)ambientDensity
+{
+    _ambientDensity = ambientDensity;
+    _sceneParameters.ambient = NuoVectorFloat3(_ambientDensity,
+                                               _ambientDensity,
+                                               _ambientDensity);
 }
 
 
@@ -930,6 +938,7 @@
     //
     [self handleDeltaPosition];
     
+    [_sceneParameters setViewMatrix:[self viewMatrix]];
     [_sceneParameters setLights:_lights];
     [_sceneParameters updateUniforms:commandBuffer];
     
