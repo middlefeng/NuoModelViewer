@@ -33,7 +33,7 @@
 @property (weak, nonatomic) NuoMeshSceneRoot* sceneRoot;
 @property (weak, nonatomic) NSArray<NuoLightSource*>* lights;
 
-@property (assign, nonatomic) float ambient;
+@property (assign, nonatomic) NuoVectorFloat3 ambient;
 
 @property (assign, nonatomic) float fieldOfView;
 @property (assign, nonatomic) CGSize drawableSize;

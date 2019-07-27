@@ -84,7 +84,7 @@
     [_transUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&uniforms];
     
     NuoLightUniforms lighting;
-    lighting.ambientDensity = _ambient;
+    lighting.ambient = _ambient._vector;
     for (unsigned int i = 0; i < 4; ++i)
     {
         const NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(_lights[i].lightingRotationX,

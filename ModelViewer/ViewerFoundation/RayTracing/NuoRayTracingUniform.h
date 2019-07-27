@@ -56,7 +56,7 @@ NuoRayTracingLightSource;
 
 typedef struct
 {
-    float ambient;
+    vector3 ambient;
     float ambientRadius;
     float illuminationStrength;
     float specularMaterialAdjust;
