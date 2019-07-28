@@ -107,8 +107,8 @@
         
         _sceneParameters = [[ModelSceneParameters alloc] initWithDevice:commandQueue.device];
         _sceneParameters.cullEnabled = YES;
-        _sceneParameters.fieldOfView = (2 * M_PI) / 8;
         _sceneParameters.shadowMap = self;
+        self.fieldOfView = (2 * M_PI) / 8;
         
         _deferredRenderer = [[NuoDeferredRenderer alloc] initWithCommandQueue:commandQueue
                                                            withSceneParameter:_sceneParameters];

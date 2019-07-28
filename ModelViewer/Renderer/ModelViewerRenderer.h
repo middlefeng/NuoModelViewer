@@ -95,7 +95,6 @@ class NuoLua;
 //
 @property (nonatomic, assign) RecordStatus rayTracingRecordStatus;
 
-
 @property (nonatomic, readonly) ModelSceneParameters* sceneParameters;
 
 @property (nonatomic, assign) float fieldOfView;
