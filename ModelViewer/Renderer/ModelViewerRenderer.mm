@@ -1040,7 +1040,7 @@
         lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix._m;
         lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix._m;
         
-        [_sceneParameters.lightCastBuffers updateBufferWithInFlight:commandBuffer withContent:&lightUniforms];
+        [_sceneParameters updateLightCastWithInFlight:commandBuffer withContent:&lightUniforms];
     
         // seems unnecessary with ray tracing running, and it slows down ray tracing on
         // 10.14.2 occasionally for unknown reason

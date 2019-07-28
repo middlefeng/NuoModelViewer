@@ -124,12 +124,12 @@
     return [_shadowMap depthMap];
 }
 
-- (NuoBufferSwapChain *)lightCastBuffers
+- (NuoBufferSwapChain*)lightCastBuffers
 {
     return _lightCastBuffers;
 }
 
-- (NuoBufferSwapChain *)lightingUniformBuffers
+- (NuoBufferSwapChain*)lightingUniformBuffers
 {
     return _lightingUniformBuffers;
 }
@@ -144,7 +144,7 @@
     return [_shadowMap shadowMap:index withMask:mask];
 }
 
-- (NuoBufferSwapChain *)transUniformBuffers
+- (NuoBufferSwapChain*)transUniformBuffers
 {
     return _transUniformBuffers;
 }
