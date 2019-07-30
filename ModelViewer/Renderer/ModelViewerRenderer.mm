@@ -88,6 +88,9 @@
 }
 
 
+@dynamic fieldOfView;
+
+
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
@@ -174,6 +177,13 @@
 {
     [_sceneParameters setFieldOfView:fieldOfView];
     [_rayAccelerator setFieldOfView:fieldOfView];
+}
+
+
+
+- (float)fieldOfView
+{
+    return [_sceneParameters fieldOfView];
 }
 
 
@@ -536,7 +546,7 @@
         
         {
             exporter.StartEntry("FOV");
-            exporter.SetEntryValueFloat(_fieldOfView);
+            exporter.SetEntryValueFloat(self.fieldOfView);
             exporter.EndEntry(false);
         }
         
@@ -950,7 +960,7 @@
         const CGSize& drawableSize = _sceneParameters.drawableSize;
         const float aspect = drawableSize.width / drawableSize.height;
         
-        const NuoMatrixFloat44 projectionMatrixForCube = NuoMatrixPerspective(aspect, _fieldOfView, 0.3, 2.0);
+        const NuoMatrixFloat44 projectionMatrixForCube = NuoMatrixPerspective(aspect, self.fieldOfView, 0.3, 2.0);
         [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
         [_cubeMesh updateUniform:commandBuffer withTransform:NuoMatrixFloat44Identity];
     }
@@ -1005,7 +1015,7 @@
             
             _rayTracingRenderer.sceneBounds = bounds;
             _rayTracingRenderer.globalIllum = illumParams;
-            _rayTracingRenderer.fieldOfView = _fieldOfView;
+            _rayTracingRenderer.fieldOfView = self.fieldOfView;
         }
         
         for (uint i = 0; i < 2; ++i)
@@ -1062,7 +1072,11 @@
     renderPass.label = @"Scene Render Pass";
     
     if (_cubeMesh)
+    {
+        [renderPass pushParameterState:@"Cube mesh"];
         [_cubeMesh drawMesh:renderPass];
+        [renderPass popParameterState];
+    }
     
     [self setSceneBuffersTo:renderPass];
     
