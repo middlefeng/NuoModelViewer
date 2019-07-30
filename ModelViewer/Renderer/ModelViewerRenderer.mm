@@ -109,9 +109,8 @@
         _immediateTarget.sharedTargetTexture = NO;
         
         _sceneParameters = [[ModelSceneParameters alloc] initWithDevice:commandQueue.device];
-        _sceneParameters.cullEnabled = YES;
         _sceneParameters.shadowMap = self;
-        self.fieldOfView = (2 * M_PI) / 8;
+        self.paramsProvider = _sceneParameters;
         
         _deferredRenderer = [[NuoDeferredRenderer alloc] initWithCommandQueue:commandQueue
                                                            withSceneParameter:_sceneParameters];
@@ -128,8 +127,6 @@
         
         _viewRotation = NuoMatrixFloat44Identity;
         _viewTranslation = NuoMatrixFloat44Identity;
-        
-        self.paramsProvider = _sceneParameters;
         
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
         _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:commandQueue];
@@ -1190,7 +1187,7 @@
 }
 
 
-#pragma mark -- Protocol NuoMeshSceneParametersProvider
+#pragma mark -- Protocol ModelShadowMapProvider
 
 - (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
 {

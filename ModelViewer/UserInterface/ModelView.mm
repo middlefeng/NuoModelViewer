@@ -1071,9 +1071,9 @@ MouseDragMode;
     [_lightPanel updateControls:_notationRenderer.selectedLightSource];
     
     [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
-    [_modelPanel setFieldOfViewRadian:_modelRender.sceneParameters.fieldOfView];
+    [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];
     [_modelPanel setAmbientParameters:[_modelRender ambientParameters]];
-    [_modelPanel setAmbientDensity:_modelRender.sceneParameters.ambient[0]];
+    [_modelPanel setAmbientDensity:_modelRender.ambientDensity];
     [_modelPanel setIllumination:_modelRender.illuminationStrength];
     [_modelPanel updateControls];
 }

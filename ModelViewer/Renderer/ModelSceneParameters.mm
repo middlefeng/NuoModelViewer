@@ -49,9 +49,13 @@
         NuoModelCharacterUniforms modelCharacter;
         modelCharacter.opacity = 1.0f;
         _modelCharacterUnfiromBuffer = [device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
-                                                           options:MTLResourceOptionCPUCacheModeDefault];
+                                                           options:MTLResourceStorageModeManaged];
         
         memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(NuoModelCharacterUniforms));
+        [_modelCharacterUnfiromBuffer didModifyRange:NSMakeRange(0, sizeof(NuoModelCharacterUniforms))];
+        
+        _cullEnabled = YES;
+        _fieldOfView = (2 * M_PI) / 8;
     }
     
     return self;
@@ -113,6 +117,8 @@
     [_lightCastBuffers updateBufferWithInFlight:inFlight withContent:content];
 }
 
+
+#pragma mark -- Protocol Functions
 
 - (BOOL)cullEnabled
 { 
