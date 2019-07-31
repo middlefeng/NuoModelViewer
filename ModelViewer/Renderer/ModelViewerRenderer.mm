@@ -33,6 +33,7 @@
 
 #import "NuoDirectoryUtils.h"
 #import "NuoModelLoaderGPU.h"
+#import "ModelSceneParameters.h"
 
 // inspect
 //
@@ -40,7 +41,7 @@
 #import "NuoInspectableMaster.h"
 
 
-@interface ModelRenderer ()
+@interface ModelRenderer () < ModelShadowMapProvider >
 
 
 @property (nonatomic, weak) NuoMeshCompound* mainModelMesh;
@@ -53,7 +54,6 @@
 //
 @property (assign) NuoMatrixFloat44 viewRotation;
 @property (assign) NuoMatrixFloat44 viewTranslation;
-@property (assign) NuoMatrixFloat44 projection;
 
 // need store the center of a snapshot of the scene as the meshes in the scene
 // keep moving
@@ -69,12 +69,6 @@
 
 @implementation ModelRenderer
 {
-    // per-frame GPU buffers (confirm to protocol NuoMeshSceneParametersProvider)
-    //
-    NuoBufferSwapChain* _transUniformBuffers;
-    NuoBufferSwapChain* _lightingUniformBuffers;
-    id<MTLBuffer> _modelCharacterUnfiromBuffer;
-    
     NuoCheckboardMesh* _checkerboard;
     
     NuoRayAccelerateStructure* _rayAccelerator;
@@ -90,6 +84,9 @@
 }
 
 
+@dynamic fieldOfView;
+
+
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
@@ -97,15 +94,15 @@
     {
         self.commandQueue = commandQueue;
         
-        [self makeResources];
-        
         _modelOptions = [NuoMeshOption new];
-        _cullEnabled = YES;
-        _fieldOfView = (2 * M_PI) / 8;
+        
+        _sceneParameters = [[ModelSceneParameters alloc] initWithDevice:commandQueue.device];
+        _sceneParameters.shadowMap = self;
         
         _checkerboard = [[NuoCheckboardMesh alloc] initWithCommandQueue:commandQueue];
         
         _sceneRoot = [[NuoMeshSceneRoot alloc] init];
+        _sceneParameters.sceneRoot = _sceneRoot;
         _boardMeshes = [NSMutableArray new];
         
         _viewRotation = NuoMatrixFloat44Identity;
@@ -116,7 +113,7 @@
         _hybridRenderer = [[ModelHybridRenderDelegate alloc] initWithCommandQueue:commandQueue
                                                                   withAccelerator:_rayAccelerator
                                                                     withSceneRoot:_sceneRoot
-                                                              withSceneParameters:self];
+                                                              withSceneParameters:_sceneParameters];
         _renderDelegate = _hybridRenderer;
     }
 
@@ -138,13 +135,21 @@
     [_rayAccelerator setDrawableSize:drawableSize];
     
     [_renderDelegate setDrawableSize:drawableSize];
+    [_sceneParameters setDrawableSize:drawableSize];
 }
 
 
 - (void)setFieldOfView:(float)fieldOfView
 {
-    _fieldOfView = fieldOfView;
+    [_sceneParameters setFieldOfView:fieldOfView];
     [_rayAccelerator setFieldOfView:fieldOfView];
+}
+
+
+
+- (float)fieldOfView
+{
+    return [_sceneParameters fieldOfView];
 }
 
 
@@ -506,7 +511,7 @@
         
         {
             exporter.StartEntry("FOV");
-            exporter.SetEntryValueFloat(_fieldOfView);
+            exporter.SetEntryValueFloat(self.fieldOfView);
             exporter.EndEntry(false);
         }
         
@@ -681,7 +686,7 @@
     lua->RemoveField();
     
     lua->GetField("view", -1);
-    _fieldOfView = lua->GetFieldAsNumber("FOV", -1);
+    self.fieldOfView = lua->GetFieldAsNumber("FOV", -1);
     lua->RemoveField();
     
     lua->GetField("models", -1);
@@ -753,7 +758,7 @@
     
     lua->GetField("lights", -1);
     
-    _ambientDensity = lua->GetFieldAsNumber("ambient", -1);
+    self.ambientDensity = lua->GetFieldAsNumber("ambient", -1);
     
     {
         lua->GetField("ambientParams", -1);
@@ -807,6 +812,15 @@
 }
 
 
+- (void)setAmbientDensity:(float)ambientDensity
+{
+    _ambientDensity = ambientDensity;
+    _sceneParameters.ambient = NuoVectorFloat3(_ambientDensity,
+                                               _ambientDensity,
+                                               _ambientDensity);
+}
+
+
 - (void)setAmbientParameters:(const NuoAmbientUniformField&)ambientParameters
 {
     _ambientParameters = ambientParameters;
@@ -823,24 +837,6 @@
     return _ambientParameters;
 }
 
-
-- (void)makeResources
-{
-    _transUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
-                                                       WithBufferSize:sizeof(NuoUniforms)
-                                                          withOptions:MTLResourceStorageModeManaged
-                                                        withChainSize:kInFlightBufferCount];
-    _lightingUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
-                                                          WithBufferSize:sizeof(NuoLightUniforms)
-                                                             withOptions:MTLResourceStorageModeManaged
-                                                           withChainSize:kInFlightBufferCount];
-    
-    NuoModelCharacterUniforms modelCharacter;
-    modelCharacter.opacity = 1.0f;
-    _modelCharacterUnfiromBuffer = [self.commandQueue.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
-                                                                         options:MTLResourceOptionCPUCacheModeDefault];
-    memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(NuoModelCharacterUniforms));
-}
 
 - (void)handleDeltaPosition
 {
@@ -919,59 +915,19 @@
     //
     [self handleDeltaPosition];
     
-    // rotation is around the center of a previous scene snapshot
-    //
-    const NuoMatrixFloat44 viewTrans = [self viewMatrix];
-    
-    const CGSize drawableSize = self.renderTarget.drawableSize;
-    const float aspect = drawableSize.width / drawableSize.height;
-    
-    // bounding box transform and determining the near/far
-    //
-    NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
-
-    float near = -bounds._center.z() - bounds._span.z() / 2.0 + 0.01;
-    float far = near + bounds._span.z() + 0.02;
-    near = std::max<float>(0.001, near);
-    far = std::max<float>(near + 0.001, far);
-    
-    _projection = NuoMatrixPerspective(aspect, _fieldOfView, near, far);
-
-    NuoUniforms uniforms;
-    uniforms.viewMatrix = viewTrans._m;
-    uniforms.viewMatrixInverse = viewTrans.Inverse()._m;
-    uniforms.viewProjectionMatrix = (_projection * viewTrans)._m;
-
-    [_transUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&uniforms];
-    
-    NuoLightUniforms lighting;
-    lighting.ambientDensity = _ambientDensity;
-    for (unsigned int i = 0; i < 4; ++i)
-    {
-        const NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(_lights[i].lightingRotationX,
-                                                                  _lights[i].lightingRotationY);
-        
-        const NuoVectorFloat4 lightVector(rotationMatrix * NuoVectorFloat4(0, 0, 1, 0));
-        lighting.lightParams[i].direction = lightVector._vector;
-        lighting.lightParams[i].density = _lights[i].lightingDensity;
-        lighting.lightParams[i].specular = _lights[i].lightingSpecular;
-        
-        if (i < 2)
-        {
-            lighting.shadowParams[i].soften = _lights[i].shadowSoften;
-            lighting.shadowParams[i].bias = _lights[i].shadowBias;
-            lighting.shadowParams[i].occluderRadius = _lights[i].shadowOccluderRadius;
-        }
-    }
-    
-    [_lightingUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&lighting];
+    [_sceneParameters setViewMatrix:[self viewMatrix]];
+    [_sceneParameters setLights:_lights];
+    [_sceneParameters updateUniforms:commandBuffer];
     
     [_sceneRoot updateUniform:commandBuffer withTransform:NuoMatrixFloat44Identity];
-    [_sceneRoot setCullEnabled:_cullEnabled];
+    [_sceneRoot setCullEnabled:_sceneParameters.cullEnabled];
     
     if (_cubeMesh)
     {
-        const NuoMatrixFloat44 projectionMatrixForCube = NuoMatrixPerspective(aspect, _fieldOfView, 0.3, 2.0);
+        const CGSize& drawableSize = _sceneParameters.drawableSize;
+        const float aspect = drawableSize.width / drawableSize.height;
+        
+        const NuoMatrixFloat44 projectionMatrixForCube = NuoMatrixPerspective(aspect, self.fieldOfView, 0.3, 2.0);
         [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
         [_cubeMesh updateUniform:commandBuffer withTransform:NuoMatrixFloat44Identity];
     }
@@ -1078,7 +1034,7 @@
     {
         const NuoVectorFloat3 center = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox._center;
         const NuoVectorFloat4 centerVec(center.x(), center.y(), center.z(), 1.0);
-        const NuoVectorFloat4 centerProjected = _projection * centerVec;
+        const NuoVectorFloat4 centerProjected = _sceneParameters.projection * centerVec;
         const NuoVectorFloat2 centerOnScreen = NuoVectorFloat2(centerProjected.x(), centerProjected.y()) / centerProjected.w();
         
         const float currentDistance = NuoDistance(normalized, centerOnScreen);
@@ -1121,36 +1077,12 @@
 }
 
 
-#pragma mark -- Protocol NuoMeshSceneParametersProvider
+#pragma mark -- Protocol ModelShadowMapProvider
 
 - (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
 {
     return [_renderDelegate shadowMap:index withMask:mask];
 }
-
-- (NuoBufferSwapChain*)lightCastBuffers
-{
-    return [_renderDelegate lightCastBuffers];
-}
-
-
-- (NuoBufferSwapChain*)lightingUniformBuffers
-{
-    return _lightingUniformBuffers;
-}
-
-
-- (id<MTLBuffer>)modelCharacterUnfiromBuffer
-{
-    return _modelCharacterUnfiromBuffer;
-}
-
-
-- (NuoBufferSwapChain*)transUniformBuffers
-{
-    return _transUniformBuffers;
-}
-
 
 - (id<MTLTexture>)depthMap
 {

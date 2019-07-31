@@ -19,6 +19,7 @@
 // pipeline stages
 //
 #import "ModelViewerRenderer.h"
+#import "ModelSceneParameters.h"
 #import "ModelDissectRenderer.h"
 #import "ModelSelectionRenderer.h"
 #import "NotationRenderer.h"
@@ -275,12 +276,13 @@ MouseDragMode;
     
     [self showHideFrameRate:_modelPanel.showFrameRate];
     [_modelRender setAmbientParameters:_modelPanel.ambientParameters];
-    [_modelRender setCullEnabled:_modelPanel.cullEnabled];
     [_modelRender setFieldOfView:_modelPanel.fieldOfViewRadian];
     [_modelRender setAmbientDensity:_modelPanel.ambientDensity];
     [_modelRender setTransMode:_modelPanel.transformMode];
     [_modelRender setIlluminationStrength:_modelPanel.illumination];
     [_modelRender setShowCheckerboard:_modelPanel.showModelParts];
+    
+    [_modelRender.sceneParameters setCullEnabled:_modelPanel.cullEnabled];
     
     [_modelSelectionRenderer setEnabled:_modelPanel.showModelParts];
     [_modelComponentPanels setHidden:!_modelPanel.showModelParts];
@@ -331,7 +333,7 @@ MouseDragMode;
         _modelSelectionRenderer = [[ModelSelectionRenderer alloc] initWithCommandQueue:self.commandQueue
                                                                        withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                        withSampleCount:kSampleCount];
-        _modelSelectionRenderer.paramsProvider = _modelRender;
+        _modelSelectionRenderer.paramsProvider = _modelRender.sceneParameters;
         [self setupPipelineSettings];
     }
     
@@ -530,7 +532,7 @@ MouseDragMode;
     
     _modelRender = [[ModelRenderer alloc] initWithCommandQueue:self.commandQueue];
     _modelDissectRenderer = [[ModelDissectRenderer alloc] initWithCommandQueue:self.commandQueue];
-    _modelDissectRenderer.paramsProvider = _modelRender;
+    _modelDissectRenderer.paramsProvider = _modelRender.sceneParameters;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];

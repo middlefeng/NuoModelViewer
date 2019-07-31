@@ -17,6 +17,8 @@
 @class NuoLightSource;
 @class NuoRayAccelerateStructure;
 
+@class ModelSceneParameters;
+
 /**
  TERMS:
      - view is usually used in the context only coordinate frames involved. the scope (volume)
@@ -57,7 +59,7 @@ class NuoLua;
 
 
 
-@interface ModelRenderer : NuoRenderPipelinePass <NuoMeshSceneParametersProvider> 
+@interface ModelRenderer : NuoRenderPipelinePass
 
 
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lights;
@@ -86,8 +88,8 @@ class NuoLua;
 //
 @property (nonatomic, assign) RecordStatus rayTracingRecordStatus;
 
+@property (nonatomic, readonly) ModelSceneParameters* sceneParameters;
 
-@property (nonatomic, assign) BOOL cullEnabled;
 @property (nonatomic, assign) float fieldOfView;
 @property (nonatomic, assign) float illuminationStrength;
 @property (nonatomic, assign) float ambientDensity;

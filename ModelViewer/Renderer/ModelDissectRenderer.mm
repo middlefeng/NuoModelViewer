@@ -111,7 +111,6 @@
 
 
 - (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
-            withInFlightIndex:(unsigned int)inFlight
 {
     [_textureMesh setModelTexture:self.sourceTexture];
     
