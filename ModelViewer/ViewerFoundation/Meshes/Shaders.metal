@@ -134,7 +134,7 @@ fragment FragementScreenSpace fragement_screen_space(VertexScreenSpace vert [[st
     FragementScreenSpace result;
     result.position = vert.position;
     result.normal = vert.normal;
-    result.ambientColorFactor = float4(saturate(vert.diffuseColorFactor * lightUniform.ambientDensity) * vert.opacity, vert.opacity);
+    result.ambientColorFactor = float4(saturate(vert.diffuseColorFactor * lightUniform.ambient) * vert.opacity, vert.opacity);
     
     result.shadowOverlay = kShadowOverlay ? 1.0 : 0.0;
     
