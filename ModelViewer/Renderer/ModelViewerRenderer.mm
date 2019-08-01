@@ -41,7 +41,7 @@
 #import "NuoInspectableMaster.h"
 
 
-@interface ModelRenderer () < ModelShadowMapProvider >
+@interface ModelRenderer ()
 
 
 @property (nonatomic, weak) NuoMeshCompound* mainModelMesh;
@@ -72,15 +72,11 @@
     NuoCheckboardMesh* _checkerboard;
     
     NuoRayAccelerateStructure* _rayAccelerator;
-    
-    id<ModelRenderDelegate> _renderDelegate;
-    
-    ModelHybridRenderDelegate* _hybridRenderer;
-    
     BOOL _rayAcceleratorOutOfSync;
     BOOL _rayAcceleratorNeedRebuild;
     
     NuoAmbientUniformField _ambientParameters;
+    id<ModelRenderDelegate> _renderDelegate;
 }
 
 
@@ -96,30 +92,33 @@
         
         _modelOptions = [NuoMeshOption new];
         
-        _sceneParameters = [[ModelSceneParameters alloc] initWithDevice:commandQueue.device];
-        _sceneParameters.shadowMap = self;
-        
         _checkerboard = [[NuoCheckboardMesh alloc] initWithCommandQueue:commandQueue];
         
         _sceneRoot = [[NuoMeshSceneRoot alloc] init];
-        _sceneParameters.sceneRoot = _sceneRoot;
         _boardMeshes = [NSMutableArray new];
+        
+        _sceneParameters = [[ModelSceneParameters alloc] initWithDevice:commandQueue.device];
+        _sceneParameters.sceneRoot = _sceneRoot;
         
         _viewRotation = NuoMatrixFloat44Identity;
         _viewTranslation = NuoMatrixFloat44Identity;
         
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
         
-        _hybridRenderer = [[ModelHybridRenderDelegate alloc] initWithCommandQueue:commandQueue
-                                                                  withAccelerator:_rayAccelerator
-                                                                    withSceneRoot:_sceneRoot
-                                                              withSceneParameters:_sceneParameters];
-        _renderDelegate = _hybridRenderer;
+        [self switchToHybrid];
     }
 
     return self;
 }
 
+
+- (void)switchToHybrid
+{
+    _renderDelegate = [[ModelHybridRenderDelegate alloc] initWithCommandQueue:self.commandQueue
+                                                              withAccelerator:_rayAccelerator
+                                                                withSceneRoot:_sceneRoot
+                                                          withSceneParameters:_sceneParameters];
+}
 
 
 - (void)setRayTracingRecordStatus:(RecordStatus)rayTracingRecordStatus
@@ -1074,19 +1073,6 @@
 - (void)setResolveDepth:(BOOL)resolveDepth
 {
     [_renderDelegate setResolveDepth:resolveDepth];
-}
-
-
-#pragma mark -- Protocol ModelShadowMapProvider
-
-- (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
-{
-    return [_renderDelegate shadowMap:index withMask:mask];
-}
-
-- (id<MTLTexture>)depthMap
-{
-    return [_renderDelegate depthMap];
 }
 
 

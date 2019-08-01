@@ -11,6 +11,7 @@
 
 #import "NuoMeshSceneRenderPass.h"
 #import "ModelRenderDelegate.h"
+#import "ModelSceneParameters.h"
 
 
 
@@ -19,13 +20,13 @@
 
 
 
-@interface ModelHybridRenderDelegate : NuoMeshSceneRenderPass < ModelRenderDelegate >
+@interface ModelHybridRenderDelegate : NuoMeshSceneRenderPass < ModelRenderDelegate, ModelShadowMapProvider >
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                      withAccelerator:(NuoRayAccelerateStructure*)accelerateSturcture
                        withSceneRoot:(NuoMeshSceneRoot*)sceneRoot
-                 withSceneParameters:(id<NuoMeshSceneParametersProvider>)sceneParam;
+                 withSceneParameters:(ModelSceneParameters*)sceneParam;
 
 
 @end

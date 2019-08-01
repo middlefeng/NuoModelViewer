@@ -48,7 +48,7 @@
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                      withAccelerator:(NuoRayAccelerateStructure*)accelerateSturcture
                        withSceneRoot:(NuoMeshSceneRoot*)sceneRoot
-                 withSceneParameters:(id<NuoMeshSceneParametersProvider>)sceneParam
+                 withSceneParameters:(ModelSceneParameters*)sceneParam
 {
     if (self = [super initWithCommandQueue:commandQueue])
     {
@@ -79,6 +79,7 @@
         
         _sceneRoot = sceneRoot;
         
+        sceneParam.shadowMap = self;
         self.paramsProvider = sceneParam;
     }
     
@@ -115,7 +116,7 @@
 }
 
 
-- (void)setSampleCount:(uint)count
+- (void)setSampleCount:(NSUInteger)count
 {
     // no calling to shadow map render. they are not MSAA-ed
 

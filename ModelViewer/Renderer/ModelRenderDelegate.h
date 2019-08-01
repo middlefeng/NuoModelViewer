@@ -35,14 +35,14 @@ RecordStatus;
 
 
 - (void)setDrawableSize:(CGSize)drawableSize;
-- (void)setSampleCount:(uint)count;
 
 - (void)setAmbientParameters:(const NuoAmbientUniformField&)ambientParameters;
 - (void)setAmbient:(const NuoVectorFloat3&)ambient;
 
+// info that required by real-time/hybrid only
+//
+- (void)setSampleCount:(NSUInteger)count;
 - (void)setResolveDepth:(BOOL)resolveDepth;
-- (id<MTLTexture>)depthMap;
-- (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
 
 - (void)predrawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
             withRayStructChanged:(BOOL)changed
