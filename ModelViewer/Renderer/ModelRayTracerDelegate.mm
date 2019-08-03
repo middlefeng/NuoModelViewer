@@ -6,7 +6,7 @@
 //  Copyright © 2019 middleware. All rights reserved.
 //
 
-#import "ModelHybridRenderDelegate.h"
+#import "ModelRayTracerDelegate.h"
 
 #import "NuoBufferSwapChain.h"
 #import "NuoLightSource.h"
@@ -20,7 +20,7 @@
 
 
 
-@implementation ModelHybridRenderDelegate
+@implementation ModelRayTracerDelegate
 {
     NuoShadowMapRenderer* _shadowMapRenderer[2];
     NuoRenderPassTarget* _immediateTarget;
@@ -241,9 +241,11 @@
     
     renderPass.label = @"Scene Render Pass";
     
-    [self setSceneBuffersTo:renderPass];
-    
-    [_sceneRoot drawMesh:renderPass];
+    if (_rayTracingRecordStatus == kRecord_Stop)
+    {
+        [self setSceneBuffersTo:renderPass];
+        [_sceneRoot drawMesh:renderPass];
+    }
     
     [_immediateTarget releaseRenderPassEndcoder];
     

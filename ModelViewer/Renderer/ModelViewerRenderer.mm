@@ -30,6 +30,7 @@
 #import "NuoRayAccelerateStructure.h"
 #import "ModelRenderDelegate.h"
 #import "ModelHybridRenderDelegate.h"
+#import "ModelRayTracerDelegate.h"
 
 #import "NuoDirectoryUtils.h"
 #import "NuoModelLoaderGPU.h"
@@ -77,6 +78,7 @@
     
     NuoAmbientUniformField _ambientParameters;
     id<ModelRenderDelegate> _renderDelegate;
+    BOOL _rayTracingHybrid;
 }
 
 
@@ -105,7 +107,8 @@
         
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
         
-        [self switchToHybrid];
+        //[self switchToHybrid];
+        //[self switchToRayTracing];
     }
 
     return self;
@@ -114,10 +117,29 @@
 
 - (void)switchToHybrid
 {
+    if (_rayTracingHybrid && _renderDelegate)
+        return;
+    
     _renderDelegate = [[ModelHybridRenderDelegate alloc] initWithCommandQueue:self.commandQueue
                                                               withAccelerator:_rayAccelerator
                                                                 withSceneRoot:_sceneRoot
                                                           withSceneParameters:_sceneParameters];
+    
+    _rayTracingHybrid = YES;
+}
+
+
+- (void)switchToRayTracing
+{
+    if (!_rayTracingHybrid && _renderDelegate)
+        return;
+    
+    _renderDelegate = [[ModelRayTracerDelegate alloc] initWithCommandQueue:self.commandQueue
+                                                           withAccelerator:_rayAccelerator
+                                                             withSceneRoot:_sceneRoot
+                                                       withSceneParameters:_sceneParameters];
+        
+    _rayTracingHybrid = NO;
 }
 
 

@@ -127,5 +127,8 @@ class NuoLua;
 - (void)rebuildRayTracingBuffers;
 - (void)syncRayTracingBuffers;
 
+- (void)switchToHybrid;
+- (void)switchToRayTracing;
+
 
 @end

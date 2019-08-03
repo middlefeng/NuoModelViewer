@@ -46,7 +46,7 @@
 
 @property (nonatomic, strong) NSButton* rayTracingRecord;
 @property (nonatomic, strong) NSButton* rayTracingPause;
-@property (nonatomic, strong) NSButton* rayTracingHybrid;
+@property (nonatomic, strong) NSButton* rayTracingHybridMode;
 
 @property (nonatomic, strong) NSPopUpButton* deviceList;
 
@@ -510,9 +510,9 @@
                                           withLeading:0 inView:scrollDocumentView];
     NSButton* rayTracingHybrid = [self createSwitchButtonWithLabel:@"Hybrid Rendering"
                                                          withFrame:rayHybridFrame
-                                                      withSelector:@selector(rayTracingUpdate:)];
+                                                      withSelector:@selector(rayTracingModeUpdate:)];
     [scrollDocumentView addSubview:rayTracingHybrid];
-    _rayTracingHybrid = rayTracingHybrid;
+    _rayTracingHybridMode = rayTracingHybrid;
     
     // ray tracing illumination stregth
     
@@ -764,6 +764,14 @@
         _rayTracingRecordStatus = kRecord_Pause;
     else
         _rayTracingRecordStatus = kRecord_Stop;
+    
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
+}
+
+
+- (void)rayTracingModeUpdate:(id)sender
+{
+    _rayTracingHybrid = _rayTracingHybridMode.state == NSControlStateValueOn;
     
     [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
 }

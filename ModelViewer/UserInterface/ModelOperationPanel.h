@@ -48,6 +48,7 @@
 
 @property (nonatomic, assign) RecordStatus motionBlurRecordStatus;
 @property (nonatomic, assign) RecordStatus rayTracingRecordStatus;
+@property (nonatomic, assign) BOOL rayTracingHybrid;
 @property (nonatomic, assign) float illumination;
 
 

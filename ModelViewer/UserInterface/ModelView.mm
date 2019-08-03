@@ -593,6 +593,11 @@ MouseDragMode;
     [_modelRender setRenderTarget:modelRenderTarget];
     lastTarget = modelRenderTarget;
     
+    if (_modelPanel.rayTracingHybrid)
+        [_modelRender switchToHybrid];
+    else
+        [_modelRender switchToRayTracing];
+    
     if (_modelPanel.rayTracingRecordStatus == kRecord_Start &&
         _modelPanel.motionBlurRecordStatus != kRecord_Start)
     {
