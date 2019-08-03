@@ -25,12 +25,12 @@ static const uint32_t kRandomBufferSize = 256;
 static const uint32_t kRayBounce = 4;
 
 
-@implementation ModelDirectLighting
+@implementation ModelDirectLighting1
 
 @end
 
 
-@interface ModelRayTracingShadowPerLight : NuoRayTracingRenderer
+@interface ModelRayTracingShadowPerLight1 : NuoRayTracingRenderer
 
 @property (nonatomic, readonly) NSArray<NuoRayBuffer*>* shadowRays;
 @property (nonatomic, readonly) id<MTLBuffer> shadowIntersection;
@@ -47,7 +47,7 @@ static const uint32_t kRayBounce = 4;
 
 
 
-@implementation ModelRayTracingShadowPerLight
+@implementation ModelRayTracingShadowPerLight1
 {
     NuoComputePipeline* _shadowShadePipeline;
     NuoComputePipeline* _differentialPipeline;
@@ -204,7 +204,7 @@ static const uint32_t kRayBounce = 4;
     NuoBufferSwapChain* _rayTraceUniform;
     NuoBufferSwapChain* _randomBuffers;
     
-    ModelRayTracingShadowPerLight* _shadowPerLight[2];
+    ModelRayTracingShadowPerLight1* _shadowPerLight[2];
     
     NuoRayBuffer* _incidentRaysBuffer;
     
@@ -243,7 +243,7 @@ static const uint32_t kRayBounce = 4;
                                                       withChainSize:kInFlightBufferCount];
         
         for (uint i = 0; i < 2; ++i)
-            _shadowPerLight[i] = [[ModelRayTracingShadowPerLight alloc] initWithCommandQueue:commandQueue];
+            _shadowPerLight[i] = [[ModelRayTracingShadowPerLight1 alloc] initWithCommandQueue:commandQueue];
     }
     
     return self;
@@ -254,7 +254,7 @@ static const uint32_t kRayBounce = 4;
 {
     [super setDrawableSize:drawableSize];
     
-    for (ModelRayTracingShadowPerLight* renderer : _shadowPerLight)
+    for (ModelRayTracingShadowPerLight1* renderer : _shadowPerLight)
         [renderer setDrawableSize:drawableSize];
     
     _incidentRaysBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
@@ -270,7 +270,7 @@ static const uint32_t kRayBounce = 4;
 
 - (void)resetResources
 {
-    for (ModelRayTracingShadowPerLight* renderer : _shadowPerLight)
+    for (ModelRayTracingShadowPerLight1* renderer : _shadowPerLight)
         [renderer resetResources];
     
     [super resetResources];
@@ -400,15 +400,15 @@ static const uint32_t kRayBounce = 4;
 
 
 
-- (NSArray<ModelDirectLighting*>*)directLight
+- (NSArray<ModelDirectLighting1*>*)directLight
 {
-    ModelDirectLighting* lighting[2];
+    ModelDirectLighting1* lighting[2];
     
     for (uint i = 0; i < 2; ++i)
     {
         NSArray* textures = _shadowPerLight[i].targetTextures;
         
-        lighting[i] = [ModelDirectLighting new];
+        lighting[i] = [ModelDirectLighting1 new];
         lighting[i].lighting = textures[kNuoRayIndex_OnVirtual * 2];
         lighting[i].blocked  = textures[kNuoRayIndex_OnVirtual * 2 + 1];
     }

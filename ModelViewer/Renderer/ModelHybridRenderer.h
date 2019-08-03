@@ -2,8 +2,8 @@
 //  ModelRayTracingRenderer.h
 //  ModelViewer
 //
-//  Created by middleware on 6/22/18.
-//  Copyright © 2018 middleware. All rights reserved.
+//  Created by middleware on 8/3/2019.
+//  Copyright © 2019 middleware. All rights reserved.
 //
 
 #import "NuoRayTracingRenderer.h"
@@ -23,7 +23,7 @@
 
 
 
-@interface ModelRayTracingRenderer : NuoRayTracingRenderer
+@interface ModelHybridRenderer : NuoRayTracingRenderer
 
 
 @property (nonatomic, assign) NuoBounds sceneBounds;

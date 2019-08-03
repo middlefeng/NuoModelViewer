@@ -14,7 +14,7 @@
 
 
 
-@interface ModelDirectLighting : NSObject
+@interface ModelDirectLighting1 : NSObject
 
 @property (nonatomic, weak) id<MTLTexture> lighting;
 @property (nonatomic, weak) id<MTLTexture> blocked;
@@ -34,7 +34,7 @@
 
 - (void)setLightSource:(NuoLightSource*)lightSource forIndex:(uint)index;
 - (id<MTLTexture>)shadowForLightSource:(uint)index withMask:(NuoSceneMask)mask;
-- (NSArray<ModelDirectLighting*>*)directLight;
+- (NSArray<ModelDirectLighting1*>*)directLight;
 
 
 @end

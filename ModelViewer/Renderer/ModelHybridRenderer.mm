@@ -2,11 +2,11 @@
 //  ModelRayTracingRenderer.m
 //  ModelViewer
 //
-//  Created by middleware on 6/22/18.
-//  Copyright © 2018 middleware. All rights reserved.
+//  Created by middleware on 8/3/19.
+//  Copyright © 2019 middleware. All rights reserved.
 //
 
-#import "ModelRayTracingRenderer.h"
+#import "ModelHybridRenderer.h"
 
 #import "NuoLightSource.h"
 
@@ -195,7 +195,7 @@ static const uint32_t kRayBounce = 4;
 
 
 
-@implementation ModelRayTracingRenderer
+@implementation ModelHybridRenderer
 {
     NuoComputePipeline* _primaryRaysPipeline;
     NuoComputePipeline* _primaryAndIncidentRaysPipeline;

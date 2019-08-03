@@ -2,22 +2,22 @@
 //  ModelRayTracingBlendRenderer.m
 //  ModelViewer
 //
-//  Created by middleware on 8/27/18.
-//  Copyright © 2018 middleware. All rights reserved.
+//  Created by middleware on 8/3/19.
+//  Copyright © 2019 middleware. All rights reserved.
 //
 
-#import "ModelRayTracingBlendRenderer.h"
+#import "ModelHybridBlendRenderer.h"
 
 #import "NuoComputeEncoder.h"
 #import "NuoCommandBuffer.h"
-#import "ModelRayTracingRenderer.h"
+#import "ModelHybridRenderer.h"
 #import "NuoRenderPassAttachment.h"
 
 #import "NuoInspectableMaster.h"
 
 
 
-@implementation ModelRayTracingBlendRenderer
+@implementation ModelHybridBlendRenderer
 {
     NuoIlluminationMesh* _mesh;
     

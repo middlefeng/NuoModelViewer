@@ -2,8 +2,8 @@
 //  ModelRayTracingBlendRenderer.h
 //  ModelViewer
 //
-//  Created by middleware on 8/27/18.
-//  Copyright © 2018 middleware. All rights reserved.
+//  Created by middleware on 8/3/19.
+//  Copyright © 2019 middleware. All rights reserved.
 //
 
 #import "NuoRenderPipelinePass.h"
@@ -15,7 +15,7 @@
 
 
 
-@interface ModelRayTracingBlendRenderer : NuoRenderPass
+@interface ModelHybridBlendRenderer : NuoRenderPass
 
 
 @property (nonatomic, weak) id<MTLTexture> immediateResult;

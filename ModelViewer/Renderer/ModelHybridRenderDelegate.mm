@@ -12,8 +12,8 @@
 #import "NuoLightSource.h"
 #import "NuoShadowMapRenderer.h"
 #import "NuoDeferredRenderer.h"
-#import "ModelRayTracingRenderer.h"
-#import "ModelRayTracingBlendRenderer.h"
+#import "ModelHybridRenderer.h"
+#import "ModelHybridBlendRenderer.h"
 #import "NuoInspectableMaster.h"
 
 #include "NuoMeshSceneRoot.h"
@@ -25,9 +25,9 @@
     NuoShadowMapRenderer* _shadowMapRenderer[2];
     NuoRenderPassTarget* _immediateTarget;
     NuoDeferredRenderer* _deferredRenderer;
-    ModelRayTracingBlendRenderer* _illuminationRenderer;
+    ModelHybridBlendRenderer* _illuminationRenderer;
     
-    ModelRayTracingRenderer* _rayTracingRenderer;
+    ModelHybridRenderer* _rayTracingRenderer;
     
     NuoVectorFloat3 _ambient;
     NuoAmbientUniformField _ambientParameters;
@@ -65,11 +65,11 @@
         _deferredRenderer = [[NuoDeferredRenderer alloc] initWithCommandQueue:commandQueue
                                                            withSceneParameter:sceneParam];
         
-        _illuminationRenderer = [[ModelRayTracingBlendRenderer alloc] initWithCommandQueue:commandQueue
-                                                                           withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                           withSampleCount:1];
+        _illuminationRenderer = [[ModelHybridBlendRenderer alloc] initWithCommandQueue:commandQueue
+                                                                       withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                       withSampleCount:1];
         
-        _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:commandQueue];
+        _rayTracingRenderer = [[ModelHybridRenderer alloc] initWithCommandQueue:commandQueue];
         _rayTracingRenderer.rayStructure = accelerateSturcture;
         
         _lightCastBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device

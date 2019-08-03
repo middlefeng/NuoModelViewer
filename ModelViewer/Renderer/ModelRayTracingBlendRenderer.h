@@ -11,7 +11,7 @@
 
 
 
-@class ModelDirectLighting;
+@class ModelDirectLighting1;
 
 
 
@@ -23,7 +23,7 @@
 @property (nonatomic, weak) id<MTLTexture> illuminationOnVirtual;
 @property (nonatomic, weak) id<MTLTexture> translucentMap;
 
-@property (nonatomic, strong) NSArray<ModelDirectLighting*>* directLighting;
+@property (nonatomic, strong) NSArray<ModelDirectLighting1*>* directLighting;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
