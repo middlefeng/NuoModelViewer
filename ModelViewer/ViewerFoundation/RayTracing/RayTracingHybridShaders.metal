@@ -20,28 +20,6 @@ using namespace metal;
 
 
 
-struct PathSample
-{
-    float3 direction;
-
-    // the path scatter term contributed by the reflection where the current sample
-    // plays as incident ray. it is
-    //
-    // f * cos(theta) / pdf, see p875, pbr-book, [14.19]
-    //
-    float3 pathScatterTerm;
-};
-
-
-
-struct SurfaceInteraction
-{
-    float3 p;
-    NuoRayTracingMaterial material;
-};
-
-
-
 static void self_illumination(uint2 tid,
                               device RayStructureUniform& structUniform,
                               constant NuoRayTracingUniforms& tracingUniforms,
@@ -128,14 +106,14 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
 
 
 
-kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
-                                 device RayStructureUniform& structUniform [[buffer(0)]],
-                                 constant NuoRayTracingUniforms& tracingUniforms,
-                                 device NuoRayTracingRandomUnit* random,
-                                 texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                 texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
-                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
-                                 sampler samplr [[sampler(0)]])
+kernel void incident_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
+                                        device RayStructureUniform& structUniform [[buffer(0)]],
+                                        constant NuoRayTracingUniforms& tracingUniforms,
+                                        device NuoRayTracingRandomUnit* random,
+                                        texture2d<float, access::read_write> overlayResult [[texture(0)]],
+                                        texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
+                                        array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
+                                        sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
     
@@ -270,17 +248,13 @@ kernel void lighting_accumulate(uint2 tid [[thread_position_in_grid]],
 }
 
 
-
-static PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 ray,
-                                 float2 sampleUV, float Cdeterminator  /* randoms */ );
-
     
 /**
  *  write the result of illuminating surface and ambient
  */
-void overlayWrite(uint hitType, float4 value, uint2 tid,
-                  texture2d<float, access::read_write> overlayResult,
-                  texture2d<float, access::read_write> overlayForVirtual)
+static void overlayWrite(uint hitType, float4 value, uint2 tid,
+                         texture2d<float, access::read_write> overlayResult,
+                         texture2d<float, access::read_write> overlayForVirtual)
 {
     texture2d<float, access::read_write> texture = (hitType & kNuoRayMask_Virtual)?
                                                     overlayForVirtual : overlayResult;
@@ -418,78 +392,3 @@ void self_illumination(uint2 tid,
     }
 }
 
-
-inline static float3 reflection_vector(float3 wo, float3 normal);
-inline bool same_hemisphere(float3 w, float3 wp);
-
-
-PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 ray,
-                          float2 sampleUV, float Cdeterminator  /* randoms */ )
-{
-    PathSample result;
-    
-    const float3 Cdiff = interaction.material.diffuseColor;
-    const float3 Cspec = interaction.material.specularColor;
-    const float Mspec = interaction.material.shinessDisolveIllum.x;
-    const float3 normal = interaction.material.normal;
-    
-    float CdiffSampleProbable = max(Cdiff.x, max(Cdiff.y, Cdiff.z));
-    float CspecSampleProbable = min(Cspec.x, min(Cspec.y, Cspec.z));
-    
-    float probableTotal = CdiffSampleProbable + CspecSampleProbable;
-    
-    if (Cdeterminator < CdiffSampleProbable / probableTotal)
-    {
-        float3 wi = sample_cosine_weighted_hemisphere(sampleUV, 1);
-        result.direction = align_hemisphere_normal(wi, normal);
-        result.pathScatterTerm = Cdiff * (probableTotal / CdiffSampleProbable);
-    }
-    else
-    {
-        float3 wo = relative_to_hemisphere_normal(ray, normal);
-        float3 wh = sample_cosine_weighted_hemisphere(sampleUV, Mspec);
-        float3 wi = reflection_vector(wo, wh);
-        
-        if (!same_hemisphere(wo, wi))
-        {
-            result.pathScatterTerm = 0.0;
-            return result;
-        }
-        
-        // all the following factor omit a 1/pi factor, which would have been cancelled
-        // in the calculation of cosinedPdfScale anyway
-        //
-        // hwPdf  -   PDF of the half vector in terms of theta_h, which is a cosine-weighed
-        //            distribution based on micro-facet (and simplified by the Blinn-Phong).
-        //            see comments in cosine_pow_pdf()
-        //
-        // f      -   BRDF specular term. note the normalization factor is (m + 8) / (8 * pi) because
-        //            it is related to theta rather than theta_h.
-        //            for the details of how the above normalization term is deduced, see http://www.farbrausch.de/%7Efg/stuff/phong.pdf
-        //
-        // pdf    -   PDF of the reflection vector. note this is not a analytical form in terms of theta,
-        //            rather it is a value in terms of wo and the half-vector
-        //            see p813, pbr-book
-        //
-        float hwPdf = (Mspec + 2.0) / 2.0;
-        float pdf = hwPdf / (4.0 * dot(wo, wh));
-        float3 f = specular_refectance_normalized(Cspec, Mspec, wo, wh);
-        
-        result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdf * wi.y /* cosine factor of incident ray */;
-        result.direction = align_hemisphere_normal(wi, normal);
-    }
-    
-    return result;
-}
-
-
-inline static float3 reflection_vector(float3 wo, float3 normal)
-{
-    return -wo + 2 * dot(wo, normal) * normal;
-}
-
-
-inline bool same_hemisphere(float3 w, float3 wp)
-{
-    return w.y * wp.y > 0;
-}

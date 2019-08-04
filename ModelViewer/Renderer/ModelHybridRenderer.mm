@@ -229,7 +229,7 @@ static const uint32_t kRayBounce = 4;
         _primaryAndIncidentRaysPipeline.name = @"Primary/Incident Ray Process";
         
         _rayShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                          withFunction:@"incident_ray_process"];
+                                                          withFunction:@"incident_ray_process_hybrid"];
         _rayShadePipeline.name = @"Incident Ray Shading";
         
         _rng = std::make_shared<NuoRayTracingRandom>(kRandomBufferSize, kRayBounce, 1);
