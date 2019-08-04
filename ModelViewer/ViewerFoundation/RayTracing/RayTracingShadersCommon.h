@@ -75,6 +75,29 @@ struct RayStructureUniform
 
 
 
+struct PathSample
+{
+    float3 direction;
+    
+    // the path scatter term contributed by the reflection where the current sample
+    // plays as incident ray. it is
+    //
+    // f * cos(theta) / pdf, see p875, pbr-book, [14.19]
+    //
+    float3 pathScatterTerm;
+};
+
+
+
+struct SurfaceInteraction
+{
+    float3 p;
+    NuoRayTracingMaterial material;
+};
+
+
+
+
 constant bool kShadowOnTranslucent  [[ function_constant(0) ]];
 
 
@@ -217,6 +240,11 @@ inline float3 sample_cone_uniform(float2 u, float cosThetaMax)
                   cosTheta,
                   metal::sin(phi) * sinTheta);
 }
+
+
+
+PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 ray,
+                          float2 sampleUV, float Cdeterminator  /* randoms */ );
 
 
 
