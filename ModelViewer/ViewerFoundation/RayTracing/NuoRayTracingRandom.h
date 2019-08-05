@@ -35,6 +35,15 @@ inline void NuoRandomBufferStratified<NuoRayTracingRandomUnit>::UpdateBuffer()
                 },
                 
                 // path determinator
+                UniformRandom(),
+                
+                // light source surfce
+                {
+                    ((float)_stratCurrentX[currentDimension] + UniformRandom()) * invSample,
+                    ((float)_stratCurrentY[currentDimension] + UniformRandom()) * invSample
+                },
+                
+                // light source select
                 UniformRandom()
             };
         }
