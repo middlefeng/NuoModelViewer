@@ -207,6 +207,9 @@ static const uint32_t kRayBounce = 4;
     ModelRayTracingShadowPerLight1* _shadowPerLight[2];
     
     NuoRayBuffer* _incidentRaysBuffer;
+    NuoRayBuffer* _shadowRaysBuffer;
+    id<MTLBuffer> _shadowIntersectionBuffer;
+
     
     PNuoRayTracingRandom _rng;
 }
@@ -259,6 +262,13 @@ static const uint32_t kRayBounce = 4;
     
     _incidentRaysBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
     _incidentRaysBuffer.dimension = drawableSize;
+    
+    _shadowRaysBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
+    _shadowRaysBuffer.dimension = drawableSize;
+    
+    const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayIntersectionStride;
+    _shadowIntersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
+                                                                      options:MTLResourceStorageModePrivate];
 }
 
 
@@ -364,6 +374,7 @@ static const uint32_t kRayBounce = 4;
         //
         [self runRayTraceCompute:_primaryAndIncidentRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
+                                   _shadowRaysBuffer.buffer,
                                    _shadowPerLight[0].shadowRays[kNuoRayIndex_OnTranslucent].buffer,
                                    _shadowPerLight[1].shadowRays[kNuoRayIndex_OnTranslucent].buffer,
                                    _incidentRaysBuffer.buffer]
@@ -372,10 +383,13 @@ static const uint32_t kRayBounce = 4;
         
         for (uint i = 0; i < kRayBounce; ++i)
         {
+            [self rayIntersect:commandBuffer withRays:_shadowRaysBuffer withIntersection:_shadowIntersectionBuffer];
             [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.intersectionBuffer];
             
             [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
-                       withParameter:@[rayTraceUniform, randomBuffer]
+                       withParameter:@[rayTraceUniform, randomBuffer,
+                                       _shadowRaysBuffer.buffer,
+                                       _shadowIntersectionBuffer]
                       withExitantRay:_incidentRaysBuffer.buffer
                     withIntersection:self.intersectionBuffer];
         }
