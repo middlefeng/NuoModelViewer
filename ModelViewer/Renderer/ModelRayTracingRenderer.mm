@@ -228,7 +228,7 @@ static const uint32_t kRayBounce = 4;
         _primaryRaysPipeline.name = @"Primary Ray Process";
         
         _primaryAndIncidentRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                                        withFunction:@"primary_and_incident_ray_process"];
+                                                                        withFunction:@"primary_scafold"];
         _primaryAndIncidentRaysPipeline.name = @"Primary/Incident Ray Process";
         
         _rayShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
@@ -374,8 +374,8 @@ static const uint32_t kRayBounce = 4;
         //
         [self runRayTraceCompute:_primaryAndIncidentRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
-                                   _shadowPerLight[0].shadowRays[kNuoRayIndex_OnTranslucent].buffer,
-                                   _shadowPerLight[1].shadowRays[kNuoRayIndex_OnTranslucent].buffer,
+                                   _shadowRaysBuffer.buffer,
+                                   _shadowIntersectionBuffer,
                                    _incidentRaysBuffer.buffer]
                   withExitantRay:nil
                 withIntersection:self.intersectionBuffer];
