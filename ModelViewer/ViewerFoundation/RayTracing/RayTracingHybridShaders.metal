@@ -79,12 +79,16 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     cameraRay.primaryHitMask = masks[triangleIndex];
     
     device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
+    device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16)].uv;
     
     // directional light sources in the scene definition are considered area lights with finite
     // subtending solid angles, in far distance
     //
-    shadow_ray_emit_infinite_area(tid, structUniform,
-                                  tracingUniforms, random, shadowRays, diffuseTex, samplr);
+    for (uint i = 0; i < 2; ++i)
+    {
+        shadow_ray_emit_infinite_area(rayIdx, structUniform, tracingUniforms,
+                                      i, r, &shadowRays[i][rayIdx], diffuseTex, samplr);
+    }
 }
 
 
@@ -114,12 +118,16 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
     cameraRay.primaryHitMask = masks[triangleIndex];
     
     device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
+    device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16)].uv;
     
     // directional light sources in the scene definition are considered area lights with finite
     // subtending solid angles, in far distance
     //
-    shadow_ray_emit_infinite_area(tid, structUniform,
-                                  tracingUniforms, random, shadowRays, diffuseTex, samplr);
+    for (uint i = 0; i < 2; ++i)
+    {
+        shadow_ray_emit_infinite_area(rayIdx, structUniform, tracingUniforms,
+                                      i, r, &shadowRays[i][rayIdx], diffuseTex, samplr);
+    }
     
     self_illumination(tid, structUniform,
                       tracingUniforms, incidentRaysBuffer,

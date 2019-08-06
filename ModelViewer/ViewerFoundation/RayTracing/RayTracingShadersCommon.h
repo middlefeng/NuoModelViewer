@@ -279,11 +279,12 @@ inline float3 relative_to_hemisphere_normal(float3 w, float3 n)
  *  shadow ray optimization
  */
 
-void shadow_ray_emit_infinite_area(uint2 tid,
+void shadow_ray_emit_infinite_area(uint rayIdx,
                                    device RayStructureUniform& structUniform,
                                    constant NuoRayTracingUniforms& tracingUniforms,
-                                   device NuoRayTracingRandomUnit* random,
-                                   device RayBuffer* shadowRays[2],
+                                   uint lightSource,
+                                   metal::float2 random,
+                                   device RayBuffer* shadowRays,
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr);
 
