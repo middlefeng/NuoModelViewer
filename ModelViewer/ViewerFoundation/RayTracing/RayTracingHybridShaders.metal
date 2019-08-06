@@ -337,42 +337,11 @@ void self_illumination(uint2 tid,
         else
         {
             device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
-            device float2& r = randomVars.uv;
-            device float& Cdeterm = randomVars.pathTermDeterminator;
-            
-            float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
-            
             NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
             material.diffuseColor = color;
             material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
             
-            const SurfaceInteraction interaction = { intersectionPoint, material };
-            PathSample sample = sample_scatter(interaction, -ray.direction, r, Cdeterm);
-            
-            // terminate further tracing if the term is zero. this happens when the vector is out of
-            // the hemisphere in the specular sampling
-            //
-            if (sample.pathScatterTerm.x == 0 &&
-                sample.pathScatterTerm.y == 0 &&
-                sample.pathScatterTerm.z == 0)
-            {
-                incidentRay.maxDistance = -1;
-                incidentRay.pathScatter = 0.0;
-            }
-            else
-            {
-                incidentRay.direction = sample.direction;
-                incidentRay.origin = intersectionPoint + normalize(material.normal) * (maxDistance / 20000.0);
-                incidentRay.maxDistance = maxDistance;
-                incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
-                incidentRay.primaryHitMask = ray.primaryHitMask;
-                incidentRay.bounce = ray.bounce + 1;
-                incidentRay.ambientIlluminated = ray.ambientIlluminated;
-                
-                // make the term of this reflection contribute to the path scatter
-                //
-                incidentRay.pathScatter = sample.pathScatterTerm * ray.pathScatter;
-            }
+            sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, incidentRay);
         }
         
         if (ray.bounce > 0 && !ray.ambientIlluminated && intersection.distance > ambientRadius)

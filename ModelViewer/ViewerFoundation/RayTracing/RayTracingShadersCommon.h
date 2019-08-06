@@ -317,6 +317,14 @@ void shadow_ray_emit_infinite_area(uint rayIdx,
                                    metal::sampler samplr);
 
 
+void sample_scatter_ray(float maxDistance,
+                        device NuoRayTracingRandomUnit& random,
+                        device Intersection& intersection,
+                        thread NuoRayTracingMaterial& material,
+                        thread RayBuffer& ray,
+                        device RayBuffer& incidentRay);
+
+
 
 #endif /* RayTracingShadersCommon_h */
 
