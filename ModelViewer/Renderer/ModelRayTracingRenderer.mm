@@ -374,7 +374,6 @@ static const uint32_t kRayBounce = 4;
         //
         [self runRayTraceCompute:_primaryAndIncidentRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
-                                   _shadowRaysBuffer.buffer,
                                    _shadowPerLight[0].shadowRays[kNuoRayIndex_OnTranslucent].buffer,
                                    _shadowPerLight[1].shadowRays[kNuoRayIndex_OnTranslucent].buffer,
                                    _incidentRaysBuffer.buffer]
