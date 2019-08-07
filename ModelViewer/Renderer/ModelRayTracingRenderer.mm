@@ -219,7 +219,8 @@ static const uint32_t kRayBounce = 4;
 {
     self = [super initWithCommandQueue:commandQueue
                        withPixelFormat:MTLPixelFormatRGBA32Float
-                       withTargetCount:2 /* for normal and virtual surfaces */ ];
+                       withTargetCount:3 /* 2 for ambient/local-illumination, for normal and virtual surfaces,
+                                          * 1 for direct lighting */ ];
     
     if (self)
     {

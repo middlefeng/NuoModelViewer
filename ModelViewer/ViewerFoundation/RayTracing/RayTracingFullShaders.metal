@@ -125,8 +125,9 @@ kernel void primary_scafold(uint2 tid [[thread_position_in_grid]],
                             device RayBuffer* incidentRaysBuffer,
                             device uint* masks,
                             texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                            texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
-                            array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
+                            texture2d<float, access::read_write> overlayForVirtual,
+                            texture2d<float, access::read_write> lightingTracing,
+                            array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                             sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
@@ -165,8 +166,9 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  device RayBuffer* shadowRayMain,
                                  device Intersection *intersections,
                                  texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                 texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
-                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
+                                 texture2d<float, access::read_write> overlayForVirtual,
+                                 texture2d<float, access::read_write> lightingTracing,
+                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                  sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
