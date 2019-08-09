@@ -105,14 +105,12 @@ kernel void ray_set_mask_illuminating(uint2 tid [[thread_position_in_grid]],
 void shadow_ray_emit_infinite_area(uint rayIdx,
                                    device RayStructureUniform& structUniform,
                                    constant NuoRayTracingUniforms& tracingUniforms,
-                                   uint lightSourceIndex,
+                                   constant NuoRayTracingLightSource& lightSource,
                                    float2 random,
                                    device RayBuffer* shadowRay,
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr)
 {
-    constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[lightSourceIndex];
-    
     device Intersection& intersection = structUniform.intersections[rayIdx];
     device NuoRayTracingMaterial* materials = structUniform.materials;
     device uint* index = structUniform.index;
@@ -171,7 +169,6 @@ void shadow_ray_emit_infinite_area(uint rayIdx,
         // specular and diffuse is normalized and scale as half-half
         //
         shadowRay->pathScatter = (diffuseTerm + specularTerm) * dot(normal, shadowVec);
-        shadowRay->pathScatter *= lightSource.density;
     }
     else
     {
