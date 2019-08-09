@@ -64,8 +64,12 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     //
     for (uint i = 0; i < 2; ++i)
     {
+        device RayBuffer* shadowRay = &shadowRays[i][rayIdx];
+        constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[i];
+        
         shadow_ray_emit_infinite_area(rayIdx, structUniform, tracingUniforms,
-                                      i, r, &shadowRays[i][rayIdx], diffuseTex, samplr);
+                                      lightSource, r, shadowRay, diffuseTex, samplr);
+        shadowRay->pathScatter *= lightSource.density;
     }
 }
 
@@ -103,8 +107,12 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
     //
     for (uint i = 0; i < 2; ++i)
     {
+        device RayBuffer* shadowRay = &shadowRays[i][rayIdx];
+        constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[i];
+        
         shadow_ray_emit_infinite_area(rayIdx, structUniform, tracingUniforms,
-                                      i, r, &shadowRays[i][rayIdx], diffuseTex, samplr);
+                                      lightSource, r, &shadowRays[i][rayIdx], diffuseTex, samplr);
+        shadowRay->pathScatter *= lightSource.density;
     }
     
     self_illumination(tid, structUniform,

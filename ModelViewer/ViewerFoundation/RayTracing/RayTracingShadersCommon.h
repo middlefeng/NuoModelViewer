@@ -310,7 +310,7 @@ inline float3 relative_to_hemisphere_normal(float3 w, float3 n)
 void shadow_ray_emit_infinite_area(uint rayIdx,
                                    device RayStructureUniform& structUniform,
                                    constant NuoRayTracingUniforms& tracingUniforms,
-                                   uint lightSource,
+                                   constant NuoRayTracingLightSource& lightSource,
                                    metal::float2 random,
                                    device RayBuffer* shadowRays,
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
