@@ -12,11 +12,19 @@
 #import "NuoRayBuffer.h"
 #import "NuoPrimaryRayEmitter.h"
 #import "NuoMeshSceneRoot.h"
+#import "NuoCommandBuffer.h"
 
 #include "NuoRayTracingUniform.h"
 
 
 const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndexCoordinates);
+
+
+@interface NuoCommandBuffer()
+
+- (id<MTLCommandBuffer>)commandBuffer;
+
+@end
 
 
 
@@ -46,7 +54,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
         _accelerateStructure.usage = MPSAccelerationStructureUsageRefit;
         
         _primaryRayEmitter = [[NuoPrimaryRayEmitter alloc] initWithCommandQueue:commandQueue];
-        _primaryRayBuffer = [[NuoRayBuffer alloc] initWithDevice:commandQueue.device];
+        _primaryRayBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:commandQueue];
         
         _commandQueue = commandQueue;
     }
@@ -98,7 +106,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     // all coordinates are in the world system, with primary rays following the same rule as
     // they are transformed through the inverse of the view matrix
     
-    GlobalBuffers buffer;
+    NuoGlobalBuffers buffer;
     
     [root appendWorldBuffers:NuoMatrixFloat44Identity toBuffers:&buffer];
     uint32_t triangleCount = (uint32_t)buffer._indices.size() / 3;
@@ -121,7 +129,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     _vertexBuffer = nil;
     _maskBuffer = nil;
     
-    [self setWorldBuffers:buffer];
+    [self setWorldBuffers:buffer withEncoder:encoder];
     [self setMaskBuffer:root];
     
     [encoder endEncoding];
@@ -138,23 +146,30 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
-- (void)setRoot:(NuoMeshSceneRoot *)root withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (void)setRoot:(NuoMeshSceneRoot *)root withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     assert(_maskBuffer != nil);
     assert(_vertexBuffer != nil);
     assert(_materialBuffer != nil);
     
-    GlobalBuffers buffer;
+    bool unchanged = [root isCachedTransformValid:NuoMatrixFloat44Identity];
+    if (unchanged)
+        return;
+    
+    NuoGlobalBuffers buffer;
     [root appendWorldBuffers:NuoMatrixFloat44Identity toBuffers:&buffer];
     
-    [self setWorldBuffers:buffer];
+    id<MTLBlitCommandEncoder> encoder = [commandBuffer.commandBuffer blitCommandEncoder];
+    [self setWorldBuffers:buffer withEncoder:encoder];
+    [encoder endEncoding];
+    
     [self setMaskBuffer:root];
-    [_accelerateStructure encodeRefitToCommandBuffer:commandBuffer];
+    [_accelerateStructure encodeRefitToCommandBuffer:commandBuffer.commandBuffer];
 }
 
 
 
-- (void)setWorldBuffers:(const GlobalBuffers&)buffers
+- (void)setWorldBuffers:(const NuoGlobalBuffers&)buffers withEncoder:(id<MTLBlitCommandEncoder>)encoder
 {
     uint32_t vertexBufferSize = (uint32_t)(buffers._vertices.size() * sizeof(NuoVectorFloat3::_typeTrait::_vectorType));
     uint32_t materialBufferSize = (uint32_t)(buffers._vertices.size() * sizeof(NuoRayTracingMaterial));
@@ -162,26 +177,33 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     if (!_materialBuffer)
     {
         _materialBuffer = [_commandQueue.device newBufferWithLength:materialBufferSize
-                                                            options:MTLResourceStorageModeManaged];
+                                                            options:MTLResourceStorageModePrivate];
     }
     
-    memcpy(_materialBuffer.contents, &buffers._materials[0], materialBufferSize);
-    [_materialBuffer didModifyRange:NSMakeRange(0, materialBufferSize)];
-     
+    id<MTLBuffer> materialBuffer = [_commandQueue.device newBufferWithBytes:&buffers._materials[0]
+                                                                     length:materialBufferSize
+                                                                    options:MTLResourceStorageModeShared];
+    [encoder copyFromBuffer:materialBuffer sourceOffset:0
+                   toBuffer:_materialBuffer destinationOffset:0 size:materialBufferSize];
+    
     if (!_vertexBuffer)
     {
         _vertexBuffer = [_commandQueue.device newBufferWithLength:vertexBufferSize
-                                                          options:MTLResourceStorageModeManaged];
+                                                          options:MTLResourceStorageModePrivate];
     }
+    
+    id<MTLBuffer> vertexBuffer = [_commandQueue.device newBufferWithBytes:&buffers._vertices[0]
+                                                                   length:vertexBufferSize
+                                                                  options:MTLResourceStorageModeShared];
+    
+    [encoder copyFromBuffer:vertexBuffer sourceOffset:0
+                   toBuffer:_vertexBuffer destinationOffset:0 size:vertexBufferSize];
     
     _diffuseTextures = [NSMutableArray new];
     for (void* textureOne : buffers._textureMap)
     {
         [((NSMutableArray*)_diffuseTextures) addObject:(__bridge id<MTLTexture>)textureOne];
     }
-     
-    memcpy(_vertexBuffer.contents, &buffers._vertices[0], vertexBufferSize);
-    [_vertexBuffer didModifyRange:NSMakeRange(0, vertexBufferSize)];
 }
 
     
@@ -207,22 +229,22 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
-- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                withInFlight:(uint)inFlight
+- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    [_primaryRayBuffer updateMask:mask withUniform:[self uniformBuffer:inFlight]
-                                 withCommandBuffer:commandBuffer];
+    [_primaryRayBuffer updateMask:mask
+                      withUniform:[self uniformBuffer:commandBuffer]
+                withCommandBuffer:commandBuffer];
 }
 
 
-- (void)primaryRayEmit:(id<MTLCommandBuffer>)commandBuffer inFlight:(uint32_t)inFlight
+- (void)primaryRayEmit:(NuoCommandBuffer*)commandBuffer
 {
-    [_primaryRayEmitter emitToBuffer:_primaryRayBuffer withCommandBuffer:commandBuffer withInFlight:inFlight];
+    [_primaryRayEmitter emitToBuffer:_primaryRayBuffer withCommandBuffer:commandBuffer];
 }
 
 
-- (void)primaryRayIntersect:(id<MTLCommandBuffer>)commandBuffer
-                   inFlight:(uint32_t)inFlight withIntersection:(id<MTLBuffer>)intersection
+- (void)primaryRayIntersect:(NuoCommandBuffer*)commandBuffer
+           withIntersection:(id<MTLBuffer>)intersection
 {
     if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt)
     {
@@ -232,13 +254,13 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
-- (void)rayIntersect:(id<MTLCommandBuffer>)commandBuffer
+- (void)rayIntersect:(NuoCommandBuffer*)commandBuffer
             withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection
 {
     if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt)
     {
         [_intersector setIntersectionDataType:MPSIntersectionDataTypeDistancePrimitiveIndexCoordinates];
-        [_intersector encodeIntersectionToCommandBuffer:commandBuffer
+        [_intersector encodeIntersectionToCommandBuffer:commandBuffer.commandBuffer
                                        intersectionType:MPSIntersectionTypeNearest
                                               rayBuffer:rayBuffer.buffer
                                         rayBufferOffset:0
@@ -250,7 +272,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
-- (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight
+- (id<MTLBuffer>)uniformBuffer:(id<NuoRenderInFlight>)inFlight
 {
     return [_primaryRayEmitter uniformBuffer:inFlight];
 }

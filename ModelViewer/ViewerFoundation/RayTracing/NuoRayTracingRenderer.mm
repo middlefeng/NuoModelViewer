@@ -11,10 +11,56 @@
 
 #import "NuoRayBuffer.h"
 #import "NuoComputeEncoder.h"
+#import "NuoArgumentBuffer.h"
 #import "NuoTextureAverageMesh.h"
 #import "NuoRenderPassAttachment.h"
+#import "NuoCommandBuffer.h"
 
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
+
+
+
+@interface NuoArgumentBufferKey : NSObject < NSCopying >
+
+@property (assign) uint64_t pipeline;
+@property (assign) uint64_t rayUniform;
+@property (assign) uint64_t rayBuffer;
+@property (assign) uint64_t intersectionBuffer;
+
+@end
+
+
+@implementation NuoArgumentBufferKey
+
+- (id)copyWithZone:(nullable NSZone *)zone
+{
+    NuoArgumentBufferKey* newKey = [NuoArgumentBufferKey new];
+    newKey.pipeline = _pipeline;
+    newKey.rayUniform = _rayUniform;
+    newKey.rayBuffer = _rayBuffer;
+    newKey.intersectionBuffer = _intersectionBuffer;
+    
+    return newKey;
+}
+
+- (BOOL)isEqual:(id)other
+{
+    NuoArgumentBufferKey* otherKey = (NuoArgumentBufferKey*)other;
+    
+    return _pipeline == otherKey.pipeline &&
+           _rayUniform == otherKey.rayUniform &&
+           _rayBuffer == otherKey.rayBuffer &&
+           _intersectionBuffer == otherKey.intersectionBuffer;
+}
+
+
+- (NSUInteger)hash
+{
+    return _pipeline + _rayUniform + _rayBuffer + _intersectionBuffer;
+}
+
+@end
+
 
 
 
@@ -27,6 +73,7 @@
     CGSize _drawableSize;
     
     id<MTLSamplerState> _sampleState;
+    NSMutableDictionary<NuoArgumentBufferKey*, NuoArgumentBuffer*>* _rayStructUniform;
 }
 
 
@@ -51,6 +98,7 @@
     {
         NuoRenderPassTarget* rayTracingTargets[targetCount];
         NuoRenderPassTarget* rayTracingAccumulates[targetCount];
+        NuoTextureAccumulator* accumulators[targetCount];
         
         for (uint i = 0; i < targetCount; ++i)
         {
@@ -72,10 +120,14 @@
             rayTracingAccumulates[i].colorAttachments[0].needWrite = YES;
             rayTracingAccumulates[i].name = @"Ray Tracing Accumulate";
             rayTracingAccumulates[i].clearColor = MTLClearColorMake(0, 0, 0, 0);
+            
+            accumulators[i] = [[NuoTextureAccumulator alloc] initWithCommandQueue:self.commandQueue];
+            [accumulators[i] makePipelineAndSampler];
         }
         
         _rayTracingTargets = [[NSArray alloc] initWithObjects:rayTracingTargets count:targetCount];
         _rayTracingAccumulates = [[NSArray alloc] initWithObjects:rayTracingAccumulates count:targetCount];
+        _accumulators = [[NSArray alloc] initWithObjects:accumulators count:targetCount];
         
         MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
         samplerDesc.sAddressMode = MTLSamplerAddressModeRepeat;
@@ -85,7 +137,7 @@
         samplerDesc.mipFilter = MTLSamplerMipFilterNotMipmapped;
         _sampleState = [commandQueue.device newSamplerStateWithDescriptor:samplerDesc];
         
-        [self resetResources:nil];
+        [self resetResources];
     }
     
     return self;
@@ -93,23 +145,12 @@
 
 
 
-- (void)resetResources:(id<MTLCommandBuffer>)commandBuffer
+- (void)resetResources
 {
-    NuoTextureAccumulator* accumulators[_rayTracingTargets.count];
-    
-    for (uint i = 0; i < _rayTracingTargets.count; ++i)
+    for (NuoTextureAccumulator* accumulator in _accumulators)
     {
-        accumulators[i] = [[NuoTextureAccumulator alloc] initWithCommandQueue:self.commandQueue];
-        [accumulators[i] makePipelineAndSampler];
-        
-        if (commandBuffer && _rayTracingAccumulates[i].targetTexture)
-        {
-            [_rayTracingAccumulates[i] retainRenderPassEndcoder:commandBuffer];
-            [_rayTracingAccumulates[i] releaseRenderPassEndcoder];
-        }
+        [accumulator reset];
     }
-    
-    _accumulators = [[NSArray alloc] initWithObjects:accumulators count:_rayTracingTargets.count];
 }
 
 
@@ -135,30 +176,29 @@
 
 
 
-- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                withInFlight:(uint)inFlight
+- (void)updatePrimaryRayMask:(uint32)mask withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    [_rayStructure updatePrimaryRayMask:mask withCommandBuffer:commandBuffer withInFlight:inFlight];
+    [_rayStructure updatePrimaryRayMask:mask withCommandBuffer:commandBuffer];
 }
 
 
-- (void)primaryRayEmit:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)primaryRayEmit:(NuoCommandBuffer*)commandBuffer
 {
-    [_rayStructure primaryRayEmit:commandBuffer inFlight:inFlight];
+    [_rayStructure primaryRayEmit:commandBuffer];
 }
 
 
-- (BOOL)primaryRayIntersect:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (BOOL)primaryRayIntersect:(NuoCommandBuffer*)commandBuffer
 {
     if (!_rayStructure || !_rayStructure.vertexBuffer)
         return NO;
     
-    [_rayStructure primaryRayIntersect:commandBuffer inFlight:inFlight withIntersection:_intersectionBuffer];
+    [_rayStructure primaryRayIntersect:commandBuffer withIntersection:_intersectionBuffer];
     return YES;
 }
 
 
-- (BOOL)rayIntersect:(id<MTLCommandBuffer>)commandBuffer
+- (BOOL)rayIntersect:(NuoCommandBuffer*)commandBuffer
             withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection
 {
     if (!_rayStructure)
@@ -170,35 +210,49 @@
 
 
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
-         withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+         withCommandBuffer:(NuoCommandBuffer*)commandBuffer
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
+            withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection
-         withInFlightIndex:(unsigned int)inFlight
 {
     NuoComputeEncoder* computeEncoder = [pipeline encoderWithCommandBuffer:commandBuffer];
+    id<MTLBuffer> effectiveRay = exitantRay ? exitantRay : [_rayStructure primaryRayBuffer].buffer;
     
-    [computeEncoder setBuffer:[_rayStructure uniformBuffer:inFlight] offset:0 atIndex:0];
-    [computeEncoder setBuffer:[_rayStructure primaryRayBuffer].buffer offset:0 atIndex:1];
-    [computeEncoder setBuffer:[_rayStructure indexBuffer] offset:0 atIndex:2];
-    [computeEncoder setBuffer:[_rayStructure materialBuffer] offset:0 atIndex:3];
-    [computeEncoder setBuffer:intersection offset:0 atIndex:4];
+    NuoArgumentBuffer* argumentBuffer = [self raystructUniform:pipeline
+                                                  withInFlight:commandBuffer
+                                                withExitantRay:effectiveRay
+                                              withIntersection:intersection];
+    
+    uint i = 0;
+    [computeEncoder setArgumentBuffer:argumentBuffer atIndex:i];
     
     if (paramterBuffers)
     {
-        for (uint i = 0; i < paramterBuffers.count; ++i)
-            [computeEncoder setBuffer:paramterBuffers[i] offset:0 atIndex:5 + i];
+        for (id<MTLBuffer> param in paramterBuffers)
+            [computeEncoder setBuffer:param offset:0 atIndex:++i];
     }
     
-    uint i = 0;
-    for (i = 0; i < _rayTracingTargets.count; ++i)
+    // for primary rays, pass in the mask buffer to detect of the intersected
+    // surface character (which corresponds to screen space directly, and would be used
+    // for post-process)
+    //
+    if (!exitantRay)
     {
-        [computeEncoder setTargetTexture:_rayTracingTargets[i].targetTexture atIndex:i];
+        [computeEncoder setBuffer:[_rayStructure maskBuffer] offset:0
+                          atIndex:++i];
+    }
+    
+    uint targetIndex = 0;
+    for (NuoRenderPassTarget* target in _rayTracingTargets)
+    {
+        [computeEncoder setTargetTexture:target.targetTexture atIndex:targetIndex];
+        targetIndex += 1;
     }
     
     for (id<MTLTexture> diffuseTexture in _rayStructure.diffuseTextures)
     {
-        [computeEncoder setTexture:diffuseTexture atIndex:i];
-        ++i;
+        [computeEncoder setTexture:diffuseTexture atIndex:targetIndex];
+        targetIndex += 1;
     }
     
     [computeEncoder setSamplerState:_sampleState atIndex:0];
@@ -208,16 +262,16 @@
 
 
 
-- (void)runRayTraceShade:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)runRayTraceShade:(NuoCommandBuffer*)commandBuffer
 {
     /* default behavior is not very useful, meant to be override */
     
     /*************************************************************/
     /*************************************************************/
-    if ([self primaryRayIntersect:commandBuffer withInFlightIndex:inFlight])
+    if ([self primaryRayIntersect:commandBuffer])
     {
         [self runRayTraceCompute:/* some shade pipeline */ nil withCommandBuffer:commandBuffer
-                   withParameter:nil withIntersection:nil withInFlightIndex:inFlight];
+                   withParameter:nil withExitantRay:nil withIntersection:nil];
     }
     /*************************************************************/
     /*************************************************************/
@@ -225,7 +279,7 @@
 
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     // clear the ray tracing target
     //
@@ -236,13 +290,13 @@
         [tracingTarget releaseRenderPassEndcoder];
     }
     
-    [self runRayTraceShade:commandBuffer withInFlightIndex:inFlight];
+    [self runRayTraceShade:commandBuffer];
     
     for (uint i = 0; i < _rayTracingTargets.count; ++i)
     {
         [_accumulators[i] accumulateTexture:_rayTracingTargets[i].targetTexture
                                   onTexture:_rayTracingAccumulates[i].targetTexture
-                               withInFlight:inFlight withCommandBuffer:commandBuffer];
+                          withCommandBuffer:commandBuffer];
     }
 }
 
@@ -255,6 +309,48 @@
         textures[i] = _rayTracingAccumulates[i].targetTexture;
     
     return [[NSArray alloc] initWithObjects:textures count:_rayTracingAccumulates.count];
+}
+
+
+
+- (void)rayStructUpdated
+{
+    _rayStructUniform = [NSMutableDictionary new];
+}
+
+
+
+- (NuoArgumentBuffer*)raystructUniform:(NuoComputePipeline*)pipeline
+                          withInFlight:(id<NuoRenderInFlight>)inFlight
+                        withExitantRay:(id<MTLBuffer>)exitantRay
+                      withIntersection:(id<MTLBuffer>)intersection
+{
+    id<MTLBuffer> uniform = [_rayStructure uniformBuffer:inFlight];
+    
+    NuoArgumentBufferKey* key = [NuoArgumentBufferKey new];
+    key.rayUniform = (uint64_t)uniform;
+    key.pipeline = (uint64_t)pipeline;
+    key.rayBuffer = (uint64_t)exitantRay;
+    
+    NuoArgumentBuffer* buffer = [_rayStructUniform objectForKey:key];
+    
+    if (buffer)
+        return buffer;
+    
+    id<MTLArgumentEncoder> encoder = [pipeline argumentEncoder:0];
+    buffer = [NuoArgumentBuffer new];
+    
+    uint i = 0;
+    [buffer encodeWith:encoder];
+    [buffer setBuffer:uniform for:MTLResourceUsageRead atIndex:i];
+    [buffer setBuffer:[_rayStructure indexBuffer] for:MTLResourceUsageRead atIndex:++i];
+    [buffer setBuffer:[_rayStructure materialBuffer] for:MTLResourceUsageRead atIndex:++i];
+    [buffer setBuffer:exitantRay for:MTLResourceUsageRead | MTLResourceUsageWrite atIndex:++i];
+    [buffer setBuffer:intersection for:MTLResourceUsageRead atIndex:++i];
+    
+    [_rayStructUniform setObject:buffer forKey:key];
+    
+    return buffer;
 }
 
 

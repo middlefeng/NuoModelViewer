@@ -72,7 +72,7 @@ fragment FragementScreenSpace fragement_screen_space_textured(VertexScreenSpace 
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     float3 diffuseColor = diffuseTexel.rgb / diffuseTexel.a;
     float alpha = diffuseTexel.a * vert.opacity;
-    result.ambientColorFactor = float4(saturate(vert.diffuseColorFactor * diffuseColor * lightUniform.ambientDensity) * alpha, alpha);
+    result.ambientColorFactor = float4(saturate(vert.diffuseColorFactor * diffuseColor * lightUniform.ambient) * alpha, alpha);
     
     result.shadowOverlay = kShadowOverlay ? 1.0 : 0.0;
     
@@ -129,21 +129,19 @@ static VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
 
 fragment float4 fragment_light_textured(ProjectedVertex vert [[stage_in]],
                                         constant NuoLightUniforms &lightUniform [[buffer(0)]],
-                                        texture2d<float> shadowMap0 [[texture(0)]],
-                                        texture2d<float> shadowMap1 [[texture(1)]],
-                                        texture2d<float> diffuseTexture [[texture(2)]],
+                                        texture_array<2>::t shadowMaps    [[texture(0)]],
+                                        texture_array<2>::t shadowMapsExt [[texture(2)]],
+                                        texture2d<float> diffuseTexture   [[texture(4)]],
                                         sampler depthSamplr [[sampler(0)]],
                                         sampler samplr [[sampler(1)]])
 {
     float4 diffuseTexel = diffuseTexture.sample(samplr, vert.texCoord);
     float3 diffuseColor = diffuseTexel.rgb / diffuseTexel.a;
     
-    texture2d<float> shadowMap[2] = {shadowMap0, shadowMap1};
-    
     VertexFragmentCharacters outVert = vertex_characters(vert);
     outVert.diffuseColor = diffuseColor;
     outVert.opacity = diffuseTexel.a;
     
-    return fragment_light_tex_materialed_common(outVert, lightUniform, shadowMap, depthSamplr);
+    return fragment_light_tex_materialed_common(outVert, lightUniform, shadowMaps, shadowMapsExt, depthSamplr);
 }
 

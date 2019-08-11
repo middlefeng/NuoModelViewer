@@ -7,8 +7,19 @@
 //
 
 #import "NuoRayTracingRenderer.h"
+#import "NuoMeshSceneRenderPass.h"
+
 
 @class NuoLightSource;
+
+
+
+@interface ModelDirectLighting : NSObject
+
+@property (nonatomic, weak) id<MTLTexture> lighting;
+@property (nonatomic, weak) id<MTLTexture> blocked;
+
+@end
 
 
 
@@ -16,15 +27,14 @@
 
 
 @property (nonatomic, assign) NuoBounds sceneBounds;
-@property (nonatomic, assign) CGFloat ambientDensity;
-@property (nonatomic, assign) CGFloat ambientRadius;
-@property (nonatomic, assign) CGFloat illuminationStrength;
+@property (nonatomic, assign) NuoRayTracingGlobalIlluminationParam globalIllum;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (void)setLightSource:(NuoLightSource*)lightSource forIndex:(uint)index;
-- (id<MTLTexture>)targetTextureForLightSource:(uint)index;
+- (id<MTLTexture>)shadowForLightSource:(uint)index withMask:(NuoSceneMask)mask;
+- (NSArray<ModelDirectLighting*>*)directLight;
 
 
 @end

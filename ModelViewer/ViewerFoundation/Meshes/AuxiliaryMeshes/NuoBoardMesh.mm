@@ -58,12 +58,16 @@
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     NSString* vertexFunc = @"vertex_project_shadow";
     NSString* fragmnFunc = @"fragment_light_shadow";
     
+    // board mesh has no specular factor
+    BOOL physicallyReflection = NO;
+    
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
+    [funcConstant setConstantValue:&physicallyReflection type:MTLDataTypeBool atIndex:2];
     [funcConstant setConstantValue:&_shadowOverlayOnly type:MTLDataTypeBool atIndex:3];
     [self setupCommonPipelineFunctionConstants:funcConstant];
     
@@ -106,17 +110,34 @@
 }
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Board mesh"];
+    
     [renderPass setCullMode:MTLCullModeBack];
-    [renderPass setFragmentTexture:_shadowOverlayMap atIndex:2];
-    [super drawMesh:renderPass indexBuffer:index];
+    [super drawMesh:renderPass];
+    
+    [renderPass popParameterState];
 }
 
 
 - (const NuoVectorFloat3&)dimensions
 {
     return _dimensions;
+}
+
+
+- (std::vector<uint32_t>)maskBuffer
+{
+    std::vector<uint32_t> oneBuffer = [super maskBuffer];
+    
+    if (self.shadowOverlayOnly)
+    {
+        for (uint32& item : oneBuffer)
+            item |= kNuoRayMask_Virtual;
+    }
+    
+    return oneBuffer;
 }
 
 

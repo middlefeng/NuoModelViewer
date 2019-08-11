@@ -111,6 +111,8 @@ struct PositionTextureSimple
 };
 
 
+#if !SIMPLE_UTILS_ONLY
+
 constant bool kAlphaChannelInTexture            [[ function_constant(0) ]];
 constant bool kAlphaChannelInSeparatedTexture   [[ function_constant(1) ]];
 constant bool kPhysicallyReflection             [[ function_constant(2) ]];
@@ -123,11 +125,25 @@ constant int  kMeshMode                         [[ function_constant(6) ]];
 
 constant bool kDepthPrerenderred = kMeshMode == kMeshMode_Selection;
 
+#endif
+
+
+float color_to_grayscale(float3 color);
+
+
+template <int num, metal::access accessType = metal::access::sample>
+class texture_array
+{
+public:
+    typedef metal::array<metal::texture2d<float, accessType>, num> t;
+};
+
 
 
 metal::float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                                    constant NuoLightUniforms &lighting,
-                                                   metal::texture2d<float> shadowMap[2],
+                                                   texture_array<2>::t shadowMaps,
+                                                   texture_array<2>::t shadowMapsExt,
                                                    metal::sampler samplr);
 
 metal::float4 diffuse_lighted_selection(metal::float4 vertPositionNDC,
@@ -141,15 +157,23 @@ metal::float4 diffuse_common(metal::float4 diffuseTexel, float extraOpacity);
 
 metal::float3 specular_common(metal::float3 materialSpecularColor, float materialSecularPower,
                               NuoLightParameterUniformField lightParams,
-                              metal::float3 normal, metal::float3 halfway, float dotNL);
+                              metal::float3 normal, metal::float3 halfway, float cosTheta);
+
+metal::float3 specular_refectance_normalized(float3 specularReflectance, float materialSpecularPower,
+                                             float3 lightDirection, float3 halfway);
+metal::float3 specular_common_physically(float3 specularReflectance, float materialSpecularPower,
+                                         float3 lightDirection, float3 normal, float3 halfway);
 
 
-float shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
-                             NuoShadowParameterUniformField shadowParams, float shadowedSurfaceAngle, float shadowMapSampleRadius,
-                             metal::texture2d<float> shadowMap, metal::sampler samplr);
+metal::float3 shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,
+                                     NuoShadowParameterUniformField shadowParams, float cosTheta, float shadowMapSampleRadius,
+                                     metal::texture2d<float> shadowMap,
+                                     metal::texture2d<float> shadowMapExt,   // extra maps needed by ray-tracing
+                                     metal::sampler samplr);
 
 metal::float2 rand(metal::float2 co);
 metal::float2 ndc_to_texture_coord(metal::float4 ndc);
+metal::float3 safe_divide(metal::float3 dividee, metal::float3 divider);
 
 
 

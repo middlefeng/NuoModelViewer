@@ -63,31 +63,35 @@ static CIContext* sCIContext = nil;
 }
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Mesh Textured"];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:self.transformBuffers[index] offset:0 atIndex:3];
-    [renderPass setFragmentTexture:self.diffuseTex atIndex:2];
+    [renderPass setVertexBufferSwapChain:self.transformBuffers offset:0 atIndex:3];
+    [renderPass setFragmentTexture:self.diffuseTex atIndex:4];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[self.indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:self.indexBuffer
-                    indexBufferOffset:0];
+    [renderPass drawWithIndices:self.indexBuffer];
+    
+    [renderPass popParameterState];
 }
 
 
-- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Mesh Textured Screen Space"];
+    
     [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
     
-    [super drawScreenSpace:renderPass indexBuffer:index];
+    [super drawScreenSpace:renderPass];
+    
+    [renderPass popParameterState];
 }
 
 
@@ -110,7 +114,7 @@ static CIContext* sCIContext = nil;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     BOOL pcss = self.shadowOptionPCSS;
     BOOL pcf = self.shadowOptionPCF;
@@ -179,9 +183,9 @@ static CIContext* sCIContext = nil;
 
 
 
--  (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
+-  (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(NuoGlobalBuffers*)buffers
 {
-    GlobalBuffers oneBuffer;
+    NuoGlobalBuffers oneBuffer;
     [super appendWorldBuffers:transform toBuffers:&oneBuffer];
     
     auto existingItem = std::find(buffers->_textureMap.begin(),
@@ -191,8 +195,8 @@ static CIContext* sCIContext = nil;
     size_t currentIndex = 0;
     if (existingItem == buffers->_textureMap.end())
     {
-        buffers->_textureMap.push_back((__bridge void*)_diffuseTex);
-        currentIndex = buffers->_textureMap.size() - 1;
+        oneBuffer._textureMap.push_back((__bridge void*)_diffuseTex);
+        currentIndex = buffers->_textureMap.size();
     }
     else
     {

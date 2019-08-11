@@ -19,7 +19,7 @@ NSString* const kInspectable_Illuminate = @"inspectable_illuminate";
 NSString* const kInspectable_Ambient = @"inspectable_ambient";
 NSString* const kInspectable_Shadow = @"inspectable_shadow";
 NSString* const kInspectable_ShadowTranslucent = @"inspectable_shadowTranslucent";
-NSString* const kInspectable_ShadowOverlay = @"inspectable_shadowOverlay";
+NSString* const kInspectable_DirectLightWithShadow = @"inspectable_directLightWithShadow";
 
 
 @implementation NuoInspectable
@@ -57,9 +57,9 @@ NSString* const kInspectable_ShadowOverlay = @"inspectable_shadowOverlay";
               kInspectable_ImmediateAlpha: [NuoInspectable inspectableWithTitle:@"Immediate Alpha" withMean:@"fragment_alpha"],
               kInspectable_Illuminate: [NuoInspectable inspectableWithTitle:@"Illumination" withMean:nil],
               kInspectable_Ambient: [NuoInspectable inspectableWithTitle:@"Ambient" withMean:nil],
-              kInspectable_Shadow: [NuoInspectable inspectableWithTitle:@"Shadow on Opaque" withMean:@"fragment_r"],
-              kInspectable_ShadowTranslucent: [NuoInspectable inspectableWithTitle:@"Shadow on Translucent" withMean:@"fragment_g"],
-              kInspectable_ShadowOverlay: [NuoInspectable inspectableWithTitle:@"Shadow Overlay" withMean:@"fragment_r"] };
+              kInspectable_Shadow: [NuoInspectable inspectableWithTitle:@"Shadow on Opaque" withMean:nil],
+              kInspectable_ShadowTranslucent: [NuoInspectable inspectableWithTitle:@"Shadow on Translucent" withMean:nil],
+              kInspectable_DirectLightWithShadow: [NuoInspectable inspectableWithTitle:@"Direct Light (Shadow)" withMean:nil] };
 }
 
 

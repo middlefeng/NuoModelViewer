@@ -58,6 +58,11 @@ public:
                                      size_t stratification);
     
     virtual void UpdateBuffer() override;
+    
+protected:
+    
+    inline void UpdateStratification();
+    
 };
 
 
@@ -95,24 +100,11 @@ NuoRandomBufferStratified<ItemType>::NuoRandomBufferStratified(size_t size, size
     }
 }
 
-template <>
-inline void NuoRandomBufferStratified<NuoVectorFloat2::_typeTrait::_vectorType>::UpdateBuffer()
+
+template <class ItemType>
+inline void NuoRandomBufferStratified<ItemType>::UpdateStratification()
 {
-    const float invSample = 1.0f / (float)_stratification;
-    
-    for (size_t i = 0; i < _bufferSize; ++i)
-    {
-        for (size_t currentDimension = 0; currentDimension < _dimension; ++currentDimension)
-        {
-            _buffer[i + _bufferSize * currentDimension] =
-            {
-                ((float)_stratCurrentX[currentDimension] + UniformRandom()) * invSample,
-                ((float)_stratCurrentY[currentDimension] + UniformRandom()) * invSample
-            };
-        }
-    }
-    
-    for (size_t i = 0; i < _dimension;)
+    for (size_t i = 0; i < NuoRandomBuffer<ItemType>::_dimension;)
     {
         _stratCurrentX[i] += 1;
         
@@ -139,8 +131,25 @@ inline void NuoRandomBufferStratified<NuoVectorFloat2::_typeTrait::_vectorType>:
 }
 
 
-typedef NuoRandomBufferStratified<NuoVectorFloat2::_typeTrait::_vectorType> RandomGenerator;
-typedef std::shared_ptr<RandomGenerator> PRandomGenerator;
+template <>
+inline void NuoRandomBufferStratified<NuoVectorFloat2::_typeTrait::_vectorType>::UpdateBuffer()
+{
+    const float invSample = 1.0f / (float)_stratification;
+    
+    for (size_t i = 0; i < _bufferSize; ++i)
+    {
+        for (size_t currentDimension = 0; currentDimension < _dimension; ++currentDimension)
+        {
+            _buffer[i + _bufferSize * currentDimension] =
+            {
+                ((float)_stratCurrentX[currentDimension] + UniformRandom()) * invSample,
+                ((float)_stratCurrentY[currentDimension] + UniformRandom()) * invSample
+            };
+        }
+    }
+    
+    UpdateStratification();
+}
 
 
 #endif /* NuoRandomBuffer_hpp */

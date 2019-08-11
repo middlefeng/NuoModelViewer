@@ -13,6 +13,10 @@
 #import "NuoMeshTexMatieraled.h"
 #import "NuoMeshUniform.h"
 
+#import "NuoShaderLibrary.h"
+#import "NuoRenderPassEncoder.h"
+#import "NuoBufferSwapChain.h"
+
 
 
 
@@ -24,6 +28,9 @@
     std::shared_ptr<NuoModelBase> _rawModel;
     
     NuoMeshModeShaderParameter _meshMode;
+    NuoShaderLibrary* _library;
+    
+    NuoMatrixFloat44 _globalBufferCachedTrans;
 }
 
 
@@ -44,6 +51,8 @@
         _transformTranslate = NuoMatrixFloat44Identity;
         _sampleCount = kSampleCount;
         _meshMode = kMeshMode_Normal;
+        
+        memset(&_globalBufferCachedTrans, 0, sizeof(NuoMatrixFloat44));
     }
     
     return self;
@@ -77,19 +86,16 @@
         
         _rotation = NuoMeshRotation();
         
-        {
-            id<MTLBuffer> buffers[kInFlightBufferCount];
-            for (unsigned int i = 0; i < kInFlightBufferCount; ++i)
-            {
-                buffers[i] = [device newBufferWithLength:sizeof(NuoMeshUniforms)
-                                                 options:MTLResourceOptionCPUCacheModeDefault];
-            }
-            _transformBuffers = [[NSArray alloc] initWithObjects:buffers count:kInFlightBufferCount];
-        }
+        _transformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:device
+                                                        WithBufferSize:sizeof(NuoMeshUniforms)
+                                                           withOptions:MTLResourceStorageModeManaged
+                                                         withChainSize:kInFlightBufferCount];
         
         _transformPoise = NuoMatrixFloat44Identity;
         _transformTranslate = NuoMatrixFloat44Identity;
         _sampleCount = kSampleCount;
+        
+        memset(&_globalBufferCachedTrans, 0, sizeof(NuoMatrixFloat44));
     }
     
     return self;
@@ -136,6 +142,13 @@
 - (NuoMatrixFloat44)meshTransform
 {
     return _rotation.RotationMatrix() * _transformTranslate * _transformPoise;
+}
+
+
+- (void)cacheTransform:(const NuoMatrixFloat44&)transform
+{
+    const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
+    _globalBufferCachedTrans = transformWorld;
 }
 
 
@@ -234,6 +247,17 @@
 }
 
 
+- (id<MTLLibrary>)library
+{
+    if (!_library)
+    {
+        _library = [NuoShaderLibrary defaultLibraryWithDevice:_commandQueue.device];
+    }
+    
+    return _library.library;
+}
+
+
 
 - (void)setUnifiedOpacity:(float)unifiedOpacity
 {
@@ -282,15 +306,24 @@
 }
 
 
-- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(GlobalBuffers*)buffers
+- (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(NuoGlobalBuffers*)buffers
 {
     const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
-    GlobalBuffers buffer = _rawModel->GetGlobalBuffers();
+    [self cacheTransform:transform];
+    
+    NuoGlobalBuffers buffer = _rawModel->GetGlobalBuffers();
     buffer.TransformPosition(transformWorld);
     buffer.TransformVector(NuoMatrixExtractLinear(transformWorld));
     
     buffers->Union(buffer);
+}
+
+
+- (BOOL)isCachedTransformValid:(const NuoMatrixFloat44 &)transform
+{
+    const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
+    return (_globalBufferCachedTrans == transformWorld);
 }
 
 
@@ -339,7 +372,7 @@
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     NSString* vertexFunc = _shadowPipelineState ? @"vertex_project_shadow" : @"vertex_project";
     NSString* fragmnFunc = _shadowPipelineState ? @"fragment_light_shadow" : @"fragment_light";
@@ -352,13 +385,15 @@
     BOOL pcss = self.shadowOptionPCSS;
     BOOL pcf = self.shadowOptionPCF;
     BOOL rayTracing = self.shadowOptionRayTracing;
+    BOOL physicallyBased = NO;
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
+    [funcConstant setConstantValue:&physicallyBased type:MTLDataTypeBool atIndex:2];
     [funcConstant setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
     [funcConstant setConstantValue:&pcss type:MTLDataTypeBool atIndex:4];
     [funcConstant setConstantValue:&pcf type:MTLDataTypeBool atIndex:5];
-    [funcConstant setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
     [funcConstant setConstantValue:&meshMode type:MTLDataTypeInt atIndex:6];
+    [funcConstant setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexFunc];
@@ -408,7 +443,7 @@
                                   withFragemtnShader:(NSString*)fragmentShader
                                        withConstants:(MTLFunctionConstantValues*)constants
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
     screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShader];
@@ -437,7 +472,7 @@
     
 - (void)makePipelineShadowState:(NSString*)vertexShadowShader
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
     shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShadowShader];
@@ -506,69 +541,70 @@
 
 
 
-- (void)updateUniform:(NSInteger)bufferIndex withTransform:(const NuoMatrixFloat44&)transform
+- (void)updateUniform:(id<NuoRenderInFlight>)inFlight withTransform:(const NuoMatrixFloat44&)transform
 {
     NuoMatrixFloat44 transformWorld = transform * self.meshTransform;
     
     NuoMeshUniforms uniforms;
     uniforms.transform = transformWorld._m;
     uniforms.normalTransform = NuoMatrixExtractLinear(transformWorld)._m;
-    memcpy([_transformBuffers[bufferIndex] contents], &uniforms, sizeof(uniforms));
+    
+    [_transformBuffers updateBufferWithInFlight:inFlight withContent:&uniforms];
 }
 
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"NuoMesh"];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_renderPipelineState];
     [renderPass setDepthStencilState:_depthStencilState];
     
-    NSUInteger rotationIndex = _shadowPipelineState ? 3 : 2;
+    uint rotationIndex = _shadowPipelineState ? 3 : 2;
     
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:rotationIndex];
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[_indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:_indexBuffer
-                    indexBufferOffset:0];
+    [renderPass setVertexBufferSwapChain:_transformBuffers offset:0 atIndex:rotationIndex];
+    [renderPass drawWithIndices:_indexBuffer];
+    
+    [renderPass popParameterState];
 }
 
 
-- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Mesh Screen Space"];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:_screenSpacePipelineState];
     [renderPass setDepthStencilState:_depthStencilState];
     
-    NSUInteger rotationIndex = _shadowPipelineState ? 3 : 2;
+    uint rotationIndex = _shadowPipelineState ? 3 : 2;
     
     [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:rotationIndex];
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[_indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:_indexBuffer
-                    indexBufferOffset:0];
+    [renderPass setVertexBufferSwapChain:_transformBuffers offset:0 atIndex:rotationIndex];
+    [renderPass drawWithIndices:_indexBuffer];
+    
+    [renderPass popParameterState];
 }
 
 
-- (void)drawShadow:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawShadow:(NuoRenderPassEncoder*)renderPass
 {
     if (_shadowPipelineState)
     {
+        [renderPass pushParameterState:@"Mesh Shadow"];
+        
         [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
         [renderPass setRenderPipelineState:_shadowPipelineState];
         [renderPass setDepthStencilState:_depthStencilState];
         
         [renderPass setVertexBuffer:_vertexBuffer offset:0 atIndex:0];
-        [renderPass setVertexBuffer:_transformBuffers[index] offset:0 atIndex:2];
-        [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                               indexCount:[_indexBuffer length] / sizeof(uint32_t)
-                                indexType:MTLIndexTypeUInt32
-                              indexBuffer:_indexBuffer
-                        indexBufferOffset:0];
+        [renderPass setVertexBufferSwapChain:_transformBuffers offset:0 atIndex:2];
+        [renderPass drawWithIndices:_indexBuffer];
+        
+        [renderPass popParameterState];
     }
 }
 

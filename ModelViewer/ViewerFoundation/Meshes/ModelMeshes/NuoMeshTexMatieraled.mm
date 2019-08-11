@@ -111,7 +111,7 @@
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
@@ -198,12 +198,16 @@
 }
 
 
-- (void)drawScreenSpace:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawScreenSpace:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Mesh Textured Materialed Screen Space"];
+    
     [renderPass setFragmentTexture:self.diffuseTex atIndex:0];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:0];
     
-    [super drawScreenSpace:renderPass indexBuffer:index];
+    [super drawScreenSpace:renderPass];
+    
+    [renderPass popParameterState];
 }
 
 
@@ -213,17 +217,19 @@
 }
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Mesh Textured Materialed"];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setRenderPipelineState:self.renderPipelineState];
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBuffer:self.transformBuffers[index] offset:0 atIndex:3];
+    [renderPass setVertexBufferSwapChain:self.transformBuffers offset:0 atIndex:3];
     [renderPass setFragmentSamplerState:self.samplerState atIndex:1];
     
-    NSUInteger texBufferIndex = 3; /* mesh texture starts after the shadow-map texture */
+    uint texBufferIndex = 5; /* mesh texture starts after the shadow-map texture */
     
     [renderPass setFragmentTexture:self.diffuseTex atIndex:texBufferIndex++];
     if (_textureOpacity)
@@ -233,11 +239,9 @@
     if (_textureBump)
         [renderPass setFragmentTexture:_textureBump atIndex:texBufferIndex];
     
-    [renderPass drawIndexedPrimitives:MTLPrimitiveTypeTriangle
-                           indexCount:[self.indexBuffer length] / sizeof(uint32_t)
-                            indexType:MTLIndexTypeUInt32
-                          indexBuffer:self.indexBuffer
-                    indexBufferOffset:0];
+    [renderPass drawWithIndices:self.indexBuffer];
+    
+    [renderPass popParameterState];
 }
 
 
@@ -323,7 +327,7 @@
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor
 {
-    id<MTLLibrary> library = [self.device newDefaultLibrary];
+    id<MTLLibrary> library = [self library];
     
     MTLFunctionConstantValues* funcConstant = [MTLFunctionConstantValues new];
     [funcConstant setConstantValue:&_physicallyReflection type:MTLDataTypeBool atIndex:2];

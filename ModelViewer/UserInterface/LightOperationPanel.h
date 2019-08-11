@@ -20,7 +20,7 @@
 
 
 @property (nonatomic) float lightDensity;
-@property (nonatomic) float lightSpacular;
+@property (nonatomic) float lightSpecular;
 
 @property (nonatomic) BOOL shadowEnabled;
 @property (nonatomic) float shadowSoften;

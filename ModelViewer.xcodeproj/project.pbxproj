@@ -10,7 +10,11 @@
 		2C156CAE1EE7961C000C52D4 /* NuoBoardMesh.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C156CAD1EE7961C000C52D4 /* NuoBoardMesh.mm */; };
 		2C156CD01EE9B357000C52D4 /* NuoSheetPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C156CCF1EE9B357000C52D4 /* NuoSheetPanel.m */; };
 		2C1585BC1FB9652F00BDF282 /* ShaderAverage.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C1585BB1FB9652F00BDF282 /* ShaderAverage.metal */; };
+		2C1A4D952283E10200ECBB46 /* NuoRenderParameterState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C1A4D932283E10200ECBB46 /* NuoRenderParameterState.cpp */; };
+		2C1A4DAB2285D2B100ECBB46 /* NuoShaderLibrary.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C1A4DAA2285D2B100ECBB46 /* NuoShaderLibrary.mm */; };
 		2C1B28081D95FF17009F5912 /* NuoTextureBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C1B28061D95FF17009F5912 /* NuoTextureBase.m */; };
+		2C22EEA922D4D9DC002472E6 /* NuoGlobalBuffers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C22EEA722D4D9DC002472E6 /* NuoGlobalBuffers.cpp */; };
+		2C22EEB222D6310C002472E6 /* NuoArgumentBuffer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C22EEB122D6310C002472E6 /* NuoArgumentBuffer.mm */; };
 		2C235FCD1DD6CBD700E68295 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C235FC71DD6CBD700E68295 /* Shaders.metal */; };
 		2C235FCE1DD6CBD700E68295 /* ShadersMaterialed.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C235FC91DD6CBD700E68295 /* ShadersMaterialed.metal */; };
 		2C235FCF1DD6CBD700E68295 /* ShadersTextured.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C235FCA1DD6CBD700E68295 /* ShadersTextured.metal */; };
@@ -23,6 +27,8 @@
 		2C2F45781F9B9C6800B05607 /* NuoBackdropMesh.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C2F45771F9B9C6800B05607 /* NuoBackdropMesh.mm */; };
 		2C30DDD22142F69400A68533 /* NuoInspectableMaster.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C30DDD12142F69400A68533 /* NuoInspectableMaster.m */; };
 		2C30DDD52143200900A68533 /* NuoInspectWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C30DDD42143200900A68533 /* NuoInspectWindow.m */; };
+		2C3167AB227C99540079F5E3 /* NuoRenderPassEncoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C3167AA227C99540079F5E3 /* NuoRenderPassEncoder.mm */; };
+		2C3167B2227CD7AE0079F5E3 /* NuoCommandBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3167B1227CD7AE0079F5E3 /* NuoCommandBuffer.m */; };
 		2C3876A620DD97D40064ECC5 /* ModelRayTracingRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C3876A520DD97D40064ECC5 /* ModelRayTracingRenderer.mm */; };
 		2C3D9A9C1D7DF5C3002C1226 /* NuoModelTextured.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9A1D7DF5C3002C1226 /* NuoModelTextured.cpp */; };
 		2C3D9AA11D7E344F002C1226 /* NuoTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9F1D7E344F002C1226 /* NuoTypes.cpp */; };
@@ -55,6 +61,7 @@
 		2C723AA91E43A83600484992 /* NuoMeshRotation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C723AA81E43A83600484992 /* NuoMeshRotation.cpp */; };
 		2C723AB01E44355300484992 /* ModelPartsAnimations.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C723AAF1E44355300484992 /* ModelPartsAnimations.xib */; };
 		2C7359222142C9EC000B8BD0 /* NuoWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C7359212142C9EC000B8BD0 /* NuoWindow.m */; };
+		2C778DC122A57FA4004C72EC /* NuoRayTracingRandom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C778DBF22A57FA4004C72EC /* NuoRayTracingRandom.cpp */; };
 		2C78994821343CEA004A54AF /* ModelRayTracingBlendRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C78994721343CEA004A54AF /* ModelRayTracingBlendRenderer.mm */; };
 		2C82E1091F874B2500D2C85C /* ModelOperationAmbientPopover.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C82E1081F874B2500D2C85C /* ModelOperationAmbientPopover.mm */; };
 		2C840D0E1D7001C2000D2956 /* NuoMetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C840D0D1D7001C2000D2956 /* NuoMetalView.m */; };
@@ -81,6 +88,7 @@
 		2CA71A1120ACFC40003A0486 /* NuoMathVectorMac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C69167220A61E450072E8F2 /* NuoMathVectorMac.cpp */; };
 		2CA75EB2201A75CB000E9A05 /* NuoBounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CA75EB0201A75CB000E9A05 /* NuoBounds.cpp */; };
 		2CA75EBF201AAFE0000E9A05 /* NuoMeshBounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2CA75EBE201AAFE0000E9A05 /* NuoMeshBounds.cpp */; };
+		2CABF19B227E15DB0075FF3D /* NuoBufferSwapChain.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CABF19A227E15DB0075FF3D /* NuoBufferSwapChain.mm */; };
 		2CAF2E851D691AC90074E402 /* tiny_obj_loader.cc in Sources */ = {isa = PBXBuildFile; fileRef = 2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */; };
 		2CB053D02043A24700EF8279 /* ModelViewConfiguration.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CB053CF2043A24700EF8279 /* ModelViewConfiguration.mm */; };
 		2CC110751FDD233100D09716 /* NuoProgressSheetPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CC110741FDD233100D09716 /* NuoProgressSheetPanel.m */; };
@@ -98,7 +106,7 @@
 		2CE2D7FF1E2167F2000CCD2D /* ModelPartsPanel.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CE2D7FE1E2167F2000CCD2D /* ModelPartsPanel.mm */; };
 		2CE2D80B1E254790000CCD2D /* ModelPartsTableView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2CE2D80A1E254790000CCD2D /* ModelPartsTableView.xib */; };
 		2CE78F6620CF14A6007B9B7A /* RayTracingShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2CE78F6520CF14A6007B9B7A /* RayTracingShaders.metal */; };
-		2CE8ED8120F2549F00CD18AC /* NuoComputeEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CE8ED8020F2549F00CD18AC /* NuoComputeEncoder.m */; };
+		2CE8ED8120F2549F00CD18AC /* NuoComputeEncoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CE8ED8020F2549F00CD18AC /* NuoComputeEncoder.mm */; };
 		2CECF8252150C34900979919 /* RayTracingHybridShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2CECF8242150C34900979919 /* RayTracingHybridShaders.metal */; };
 		2CEDBBB02119ED4F00BC7E96 /* NuoOverlayPass.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CEDBBAF2119ED4F00BC7E96 /* NuoOverlayPass.mm */; };
 		2CEE8CF71F71BC3F00C4D4F6 /* LightShadowPopoverController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CEE8CF61F71BC3F00C4D4F6 /* LightShadowPopoverController.m */; };
@@ -107,6 +115,7 @@
 		2CF62A691EEF5E11003E23EF /* NuoLightSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CF62A681EEF5E11003E23EF /* NuoLightSource.m */; };
 		2CF62A721EEF7CD0003E23EF /* NuoShadowMapRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CF62A711EEF7CD0003E23EF /* NuoShadowMapRenderer.mm */; };
 		2CFB8D962054305F009B5D41 /* NuoClearMesh.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CFB8D952054305F009B5D41 /* NuoClearMesh.mm */; };
+		2CFC8B2E22EBCF87007BC64E /* ModelSceneParameters.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CFC8B2D22EBCF87007BC64E /* ModelSceneParameters.mm */; };
 		2CFDD1EF20D5B59F00F2E218 /* NuoRayAccelerateStructure.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CFDD1EE20D5B59F00F2E218 /* NuoRayAccelerateStructure.mm */; };
 		983C2E1A1F86D60200D8E689 /* ModelOperationTexturePopover.mm in Sources */ = {isa = PBXBuildFile; fileRef = 983C2E191F86D60200D8E689 /* ModelOperationTexturePopover.mm */; };
 		987469FF1F8565F900DD058F /* NuoPopoverSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 987469FE1F8565F900DD058F /* NuoPopoverSheet.m */; };
@@ -184,8 +193,16 @@
 		2C156CCE1EE9B357000C52D4 /* NuoSheetPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoSheetPanel.h; sourceTree = "<group>"; };
 		2C156CCF1EE9B357000C52D4 /* NuoSheetPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoSheetPanel.m; sourceTree = "<group>"; };
 		2C1585BB1FB9652F00BDF282 /* ShaderAverage.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = ShaderAverage.metal; sourceTree = "<group>"; };
+		2C1A4D932283E10200ECBB46 /* NuoRenderParameterState.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NuoRenderParameterState.cpp; sourceTree = "<group>"; };
+		2C1A4D942283E10200ECBB46 /* NuoRenderParameterState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoRenderParameterState.h; sourceTree = "<group>"; };
+		2C1A4DA92285D2B100ECBB46 /* NuoShaderLibrary.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoShaderLibrary.h; sourceTree = "<group>"; };
+		2C1A4DAA2285D2B100ECBB46 /* NuoShaderLibrary.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoShaderLibrary.mm; sourceTree = "<group>"; };
 		2C1B28061D95FF17009F5912 /* NuoTextureBase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoTextureBase.m; sourceTree = "<group>"; };
 		2C1B28071D95FF17009F5912 /* NuoTextureBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoTextureBase.h; sourceTree = "<group>"; };
+		2C22EEA722D4D9DC002472E6 /* NuoGlobalBuffers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NuoGlobalBuffers.cpp; sourceTree = "<group>"; };
+		2C22EEA822D4D9DC002472E6 /* NuoGlobalBuffers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoGlobalBuffers.h; sourceTree = "<group>"; };
+		2C22EEB022D6310C002472E6 /* NuoArgumentBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoArgumentBuffer.h; sourceTree = "<group>"; };
+		2C22EEB122D6310C002472E6 /* NuoArgumentBuffer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoArgumentBuffer.mm; sourceTree = "<group>"; };
 		2C235FC71DD6CBD700E68295 /* Shaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		2C235FC81DD6CBD700E68295 /* ShadersCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShadersCommon.h; sourceTree = "<group>"; };
 		2C235FC91DD6CBD700E68295 /* ShadersMaterialed.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = ShadersMaterialed.metal; sourceTree = "<group>"; };
@@ -199,6 +216,8 @@
 		2C2873151E3F07120098092C /* ModelPanelUpdate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelPanelUpdate.h; sourceTree = "<group>"; };
 		2C2A58AE1DD1457200E9F9BC /* NuoRenderPassTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRenderPassTarget.h; sourceTree = "<group>"; };
 		2C2A58AF1DD1457200E9F9BC /* NuoRenderPassTarget.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoRenderPassTarget.mm; sourceTree = "<group>"; };
+		2C2AC77B22A99C6F00AE6E57 /* RayTracingShadersCommonCPU.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RayTracingShadersCommonCPU.cpp; sourceTree = "<group>"; };
+		2C2AC77C22A99C6F00AE6E57 /* RayTracingShadersCommonCPU.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RayTracingShadersCommonCPU.h; sourceTree = "<group>"; };
 		2C2ACEBE1FA1B1AE0055D52D /* FrameRateView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FrameRateView.h; sourceTree = "<group>"; };
 		2C2ACEBF1FA1B1AE0055D52D /* FrameRateView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FrameRateView.m; sourceTree = "<group>"; };
 		2C2F45761F9B9C6800B05607 /* NuoBackdropMesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoBackdropMesh.h; sourceTree = "<group>"; };
@@ -207,6 +226,10 @@
 		2C30DDD12142F69400A68533 /* NuoInspectableMaster.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoInspectableMaster.m; sourceTree = "<group>"; };
 		2C30DDD32143200900A68533 /* NuoInspectWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoInspectWindow.h; sourceTree = "<group>"; };
 		2C30DDD42143200900A68533 /* NuoInspectWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoInspectWindow.m; sourceTree = "<group>"; };
+		2C3167A9227C99540079F5E3 /* NuoRenderPassEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoRenderPassEncoder.h; sourceTree = "<group>"; };
+		2C3167AA227C99540079F5E3 /* NuoRenderPassEncoder.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoRenderPassEncoder.mm; sourceTree = "<group>"; };
+		2C3167B0227CD7AE0079F5E3 /* NuoCommandBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoCommandBuffer.h; sourceTree = "<group>"; };
+		2C3167B1227CD7AE0079F5E3 /* NuoCommandBuffer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoCommandBuffer.m; sourceTree = "<group>"; };
 		2C3622F92094E12200CB45CE /* NuoMesh_Extension.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoMesh_Extension.h; sourceTree = "<group>"; };
 		2C3876A420DD97D40064ECC5 /* ModelRayTracingRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelRayTracingRenderer.h; sourceTree = "<group>"; };
 		2C3876A520DD97D40064ECC5 /* ModelRayTracingRenderer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ModelRayTracingRenderer.mm; sourceTree = "<group>"; };
@@ -272,6 +295,8 @@
 		2C723AAF1E44355300484992 /* ModelPartsAnimations.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ModelPartsAnimations.xib; sourceTree = "<group>"; };
 		2C7359202142C9EC000B8BD0 /* NuoWindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoWindow.h; sourceTree = "<group>"; };
 		2C7359212142C9EC000B8BD0 /* NuoWindow.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoWindow.m; sourceTree = "<group>"; };
+		2C778DBF22A57FA4004C72EC /* NuoRayTracingRandom.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NuoRayTracingRandom.cpp; sourceTree = "<group>"; };
+		2C778DC022A57FA4004C72EC /* NuoRayTracingRandom.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoRayTracingRandom.h; sourceTree = "<group>"; };
 		2C78994621343CEA004A54AF /* ModelRayTracingBlendRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelRayTracingBlendRenderer.h; sourceTree = "<group>"; };
 		2C78994721343CEA004A54AF /* ModelRayTracingBlendRenderer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ModelRayTracingBlendRenderer.mm; sourceTree = "<group>"; };
 		2C82E1071F874B2500D2C85C /* ModelOperationAmbientPopover.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelOperationAmbientPopover.h; sourceTree = "<group>"; };
@@ -320,6 +345,9 @@
 		2CA75EB1201A75CB000E9A05 /* NuoBounds.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoBounds.h; sourceTree = "<group>"; };
 		2CA75EBD201AAFE0000E9A05 /* NuoMeshBounds.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoMeshBounds.h; sourceTree = "<group>"; };
 		2CA75EBE201AAFE0000E9A05 /* NuoMeshBounds.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NuoMeshBounds.cpp; sourceTree = "<group>"; };
+		2CABF199227E15DB0075FF3D /* NuoBufferSwapChain.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoBufferSwapChain.h; sourceTree = "<group>"; };
+		2CABF19A227E15DB0075FF3D /* NuoBufferSwapChain.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoBufferSwapChain.mm; sourceTree = "<group>"; };
+		2CABF1A0227E374D0075FF3D /* NuoRenderInFlight.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoRenderInFlight.h; sourceTree = "<group>"; };
 		2CAF2E831D691AC90074E402 /* tiny_obj_loader.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tiny_obj_loader.cc; sourceTree = "<group>"; };
 		2CAF2E841D691AC90074E402 /* tiny_obj_loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tiny_obj_loader.h; sourceTree = "<group>"; };
 		2CB053CE2043A24700EF8279 /* ModelViewConfiguration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelViewConfiguration.h; sourceTree = "<group>"; };
@@ -352,7 +380,7 @@
 		2CE2D80A1E254790000CCD2D /* ModelPartsTableView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ModelPartsTableView.xib; sourceTree = "<group>"; };
 		2CE78F6520CF14A6007B9B7A /* RayTracingShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = RayTracingShaders.metal; sourceTree = "<group>"; };
 		2CE8ED7F20F2549F00CD18AC /* NuoComputeEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoComputeEncoder.h; sourceTree = "<group>"; };
-		2CE8ED8020F2549F00CD18AC /* NuoComputeEncoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoComputeEncoder.m; sourceTree = "<group>"; };
+		2CE8ED8020F2549F00CD18AC /* NuoComputeEncoder.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoComputeEncoder.mm; sourceTree = "<group>"; };
 		2CECF8242150C34900979919 /* RayTracingHybridShaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = RayTracingHybridShaders.metal; sourceTree = "<group>"; };
 		2CECF8262150C3B000979919 /* RayTracingShadersCommon.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RayTracingShadersCommon.h; sourceTree = "<group>"; };
 		2CEDBBAE2119ED4F00BC7E96 /* NuoOverlayPass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoOverlayPass.h; sourceTree = "<group>"; };
@@ -374,6 +402,8 @@
 		2CF62A711EEF7CD0003E23EF /* NuoShadowMapRenderer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoShadowMapRenderer.mm; sourceTree = "<group>"; };
 		2CFB8D942054305F009B5D41 /* NuoClearMesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoClearMesh.h; sourceTree = "<group>"; };
 		2CFB8D952054305F009B5D41 /* NuoClearMesh.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoClearMesh.mm; sourceTree = "<group>"; };
+		2CFC8B2C22EBCF87007BC64E /* ModelSceneParameters.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelSceneParameters.h; sourceTree = "<group>"; };
+		2CFC8B2D22EBCF87007BC64E /* ModelSceneParameters.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ModelSceneParameters.mm; sourceTree = "<group>"; };
 		2CFDD1ED20D5B59F00F2E218 /* NuoRayAccelerateStructure.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoRayAccelerateStructure.h; sourceTree = "<group>"; };
 		2CFDD1EE20D5B59F00F2E218 /* NuoRayAccelerateStructure.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoRayAccelerateStructure.mm; sourceTree = "<group>"; };
 		983C2E181F86D60200D8E689 /* ModelOperationTexturePopover.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelOperationTexturePopover.h; sourceTree = "<group>"; };
@@ -408,6 +438,40 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2C1A4DA42285BC3A00ECBB46 /* Render */ = {
+			isa = PBXGroup;
+			children = (
+				2C1A4DA92285D2B100ECBB46 /* NuoShaderLibrary.h */,
+				2C1A4DAA2285D2B100ECBB46 /* NuoShaderLibrary.mm */,
+				2CABF199227E15DB0075FF3D /* NuoBufferSwapChain.h */,
+				2CABF19A227E15DB0075FF3D /* NuoBufferSwapChain.mm */,
+				2C2A58AE1DD1457200E9F9BC /* NuoRenderPassTarget.h */,
+				2C2A58AF1DD1457200E9F9BC /* NuoRenderPassTarget.mm */,
+				2CCD521920B8C0F100F6CEFE /* NuoRenderPassAttachment.h */,
+				2CCD521A20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm */,
+				2CE8ED7F20F2549F00CD18AC /* NuoComputeEncoder.h */,
+				2CE8ED8020F2549F00CD18AC /* NuoComputeEncoder.mm */,
+				2C22EEB022D6310C002472E6 /* NuoArgumentBuffer.h */,
+				2C22EEB122D6310C002472E6 /* NuoArgumentBuffer.mm */,
+				2C3167A9227C99540079F5E3 /* NuoRenderPassEncoder.h */,
+				2C3167AA227C99540079F5E3 /* NuoRenderPassEncoder.mm */,
+				2C1A4D942283E10200ECBB46 /* NuoRenderParameterState.h */,
+				2C1A4D932283E10200ECBB46 /* NuoRenderParameterState.cpp */,
+				2CA55FA71DD21D2A0000AD21 /* NuoRenderPass.h */,
+				2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */,
+				2CABF1A0227E374D0075FF3D /* NuoRenderInFlight.h */,
+				2C3167B0227CD7AE0079F5E3 /* NuoCommandBuffer.h */,
+				2C3167B1227CD7AE0079F5E3 /* NuoCommandBuffer.m */,
+				2C8B80FB1E2EDB01001746FE /* NuoRenderPipelinePass.h */,
+				2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.mm */,
+				2C9777581F7EC8B60031F188 /* NuoMeshSceneRenderPass.h */,
+				2C9777591F7EC8B60031F188 /* NuoMeshSceneRenderPass.mm */,
+				2CCF9C7E1E5B7A43006EF8C4 /* NuoRenderPipeline.h */,
+				2CCF9C7F1E5B7A43006EF8C4 /* NuoRenderPipeline.mm */,
+			);
+			path = Render;
+			sourceTree = "<group>";
+		};
 		2C26D1D71F99234A006F0DE9 /* ModelMeshes */ = {
 			isa = PBXGroup;
 			children = (
@@ -572,6 +636,8 @@
 				2C5B92BC1D7160EC00722936 /* NuoModelLoader.cpp */,
 				2CA75EB1201A75CB000E9A05 /* NuoBounds.h */,
 				2CA75EB0201A75CB000E9A05 /* NuoBounds.cpp */,
+				2C22EEA822D4D9DC002472E6 /* NuoGlobalBuffers.h */,
+				2C22EEA722D4D9DC002472E6 /* NuoGlobalBuffers.cpp */,
 				2C5B92BF1D72D11E00722936 /* NuoModelBase.h */,
 				2C5B92BE1D72D11E00722936 /* NuoModelBase.cpp */,
 				2C3D9A9B1D7DF5C3002C1226 /* NuoModelTextured.h */,
@@ -626,6 +692,8 @@
 			children = (
 				2C5DDAD81D65949E00A9DC9A /* ModelViewerRenderer.h */,
 				2C5DDAD91D65949E00A9DC9A /* ModelViewerRenderer.mm */,
+				2CFC8B2C22EBCF87007BC64E /* ModelSceneParameters.h */,
+				2CFC8B2D22EBCF87007BC64E /* ModelSceneParameters.mm */,
 				2C3876A420DD97D40064ECC5 /* ModelRayTracingRenderer.h */,
 				2C3876A520DD97D40064ECC5 /* ModelRayTracingRenderer.mm */,
 				2C78994621343CEA004A54AF /* ModelRayTracingBlendRenderer.h */,
@@ -647,26 +715,13 @@
 		2C840D0B1D7001A5000D2956 /* ViewerFoundation */ = {
 			isa = PBXGroup;
 			children = (
-				2C2A58AE1DD1457200E9F9BC /* NuoRenderPassTarget.h */,
-				2C2A58AF1DD1457200E9F9BC /* NuoRenderPassTarget.mm */,
-				2CCD521920B8C0F100F6CEFE /* NuoRenderPassAttachment.h */,
-				2CCD521A20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm */,
-				2CE8ED7F20F2549F00CD18AC /* NuoComputeEncoder.h */,
-				2CE8ED8020F2549F00CD18AC /* NuoComputeEncoder.m */,
-				2CA55FA71DD21D2A0000AD21 /* NuoRenderPass.h */,
-				2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */,
-				2C8B80FB1E2EDB01001746FE /* NuoRenderPipelinePass.h */,
-				2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.mm */,
-				2C9777581F7EC8B60031F188 /* NuoMeshSceneRenderPass.h */,
-				2C9777591F7EC8B60031F188 /* NuoMeshSceneRenderPass.mm */,
-				2CCF9C7E1E5B7A43006EF8C4 /* NuoRenderPipeline.h */,
-				2CCF9C7F1E5B7A43006EF8C4 /* NuoRenderPipeline.mm */,
 				2C840D0C1D7001C2000D2956 /* NuoMetalView.h */,
 				2C840D0D1D7001C2000D2956 /* NuoMetalView.m */,
 				2CCF9C751E5B4F77006EF8C4 /* NuoOffscreenView.h */,
 				2CCF9C761E5B4F77006EF8C4 /* NuoOffscreenView.m */,
 				2CC5EDEC1D8A62B100419168 /* NuoRoundedView.h */,
 				2CC5EDED1D8A62B100419168 /* NuoRoundedView.m */,
+				2C1A4DA42285BC3A00ECBB46 /* Render */,
 				2C5DDAC61D6590C200A9DC9A /* Meshes */,
 				2C8B80E61E2D6636001746FE /* ShadowMap */,
 				2C9777441F7E076D0031F188 /* ScreenSpace */,
@@ -765,9 +820,13 @@
 				2CB355B520CEF44900065B96 /* NuoRayTracingUniform.h */,
 				2C68346620CF98B900E941FC /* NuoRayTracingRenderer.h */,
 				2C68346720CF98B900E941FC /* NuoRayTracingRenderer.mm */,
+				2C2AC77C22A99C6F00AE6E57 /* RayTracingShadersCommonCPU.h */,
+				2C2AC77B22A99C6F00AE6E57 /* RayTracingShadersCommonCPU.cpp */,
 				2CECF8262150C3B000979919 /* RayTracingShadersCommon.h */,
 				2CE78F6520CF14A6007B9B7A /* RayTracingShaders.metal */,
 				2CECF8242150C34900979919 /* RayTracingHybridShaders.metal */,
+				2C778DC022A57FA4004C72EC /* NuoRayTracingRandom.h */,
+				2C778DBF22A57FA4004C72EC /* NuoRayTracingRandom.cpp */,
 			);
 			path = RayTracing;
 			sourceTree = "<group>";
@@ -833,6 +892,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -909,13 +969,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C3167B2227CD7AE0079F5E3 /* NuoCommandBuffer.m in Sources */,
 				988B676D1E43F2BD00EA1453 /* NuoMeshAnimation.mm in Sources */,
 				2CE2CA221D804EC5005509EE /* NuoMeshTextured.mm in Sources */,
 				2CFB8D962054305F009B5D41 /* NuoClearMesh.mm in Sources */,
 				2C2873071E3E77790098092C /* ModelComponentPanels.mm in Sources */,
 				2C1B28081D95FF17009F5912 /* NuoTextureBase.m in Sources */,
 				2C9FD8D8214800F000FF974F /* NuoCheckboardMesh.mm in Sources */,
-				2CE8ED8120F2549F00CD18AC /* NuoComputeEncoder.m in Sources */,
+				2CE8ED8120F2549F00CD18AC /* NuoComputeEncoder.mm in Sources */,
 				2C9D9AAD1D658F0800283E46 /* main.m in Sources */,
 				2C2873101E3ED5A40098092C /* ModelPartPropPanel.mm in Sources */,
 				2CC5EDEE1D8A62B100419168 /* NuoRoundedView.m in Sources */,
@@ -944,6 +1005,7 @@
 				2CCD521B20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm in Sources */,
 				2CF47F1E2144F1FE00257AB0 /* OpenInspectPanel.m in Sources */,
 				2CDCDAF31DC185A800ECFE39 /* NuoModelArrow.cpp in Sources */,
+				2C1A4DAB2285D2B100ECBB46 /* NuoShaderLibrary.mm in Sources */,
 				2C235FD01DD6CBD700E68295 /* ShadersTexturedMaterialed.metal in Sources */,
 				2C9FD8DA21481F7B00FF974F /* Inspect.metal in Sources */,
 				2CB053D02043A24700EF8279 /* ModelViewConfiguration.mm in Sources */,
@@ -954,7 +1016,9 @@
 				2C45386E21345F04001DC263 /* NuoIlluminationMesh.mm in Sources */,
 				2C5DDACC1D6590DB00A9DC9A /* NuoMesh.mm in Sources */,
 				2C8B80ED1E2D6654001746FE /* NuoShadowMapTarget.m in Sources */,
+				2C22EEB222D6310C002472E6 /* NuoArgumentBuffer.mm in Sources */,
 				2C5A58371ECEB7CA00121A82 /* NuoMeshCompound.mm in Sources */,
+				2C22EEA922D4D9DC002472E6 /* NuoGlobalBuffers.cpp in Sources */,
 				2C3876A620DD97D40064ECC5 /* ModelRayTracingRenderer.mm in Sources */,
 				2CFDD1EF20D5B59F00F2E218 /* NuoRayAccelerateStructure.mm in Sources */,
 				2C30DDD22142F69400A68533 /* NuoInspectableMaster.m in Sources */,
@@ -962,6 +1026,7 @@
 				2CA71A1120ACFC40003A0486 /* NuoMathVectorMac.cpp in Sources */,
 				2C69167120A61CD50072E8F2 /* NuoMathVector.cpp in Sources */,
 				2C9FD8D12147FEE700FF974F /* NuoInspectPass.mm in Sources */,
+				2CFC8B2E22EBCF87007BC64E /* ModelSceneParameters.mm in Sources */,
 				2C235FCF1DD6CBD700E68295 /* ShadersTextured.metal in Sources */,
 				2CCF9C801E5B7A43006EF8C4 /* NuoRenderPipeline.mm in Sources */,
 				2CDFB21E1DD99E2100C67FA3 /* NotationLight.mm in Sources */,
@@ -976,6 +1041,7 @@
 				2C6A8E5A1F7FE8BB0007551F /* ShadersDeferred.metal in Sources */,
 				2CA65F88206AA87400C4A313 /* ModelSelectionRenderer.mm in Sources */,
 				2CECF8252150C34900979919 /* RayTracingHybridShaders.metal in Sources */,
+				2CABF19B227E15DB0075FF3D /* NuoBufferSwapChain.mm in Sources */,
 				2CD183792102544A00980510 /* NuoRayBuffer.mm in Sources */,
 				2CF62A721EEF7CD0003E23EF /* NuoShadowMapRenderer.mm in Sources */,
 				2C723AA91E43A83600484992 /* NuoMeshRotation.cpp in Sources */,
@@ -983,6 +1049,7 @@
 				2C840D0E1D7001C2000D2956 /* NuoMetalView.m in Sources */,
 				2C68346120CF812C00E941FC /* NuoRandomBuffer.cpp in Sources */,
 				2C156CAE1EE7961C000C52D4 /* NuoBoardMesh.mm in Sources */,
+				2C1A4D952283E10200ECBB46 /* NuoRenderParameterState.cpp in Sources */,
 				2CAF2E851D691AC90074E402 /* tiny_obj_loader.cc in Sources */,
 				2CF62A471EE9B4E7003E23EF /* BoardSettingsPanel.m in Sources */,
 				98CD06BA1DE4CC2800881F5F /* ShadersTexturedMaterialedBump.metal in Sources */,
@@ -1000,9 +1067,11 @@
 				2C2ACEC01FA1B1AE0055D52D /* FrameRateView.m in Sources */,
 				2C97774B1F7E07B80031F188 /* NuoScreenSpaceTarget.mm in Sources */,
 				2C5A58501ED3F2FD00121A82 /* NuoModelBoard.cpp in Sources */,
+				2C3167AB227C99540079F5E3 /* NuoRenderPassEncoder.mm in Sources */,
 				2C9D9AAA1D658F0800283E46 /* AppDelegate.m in Sources */,
 				9884424B1D80B07500EE2C4C /* NuoMeshTexMatieraled.mm in Sources */,
 				2CE78F6620CF14A6007B9B7A /* RayTracingShaders.metal in Sources */,
+				2C778DC122A57FA4004C72EC /* NuoRayTracingRandom.cpp in Sources */,
 				2C97775A1F7EC8B60031F188 /* NuoMeshSceneRenderPass.mm in Sources */,
 				2C5DDADA1D65949E00A9DC9A /* ModelViewerRenderer.mm in Sources */,
 				988442461D80853700EE2C4C /* NuoModelMaterialedBasic.cpp in Sources */,

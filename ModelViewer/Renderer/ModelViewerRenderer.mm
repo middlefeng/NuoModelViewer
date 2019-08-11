@@ -3,6 +3,8 @@
 #import "NuoUniforms.h"
 #import "NuoMeshBounds.h"
 
+#import "NuoCommandBuffer.h"
+#import "NuoBufferSwapChain.h"
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
 
@@ -29,10 +31,11 @@
 #import "NuoDeferredRenderer.h"
 #import "NuoRayAccelerateStructure.h"
 #import "ModelRayTracingRenderer.h"
-#import "NuoIlluminationmesh.h"
+#import "ModelRayTracingBlendRenderer.h"
 
 #import "NuoDirectoryUtils.h"
 #import "NuoModelLoaderGPU.h"
+#import "ModelSceneParameters.h"
 
 // inspect
 //
@@ -40,7 +43,7 @@
 #import "NuoInspectableMaster.h"
 
 
-@interface ModelRenderer ()
+@interface ModelRenderer () < ModelShadowMapProvider >
 
 
 @property (nonatomic, weak) NuoMeshCompound* mainModelMesh;
@@ -53,7 +56,6 @@
 //
 @property (assign) NuoMatrixFloat44 viewRotation;
 @property (assign) NuoMatrixFloat44 viewTranslation;
-@property (assign) NuoMatrixFloat44 projection;
 
 // need store the center of a snapshot of the scene as the meshes in the scene
 // keep moving
@@ -69,17 +71,10 @@
 
 @implementation ModelRenderer
 {
-    // per-frame GPU buffers (confirm to protocol NuoMeshSceneParametersProvider)
-    //
-    NSArray<id<MTLBuffer>>* _transUniformBuffers;
-    NSArray<id<MTLBuffer>>* _lightCastBuffers;
-    NSArray<id<MTLBuffer>>* _lightingUniformBuffers;
-    id<MTLBuffer> _modelCharacterUnfiromBuffer;
-    
     NuoShadowMapRenderer* _shadowMapRenderer[2];
     NuoRenderPassTarget* _immediateTarget;
     NuoDeferredRenderer* _deferredRenderer;
-    NuoIlluminationMesh* _illuminationMesh;
+    ModelRayTracingBlendRenderer* _illuminationRenderer;
     
     NuoCheckboardMesh* _checkerboard;
     
@@ -88,7 +83,12 @@
     
     BOOL _rayAcceleratorOutOfSync;
     BOOL _rayAcceleratorNeedRebuild;
+    
+    NuoAmbientUniformField _ambientParameters;
 }
+
+
+@dynamic fieldOfView;
 
 
 
@@ -96,11 +96,7 @@
 {
     if ((self = [super initWithCommandQueue:commandQueue]))
     {
-        [self makeResources];
-        
         _modelOptions = [NuoMeshOption new];
-        _cullEnabled = YES;
-        _fieldOfView = (2 * M_PI) / 8;
         
         _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 0"];
         _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 1"];
@@ -112,21 +108,25 @@
         _immediateTarget.manageTargetTexture = YES;
         _immediateTarget.sharedTargetTexture = NO;
         
-        _deferredRenderer = [[NuoDeferredRenderer alloc] initWithCommandQueue:commandQueue withSceneParameter:self];
+        _sceneParameters = [[ModelSceneParameters alloc] initWithDevice:commandQueue.device];
+        _sceneParameters.shadowMap = self;
+        self.paramsProvider = _sceneParameters;
         
-        _illuminationMesh = [[NuoIlluminationMesh alloc] initWithCommandQueue:commandQueue];
-        [_illuminationMesh setSampleCount:1];
-        [_illuminationMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
+        _deferredRenderer = [[NuoDeferredRenderer alloc] initWithCommandQueue:commandQueue
+                                                           withSceneParameter:_sceneParameters];
+        
+        _illuminationRenderer = [[ModelRayTracingBlendRenderer alloc] initWithCommandQueue:commandQueue
+                                                                           withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                           withSampleCount:1];
         
         _checkerboard = [[NuoCheckboardMesh alloc] initWithCommandQueue:commandQueue];
         
         _sceneRoot = [[NuoMeshSceneRoot alloc] init];
+        _sceneParameters.sceneRoot = _sceneRoot;
         _boardMeshes = [NSMutableArray new];
         
         _viewRotation = NuoMatrixFloat44Identity;
         _viewTranslation = NuoMatrixFloat44Identity;
-        
-        self.paramsProvider = self;
         
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
         _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:commandQueue];
@@ -145,7 +145,7 @@
     _rayTracingRecordStatus = rayTracingRecordStatus;
     
     if (rayTracingRecordStatus == kRecord_Stop)
-        [_rayTracingRenderer resetResources:nil];
+        [_rayTracingRenderer resetResources];
     
     if (changed)
     {
@@ -164,13 +164,23 @@
     [_deferredRenderer setDrawableSize:drawableSize];
     [_rayAccelerator setDrawableSize:drawableSize];
     [_rayTracingRenderer setDrawableSize:drawableSize];
+    [_illuminationRenderer setDrawableSize:drawableSize];
+    
+    [_sceneParameters setDrawableSize:drawableSize];
 }
 
 
 - (void)setFieldOfView:(float)fieldOfView
 {
-    _fieldOfView = fieldOfView;
+    [_sceneParameters setFieldOfView:fieldOfView];
     [_rayAccelerator setFieldOfView:fieldOfView];
+}
+
+
+
+- (float)fieldOfView
+{
+    return [_sceneParameters fieldOfView];
 }
 
 
@@ -205,13 +215,6 @@
         [self caliberateSceneCenter];
 }
 
-
-- (void)setRenderTarget:(NuoRenderPassTarget *)renderTarget
-{
-    [super setRenderTarget:renderTarget];
-    [_shadowMapRenderer[0].renderTarget setSampleCount:1/*renderTarget.sampleCount*/];
-    [_shadowMapRenderer[1].renderTarget setSampleCount:1/*renderTarget.sampleCount*/];
-}
 
 
 - (void)loadMesh:(NSString*)path withProgress:(NuoProgressFunction)progress
@@ -540,7 +543,7 @@
         
         {
             exporter.StartEntry("FOV");
-            exporter.SetEntryValueFloat(_fieldOfView);
+            exporter.SetEntryValueFloat(self.fieldOfView);
             exporter.EndEntry(false);
         }
         
@@ -616,7 +619,7 @@
                 exporter.EndEntry(false);
                 
                 exporter.StartEntry("spacular");
-                exporter.SetEntryValueFloat(light.lightingSpacular);
+                exporter.SetEntryValueFloat(light.lightingSpecular);
                 exporter.EndEntry(false);
                 
                 exporter.StartEntry("enableShadow");
@@ -651,24 +654,30 @@
             
             {
                 exporter.StartEntry("bias");
-                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.bias);
+                exporter.SetEntryValueFloat(_ambientParameters.bias);
                 exporter.EndEntry(false);
                 
                 exporter.StartEntry("intensity");
-                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.intensity);
+                exporter.SetEntryValueFloat(_ambientParameters.intensity);
                 exporter.EndEntry(false);
                 
                 exporter.StartEntry("range");
-                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.sampleRadius);
+                exporter.SetEntryValueFloat(_ambientParameters.sampleRadius);
                 exporter.EndEntry(false);
                 
                 exporter.StartEntry("scale");
-                exporter.SetEntryValueFloat(_deferredParameters.ambientOcclusionParams.scale);
+                exporter.SetEntryValueFloat(_ambientParameters.scale);
                 exporter.EndEntry(false);
             }
             
             exporter.EndTable();
             exporter.EndEntry(true);
+        }
+        
+        {
+            exporter.StartEntry("illumination");
+            exporter.SetEntryValueFloat(_illuminationStrength);
+            exporter.EndEntry(false);
         }
         
         exporter.EndTable();
@@ -709,7 +718,7 @@
     lua->RemoveField();
     
     lua->GetField("view", -1);
-    _fieldOfView = lua->GetFieldAsNumber("FOV", -1);
+    self.fieldOfView = lua->GetFieldAsNumber("FOV", -1);
     lua->RemoveField();
     
     lua->GetField("models", -1);
@@ -781,20 +790,27 @@
     
     lua->GetField("lights", -1);
     
-    _ambientDensity = lua->GetFieldAsNumber("ambient", -1);
+    self.ambientDensity = lua->GetFieldAsNumber("ambient", -1);
     
     {
         lua->GetField("ambientParams", -1);
         
         if (!lua->IsNil(-1))
         {
-            NuoDeferredRenderUniforms params = _deferredParameters;
-            params.ambientOcclusionParams.bias = lua->GetFieldAsNumber("bias", -1);
-            params.ambientOcclusionParams.intensity = lua->GetFieldAsNumber("intensity", -1);
-            params.ambientOcclusionParams.sampleRadius = lua->GetFieldAsNumber("range", -1);
-            params.ambientOcclusionParams.scale = lua->GetFieldAsNumber("scale", -1);
-            [self setDeferredParameters:params];
+            _ambientParameters.bias = lua->GetFieldAsNumber("bias", -1);
+            _ambientParameters.intensity = lua->GetFieldAsNumber("intensity", -1);
+            _ambientParameters.sampleRadius = lua->GetFieldAsNumber("range", -1);
+            _ambientParameters.scale = lua->GetFieldAsNumber("scale", -1);
+            [self setAmbientParameters:_ambientParameters];
         }
+        lua->RemoveField();
+    }
+    
+    {
+        lua->GetField("illumination", -1);
+        if (!lua->IsNil(-1))
+            [self setIlluminationStrength:lua->GetFieldAsNumber("illumination", -2)];
+
         lua->RemoveField();
     }
     
@@ -828,45 +844,29 @@
 }
 
 
-- (void)setDeferredParameters:(NuoDeferredRenderUniforms)deferredParameters
+- (void)setAmbientDensity:(float)ambientDensity
 {
-    _deferredParameters = deferredParameters;
-    [_deferredRenderer setParameters:&deferredParameters];
-    
-    NuoGlobalIlluminationUniforms globalIllum;
-    globalIllum.directLightDensity = deferredParameters.ambientOcclusionParams.scale / 3.0 * 2.0;
-    globalIllum.ambientDensity = _ambientDensity;
-    [_illuminationMesh setParameters:globalIllum];
+    _ambientDensity = ambientDensity;
+    _sceneParameters.ambient = NuoVectorFloat3(_ambientDensity,
+                                               _ambientDensity,
+                                               _ambientDensity);
 }
 
 
-- (void)makeResources
+- (void)setAmbientParameters:(const NuoAmbientUniformField&)ambientParameters
 {
-    id<MTLBuffer> modelBuffers[kInFlightBufferCount];
-    id<MTLBuffer> lightingBuffers[kInFlightBufferCount];
-    id<MTLBuffer> lightCastModelBuffers[kInFlightBufferCount];
+    _ambientParameters = ambientParameters;
+    [_deferredRenderer setParameters:ambientParameters];
     
-    for (size_t i = 0; i < kInFlightBufferCount; ++i)
-    {
-        modelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoUniforms)
-                                                   options:MTLResourceStorageModeManaged];
-        lightingBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightUniforms)
-                                                      options:MTLResourceStorageModeManaged];
-        lightCastModelBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoLightVertexUniforms)
-                                                        options:MTLResourceStorageModeManaged];
-        
-    }
-    
-    _transUniformBuffers = [[NSArray alloc] initWithObjects:modelBuffers count:kInFlightBufferCount];
-    _lightingUniformBuffers = [[NSArray alloc] initWithObjects:lightingBuffers count:kInFlightBufferCount];
-    _lightCastBuffers = [[NSArray alloc] initWithObjects:lightCastModelBuffers count:kInFlightBufferCount];
-    
-    NuoModelCharacterUniforms modelCharacter;
-    modelCharacter.opacity = 1.0f;
-    _modelCharacterUnfiromBuffer = [self.commandQueue.device newBufferWithLength:sizeof(NuoModelCharacterUniforms)
-                                                                         options:MTLResourceOptionCPUCacheModeDefault];
-    memcpy([_modelCharacterUnfiromBuffer contents], &modelCharacter, sizeof(NuoModelCharacterUniforms));
+    [_illuminationRenderer setAmbient:_sceneParameters.ambient];
 }
+
+
+- (const NuoAmbientUniformField&)ambientParameters
+{
+    return _ambientParameters;
+}
+
 
 - (void)handleDeltaPosition
 {
@@ -938,70 +938,28 @@
 }
 
 
-- (void)updateUniformsForView:(unsigned int)inFlight
+- (void)updateUniformsForView:(NuoCommandBuffer*)commandBuffer
 {
     // move all delta position coming from the view's mouse/gesture into the matrix,
     // according to the transform mode (i.e. scene or mesh)
     //
     [self handleDeltaPosition];
     
-    // rotation is around the center of a previous scene snapshot
-    //
-    const NuoMatrixFloat44 viewTrans = [self viewMatrix];
+    [_sceneParameters setViewMatrix:[self viewMatrix]];
+    [_sceneParameters setLights:_lights];
+    [_sceneParameters updateUniforms:commandBuffer];
     
-    const CGSize drawableSize = self.renderTarget.drawableSize;
-    const float aspect = drawableSize.width / drawableSize.height;
-    
-    // bounding box transform and determining the near/far
-    //
-    NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
-
-    float near = -bounds._center.z() - bounds._span.z() / 2.0 + 0.01;
-    float far = near + bounds._span.z() + 0.02;
-    near = std::max<float>(0.001, near);
-    far = std::max<float>(near + 0.001, far);
-    
-    _projection = NuoMatrixPerspective(aspect, _fieldOfView, near, far);
-
-    NuoUniforms uniforms;
-    uniforms.viewMatrix = viewTrans._m;
-    uniforms.viewMatrixInverse = viewTrans.Inverse()._m;
-    uniforms.viewProjectionMatrix = (_projection * viewTrans)._m;
-
-    memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
-    [self.transUniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(uniforms))];
-    
-    NuoLightUniforms lighting;
-    lighting.ambientDensity = _ambientDensity;
-    for (unsigned int i = 0; i < 4; ++i)
-    {
-        const NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(_lights[i].lightingRotationX,
-                                                                  _lights[i].lightingRotationY);
-        
-        const NuoVectorFloat4 lightVector(rotationMatrix * NuoVectorFloat4(0, 0, 1, 0));
-        lighting.lightParams[i].direction = lightVector._vector;
-        lighting.lightParams[i].density = _lights[i].lightingDensity;
-        lighting.lightParams[i].spacular = _lights[i].lightingSpacular;
-        
-        if (i < 2)
-        {
-            lighting.shadowParams[i].soften = _lights[i].shadowSoften;
-            lighting.shadowParams[i].bias = _lights[i].shadowBias;
-            lighting.shadowParams[i].occluderRadius = _lights[i].shadowOccluderRadius;
-        }
-    }
-    
-    memcpy([self.lightingUniformBuffers[inFlight] contents], &lighting, sizeof(NuoLightUniforms));
-    [self.lightingUniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(NuoLightUniforms))];
-    
-    [_sceneRoot updateUniform:inFlight withTransform:NuoMatrixFloat44Identity];
-    [_sceneRoot setCullEnabled:_cullEnabled];
+    [_sceneRoot updateUniform:commandBuffer withTransform:NuoMatrixFloat44Identity];
+    [_sceneRoot setCullEnabled:_sceneParameters.cullEnabled];
     
     if (_cubeMesh)
     {
-        const NuoMatrixFloat44 projectionMatrixForCube = NuoMatrixPerspective(aspect, _fieldOfView, 0.3, 2.0);
+        const CGSize& drawableSize = _sceneParameters.drawableSize;
+        const float aspect = drawableSize.width / drawableSize.height;
+        
+        const NuoMatrixFloat44 projectionMatrixForCube = NuoMatrixPerspective(aspect, self.fieldOfView, 0.3, 2.0);
         [_cubeMesh setProjectionMatrix:projectionMatrixForCube];
-        [_cubeMesh updateUniform:inFlight withTransform:NuoMatrixFloat44Identity];
+        [_cubeMesh updateUniform:commandBuffer withTransform:NuoMatrixFloat44Identity];
     }
     
     if (_backdropMesh)
@@ -1013,7 +971,7 @@
         translation.y += _backdropTransYDelta;
         [_backdropMesh setTranslation:translation];
         
-        [_backdropMesh updateUniform:inFlight withDrawableSize:self.renderTarget.drawableSize];
+        [_backdropMesh updateUniform:commandBuffer withDrawableSize:self.renderTarget.drawableSize];
         
         _backdropScaleDelta = 0.0;
         _backdropTransXDelta = 0.0;
@@ -1021,13 +979,14 @@
     }
 }
 
-- (void)predrawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-               withInFlightIndex:(unsigned int)inFlight
+- (void)predrawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    [self updateUniformsForView:inFlight];
+    [self updateUniformsForView:commandBuffer];
     
     if (_rayTracingRecordStatus != kRecord_Stop)
     {
+        // updat to the intersector accelerating sturcture
+        
         if (_rayAcceleratorNeedRebuild)
             [_rayAccelerator setRoot:_sceneRoot];
         else if (_rayAcceleratorOutOfSync)
@@ -1035,20 +994,29 @@
         
         [_rayAccelerator setView:[self viewMatrix]];
         
-        for (uint i = 0; i < 2; ++i)
-            [_rayTracingRenderer setLightSource:_lights[i] forIndex:i];
+        // update to the ray tracer renderer
         
-        if (_rayTracingRecordStatus || _rayAcceleratorOutOfSync)
+        if (_rayAcceleratorNeedRebuild)
+            [_rayTracingRenderer rayStructUpdated];
+        
+        if (_rayAcceleratorOutOfSync)
         {
             const NuoMatrixFloat44 viewTrans = [self viewMatrix];
             const NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
-
+            
+            NuoRayTracingGlobalIlluminationParam illumParams;
+            illumParams.ambient = _sceneParameters.ambient._vector;
+            illumParams.ambientRadius = _ambientParameters.sampleRadius;
+            illumParams.illuminationStrength = _illuminationStrength;
+            illumParams.specularMaterialAdjust = _lights[0].lightingSpecular;
+            
             _rayTracingRenderer.sceneBounds = bounds;
-            _rayTracingRenderer.ambientDensity = _ambientDensity;
-            _rayTracingRenderer.ambientRadius = _deferredParameters.ambientOcclusionParams.sampleRadius;
-            _rayTracingRenderer.illuminationStrength = _illuminationStrength;
-            _rayTracingRenderer.fieldOfView = _fieldOfView;
+            _rayTracingRenderer.globalIllum = illumParams;
+            _rayTracingRenderer.fieldOfView = self.fieldOfView;
         }
+        
+        for (uint i = 0; i < 2; ++i)
+            [_rayTracingRenderer setLightSource:_lights[i] forIndex:i];
         
         _rayAcceleratorNeedRebuild = NO;
         _rayAcceleratorOutOfSync = NO;
@@ -1056,7 +1024,10 @@
     
     if (_rayTracingRecordStatus == kRecord_Start)
     {
-        [_rayTracingRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        [_rayTracingRenderer drawWithCommandBuffer:commandBuffer];
+        
+        [_illuminationRenderer setDirectLighting:_rayTracingRenderer.directLight];
+        [_illuminationRenderer predrawWithCommandBuffer:commandBuffer];
     }
     
     if (_rayTracingRecordStatus == kRecord_Stop)
@@ -1067,7 +1038,7 @@
         {
             _shadowMapRenderer[i].sceneRoot = _sceneRoot;
             _shadowMapRenderer[i].lightSource = _lights[i];
-            [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+            [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer];
         }
         
         // store the light view point projection for shadow map detection in the scene
@@ -1075,73 +1046,83 @@
         NuoLightVertexUniforms lightUniforms;
         lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix._m;
         lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix._m;
-        memcpy([_lightCastBuffers[inFlight] contents], &lightUniforms, sizeof(lightUniforms));
-        [_lightCastBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(lightUniforms))];
-    }
+        
+        [_sceneParameters updateLightCastWithInFlight:commandBuffer withContent:&lightUniforms];
     
-    [_deferredRenderer setRoot:_sceneRoot];
-    [_deferredRenderer predrawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+        // seems unnecessary with ray tracing running, and it slows down ray tracing on
+        // 10.14.2 occasionally for unknown reason
+        
+        [_deferredRenderer setRoot:_sceneRoot];
+        [_deferredRenderer predrawWithCommandBuffer:commandBuffer];
+    }
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     // get the target render pass and draw the scene in the forward rendering
     //
-    id<MTLRenderCommandEncoder> renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
     if (!renderPass)
         return;
     
     renderPass.label = @"Scene Render Pass";
     
     if (_cubeMesh)
-        [_cubeMesh drawMesh:renderPass indexBuffer:inFlight];
+    {
+        [renderPass pushParameterState:@"Cube mesh"];
+        [_cubeMesh drawMesh:renderPass];
+        [renderPass popParameterState];
+    }
     
-    [self setSceneBuffersTo:renderPass withInFlightIndex:inFlight];
+    [self setSceneBuffersTo:renderPass];
     
     BOOL rayTracingMode = (_rayTracingRecordStatus != kRecord_Stop);
     
-    if (rayTracingMode)
-        [_sceneRoot setShadowOverlayMap:[self shadowOverlayMap]];
-    
-    [_sceneRoot drawMesh:renderPass indexBuffer:inFlight];
+    [_sceneRoot drawMesh:renderPass];
     
     [_immediateTarget releaseRenderPassEndcoder];
     
     NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
     [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_Immediate];
     [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_ImmediateAlpha];
-    [inspectMaster updateTexture:[self shadowOverlayMap] forName:kInspectable_ShadowOverlay];
-    
     
     // deferred rendering for the illumination
     
-    id<MTLRenderCommandEncoder> deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* deferredRenderPass = [self retainDefaultEncoder:commandBuffer];
     
     if (_showCheckerboard)
-        [_checkerboard drawMesh:deferredRenderPass indexBuffer:inFlight];
+        [_checkerboard drawMesh:deferredRenderPass];
     
     BOOL drawBackdrop = _backdropMesh && _backdropMesh.enabled;
     if (drawBackdrop)
-        [_backdropMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
+        [_backdropMesh drawMesh:deferredRenderPass];
 
     if (_mainModelMesh.enabled)
     {
         if (rayTracingMode)
         {
-            [inspectMaster updateTexture:[self rayTracingIllumination] forName:kInspectable_Illuminate];
+            NSArray* textures = _rayTracingRenderer.targetTextures;
             
-            [_illuminationMesh setModelTexture:_immediateTarget.targetTexture];
-            [_illuminationMesh setIlluminationMap:[self rayTracingIllumination]];
-            [_illuminationMesh setShadowOverlayMap:[self shadowOverlayMap]];
-            [_illuminationMesh setTranslucentCoverMap:[_deferredRenderer ambientBuffer]];
-            [_illuminationMesh drawMesh:deferredRenderPass indexBuffer:inFlight];
+            [inspectMaster updateTexture:textures[0] forName:kInspectable_Illuminate];
+            
+            [_illuminationRenderer setRenderTarget:self.renderTarget];
+            [_illuminationRenderer setImmediateResult:_immediateTarget.targetTexture];
+            [_illuminationRenderer setIllumination:textures[0]];
+            [_illuminationRenderer setIlluminationOnVirtual:textures[1]];
+            [_illuminationRenderer setTranslucentMap:[_deferredRenderer ambientBuffer]];
+            
+            [_illuminationRenderer drawWithCommandBuffer:commandBuffer];
         }
         else
         {
+            [renderPass pushParameterState:@"Deferred render"];
+            
             [_deferredRenderer setRenderTarget:self.renderTarget];
             [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
-            [_deferredRenderer drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+            [_deferredRenderer drawWithCommandBuffer:commandBuffer];
+            
+            [renderPass popParameterState];
         }
     }
     
@@ -1163,7 +1144,7 @@
     {
         const NuoVectorFloat3 center = [mesh worldBounds:NuoMatrixFloat44Identity].boundingBox._center;
         const NuoVectorFloat4 centerVec(center.x(), center.y(), center.z(), 1.0);
-        const NuoVectorFloat4 centerProjected = _projection * centerVec;
+        const NuoVectorFloat4 centerProjected = _sceneParameters.projection * centerVec;
         const NuoVectorFloat2 centerOnScreen = NuoVectorFloat2(centerProjected.x(), centerProjected.y()) / centerProjected.w();
         
         const float currentDistance = NuoDistance(normalized, centerOnScreen);
@@ -1206,51 +1187,15 @@
 }
 
 
-- (id<MTLTexture>)rayTracingIllumination
-{
-    return _rayTracingRenderer.targetTextures[0];
-}
+#pragma mark -- Protocol ModelShadowMapProvider
 
-
-- (id<MTLTexture>)shadowOverlayMap
-{
-    return _deferredRenderer.shadowOverlayMap;
-}
-
-
-#pragma mark -- Protocol NuoMeshSceneParametersProvider
-
-- (id<MTLTexture>)shadowMap:(NSUInteger)index;
+- (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
 {
     if (_rayTracingRecordStatus != kRecord_Stop)
-        return [_rayTracingRenderer targetTextureForLightSource:(uint)index];
+        return [_rayTracingRenderer shadowForLightSource:index withMask:mask];
     else
         return _shadowMapRenderer[index].renderTarget.targetTexture;
 }
-
-- (NSArray<id<MTLBuffer>>*)lightCastBuffers
-{
-    return _lightCastBuffers;
-}
-
-
-- (NSArray<id<MTLBuffer>>*)lightingUniformBuffers
-{
-    return _lightingUniformBuffers;
-}
-
-
-- (id<MTLBuffer>)modelCharacterUnfiromBuffer
-{
-    return _modelCharacterUnfiromBuffer;
-}
-
-
-- (NSArray<id<MTLBuffer>>*)transUniformBuffers
-{
-    return _transUniformBuffers;
-}
-
 
 - (id<MTLTexture>)depthMap
 {

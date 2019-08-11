@@ -15,10 +15,22 @@
 
 typedef enum
 {
+    kNuoRayIndex_OnOpaque = 0,
+    kNuoRayIndex_OnTranslucent,
+    kNuoRayIndex_OnVirtual,
+    kNuoRayIndex_Size
+}
+NuoRayIndex;
+
+
+
+typedef enum
+{
     kNuoRayMask_Opaue           = 1,
     kNuoRayMask_Translucent     = 2,
     kNuoRayMask_Illuminating    = 4,
-    kNuoRayMask_Disabled        = 8,
+    kNuoRayMask_Virtual         = 8,
+    kNuoRayMask_Disabled        = 16,
 }
 NuoRayMask;
 
@@ -35,19 +47,28 @@ NuoBoundsUniform;
 typedef struct
 {
     matrix44 direction;
-    float radius;
+    float density;
+    float coneAngleCosine;
 }
 NuoRayTracingLightSource;
+
+
+
+typedef struct
+{
+    vector3 ambient;
+    float ambientRadius;
+    float illuminationStrength;
+    float specularMaterialAdjust;
+}
+NuoRayTracingGlobalIlluminationParam;
 
 
 typedef struct
 {
     NuoBoundsUniform bounds;
     NuoRayTracingLightSource lightSources[2];
-    
-    float ambient;
-    float ambientRadius;
-    float illuminationStrength;
+    NuoRayTracingGlobalIlluminationParam globalIllum;
 }
 NuoRayTracingUniforms;
 
@@ -56,7 +77,8 @@ typedef struct
 {
     vector3 normal;
     vector3 diffuseColor;
-    int illuminate;
+    vector3 specularColor;
+    vector3 shinessDisolveIllum;
     
     vector3 texCoord;
     int diffuseTex;
@@ -79,6 +101,14 @@ NuoRayVolumeUniform;
 
 #define kTextureBindingsCap 15
 
+
+
+typedef struct
+{
+    vector2 uv;                    // two-dimension random
+    float pathTermDeterminator;    // random to determine which term in reflection is used
+}
+NuoRayTracingRandomUnit;
 
 
 

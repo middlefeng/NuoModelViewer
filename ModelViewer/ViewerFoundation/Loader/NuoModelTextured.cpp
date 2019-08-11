@@ -94,9 +94,9 @@ NuoMaterial NuoModelTextured::GetMaterial(size_t primtiveIndex) const
 }
 
 
-GlobalBuffers NuoModelTextured::GetGlobalBuffers() const
+NuoGlobalBuffers NuoModelTextured::GetGlobalBuffers() const
 {
-    GlobalBuffers result;
+    NuoGlobalBuffers result;
     
     for (const NuoItemTextured& item : _buffer)
     {
@@ -121,7 +121,8 @@ GlobalBuffers NuoModelTextured::GetGlobalBuffers() const
             material.diffuseTex = -2;
             
             material.diffuseColor = NuoVectorFloat3(1, 1, 1)._vector;
-            material.illuminate = 2;
+            material.specularColor = NuoVectorFloat3(0, 0, 0)._vector;
+            material.shinessDisolveIllum = NuoVectorFloat3(1, 0, 2)._vector;
             
             result._materials.push_back(material);
         }

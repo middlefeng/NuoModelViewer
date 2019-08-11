@@ -19,7 +19,7 @@
 // pipeline stages
 //
 #import "ModelViewerRenderer.h"
-#import "ModelRayTracingBlendRenderer.h"
+#import "ModelSceneParameters.h"
 #import "ModelDissectRenderer.h"
 #import "ModelSelectionRenderer.h"
 #import "NotationRenderer.h"
@@ -275,13 +275,14 @@ MouseDragMode;
     }
     
     [self showHideFrameRate:_modelPanel.showFrameRate];
-    [_modelRender setDeferredParameters:_modelPanel.deferredRenderParameters];
-    [_modelRender setCullEnabled:_modelPanel.cullEnabled];
+    [_modelRender setAmbientParameters:_modelPanel.ambientParameters];
     [_modelRender setFieldOfView:_modelPanel.fieldOfViewRadian];
     [_modelRender setAmbientDensity:_modelPanel.ambientDensity];
     [_modelRender setTransMode:_modelPanel.transformMode];
     [_modelRender setIlluminationStrength:_modelPanel.illumination];
     [_modelRender setShowCheckerboard:_modelPanel.showModelParts];
+    
+    [_modelRender.sceneParameters setCullEnabled:_modelPanel.cullEnabled];
     
     [_modelSelectionRenderer setEnabled:_modelPanel.showModelParts];
     [_modelComponentPanels setHidden:!_modelPanel.showModelParts];
@@ -311,8 +312,10 @@ MouseDragMode;
     
     if (!_lightPanel.hidden)
     {
+        _notationRenderer.physicallySpecular = _modelPanel.meshOptions.physicallyReflection;
+        
         _notationRenderer.density = _lightPanel.lightDensity;
-        _notationRenderer.spacular = _lightPanel.lightSpacular;
+        _notationRenderer.specular = _lightPanel.lightSpecular;
         _notationRenderer.shadowSoften = _lightPanel.shadowSoften;
         _notationRenderer.shadowOccluderRadius = _lightPanel.shadowOccluderRadius;
         _notationRenderer.shadowBias = _lightPanel.shadowBias;
@@ -330,7 +333,7 @@ MouseDragMode;
         _modelSelectionRenderer = [[ModelSelectionRenderer alloc] initWithCommandQueue:self.commandQueue
                                                                        withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                        withSampleCount:kSampleCount];
-        _modelSelectionRenderer.paramsProvider = _modelRender;
+        _modelSelectionRenderer.paramsProvider = _modelRender.sceneParameters;
         [self setupPipelineSettings];
     }
     
@@ -529,7 +532,7 @@ MouseDragMode;
     
     _modelRender = [[ModelRenderer alloc] initWithCommandQueue:self.commandQueue];
     _modelDissectRenderer = [[ModelDissectRenderer alloc] initWithCommandQueue:self.commandQueue];
-    _modelDissectRenderer.paramsProvider = _modelRender;
+    _modelDissectRenderer.paramsProvider = _modelRender.sceneParameters;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
@@ -1069,7 +1072,9 @@ MouseDragMode;
     
     [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
     [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];
+    [_modelPanel setAmbientParameters:[_modelRender ambientParameters]];
     [_modelPanel setAmbientDensity:_modelRender.ambientDensity];
+    [_modelPanel setIllumination:_modelRender.illuminationStrength];
     [_modelPanel updateControls];
 }
 
@@ -1244,7 +1249,7 @@ MouseDragMode;
                                                                               withScene:renders];
                  NSString* path = savePanel.URL.path;
                  
-                 [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
+                 [offscreen renderWithCommandQueue:commandQueue
                                     withCompletion:^(id<MTLTexture> result)
                                         {
                                             NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
@@ -1290,7 +1295,7 @@ MouseDragMode;
                  
                  modelRenderer.mainModelMesh.enabled = NO;
                  
-                 [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
+                 [offscreen renderWithCommandQueue:self.commandQueue
                                     withCompletion:^(id<MTLTexture> result)
                                       {
                                           NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
@@ -1300,7 +1305,7 @@ MouseDragMode;
                  modelRenderer.mainModelMesh.enabled = YES;
                  modelRenderer.backdropMesh.enabled = NO;
                  
-                 [offscreen renderWithCommandQueue:[self.commandQueue commandBuffer]
+                 [offscreen renderWithCommandQueue:self.commandQueue
                                     withCompletion:^(id<MTLTexture> result)
                                       {
                                           NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];

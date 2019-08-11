@@ -50,7 +50,7 @@ typedef struct
 {
     vector4 direction __attribute__ ((aligned (16)));
     float density;
-    float spacular;
+    float specular;
 }
 NuoLightParameterUniformField;
 
@@ -73,7 +73,7 @@ typedef struct
     NuoLightParameterUniformField lightParams[4];
     NuoShadowParameterUniformField shadowParams[2];
     
-    float ambientDensity;
+    vector3 ambient;
 }
 NuoLightUniforms;
 
@@ -92,31 +92,7 @@ typedef struct
     float bias;
     float intensity;
 }
-NuoAmbientOcclusionUniformField;
-
-
-typedef struct
-{
-    NuoAmbientOcclusionUniformField ambientOcclusionParams;
-    vector4 clearColor;
-}
-NuoDeferredRenderUniforms;
-
-
-typedef struct
-{
-    // the contribution of direct light in relative to ambient lighting on a
-    // surface which is not part of the scene but part of the blend-in background.
-    // there is no way to calculate so it has to be estimated by user through trial-and-error
-    //
-    float directLightDensity;
-    
-    // a ray's color when it intersect with nothing after bouncing enough
-    // number of times, or travel enough distance
-    //
-    float ambientDensity;
-}
-NuoGlobalIlluminationUniforms;
+NuoAmbientUniformField;
 
 
 typedef enum

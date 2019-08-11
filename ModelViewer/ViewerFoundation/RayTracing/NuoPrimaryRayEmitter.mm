@@ -9,10 +9,11 @@
 #import "NuoPrimaryRayEmitter.h"
 #import "NuoTypes.h"
 #import "NuoComputeEncoder.h"
+#import "NuoCommandBuffer.h"
+#import "NuoBufferSwapChain.h"
 #import "NuoRayBuffer.h"
 
-#include "NuoRandomBuffer.h"
-#include "NuoRayTracingUniform.h"
+#include "NuoRayTracingRandom.h"
 
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 
@@ -26,11 +27,11 @@
 
 @implementation NuoPrimaryRayEmitter
 {
-    NSArray<id<MTLBuffer>>* _uniformBuffers;
-    NSArray<id<MTLBuffer>>* _randomBuffers;
+    NuoBufferSwapChain* _uniformBuffers;
+    NuoBufferSwapChain* _randomBuffers;
     
     NuoComputePipeline* _pipeline;
-    PRandomGenerator _rng;
+    PNuoRayTracingRandom _rng;
 }
 
 
@@ -42,23 +43,16 @@
     {
         _device = commandQueue.device;
         
-        id<MTLBuffer> uniformBuffer[kInFlightBufferCount];
-        id<MTLBuffer> randomBuffer[kInFlightBufferCount];
-        _rng = std::make_shared<RandomGenerator>(256, 1, 1);
+        _rng = std::make_shared<NuoRayTracingRandom>(256, 1, 1);
         
-        for (uint i = 0; i < kInFlightBufferCount; ++i)
-        {
-            uniformBuffer[i] = [_device newBufferWithLength:sizeof(NuoRayVolumeUniform)
-                                                    options:MTLResourceStorageModeManaged];
-            randomBuffer[i] = [_device newBufferWithLength:_rng->BytesSize()
-                                                   options:MTLResourceStorageModeManaged];
-            
-            uniformBuffer[i].label = @"Ray Uniform";
-            randomBuffer[i].label = @"Random";
-        }
-        
-        _uniformBuffers = [[NSArray alloc] initWithObjects:uniformBuffer count:kInFlightBufferCount];
-        _randomBuffers = [[NSArray alloc] initWithObjects:randomBuffer count:kInFlightBufferCount];
+        _uniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:_device
+                                                      WithBufferSize:sizeof(NuoRayVolumeUniform)
+                                                         withOptions:MTLResourceStorageModeManaged
+                                                       withChainSize:kInFlightBufferCount];
+        _randomBuffers = [[NuoBufferSwapChain alloc] initWithDevice:_device
+                                                     WithBufferSize:_rng->BytesSize()
+                                                        withOptions:MTLResourceStorageModeManaged
+                                                      withChainSize:kInFlightBufferCount];
         
         [self setupPipeline];
     }
@@ -71,17 +65,18 @@
 - (void)setupPipeline
 {
     // Generates rays according to view/projection matrices
-    _pipeline = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"primary_ray_emit"
-                                             withParameter:NO];
+    _pipeline = [[NuoComputePipeline alloc] initWithDevice:_device withFunction:@"primary_ray_emit"];
     _pipeline.name = @"Primary Ray Emit";
 }
 
 
-- (void)updateRandomBuffer:(uint)inFlight
+- (void)updateRandomBuffer:(id<NuoRenderInFlight>)inFlight
 {
-    _rng->SetBuffer(_randomBuffers[inFlight].contents);
+    id<MTLBuffer> buffer = [_randomBuffers bufferForInFlight:inFlight];
+    
+    _rng->SetBuffer(buffer.contents);
     _rng->UpdateBuffer();
-    [_randomBuffers[inFlight] didModifyRange:NSMakeRange(0, _rng->BytesSize())];
+    [buffer didModifyRange:NSMakeRange(0, _rng->BytesSize())];
 }
 
 
@@ -93,14 +88,14 @@
     const float aspectRatio = width / (float)height;
     
     CGPoint result;
-    result.x = tan(_fieldOfView / 2.0) * 2.0;
-    result.y = result.x * aspectRatio;
+    result.y = tan(_fieldOfView / 2.0) * 2.0;
+    result.x = result.y * aspectRatio;
     
     return result;
 }
 
 
-- (void)updateUniform:(uint)inFlight widthRayBuffer:(NuoRayBuffer*)buffer
+- (void)updateUniform:(id<NuoRenderInFlight>)inFlight widthRayBuffer:(NuoRayBuffer*)buffer
 {
     const CGSize drawableSize = [buffer dimension];
     
@@ -114,36 +109,32 @@
     
     const CGPoint normalized = [self normalizedRange:drawableSize];
     
-    uniform.vRange = normalized.x;
-    uniform.uRange = normalized.y;
+    uniform.uRange = normalized.x;
+    uniform.vRange = normalized.y;
     uniform.viewTrans = _viewTrans._m;
     
-    memcpy([_uniformBuffers[inFlight] contents], &uniform, sizeof(uniform));
-    
-    [_uniformBuffers[inFlight] didModifyRange:NSMakeRange(0, sizeof(uniform))];
-    
+    [_uniformBuffers updateBufferWithInFlight:inFlight withContent:&uniform];
     [self updateRandomBuffer:inFlight];
 }
 
 
-- (void)emitToBuffer:(NuoRayBuffer*)rayBuffer withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                                                   withInFlight:(uint)inFlight
+- (void)emitToBuffer:(NuoRayBuffer*)rayBuffer withCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    [self updateUniform:inFlight widthRayBuffer:rayBuffer];
+    [self updateUniform:commandBuffer widthRayBuffer:rayBuffer];
     
     NuoComputeEncoder* computeEncoder = [_pipeline encoderWithCommandBuffer:commandBuffer];
     
-    [computeEncoder setBuffer:_uniformBuffers[inFlight] offset:0 atIndex:0];
+    [computeEncoder setBuffer:[_uniformBuffers bufferForInFlight:commandBuffer] offset:0 atIndex:0];
     [computeEncoder setBuffer:rayBuffer.buffer offset:0 atIndex:1];
-    [computeEncoder setBuffer:_randomBuffers[inFlight] offset:0  atIndex:2];
+    [computeEncoder setBuffer:[_randomBuffers  bufferForInFlight:commandBuffer] offset:0  atIndex:2];
     [computeEncoder setDataSize:rayBuffer.dimension];
     [computeEncoder dispatch];
 }
 
 
-- (id<MTLBuffer>)uniformBuffer:(uint32_t)inFlight
+- (id<MTLBuffer>)uniformBuffer:(id<NuoRenderInFlight>)inFlight
 {
-    return _uniformBuffers[inFlight];
+    return [_uniformBuffers bufferForInFlight:inFlight];
 }
 
 

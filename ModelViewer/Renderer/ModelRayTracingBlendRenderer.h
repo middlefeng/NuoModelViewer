@@ -7,14 +7,30 @@
 //
 
 #import "NuoRenderPipelinePass.h"
+#import "NuoIlluminationMesh.h"
 
 
 
-@interface ModelRayTracingBlendRenderer : NuoRenderPipelinePass
+@class ModelDirectLighting;
 
 
+
+@interface ModelRayTracingBlendRenderer : NuoRenderPass
+
+
+@property (nonatomic, weak) id<MTLTexture> immediateResult;
 @property (nonatomic, weak) id<MTLTexture> illumination;
-@property (nonatomic, weak) id<MTLTexture> shadowOverlayMap;
+@property (nonatomic, weak) id<MTLTexture> illuminationOnVirtual;
+@property (nonatomic, weak) id<MTLTexture> translucentMap;
+
+@property (nonatomic, strong) NSArray<ModelDirectLighting*>* directLighting;
+
+
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                     withPixelFormat:(MTLPixelFormat)pixelFormat
+                     withSampleCount:(uint)sampleCount;
+
+- (void)setAmbient:(const NuoVectorFloat3&)ambient;
 
 
 @end

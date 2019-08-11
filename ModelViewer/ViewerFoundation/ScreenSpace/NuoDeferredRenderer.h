@@ -16,8 +16,12 @@
 
 @interface NuoDeferredRenderer : NuoRenderPass
 
-
+/**
+ *  shadowOverlayMap is preserved for future study. currently, it is no
+ *  longer used because results of normal/virutal surfaces are stored separatedly
+ */
 @property (nonatomic, readonly) id<MTLTexture> shadowOverlayMap;
+
 @property (nonatomic, readonly) id<MTLTexture> ambientBuffer;
 
 
@@ -32,7 +36,7 @@
 
 - (void)setRoot:(NuoMeshSceneRoot*)root;
 
-- (void)setParameters:(NuoDeferredRenderUniforms*)params;
+- (void)setParameters:(const NuoAmbientUniformField&)params;
 
 
 @end

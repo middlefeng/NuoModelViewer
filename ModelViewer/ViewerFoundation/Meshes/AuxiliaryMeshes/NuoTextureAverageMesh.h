@@ -11,6 +11,10 @@
 
 
 @class NuoRenderPassTarget;
+@class NuoCommandBuffer;
+
+
+#if NUO_AVERAGE_MESH
 
 
 @interface NuoTextureAverageMesh : NuoScreenSpaceMesh
@@ -20,9 +24,12 @@
 - (void)makePipelineAndSampler;
 
 - (void)accumulateTexture:(id<MTLTexture>)texture onTarget:(NuoRenderPassTarget*)target
-             withInFlight:(NSUInteger)inFlight withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
+        withCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 
 @end
+
+
+#endif  // NUO_AVERAGE_MESH
 
 
 
@@ -38,8 +45,10 @@
  *  accumulating onto a texture supports only regular texture.
  */
 - (void)accumulateTexture:(id<MTLTexture>)texture onTarget:(NuoRenderPassTarget*)target
-             withInFlight:(NSUInteger)inFlight withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
+        withCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 - (void)accumulateTexture:(id<MTLTexture>)texture onTexture:(id<MTLTexture>)targetTexture
-             withInFlight:(NSUInteger)inFlight withCommandBuffer:(id<MTLCommandBuffer>)commandBuffer;
+        withCommandBuffer:(NuoCommandBuffer*)commandBuffer;
+
+- (void)reset;
 
 @end

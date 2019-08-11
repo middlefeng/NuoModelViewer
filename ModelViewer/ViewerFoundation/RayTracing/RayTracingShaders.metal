@@ -11,8 +11,25 @@
 #include "NuoRayTracingUniform.h"
 #include "RayTracingShadersCommon.h"
 
+#define SIMPLE_UTILS_ONLY 1
+#include "Meshes/ShadersCommon.h"
+
 
 using namespace metal;
+
+
+
+static RayBuffer primary_ray(matrix44 viewTrans, float3 endPoint)
+{
+    RayBuffer ray;
+    
+    float4 rayDirection = float4(normalize(endPoint), 0.0);
+    
+    ray.direction = (viewTrans * rayDirection).xyz;
+    ray.origin = (viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;
+    
+    return ray;
+}
 
 
 
@@ -22,7 +39,7 @@ using namespace metal;
 kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
                              constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
                              device RayBuffer* rays [[buffer(1)]],
-                             device float2* random [[buffer(2)]])
+                             device NuoRayTracingRandomUnit* random [[buffer(2)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -30,17 +47,14 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device RayBuffer& ray = rays[rayIdx];
     
-    const float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
+    device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16)].uv;
     const float2 pixelCoord = (float2)tid + r;;
     
     const float u = (pixelCoord.x / (float)uniforms.wViewPort) * uniforms.uRange - uniforms.uRange / 2.0;
     const float v = (pixelCoord.y / (float)uniforms.hViewPort) * uniforms.vRange - uniforms.vRange / 2.0;
     
-    float4 rayDirection = float4(normalize(float3(u, -v, -1.0)), 0.0);
-    
-    ray.direction = (uniforms.viewTrans * rayDirection).xyz;
-    ray.origin = (uniforms.viewTrans * float4(0.0, 0.0, 0.0, 1.0)).xyz;
-    ray.color = float3(1.0, 1.0, 1.0);
+    ray = primary_ray(uniforms.viewTrans, float3(u, -v, -1.0));
+    ray.pathScatter = float3(1.0, 1.0, 1.0);
     
     // primary rays are generated with mask as opaque. rays for translucent mask are got by
     // set the mask later by "ray_set_mask"
@@ -48,6 +62,7 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     ray.mask = kNuoRayMask_Opaue;
     
     ray.bounce = 0;
+    ray.primaryHitMask = 0;
     ray.ambientIlluminated = false;
     
     ray.maxDistance = INFINITY;
@@ -57,7 +72,8 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
 
 kernel void ray_set_mask(uint2 tid [[thread_position_in_grid]],
                          constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                         device RayBuffer* rays [[buffer(1)]])
+                         device uint* rayMask [[buffer(1)]],
+                         device RayBuffer* rays [[buffer(2)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
@@ -65,17 +81,10 @@ kernel void ray_set_mask(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device RayBuffer& ray = rays[rayIdx];
     
-    if (kShadowOnTranslucent)
-    {
-        // rays are used for calculate the ambient, so both translucent and opaque are detected upon.
-        // this implies the ambient of objects behind translucent objects is ignored
-        //
-        ray.mask = kNuoRayMask_Translucent | kNuoRayMask_Opaue;
-    }
-    else
-    {
-        ray.mask = kNuoRayMask_Opaue;
-    }
+    // rays are used for calculate the ambient, so both translucent and opaque are detected upon.
+    // this implies the ambient of objects behind translucent objects is ignored
+    //
+    ray.mask = *rayMask;
 }
 
 
@@ -93,63 +102,77 @@ kernel void ray_set_mask_illuminating(uint2 tid [[thread_position_in_grid]],
 }
 
 
-void shadow_ray_emit(uint2 tid,
-                     constant NuoRayVolumeUniform& uniforms,
-                     device RayBuffer& ray,
-                     device uint* index,
-                     device NuoRayTracingMaterial* materials,
-                     device Intersection& intersection,
-                     constant NuoRayTracingUniforms& tracingUniforms,
-                     device float2* random,
-                     device RayBuffer* shadowRays[2])
+void shadow_ray_emit_infinite_area(uint rayIdx,
+                                   device RayStructureUniform& structUniform,
+                                   constant NuoRayTracingUniforms& tracingUniforms,
+                                   constant NuoRayTracingLightSource& lightSource,
+                                   float2 random,
+                                   device RayBuffer* shadowRay,
+                                   metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                                   metal::sampler samplr)
 {
-    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device Intersection& intersection = structUniform.intersections[rayIdx];
+    device NuoRayTracingMaterial* materials = structUniform.materials;
+    device uint* index = structUniform.index;
+    RayBuffer ray = structUniform.exitantRays[rayIdx];
     
     const float maxDistance = tracingUniforms.bounds.span;
     
-    float2 r = random[(tid.y % 16) * 16 + (tid.x % 16)];
-    float2 r1 = random[(tid.y % 16) * 16 + (tid.x % 16) + 256];
-    r = (r * 2.0 - 1.0) * maxDistance * 0.25;
-    r1 = (r1 * 2.0 - 1.0);
+    // initialize the buffer's path scatter fields
+    // (took 2 days to figure this out after spot the problem in debugger 8/21/2018)
+    //
+    shadowRay->pathScatter = 0.0f;
     
-    for (uint i = 0; i < 2; ++i)
+    if (intersection.distance >= 0.0f)
     {
-        device RayBuffer* shadowRayCurrent = shadowRays[i] + rayIdx;
+        float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
+        lightVec = normalize(lightSource.direction * lightVec);
         
-        // initialize the buffer's strength fields
-        // (took 2 days to figure this out after spot the problem in debugger 8/21/2018)
+        float3 shadowVec = sample_cone_uniform(random, lightSource.coneAngleCosine);
+        shadowVec = align_hemisphere_normal(shadowVec, lightVec.xyz);
+        
+        shadowRay->maxDistance = maxDistance;
+        
+        // either opaque blocker is checked, or no blocker is considered at all (for getting the
+        // denominator light amount)
         //
-        shadowRayCurrent->strength = 0.0f;
+        shadowRay->mask = kNuoRayMask_Opaue;
         
-        if (intersection.distance >= 0.0f)
-        {
-            float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
-            lightVec = normalize(tracingUniforms.lightSources[i].direction * lightVec);
-            
-            float3 lightPosition = (lightVec.xyz * maxDistance);
-            float3 lightRight = normalize(cross(lightVec.xyz, float3(r1.x, r1.y, 1.0)));
-            float3 lightForward = cross(lightRight, lightVec.xyz);
-            
-            float radius = tracingUniforms.lightSources[i].radius / 2.0;
-            lightPosition = lightPosition + lightRight * r.x * radius + lightForward * r.y * radius;
-            
-            float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
-            float3 shadowVec = normalize(lightPosition.xyz);
-            
-            shadowRayCurrent->maxDistance = maxDistance;
-            shadowRayCurrent->mask = kNuoRayMask_Opaue;
-            
-            float3 normal = interpolate_normal(materials, index, intersection);
-            
-            shadowRayCurrent->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
-            shadowRayCurrent->direction = shadowVec;
-            
-            shadowRayCurrent->strength = dot(normal, shadowVec);
-        }
-        else
-        {
-            shadowRayCurrent->maxDistance = -1.0;
-        }
+        NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
+        
+        float3 normal = material.normal;
+        float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
+        shadowRay->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
+        shadowRay->direction = shadowVec;
+        shadowRay->primaryHitMask = ray.primaryHitMask;
+        
+        // calculate a specular term which is normalized according to the diffuse term
+        //
+        
+        float specularPower = material.shinessDisolveIllum.x;
+        float3 eyeDirection = -ray.direction;
+        float3 halfway = normalize(normalize(shadowVec + eyeDirection));
+        
+        // try to normalize to uphold Cdiff + Cspec < 1.0
+        // this is best effort and user trial-and-error as OBJ is not always PBR
+        //
+        float3 specularColor = material.specularColor * (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
+        
+        float3 diffuseTerm = interpolate_color(materials, diffuseTex, index, intersection, samplr);
+        float3 specularTerm = specular_common_physically(specularColor, specularPower,
+                                                         shadowVec, normal, halfway);
+        
+        // the cosine factor is counted into the path scatter term, as the geometric coupling term,
+        // because samples are generated from an inifinit distant area light (uniform on a finit
+        // contending solid angle)
+        //
+        // specular and diffuse is normalized and scale as half-half
+        //
+        shadowRay->pathScatter = (diffuseTerm + specularTerm) * dot(normal, shadowVec);
+    }
+    else
+    {
+        shadowRay->maxDistance = -1.0;
     }
 }
 

@@ -26,7 +26,9 @@
     if (self = [super init])
     {
         self.commandQueue = commandQueue;
-        [self resetResources];
+        
+        _accumulator = [[NuoTextureAccumulator alloc] initWithCommandQueue:self.commandQueue];
+        [_accumulator makePipelineAndSampler];
     }
     
     return self;
@@ -49,8 +51,7 @@
 
 - (void)resetResources
 {
-    _accumulator = [[NuoTextureAccumulator alloc] initWithCommandQueue:self.commandQueue];
-    [_accumulator makePipelineAndSampler];
+    [_accumulator reset];
 }
 
 
@@ -70,12 +71,11 @@
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-            withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     self.renderTarget.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 0.0);
     [_accumulator accumulateTexture:_latestSource onTarget:self.renderTarget
-                       withInFlight:inFlight withCommandBuffer:commandBuffer];
+                  withCommandBuffer:commandBuffer];
 }
     
 

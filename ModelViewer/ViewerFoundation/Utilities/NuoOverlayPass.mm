@@ -36,16 +36,16 @@
 
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     
-    [super drawWithCommandBuffer:commandBuffer withInFlightIndex:inFlight];
+    [super drawWithCommandBuffer:commandBuffer];
     
     if (_overlay)
     {
         [_overlayMesh setModelTexture:_overlay];
-        [_overlayMesh drawMesh:renderPass indexBuffer:inFlight];
+        [_overlayMesh drawMesh:renderPass];
     }
     
     [self releaseDefaultEncoder];

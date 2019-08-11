@@ -22,7 +22,7 @@
     
     if (self)
     {
-        _paramBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoGlobalIlluminationUniforms)
+        _paramBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoVectorFloat3::_vector)
                                                         options:MTLResourceStorageModeManaged];
     }
     
@@ -41,21 +41,27 @@
 
 
 
-- (void)setParameters:(const NuoGlobalIlluminationUniforms&)params
+- (void)setAmbient:(const NuoVectorFloat3&)ambient
 {
-    memcpy(_paramBuffer.contents, &params, sizeof(NuoGlobalIlluminationUniforms));
-    [_paramBuffer didModifyRange:NSMakeRange(0, sizeof(NuoGlobalIlluminationUniforms))];
+    memcpy(_paramBuffer.contents, &ambient._vector, sizeof(NuoVectorFloat3::_vector));
+    [_paramBuffer didModifyRange:NSMakeRange(0, sizeof(NuoVectorFloat3::_vector))];
 }
 
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
-    [renderPass setFragmentTexture:_illuminationMap atIndex:1];
-    [renderPass setFragmentTexture:_shadowOverlayMap atIndex:2];
-    [renderPass setFragmentTexture:_translucentCoverMap atIndex:3];
+    [renderPass pushParameterState:@"Illumination"];
+    
+    [renderPass setFragmentTexture:_illumination atIndex:1];
+    [renderPass setFragmentTexture:_illuminationOnVirtual atIndex:2];
+    [renderPass setFragmentTexture:_directLighting atIndex:3];
+    [renderPass setFragmentTexture:_directLightingWithShadow atIndex:4];
+    [renderPass setFragmentTexture:_translucentCoverMap atIndex:5];
     [renderPass setFragmentBuffer:_paramBuffer offset:0 atIndex:0];
-    [super drawMesh:renderPass indexBuffer:index];
+    [super drawMesh:renderPass];
+    
+    [renderPass popParameterState];
 }
 
 

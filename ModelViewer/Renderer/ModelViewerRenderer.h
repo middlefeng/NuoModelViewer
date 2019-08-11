@@ -15,6 +15,8 @@
 @class NuoLightSource;
 @class NuoRayAccelerateStructure;
 
+@class ModelSceneParameters;
+
 /**
  TERMS:
      - view is usually used in the context only coordinate frames involved. the scope (volume)
@@ -64,7 +66,7 @@ class NuoLua;
 
 
 
-@interface ModelRenderer : NuoMeshSceneRenderPass <NuoMeshSceneParametersProvider> 
+@interface ModelRenderer : NuoMeshSceneRenderPass
 
 
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lights;
@@ -93,8 +95,8 @@ class NuoLua;
 //
 @property (nonatomic, assign) RecordStatus rayTracingRecordStatus;
 
+@property (nonatomic, readonly) ModelSceneParameters* sceneParameters;
 
-@property (nonatomic, assign) BOOL cullEnabled;
 @property (nonatomic, assign) float fieldOfView;
 @property (nonatomic, assign) float illuminationStrength;
 @property (nonatomic, assign) float ambientDensity;
@@ -102,7 +104,6 @@ class NuoLua;
 @property (nonatomic, assign) BOOL showCheckerboard;
 
 @property (nonatomic, strong, readonly) NuoMeshOption* modelOptions;
-@property (nonatomic, assign) NuoDeferredRenderUniforms deferredParameters;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
@@ -126,6 +127,8 @@ class NuoLua;
 - (void)selectMeshWithScreen:(CGPoint)point;
 
 - (void)setResolveDepth:(BOOL)resolveDepth;
+- (void)setAmbientParameters:(const NuoAmbientUniformField&)ambientParameters;
+- (const NuoAmbientUniformField&)ambientParameters;
 
 - (NuoMeshSceneRoot*)cloneSceneFor:(NuoMeshModeShaderParameter)mode;
 - (void)rebuildRayTracingBuffers;

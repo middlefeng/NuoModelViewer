@@ -71,14 +71,11 @@
         _meshOptions.combineShapes = YES;
         _meshOptions.texturedBump = YES;
         
-        _deferredRenderParameters.ambientOcclusionParams.bias = 0.4;
-        _deferredRenderParameters.ambientOcclusionParams.intensity = 3.0;
-        _deferredRenderParameters.ambientOcclusionParams.sampleRadius = 0.8;
-        _deferredRenderParameters.ambientOcclusionParams.scale = 1.0;
+        _ambientParameters.bias = 0.4;
+        _ambientParameters.intensity = 3.0;
+        _ambientParameters.sampleRadius = 0.8;
+        _ambientParameters.scale = 1.0;
 
-        const NuoVectorFloat4 clearColor(0.0, 0.0, 0.0, 0.0);
-        _deferredRenderParameters.clearColor = clearColor._vector;
-        
         _cullEnabled = YES;
         
         _fieldOfViewRadian = (2 * M_PI) / 8;
@@ -778,6 +775,7 @@
     [_combine setState:_meshOptions.combineShapes ? NSControlStateValueOn : NSControlStateValueOff];
     [_fieldOfView setFloatValue:_fieldOfViewRadian];
     [_ambientDensitySlider setFloatValue:_ambientDensity];
+    [_illuminationSlider setFloatValue:_illumination];
     
     if ([_motionBlurRecord state] == NSControlStateValueOn)
     {

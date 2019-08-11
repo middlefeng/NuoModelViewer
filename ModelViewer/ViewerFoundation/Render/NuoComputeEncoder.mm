@@ -7,15 +7,17 @@
 //
 
 #import "NuoComputeEncoder.h"
+#import "NuoCommandBuffer.h"
+#import "NuoShaderLibrary.h"
+#import "NuoArgumentBuffer.h"
+
+#include "NuoRenderParameterState.h"
 
 
 
 @interface NuoComputeEncoder()
 
-- (instancetype)initWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                         withPipeline:(id<MTLComputePipelineState>)pipeline
-                             withName:(NSString*)name;
-
+- (void)setComputePipelineState:(id<MTLComputePipelineState>)pipeline;
 
 @end
 
@@ -25,27 +27,27 @@
 @implementation NuoComputePipeline
 {
     id<MTLComputePipelineState> _pipeline;
+    id<MTLFunction> _function;
 }
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withFunction:(NSString*)function
-                 withParameter:(BOOL)param
 {
     self = [super init];
     
     if (self)
     {
-        id<MTLLibrary> library = [device newDefaultLibrary];
+        id<MTLLibrary> library = [NuoShaderLibrary defaultLibraryWithDevice:device].library;
         
         MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
-        [values setConstantValue:&param type:MTLDataTypeBool atIndex:0];
-        
         MTLComputePipelineDescriptor *descriptor = [MTLComputePipelineDescriptor new];
         descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
         
         NSError* error;
-        descriptor.computeFunction = [library newFunctionWithName:function constantValues:values error:&error];
+        _function = [library newFunctionWithName:function constantValues:values error:&error];
         assert(error == nil);
+        
+        descriptor.computeFunction = _function;
         _pipeline = [device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
         assert(error == nil);
     }
@@ -54,13 +56,18 @@
 }
 
 
-- (NuoComputeEncoder*)encoderWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
+- (NuoComputeEncoder*)encoderWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    NuoComputeEncoder* encoder = [[NuoComputeEncoder alloc] initWithCommandBuffer:commandBuffer
-                                                                     withPipeline:_pipeline
-                                                                         withName:_name];
+    NuoComputeEncoder* encoder = [commandBuffer computeEncoderWithName:_name];
+    [encoder setComputePipelineState:_pipeline];
     
     return encoder;
+}
+
+
+- (id<MTLArgumentEncoder>)argumentEncoder:(NSUInteger)index
+{
+    return [_function newArgumentEncoderWithBufferIndex:index];
 }
 
 
@@ -72,11 +79,14 @@
 @implementation NuoComputeEncoder
 {
     id<MTLComputeCommandEncoder> _encoder;
+    NuoRenderPassParameterState _parameterState;
 }
 
 
+/**
+ *   internal interface, used by NuoCommandBuffer only
+ */
 - (instancetype)initWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                         withPipeline:(id<MTLComputePipelineState>)pipeline
                              withName:(NSString*)name
 {
     self = [super init];
@@ -84,14 +94,33 @@
     if (self)
     {
         _encoder = [commandBuffer computeCommandEncoder];
-        
-        [_encoder setLabel:name];
-        [_encoder setComputePipelineState:pipeline];
+        _encoder.label = name;
         
         _dataSize = CGSizeZero;
+        
+        [self pushParameterState:@"Compute Pass"];
     }
     
     return self;
+}
+
+
+- (void)pushParameterState:(NSString*)name
+{
+    _parameterState.PushState(name.UTF8String);
+}
+
+
+- (void)popParameterState
+{
+    _parameterState.PopState();
+}
+
+
+
+- (void)setComputePipelineState:(id<MTLComputePipelineState>)pipeline
+{
+    [_encoder setComputePipelineState:pipeline];
 }
 
 
@@ -111,8 +140,9 @@
 - (void)setTexture:(id<MTLTexture>)texture atIndex:(uint)index
 {
     CGSize textureSize = CGSizeMake(texture.width, texture.height);
-    
     _dataSize = textureSize;
+    
+    _parameterState.SetState(index, kNuoParameter_CT);
     
     [_encoder setTexture:texture atIndex:index];
 }
@@ -120,6 +150,8 @@
 
 - (void)setSamplerState:(id<MTLSamplerState>)sampler atIndex:(uint)index
 {
+    _parameterState.SetState(index, kNuoParameter_CS);
+    
     [_encoder setSamplerState:sampler atIndex:index];
 }
 
@@ -127,7 +159,20 @@
 
 - (void)setBuffer:(id<MTLBuffer>)buffer offset:(uint)offset atIndex:(uint)index
 {
+    _parameterState.SetState(index, kNuoParameter_CB);
+    
     [_encoder setBuffer:buffer offset:offset atIndex:index];
+}
+
+
+- (void)setArgumentBuffer:(NuoArgumentBuffer*)buffer atIndex:(uint)index
+{
+    _parameterState.SetState(index, kNuoParameter_CB);
+    
+    [_encoder setBuffer:buffer.buffer offset:0 atIndex:index];
+    
+    for (NuoArgumentUsage* usage in buffer.argumentsUsage)
+        [_encoder useResource:usage.argument usage:usage.usage];
 }
 
 

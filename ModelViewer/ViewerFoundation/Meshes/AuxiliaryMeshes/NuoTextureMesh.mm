@@ -58,8 +58,10 @@ struct TextureMixFragment
 }
 
 
-- (void)drawMesh:(id<MTLRenderCommandEncoder>)renderPass indexBuffer:(NSInteger)index
+- (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Texture Mesh"];
+    
     [renderPass setFragmentTexture:_modelTexture atIndex:0];
     if (_auxiliaryTexture)
     {
@@ -67,7 +69,9 @@ struct TextureMixFragment
         [renderPass setFragmentBuffer:_textureMixBuffer offset:0 atIndex:0];
     }
     
-    [super drawMesh:renderPass indexBuffer:index];
+    [super drawMesh:renderPass];
+    
+    [renderPass popParameterState];
 }
 
 

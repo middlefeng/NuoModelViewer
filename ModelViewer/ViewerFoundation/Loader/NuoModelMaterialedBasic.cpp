@@ -185,9 +185,9 @@ std::string NuoModelMaterialed::GetTexturePathBump()
 
 
 template <>
-GlobalBuffers NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>::GetGlobalBuffers() const
+NuoGlobalBuffers NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>::GetGlobalBuffers() const
 {
-    GlobalBuffers result;
+    NuoGlobalBuffers result;
     
     for (const NuoItemMaterialedBasic& item : NuoModelCommon<NuoItemMaterialedBasic>::_buffer)
     {
@@ -212,7 +212,8 @@ GlobalBuffers NuoModelMaterialedBasicBase<NuoItemMaterialedBasic>::GetGlobalBuff
             material.diffuseTex = -1;
             
             material.diffuseColor = item._diffuse;
-            material.illuminate = (int)item._shinessDisolveIllum[2];
+            material.specularColor = item._specular;
+            material.shinessDisolveIllum = item._shinessDisolveIllum;
             
             result._materials.push_back(material);
         }

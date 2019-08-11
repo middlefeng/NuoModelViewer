@@ -8,6 +8,8 @@
 
 #import "NuoShadowMapRenderer.h"
 
+#import "NuoCommandBuffer.h"
+#import "NuoBufferSwapChain.h"
 #import "NuoLightSource.h"
 #import "NuoShadowMapTarget.h"
 
@@ -21,7 +23,7 @@
 
 @interface NuoShadowMapRenderer()
 
-@property (nonatomic, strong) NSArray<id<MTLBuffer>>* transUniformBuffers;
+@property (nonatomic, strong) NuoBufferSwapChain* transUniformBuffers;
 
 @end
 
@@ -56,19 +58,14 @@
 
 - (void)makeResources
 {
-    id<MTLBuffer> transBuffers[kInFlightBufferCount];
-    
-    for (size_t i = 0; i < kInFlightBufferCount; ++i)
-    {
-        transBuffers[i] = [self.commandQueue.device newBufferWithLength:sizeof(NuoUniforms)
-                                                                options:MTLResourceOptionCPUCacheModeDefault];
-    }
-    
-    _transUniformBuffers = [[NSArray alloc] initWithObjects:transBuffers count:kInFlightBufferCount];
+    _transUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
+                                                       WithBufferSize:sizeof(NuoUniforms)
+                                                          withOptions:MTLResourceStorageModeManaged
+                                                        withChainSize:kInFlightBufferCount];
 }
 
 
-- (void)updateUniformsForView:(unsigned int)inFlight
+- (void)updateUniformsForView:(id<NuoRenderInFlight>)inFlight
 {
     // use an arbitrary camera vector and an arbitrary rotation center for the light source
     // viewpoint since the light is directional (not position sensitive)
@@ -124,22 +121,22 @@
     
     _lightCastMatrix = uniforms.viewProjectionMatrix;
     
-    memcpy([self.transUniformBuffers[inFlight] contents], &uniforms, sizeof(uniforms));
+    [_transUniformBuffers updateBufferWithInFlight:inFlight withContent:&uniforms];
 }
 
 
-- (void)drawWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer withInFlightIndex:(unsigned int)inFlight
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    [self updateUniformsForView:inFlight];
+    [self updateUniformsForView:commandBuffer];
     
-    id<MTLRenderCommandEncoder> renderPass = [self retainDefaultEncoder:commandBuffer];
+    NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     if (!renderPass)
         return;
     
     renderPass.label = @"Shadow Map";
 
-    [renderPass setVertexBuffer:self.transUniformBuffers[inFlight] offset:0 atIndex:1];
-    [_sceneRoot drawShadow:renderPass indexBuffer:inFlight];
+    [renderPass setVertexBufferSwapChain:_transUniformBuffers offset:0 atIndex:1];
+    [_sceneRoot drawShadow:renderPass];
     
     [self releaseDefaultEncoder];
 }

@@ -13,6 +13,7 @@
 
 
 @class NuoLightSource;
+@class NuoRenderPassEncoder;
 
 
 @interface NotationLight : NSObject
@@ -25,8 +26,7 @@
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue isBold:(BOOL)bold;
 
-- (void)drawWithRenderPass:(id<MTLRenderCommandEncoder>)renderPass
-              withInFlight:(unsigned int)inFlight;
+- (void)drawWithRenderPass:(NuoRenderPassEncoder*)renderPass;
 
 
 - (NuoMeshBounds)bounds;
