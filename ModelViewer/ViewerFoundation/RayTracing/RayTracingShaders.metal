@@ -151,7 +151,7 @@ void shadow_ray_emit_infinite_area(uint rayIdx,
         
         float specularPower = material.shinessDisolveIllum.x;
         float3 eyeDirection = -ray.direction;
-        float3 halfway = normalize(normalize(shadowVec + eyeDirection));
+        float3 halfway = normalize(shadowVec + eyeDirection);
         
         // try to normalize to uphold Cdiff + Cspec < 1.0
         // this is best effort and user trial-and-error as OBJ is not always PBR
@@ -174,6 +174,31 @@ void shadow_ray_emit_infinite_area(uint rayIdx,
     {
         shadowRay->maxDistance = -1.0;
     }
+}
+
+
+
+uint light_source_select(constant NuoRayTracingUniforms& tracingUniforms,
+                         float random, thread float* totalDensity)
+{
+    float2 lightRandomRegion = float2(0);
+    *totalDensity = 0;
+    
+    for (uint i = 0; i < 2; ++i)
+        *totalDensity += tracingUniforms.lightSources[i].density;
+
+    for (uint i = 0; i < 2; ++i)
+    {
+        float randomRegionSize = tracingUniforms.lightSources[i].density / (*totalDensity);
+        lightRandomRegion.y = lightRandomRegion.x + randomRegionSize;
+        
+        if (random >= lightRandomRegion.x && random < lightRandomRegion.y)
+            return i;
+        
+        lightRandomRegion.x = lightRandomRegion.y;
+    }
+    
+    return 0;
 }
 
 

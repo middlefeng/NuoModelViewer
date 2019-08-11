@@ -8,6 +8,7 @@
 
 #import "ModelRayTracingRenderer.h"
 
+#import "NuoInspectableMaster.h"
 #import "NuoLightSource.h"
 
 #import "NuoCommandBuffer.h"
@@ -403,6 +404,9 @@ static const uint32_t kRayBounce = 4;
         [_shadowPerLight[i] setRayStructure:self.rayStructure];
         [_shadowPerLight[i] drawWithCommandBuffer:commandBuffer];
     }
+    
+    NuoInspectableMaster* inspect = [NuoInspectableMaster sharedMaster];
+    [inspect updateTexture:self.targetTextures[2] forName:kInspectable_RayTracing];
 }
 
 
