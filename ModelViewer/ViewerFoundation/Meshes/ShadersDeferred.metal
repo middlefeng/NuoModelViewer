@@ -111,15 +111,15 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
  *     the same texute)
  */
 
-fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
-                                   constant float3& ambient [[buffer(0)]],
-                                   texture2d<float> source [[texture(0)]],
-                                   texture2d<float> illumination [[texture(1)]],
-                                   texture2d<float> illuminationOnVirtual [[texture(2)]],
-                                   texture2d<float> directLighting [[texture(3)]],
-                                   texture2d<float> directBlock [[texture(4)]],
-                                   texture2d<float> translucentCoverMap [[texture(5)]],
-                                   sampler samplr [[sampler(0)]])
+fragment float4 illumination_blend_hybrid(PositionTextureSimple vert [[stage_in]],
+                                          constant float3& ambient [[buffer(0)]],
+                                          texture2d<float> source [[texture(0)]],
+                                          texture2d<float> illumination [[texture(1)]],
+                                          texture2d<float> illuminationOnVirtual [[texture(2)]],
+                                          texture2d<float> directLighting [[texture(3)]],
+                                          texture2d<float> directBlock [[texture(4)]],
+                                          texture2d<float> translucentCoverMap [[texture(5)]],
+                                          sampler samplr [[sampler(0)]])
 {
     const float4 sourceColor = source.sample(samplr, vert.texCoord);
     const float3 illumiColor = illumination.sample(samplr, vert.texCoord).rgb;
@@ -192,6 +192,98 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     
     // shadowAdd is intended for the object edge anti-alias, ahdowBlend is intended for transparent object with
     // virutal shadow as background. the dichotomy approach of choosing between them might have neglectable 
+    // artifact but there seems no way of "blending" them properly.
+    //
+    float shadowAdd = sourceColor.a + shadowFactor;
+    float shadowBlend = shadowAdd - sourceColor.a * shadowFactor;
+    
+    return (float4(color, (objectMask < 1e-9 ? shadowBlend : shadowAdd)));
+}
+
+
+
+
+fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
+                                   constant float3& ambient [[buffer(0)]],
+                                   texture2d<float> source [[texture(0)]],
+                                   texture2d<float> illumination [[texture(1)]],
+                                   texture2d<float> illuminationOnVirtual [[texture(2)]],
+                                   texture2d<float> directLighting [[texture(3)]],
+                                   texture2d<float> directBlock [[texture(4)]],
+                                   texture2d<float> translucentCoverMap [[texture(5)]],
+                                   sampler samplr [[sampler(0)]])
+{
+    const float4 sourceColor = source.sample(samplr, vert.texCoord);
+    const float3 illumiColor = illumination.sample(samplr, vert.texCoord).rgb;
+    const float3 illumiOnVirtual = illuminationOnVirtual.sample(samplr, vert.texCoord).rgb;
+    
+    // reduce the ambient reflected by a translucent surface according to its opacity.
+    // the ambient of objects covered (semi-blocked) by it is ignored, for it's too hard to calculate in the screen space
+    const float translucentCover = translucentCoverMap.sample(samplr, vert.texCoord).a;
+    const float3 illuminateEffective = illumiColor * translucentCover;
+    
+    const float3 color = sourceColor.rgb + illuminateEffective;
+    
+    if (0 /* to fold comments */) {
+        /**
+         *  the old comments and code which is based on the pre-normalized S-direct. in fact, the C-direct is available
+         *  at the time of sampling shadow rays so the code switched to an approach need no more user trial-and-error
+         */
+        // calculate the ambient-affected shadow overlay
+        //
+        // physically based equation:
+        //
+        //   - alpha: the alpha of the overlay-only object. (this is the result needed)
+        //   - C-direct: the direct ligthing without considing shadow casting
+        //   - S-direct: the shadow casting of the direct lighting (the direct light being blocked), which is shadowFactor in code,
+        //               and has been calculated by ray-tracing and the forward-rendering consdering multi-light-source
+        //   - C-ambient-max: the cap of the ambient, meaning there is no occlusion
+        //   - C-ambient: the ambient considering occlusion, which is ambientStrength in code. in the previous ray-tracing
+        //                stage, this has been computed in relative to C-ambient-max
+        //
+        //   (C-direct + C-ambient-max)(1 - alpha) = (C-direct - C-direct * S-direct) + C-ambient
+        //
+        // note that the case is the overlay-only layer is put on top of a real scene (a caputred photo, usually).
+        // the color from the real scene is (C-direct + C-ambient-max), and there is no way to estimate C-direct from other
+        // parameters. so C-direct has to be given by user from trial-and-error
+        //
+        // it derives:
+        //   alpha = C-direct / (C-direct + C-ambient-max) * S-direct + (C-ambient-max - C-ambient) / (C-direct + C-ambient)
+        //
+        //
+        /*
+         const float ambientStrength = color_to_grayscale(illuminateEffective);
+         const float shadowFactor = sourceColor.a;
+         const float shadowWithAmbient = (params.directLightDensity / (params.directLightDensity + params.ambientDensity)) * shadowFactor +
+         (params.ambientDensity - ambientStrength) / (params.directLightDensity + params.ambientDensity);
+         */ }
+    
+    const float3 direct = directLighting.sample(samplr, vert.texCoord).rgb;
+    const float3 directBlocked = directBlock.sample(samplr, vert.texCoord).rgb;
+    const float3 ambientWithoutBlock = ambient;
+    
+    // numerator should be masked by normal object, denominator shoud not
+    //
+    // all terms in the numerator have already been masked (because they are stored in "virtual-only" results), except
+    // the ambientWithoutBlock
+    //
+    const float objectMask = translucentCover - sourceColor.a;
+    const float shadowFactor = color_to_grayscale(safe_divide(directBlocked - illumiOnVirtual + ambientWithoutBlock * objectMask,
+                                                              direct + ambientWithoutBlock));
+    
+    if (0 /* to fold comments */) {
+        /**
+         *  this old comment has been obsoleted. shadowOverlayFactor is abandoned as normal/virtual surface results are
+         *  stored separatedly, and the result could be added directly to get correct blending
+         *
+         // shadowOverlayFactor being 1.0 means it is an overlay-only object and shadowWithAmbient is used, being
+         // 0.0 means it is a normal object and sourceColor.a is used (the forward-rendering result using the ray-tracing-based
+         // direct light shadowing)
+         //
+         */ }
+    
+    // shadowAdd is intended for the object edge anti-alias, ahdowBlend is intended for transparent object with
+    // virutal shadow as background. the dichotomy approach of choosing between them might have neglectable
     // artifact but there seems no way of "blending" them properly.
     //
     float shadowAdd = sourceColor.a + shadowFactor;

@@ -33,6 +33,10 @@
 
 - (void)setAmbient:(const NuoVectorFloat3&)ambient;
 
+- (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
+                 withBlendMode:(ScreenSpaceBlendMode)blendMode
+                    withHybrid:(BOOL)hybrid;
+
 
 @end
 

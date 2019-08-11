@@ -39,7 +39,8 @@
         _mesh = [[NuoIlluminationMesh alloc] initWithCommandQueue:commandQueue];
         
         [_mesh setSampleCount:sampleCount];
-        [_mesh makePipelineAndSampler:pixelFormat withBlendMode:kBlend_Alpha];
+        [_mesh makePipelineAndSampler:pixelFormat withBlendMode:kBlend_Alpha
+                           withHybrid:YES];
         
         _lightingPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
                                                           withFunction:@"lighting_accumulate"];

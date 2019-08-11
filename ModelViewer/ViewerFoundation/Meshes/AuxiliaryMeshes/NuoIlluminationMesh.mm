@@ -32,8 +32,9 @@
 
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
                  withBlendMode:(ScreenSpaceBlendMode)blendMode
+                    withHybrid:(BOOL)hybrid
 {
-    NSString* shaderName = @"illumination_blend";
+    NSString* shaderName = hybrid? @"illumination_blend_hybrid" : @"illumination_blend";
     
     [self makePipelineAndSampler:pixelFormat withFragementShader:shaderName
                    withBlendMode:blendMode];
