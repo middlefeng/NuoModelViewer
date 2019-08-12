@@ -232,6 +232,11 @@
 
 - (void)drawWithCommandBufferPriorBackdrop:(NuoCommandBuffer *)commandBuffer
 {
+    if (_rayTracingRecordStatus != kRecord_Stop)
+    {
+        return;
+    }
+    
     // get the target render pass and draw the scene in the forward rendering
     //
     NuoRenderPassEncoder* renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
@@ -241,11 +246,8 @@
     
     renderPass.label = @"Scene Render Pass";
     
-    if (_rayTracingRecordStatus == kRecord_Stop)
-    {
-        [self setSceneBuffersTo:renderPass];
-        [_sceneRoot drawMesh:renderPass];
-    }
+    [self setSceneBuffersTo:renderPass];
+    [_sceneRoot drawMesh:renderPass];
     
     [_immediateTarget releaseRenderPassEndcoder];
     
@@ -267,7 +269,7 @@
         [inspectMaster updateTexture:textures[0] forName:kInspectable_Illuminate];
         
         [_illuminationRenderer setRenderTarget:_delegateTarget];
-        [_illuminationRenderer setImmediateResult:_immediateTarget.targetTexture];
+        [_illuminationRenderer setImmediateResult:_rayTracingRenderer.targetTextures[2]];
         [_illuminationRenderer setIllumination:textures[0]];
         [_illuminationRenderer setIlluminationOnVirtual:textures[1]];
         [_illuminationRenderer setTranslucentMap:[_deferredRenderer ambientBuffer]];
