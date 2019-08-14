@@ -23,8 +23,6 @@
     
     NuoRenderPassTarget* _lightingWithoutBlock;
     NuoRenderPassTarget* _lightingWithBlock;
-    
-    NuoComputePipeline* _lightingPipeline;
 }
 
 
@@ -41,9 +39,6 @@
         [_mesh setSampleCount:sampleCount];
         [_mesh makePipelineAndSampler:pixelFormat withBlendMode:kBlend_Alpha
                            withHybrid:NO];
-        
-        _lightingPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                          withFunction:@"lighting_accumulate"];
         
         NuoRenderPassTarget* target[2];
         for (uint i = 0; i < 2; ++i)
@@ -80,28 +75,6 @@
 {
     [_lightingWithoutBlock setDrawableSize:drawableSize];
     [_lightingWithBlock setDrawableSize:drawableSize];
-}
-
-
-
-- (void)predrawWithCommandBuffer:(NuoCommandBuffer *)commandBuffer
-{
-    NuoComputeEncoder* encoder = [_lightingPipeline encoderWithCommandBuffer:commandBuffer];
-    
-    //
-    //
-    [encoder setTexture:_directLighting[0].lighting atIndex:0];
-    [encoder setTexture:_directLighting[1].lighting atIndex:1];
-    [encoder setTexture:_directLighting[0].blocked atIndex:2];
-    [encoder setTexture:_directLighting[1].blocked atIndex:3];
-    
-    [encoder setTexture:_lightingWithoutBlock.targetTexture atIndex:4];
-    [encoder setTexture:_lightingWithBlock.targetTexture atIndex:5];
-    [encoder dispatch];
-    
-    NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
-    [inspectMaster updateTexture:_lightingWithBlock.targetTexture
-                         forName:kInspectable_DirectLightWithShadow];
 }
 
 

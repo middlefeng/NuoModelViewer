@@ -23,9 +23,6 @@
 @property (nonatomic, weak) id<MTLTexture> illuminationOnVirtual;
 @property (nonatomic, weak) id<MTLTexture> translucentMap;
 
-@property (nonatomic, strong) NSArray<ModelDirectLighting1*>* directLighting;
-
-
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                      withSampleCount:(uint)sampleCount;

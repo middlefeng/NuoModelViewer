@@ -197,9 +197,6 @@
     if (_rayTracingRecordStatus == kRecord_Start)
     {
         [_rayTracingRenderer drawWithCommandBuffer:commandBuffer];
-        
-        [_illuminationRenderer setDirectLighting:_rayTracingRenderer.directLight];
-        [_illuminationRenderer predrawWithCommandBuffer:commandBuffer];
     }
     
     if (_rayTracingRecordStatus == kRecord_Stop)
