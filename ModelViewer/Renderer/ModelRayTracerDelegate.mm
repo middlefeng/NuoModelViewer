@@ -24,7 +24,6 @@
 {
     NuoShadowMapRenderer* _shadowMapRenderer[2];
     NuoRenderPassTarget* _immediateTarget;
-    NuoDeferredRenderer* _deferredRenderer;
     ModelRayTracingBlendRenderer* _illuminationRenderer;
     
     ModelRayTracingRenderer* _rayTracingRenderer;
@@ -61,9 +60,6 @@
         _immediateTarget.name = @"immediate";
         _immediateTarget.manageTargetTexture = YES;
         _immediateTarget.sharedTargetTexture = NO;
-        
-        _deferredRenderer = [[NuoDeferredRenderer alloc] initWithCommandQueue:commandQueue
-                                                           withSceneParameter:sceneParam];
         
         _illuminationRenderer = [[ModelRayTracingBlendRenderer alloc] initWithCommandQueue:commandQueue
                                                                            withPixelFormat:MTLPixelFormatBGRA8Unorm
@@ -109,7 +105,6 @@
     [_immediateTarget setDrawableSize:drawableSize];
     [_shadowMapRenderer[0] setDrawableSize:drawableSize];
     [_shadowMapRenderer[1] setDrawableSize:drawableSize];
-    [_deferredRenderer setDrawableSize:drawableSize];
     
     [_rayTracingRenderer setDrawableSize:drawableSize];
     [_illuminationRenderer setDrawableSize:drawableSize];
@@ -121,14 +116,12 @@
     // no calling to shadow map render. they are not MSAA-ed
     
     [_immediateTarget setSampleCount:count];
-    [_deferredRenderer setSampleCount:count];
 }
 
 
 - (void)setAmbientParameters:(const NuoAmbientUniformField&)ambientParameters
 {
     _ambientParameters = ambientParameters;
-    [_deferredRenderer setParameters:ambientParameters];
 }
 
 
@@ -170,59 +163,32 @@
             withRayStructChanged:(BOOL)changed
            withRayStructAdjusted:(BOOL)adjusted
 {
-    if (_rayTracingRecordStatus != kRecord_Stop)
+    assert(_rayTracingRecordStatus != kRecord_Stop);
+    
+    if (changed)
+        [_rayTracingRenderer rayStructUpdated];
+        
+    if (adjusted)
     {
-        if (changed)
-            [_rayTracingRenderer rayStructUpdated];
+        const NuoBounds bounds = [_sceneRoot worldBounds:self.viewMatrix].boundingBox;
         
-        if (adjusted)
-        {
-            const NuoBounds bounds = [_sceneRoot worldBounds:self.viewMatrix].boundingBox;
-            
-            NuoRayTracingGlobalIlluminationParam illumParams;
-            illumParams.ambient = _ambient._vector;
-            illumParams.ambientRadius = _ambientParameters.sampleRadius;
-            illumParams.illuminationStrength = self.illuminationStrength;
-            illumParams.specularMaterialAdjust = self.lights[0].lightingSpecular;
-            
-            _rayTracingRenderer.sceneBounds = bounds;
-            _rayTracingRenderer.globalIllum = illumParams;
-            _rayTracingRenderer.fieldOfView = self.fieldOfView;
-        }
+        NuoRayTracingGlobalIlluminationParam illumParams;
+        illumParams.ambient = _ambient._vector;
+        illumParams.ambientRadius = _ambientParameters.sampleRadius;
+        illumParams.illuminationStrength = self.illuminationStrength;
+        illumParams.specularMaterialAdjust = self.lights[0].lightingSpecular;
         
-        for (uint i = 0; i < 2; ++i)
-            [_rayTracingRenderer setLightSource:self.lights[i] forIndex:i];
+        _rayTracingRenderer.sceneBounds = bounds;
+        _rayTracingRenderer.globalIllum = illumParams;
+        _rayTracingRenderer.fieldOfView = self.fieldOfView;
     }
+    
+    for (uint i = 0; i < 2; ++i)
+        [_rayTracingRenderer setLightSource:self.lights[i] forIndex:i];
     
     if (_rayTracingRecordStatus == kRecord_Start)
     {
         [_rayTracingRenderer drawWithCommandBuffer:commandBuffer];
-    }
-    
-    if (_rayTracingRecordStatus == kRecord_Stop)
-    {
-        // generate shadow map
-        //
-        for (unsigned int i = 0; i < 2 /* for two light sources only */; ++i)
-        {
-            _shadowMapRenderer[i].sceneRoot = _sceneRoot;
-            _shadowMapRenderer[i].lightSource = self.lights[i];
-            [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer];
-        }
-        
-        // store the light view point projection for shadow map detection in the scene
-        //
-        NuoLightVertexUniforms lightUniforms;
-        lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix._m;
-        lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix._m;
-        
-        [self.paramsProvider.lightCastBuffers updateBufferWithInFlight:commandBuffer withContent:&lightUniforms];
-        
-        // seems unnecessary with ray tracing running, and it slows down ray tracing on
-        // 10.14.2 occasionally for unknown reason
-        
-        [_deferredRenderer setRoot:_sceneRoot];
-        [_deferredRenderer predrawWithCommandBuffer:commandBuffer];
     }
 }
 
@@ -259,25 +225,18 @@
 {
     NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
     
-    if (_rayTracingRecordStatus != kRecord_Stop)
-    {
-        NSArray* textures = _rayTracingRenderer.targetTextures;
+    assert(_rayTracingRecordStatus != kRecord_Stop);
+    
+    NSArray* textures = _rayTracingRenderer.targetTextures;
         
-        [inspectMaster updateTexture:textures[0] forName:kInspectable_Illuminate];
-        
-        [_illuminationRenderer setRenderTarget:_delegateTarget];
-        [_illuminationRenderer setImmediateResult:_rayTracingRenderer.targetTextures[2]];
-        [_illuminationRenderer setIllumination:textures[0]];
-        [_illuminationRenderer setIlluminationOnVirtual:textures[1]];
-        
-        [_illuminationRenderer drawWithCommandBuffer:commandBuffer];
-    }
-    else
-    {
-        [_deferredRenderer setRenderTarget:_delegateTarget];
-        [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
-        [_deferredRenderer drawWithCommandBuffer:commandBuffer];
-    }
+    [inspectMaster updateTexture:textures[0] forName:kInspectable_Illuminate];
+    
+    [_illuminationRenderer setRenderTarget:_delegateTarget];
+    [_illuminationRenderer setImmediateResult:_rayTracingRenderer.targetTextures[2]];
+    [_illuminationRenderer setIllumination:textures[0]];
+    [_illuminationRenderer setIlluminationOnVirtual:textures[1]];
+    
+    [_illuminationRenderer drawWithCommandBuffer:commandBuffer];
 }
 
 
