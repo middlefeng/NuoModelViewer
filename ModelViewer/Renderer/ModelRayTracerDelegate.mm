@@ -11,7 +11,6 @@
 #import "NuoBufferSwapChain.h"
 #import "NuoLightSource.h"
 #import "NuoShadowMapRenderer.h"
-#import "NuoDeferredRenderer.h"
 #import "ModelRayTracingRenderer.h"
 #import "ModelRayTracingBlendRenderer.h"
 #import "NuoInspectableMaster.h"
@@ -23,7 +22,6 @@
 @implementation ModelRayTracerDelegate
 {
     NuoShadowMapRenderer* _shadowMapRenderer[2];
-    NuoRenderPassTarget* _immediateTarget;
     ModelRayTracingBlendRenderer* _illuminationRenderer;
     
     ModelRayTracingRenderer* _rayTracingRenderer;
@@ -53,13 +51,6 @@
     {
         _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 0"];
         _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 1"];
-        
-        _immediateTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                             withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                             withSampleCount:kSampleCount];
-        _immediateTarget.name = @"immediate";
-        _immediateTarget.manageTargetTexture = YES;
-        _immediateTarget.sharedTargetTexture = NO;
         
         _illuminationRenderer = [[ModelRayTracingBlendRenderer alloc] initWithCommandQueue:commandQueue
                                                                            withPixelFormat:MTLPixelFormatBGRA8Unorm
@@ -102,20 +93,11 @@
 
 - (void)setDrawableSize:(CGSize)drawableSize
 {
-    [_immediateTarget setDrawableSize:drawableSize];
     [_shadowMapRenderer[0] setDrawableSize:drawableSize];
     [_shadowMapRenderer[1] setDrawableSize:drawableSize];
     
     [_rayTracingRenderer setDrawableSize:drawableSize];
     [_illuminationRenderer setDrawableSize:drawableSize];
-}
-
-
-- (void)setSampleCount:(NSUInteger)count
-{
-    // no calling to shadow map render. they are not MSAA-ed
-    
-    [_immediateTarget setSampleCount:count];
 }
 
 
@@ -134,22 +116,18 @@
 
 - (void)setResolveDepth:(BOOL)resolveDepth
 {
-    [_immediateTarget setResolveDepth:resolveDepth];
 }
 
 
 - (id<MTLTexture>)depthMap
 {
-    return _immediateTarget.depthTexture;
+    return nil;
 }
 
 
 - (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask
 {
-    if (_rayTracingRecordStatus != kRecord_Stop)
-        return [_rayTracingRenderer shadowForLightSource:index withMask:mask];
-    else
-        return _shadowMapRenderer[index].renderTarget.targetTexture;
+    return nil;
 }
 
 
@@ -195,28 +173,6 @@
 
 - (void)drawWithCommandBufferPriorBackdrop:(NuoCommandBuffer *)commandBuffer
 {
-    if (_rayTracingRecordStatus != kRecord_Stop)
-    {
-        return;
-    }
-    
-    // get the target render pass and draw the scene in the forward rendering
-    //
-    NuoRenderPassEncoder* renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
-    
-    if (!renderPass)
-        return;
-    
-    renderPass.label = @"Scene Render Pass";
-    
-    [self setSceneBuffersTo:renderPass];
-    [_sceneRoot drawMesh:renderPass];
-    
-    [_immediateTarget releaseRenderPassEndcoder];
-    
-    NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
-    [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_Immediate];
-    [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_ImmediateAlpha];
 }
 
 
