@@ -58,7 +58,10 @@
     [renderPass setFragmentTexture:_illuminationOnVirtual atIndex:2];
     [renderPass setFragmentTexture:_directLighting atIndex:3];
     [renderPass setFragmentTexture:_directLightingWithShadow atIndex:4];
-    [renderPass setFragmentTexture:_translucentCoverMap atIndex:5];
+    
+    if (_translucentCoverMap)
+        [renderPass setFragmentTexture:_translucentCoverMap atIndex:5];
+    
     [renderPass setFragmentBuffer:_paramBuffer offset:0 atIndex:0];
     [super drawMesh:renderPass];
     
