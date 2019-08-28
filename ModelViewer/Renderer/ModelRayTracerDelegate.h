@@ -24,13 +24,12 @@
 
 
 
-@interface ModelRayTracerDelegate : NuoMeshSceneRenderPass < ModelRenderDelegate, ModelShadowMapProvider >
+@interface ModelRayTracerDelegate : NuoRenderPipelinePass < ModelRenderDelegate >
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                      withAccelerator:(NuoRayAccelerateStructure*)accelerateSturcture
-                       withSceneRoot:(NuoMeshSceneRoot*)sceneRoot
-                 withSceneParameters:(ModelSceneParameters*)sceneParam;
+                       withSceneRoot:(NuoMeshSceneRoot*)sceneRoot;
 
 
 @end

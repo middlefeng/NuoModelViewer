@@ -45,10 +45,11 @@
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                      withAccelerator:(NuoRayAccelerateStructure*)accelerateSturcture
                        withSceneRoot:(NuoMeshSceneRoot*)sceneRoot
-                 withSceneParameters:(ModelSceneParameters*)sceneParam
 {
-    if (self = [super initWithCommandQueue:commandQueue])
+    if (self = [super init])
     {
+        self.commandQueue = commandQueue;
+        
         _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 0"];
         _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 1"];
         
@@ -65,9 +66,6 @@
                                                          withChainSize:kInFlightBufferCount];
         
         _sceneRoot = sceneRoot;
-        
-        sceneParam.shadowMap = self;
-        self.paramsProvider = sceneParam;
     }
     
     return self;
@@ -118,17 +116,6 @@
 {
 }
 
-
-- (id<MTLTexture>)depthMap
-{
-    return nil;
-}
-
-
-- (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask
-{
-    return nil;
-}
 
 
 - (void)rayStructUpdated

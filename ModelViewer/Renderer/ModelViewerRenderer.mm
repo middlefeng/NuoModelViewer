@@ -136,8 +136,7 @@
     
     _renderDelegate = [[ModelRayTracerDelegate alloc] initWithCommandQueue:self.commandQueue
                                                            withAccelerator:_rayAccelerator
-                                                             withSceneRoot:_sceneRoot
-                                                       withSceneParameters:_sceneParameters];
+                                                             withSceneRoot:_sceneRoot];
         
     _rayTracingHybrid = NO;
 }
