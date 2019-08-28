@@ -21,7 +21,6 @@
 
 @implementation ModelRayTracerDelegate
 {
-    NuoShadowMapRenderer* _shadowMapRenderer[2];
     ModelRayTracingBlendRenderer* _illuminationRenderer;
     
     ModelRayTracingRenderer* _rayTracingRenderer;
@@ -49,9 +48,6 @@
     if (self = [super init])
     {
         self.commandQueue = commandQueue;
-        
-        _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 0"];
-        _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 1"];
         
         _illuminationRenderer = [[ModelRayTracingBlendRenderer alloc] initWithCommandQueue:commandQueue
                                                                            withPixelFormat:MTLPixelFormatBGRA8Unorm
@@ -91,9 +87,6 @@
 
 - (void)setDrawableSize:(CGSize)drawableSize
 {
-    [_shadowMapRenderer[0] setDrawableSize:drawableSize];
-    [_shadowMapRenderer[1] setDrawableSize:drawableSize];
-    
     [_rayTracingRenderer setDrawableSize:drawableSize];
     [_illuminationRenderer setDrawableSize:drawableSize];
 }
