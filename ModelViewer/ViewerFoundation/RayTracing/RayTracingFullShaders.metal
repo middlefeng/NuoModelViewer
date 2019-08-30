@@ -122,12 +122,13 @@ kernel void primary_scafold(uint2 tid [[thread_position_in_grid]],
                             constant NuoRayTracingUniforms& tracingUniforms,
                             device NuoRayTracingRandomUnit* random,
                             device RayBuffer* shadowRayMain,
-                            device Intersection *intersections,
                             device RayBuffer* incidentRaysBuffer,
                             device uint* masks,
                             texture2d<float, access::read_write> overlayResult [[texture(0)]],
                             texture2d<float, access::read_write> overlayForVirtual,
                             texture2d<float, access::read_write> lightingTracing,
+                            texture2d<float, access::read_write> lightingVirtual,
+                            texture2d<float, access::read_write> lightingVirtualWithBlock,
                             array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                             sampler samplr [[sampler(0)]])
 {
@@ -138,7 +139,6 @@ kernel void primary_scafold(uint2 tid [[thread_position_in_grid]],
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & intersection = structUniform.intersections[rayIdx];
-    device Intersection & shadowIntersection = intersections[rayIdx];
     device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
     
     unsigned int triangleIndex = intersection.primitiveIndex;
@@ -169,6 +169,8 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  texture2d<float, access::read_write> overlayResult [[texture(0)]],
                                  texture2d<float, access::read_write> overlayForVirtual,
                                  texture2d<float, access::read_write> lightingTracing,
+                                 texture2d<float, access::read_write> lightingVirtual,
+                                 texture2d<float, access::read_write> lightingVirtualWithBlock,
                                  array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                  sampler samplr [[sampler(0)]])
 {

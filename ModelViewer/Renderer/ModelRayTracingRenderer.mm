@@ -50,8 +50,9 @@ static const uint32_t kRayBounce = 4;
 {
     self = [super initWithCommandQueue:commandQueue
                        withPixelFormat:MTLPixelFormatRGBA32Float
-                       withTargetCount:3 /* 2 for ambient/local-illumination, for normal and virtual surfaces,
-                                          * 1 for direct lighting */ ];
+                       withTargetCount:5 /* 2 for ambient/local-illumination, for normal and virtual surfaces,
+                                          * 1 for direct lighting,
+                                          * 2 for direct lighting on virtual surface */ ];
     
     if (self)
     {
@@ -156,7 +157,6 @@ static const uint32_t kRayBounce = 4;
         [self runRayTraceCompute:_primaryAndIncidentRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowRaysBuffer.buffer,
-                                   _shadowIntersectionBuffer,
                                    _incidentRaysBuffer.buffer]
                   withExitantRay:nil
                 withIntersection:self.intersectionBuffer];
