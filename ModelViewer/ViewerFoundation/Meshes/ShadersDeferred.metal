@@ -235,8 +235,8 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     // virutal shadow as background. the dichotomy approach of choosing between them might have neglectable
     // artifact but there seems no way of "blending" them properly.
     //
-    float shadowAdd = sourceColor.a + shadowFactor;
-    float shadowBlend = shadowAdd - sourceColor.a * shadowFactor;
+    float shadowAdd = sourceColor.a;// + shadowFactor;
+    float shadowBlend = shadowAdd;// - sourceColor.a * shadowFactor;
     
     return (float4(color, (objectMask < 1e-9 ? shadowBlend : shadowAdd)));
 }

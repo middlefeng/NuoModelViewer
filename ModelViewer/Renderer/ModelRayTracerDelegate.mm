@@ -141,8 +141,7 @@
         _rayTracingRenderer.fieldOfView = self.fieldOfView;
     }
     
-    for (uint i = 0; i < 2; ++i)
-        [_rayTracingRenderer setLightSource:self.lights[i] forIndex:i];
+    [_rayTracingRenderer setLightSources:self.lights];
     
     if (_rayTracingRecordStatus == kRecord_Start)
     {
