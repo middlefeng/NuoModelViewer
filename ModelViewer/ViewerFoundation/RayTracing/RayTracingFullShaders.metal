@@ -24,14 +24,15 @@ static void self_illumination(uint2 tid,
                               device RayStructureUniform& structUniform,
                               constant NuoRayTracingUniforms& tracingUniforms,
                               device RayBuffer* shadowRay,
-                              float shadowIntersection,
                               device RayBuffer* incidentRays,
                               device NuoRayTracingRandomUnit* random,
                               texture2d<float, access::read_write> overlayResult,
                               texture2d<float, access::read_write> overlayForVirtual,
-                              texture2d<float, access::read_write> lightingTracing,
                               array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                               sampler samplr);
+
+static void lightingTrcacingWrite(uint2 tid, float4 value,
+                                  texture2d<float, access::read_write> texture);
 
 /*static void shadow_ray_emit(uint2 tid,
                             device RayStructureUniform& structUniform,
@@ -144,18 +145,9 @@ kernel void primary_scafold(uint2 tid [[thread_position_in_grid]],
     unsigned int triangleIndex = intersection.primitiveIndex;
     cameraRay.primaryHitMask = masks[triangleIndex];
     
-    //device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
-    
-    // directional light sources in the scene definition are considered area lights with finite
-    // subtending solid angles, in far distance
-    //
-    //shadow_ray_emit_infinite_area(tid, structUniform,
-    //                              tracingUniforms, random, shadowRays, diffuseTex, samplr);
-    
     self_illumination(tid, structUniform, tracingUniforms,
-                      shadowRayMain, 1.0,
-                      incidentRaysBuffer,
-                      random, overlayResult, overlayForVirtual, lightingTracing, diffuseTex, samplr);
+                      shadowRayMain, incidentRaysBuffer,
+                      random, overlayResult, overlayForVirtual, diffuseTex, samplr);
 }
 
 
@@ -181,12 +173,20 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     
     const unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & shadowIntersection = intersections[rayIdx];
+    device RayBuffer& shadowRay = shadowRayMain[rayIdx];
+    
+    if (shadowRay.maxDistance > 0.0f)
+    {
+        if (shadowIntersection.distance < 0.0f)
+            lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), lightingTracing);
+        else
+            lightingTrcacingWrite(tid, float4(float3(0.0), 1.0), lightingTracing);
+    }
     
     self_illumination(tid, structUniform, tracingUniforms,
-                      shadowRayMain, shadowIntersection.distance,
-                      structUniform.exitantRays /* incident rays are the
-                                                   exitant rays of the next path */,
-                      random, overlayResult, overlayForVirtual, lightingTracing, diffuseTex, samplr);
+                      shadowRayMain, structUniform.exitantRays /* incident rays are the
+                                                                  exitant rays of the next path */,
+                      random, overlayResult, overlayForVirtual, diffuseTex, samplr);
 }
 
 
@@ -348,12 +348,10 @@ void self_illumination(uint2 tid,
                        device RayStructureUniform& structUniform,
                        constant NuoRayTracingUniforms& tracingUniforms,
                        device RayBuffer* shadowRays,
-                       float shadowIntersection,
                        device RayBuffer* incidentRays,
                        device NuoRayTracingRandomUnit* random,
                        texture2d<float, access::read_write> overlayResult,
                        texture2d<float, access::read_write> overlayForVirtual,
-                       texture2d<float, access::read_write> lightingTracing,
                        array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                        sampler samplr)
 {
@@ -366,14 +364,6 @@ void self_illumination(uint2 tid,
     device RayBuffer& incidentRay = incidentRays[rayIdx];
     device RayBuffer& shadowRay = shadowRays[rayIdx];
     RayBuffer ray = structUniform.exitantRays[rayIdx];
-    
-    if (shadowRay.maxDistance > 0.0f)
-    {
-        if (shadowIntersection < 0.0f)
-            lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), lightingTracing);
-        else
-            lightingTrcacingWrite(tid, float4(float3(0.0), 1.0), lightingTracing);
-    }
     
     if (intersection.distance >= 0.0f)
     {
