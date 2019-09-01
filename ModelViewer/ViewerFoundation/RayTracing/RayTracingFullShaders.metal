@@ -172,15 +172,27 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
         return;
     
     const unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    device Intersection & shadowIntersection = intersections[rayIdx];
+    device Intersection & shadowIntersectionInfo = intersections[rayIdx];
     device RayBuffer& shadowRay = shadowRayMain[rayIdx];
+    RayBuffer ray = structUniform.exitantRays[rayIdx];
+    float shadowIntersection = shadowIntersectionInfo.distance;
     
     if (shadowRay.maxDistance > 0.0f)
     {
-        if (shadowIntersection.distance < 0.0f)
-            lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), lightingTracing);
-        else
-            lightingTrcacingWrite(tid, float4(float3(0.0), 1.0), lightingTracing);
+        if ((shadowRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
+        {
+            if (shadowIntersection < 0.0f)
+                lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), lightingTracing);
+            else
+                lightingTrcacingWrite(tid, float4(float3(0.0), 1.0), lightingTracing);
+        }
+        else if (ray.bounce == 1)
+        {
+            lightingVirtual.write(float4(shadowRay.pathScatter, 1.0), tid);
+            
+            if (shadowIntersection > 0.0f)
+                lightingVirtualWithBlock.write(float4(shadowRay.pathScatter, 1.0), tid);
+        }
     }
     
     self_illumination(tid, structUniform, tracingUniforms,

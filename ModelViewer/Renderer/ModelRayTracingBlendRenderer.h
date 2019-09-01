@@ -23,6 +23,10 @@
 @property (nonatomic, weak) id<MTLTexture> illuminationOnVirtual;
 @property (nonatomic, weak) id<MTLTexture> translucentMap;
 
+@property (nonatomic, weak) id<MTLTexture> directLightVirtual;
+@property (nonatomic, weak) id<MTLTexture> directLightVirtualBlocked;
+
+
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                      withSampleCount:(uint)sampleCount;

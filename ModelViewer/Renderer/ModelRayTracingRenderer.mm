@@ -177,6 +177,20 @@ static const uint32_t kRayBounce = 4;
         
     NuoInspectableMaster* inspect = [NuoInspectableMaster sharedMaster];
     [inspect updateTexture:self.targetTextures[2] forName:kInspectable_RayTracing];
+    [inspect updateTexture:self.targetTextures[4] forName:kInspectable_RayTracingVirtualBlocked];
+}
+
+
+
+- (id<MTLTexture>)directLightVirtual
+{
+    return self.targetTextures[3];
+}
+
+
+- (id<MTLTexture>)directLightVirtualBlocked
+{
+    return self.targetTextures[4];
 }
 
 

@@ -170,6 +170,8 @@
     [_illuminationRenderer setImmediateResult:_rayTracingRenderer.targetTextures[2]];
     [_illuminationRenderer setIllumination:textures[0]];
     [_illuminationRenderer setIlluminationOnVirtual:textures[1]];
+    [_illuminationRenderer setDirectLightVirtual:textures[3]];
+    [_illuminationRenderer setDirectLightVirtualBlocked:textures[4]];
     
     [_illuminationRenderer drawWithCommandBuffer:commandBuffer];
 }

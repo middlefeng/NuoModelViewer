@@ -22,6 +22,8 @@
 
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lightSources;
 
+@property (nonatomic, readonly) id<MTLTexture> directLightVirtual;
+@property (nonatomic, readonly) id<MTLTexture> directLightVirtualBlocked;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
