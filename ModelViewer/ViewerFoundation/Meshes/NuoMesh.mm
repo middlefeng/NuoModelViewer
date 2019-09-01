@@ -312,7 +312,15 @@
     
     [self cacheTransform:transform];
     
-    NuoGlobalBuffers buffer = _rawModel->GetGlobalBuffers();
+    std::shared_ptr<NuoModelBase> clonedModel = _rawModel;
+    
+    if (_smoothTolerance > 0.001)
+    {
+        clonedModel = _rawModel->Clone();
+        clonedModel->SmoothSurface(_smoothTolerance, _smoothConservative);
+    }
+    
+    NuoGlobalBuffers buffer = clonedModel->GetGlobalBuffers();
     buffer.TransformPosition(transformWorld);
     buffer.TransformVector(NuoMatrixExtractLinear(transformWorld));
     
