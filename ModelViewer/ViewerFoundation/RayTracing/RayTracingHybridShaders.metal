@@ -199,39 +199,69 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
     
     // normal surfaces
     //
-    if (targetIndex < 2)
+    if (targetIndex == kNuoRayIndex_OnOpaque)
     {
+        /**
+         *  to generate a shadow map (rather than illuminating), the light transportation is integrand
+         *
+         *  previous comment before pbr-book reading:
+         *      the total diffuse (with all blockers virtually removed) and the amount that considers
+         *      blockers are recorded, and therefore accumulated by a subsequent accumulator.
+         */
         if (color_to_grayscale(shadowRay.pathScatter) > 0)
         {
-            /**
-             *  to generate a shadow map (rather than illuminating), the light transportation is integrand
-             *
-             *  previous comment before pbr-book reading:
-             *      the total diffuse (with all blockers virtually removed) and the amount that considers
-             *      blockers are recorded, and therefore accumulated by a subsequent accumulator.
-             */
             if ((shadowRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
-                lightsDst[targetIndex][kLighting_WithoutBlock].write(float4(shadowRay.pathScatter, 1.0), tid);
+            {
+                lightsDst[kNuoRayIndex_OnOpaque][kLighting_WithoutBlock].write(float4(shadowRay.pathScatter, 1.0), tid);
+            }
             
             if (intersection.distance > 0.0f)
             {
                 if (shadowRay.primaryHitMask & kNuoRayMask_Virtual)
                 {
                     lightsDst[kNuoRayIndex_OnVirtual][kLighting_WithBlock].write(float4(shadowRay.pathScatter, 1.0), tid);
-                    lightsDst[targetIndex][kLighting_WithBlock].write(float4(float3(0.0), 1.0), tid);
+                    lightsDst[kNuoRayIndex_OnOpaque][kLighting_WithBlock].write(float4(float3(0.0), 1.0), tid);
                 }
                 else
                 {
-                    lightsDst[targetIndex][1].write(float4(shadowRay.pathScatter, 1.0), tid);
+                    lightsDst[kNuoRayIndex_OnOpaque][kLighting_WithBlock].write(float4(shadowRay.pathScatter, 1.0), tid);
                 }
             }
         }
     }
-    
-    // virtual surfaces (not considering block)
-    
-    if (targetIndex == kNuoRayIndex_OnVirtual)
+    else if (targetIndex == kNuoRayIndex_OnTranslucent)
     {
+        /**
+         *  to generate a shadow map (rather than illuminating), the light transportation is integrand
+         *
+         *  previous comment before pbr-book reading:
+         *      the total diffuse (with all blockers virtually removed) and the amount that considers
+         *      blockers are recorded, and therefore accumulated by a subsequent accumulator.
+         */
+        if (color_to_grayscale(shadowRay.pathScatter) > 0)
+        {
+            if ((shadowRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
+            {
+                lightsDst[kNuoRayIndex_OnTranslucent][kLighting_WithoutBlock].write(float4(shadowRay.pathScatter, 1.0), tid);
+            }
+            
+            if (intersection.distance > 0.0f)
+            {
+                if (shadowRay.primaryHitMask & kNuoRayMask_Virtual)
+                {
+                    lightsDst[kNuoRayIndex_OnVirtual][kLighting_WithBlock].write(float4(shadowRay.pathScatter, 1.0), tid);
+                    lightsDst[kNuoRayIndex_OnTranslucent][kLighting_WithBlock].write(float4(float3(0.0), 1.0), tid);
+                }
+                else
+                {
+                    lightsDst[kNuoRayIndex_OnTranslucent][kLighting_WithBlock].write(float4(shadowRay.pathScatter, 1.0), tid);
+                }
+            }
+        }
+    }
+    else if (targetIndex == kNuoRayIndex_OnVirtual)
+    {
+        // virtual surfaces (not considering block)
         if (color_to_grayscale(shadowRay.pathScatter) > 0.0)
             lightsDst[kNuoRayIndex_OnVirtual][kLighting_WithoutBlock].write(float4(shadowRay.pathScatter, 1.0), tid);
         
