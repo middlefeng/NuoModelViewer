@@ -54,7 +54,7 @@
         
         // ignore low-end GPU if some high-end available
         
-        if (self.device.isLowPower)
+        if (highEndDevice && self.device.isLowPower)
             _deviceName = highEndDevice;
         
         if (highEndDevice)
