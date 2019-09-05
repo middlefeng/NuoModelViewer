@@ -32,17 +32,17 @@ static void self_illumination(uint2 tid,
 
 
 
-kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
-                                device RayStructureUniform& structUniform [[buffer(0)]],
-                                constant NuoRayTracingUniforms& tracingUniforms,
-                                device NuoRayTracingRandomUnit* random,
-                                device RayBuffer* shadowRays0,
-                                device RayBuffer* shadowRays1,
-                                device uint* masks,
-                                texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
-                                array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
-                                sampler samplr [[sampler(0)]])
+kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
+                                       device RayStructureUniform& structUniform [[buffer(0)]],
+                                       constant NuoRayTracingUniforms& tracingUniforms,
+                                       device NuoRayTracingRandomUnit* random,
+                                       device RayBuffer* shadowRays0,
+                                       device RayBuffer* shadowRays1,
+                                       device uint* masks,
+                                       texture2d<float, access::read_write> overlayResult [[texture(0)]],
+                                       texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
+                                       array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
+                                       sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
     

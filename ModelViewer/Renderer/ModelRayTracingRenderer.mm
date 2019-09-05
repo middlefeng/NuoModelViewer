@@ -58,7 +58,7 @@ static const uint32_t kRayBounce = 4;
     if (self)
     {
         _primaryAndIncidentRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                                        withFunction:@"primary_scafold"];
+                                                                        withFunction:@"primary_ray_process"];
         _primaryAndIncidentRaysPipeline.name = @"Primary/Incident Ray Process";
         
         _rayShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
@@ -66,7 +66,7 @@ static const uint32_t kRayBounce = 4;
         _rayShadePipeline.name = @"Incident Ray Shading";
         
         _pimraryVirtualLighting = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                                withFunction:@"primary_virtual"];
+                                                                withFunction:@"primary_ray_virtual"];
         _rayShadePipeline.name = @"Virtual Lighting";
         
         _rng = std::make_shared<NuoRayTracingRandom>(kRandomBufferSize, kRayBounce, 1);
