@@ -31,6 +31,7 @@ static const uint32_t kRayBounce = 4;
 
 @implementation ModelRayTracingRenderer
 {
+    NuoComputePipeline* _pimraryVirtualLighting;
     NuoComputePipeline* _primaryAndIncidentRaysPipeline;
     NuoComputePipeline* _rayShadePipeline;
     
@@ -63,6 +64,10 @@ static const uint32_t kRayBounce = 4;
         _rayShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
                                                           withFunction:@"incident_ray_process"];
         _rayShadePipeline.name = @"Incident Ray Shading";
+        
+        _pimraryVirtualLighting = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
+                                                                withFunction:@"primary_virtual"];
+        _rayShadePipeline.name = @"Virtual Lighting";
         
         _rng = std::make_shared<NuoRayTracingRandom>(kRandomBufferSize, kRayBounce, 1);
         _rayTraceUniform = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
@@ -147,6 +152,19 @@ static const uint32_t kRayBounce = 4;
     
     id<MTLBuffer> rayTraceUniform = [_rayTraceUniform bufferForInFlight:commandBuffer];
     id<MTLBuffer> randomBuffer = [_randomBuffers bufferForInFlight:commandBuffer];
+    
+    [self updatePrimaryRayMask:kNuoRayIndex_OnVirtual withCommandBuffer:commandBuffer];
+    
+    if ([self primaryRayIntersect:commandBuffer])
+    {
+        // generate rays for the two light sources, from virtual objects
+        //
+        [self runRayTraceCompute:_pimraryVirtualLighting withCommandBuffer:commandBuffer
+                   withParameter:@[rayTraceUniform, randomBuffer,
+                                   _shadowRaysBuffer.buffer]
+                  withExitantRay:nil
+                withIntersection:self.intersectionBuffer];
+    }
     
     [self updatePrimaryRayMask:kNuoRayIndex_OnTranslucent withCommandBuffer:commandBuffer];
     

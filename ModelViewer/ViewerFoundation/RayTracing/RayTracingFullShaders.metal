@@ -117,6 +117,62 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
 }*/
 
 
+kernel void primary_virtual(uint2 tid [[thread_position_in_grid]],
+                            device RayStructureUniform& structUniform [[buffer(0)]],
+                            constant NuoRayTracingUniforms& tracingUniforms,
+                            device NuoRayTracingRandomUnit* random,
+                            device RayBuffer* shadowRayMain,
+                            device uint* masks,
+                            texture2d<float, access::read_write> overlayResult [[texture(0)]],
+                            texture2d<float, access::read_write> overlayForVirtual,
+                            texture2d<float, access::read_write> lightingTracing,
+                            texture2d<float, access::read_write> lightingVirtual,
+                            texture2d<float, access::read_write> lightingVirtualWithBlock,
+                            array<texture2d<float>, kTextureBindingsCap> diffuseTex,
+                            sampler samplr [[sampler(0)]])
+{
+    constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
+    
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device Intersection & intersection = structUniform.intersections[rayIdx];
+    device RayBuffer* shadowRay = shadowRayMain + rayIdx;
+    device RayBuffer& ray = structUniform.exitantRays[rayIdx];
+    
+    if (intersection.distance >= 0.0f)
+    {
+        // the outgoing ray (that is the input ray buffer) would be stored in the same buffer as the
+        // incident ray (that is the output ray buffer) may be the same. so it's necessary to store the
+        // color before calcuating the bounce
+        //
+        float3 originalRayColor = ray.pathScatter;
+        
+        device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
+            
+        float totalDensity = 0;
+        uint lightSourceIndex = light_source_select(tracingUniforms,
+                                                    randomVars.lightSource, &totalDensity);
+        
+        constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[lightSourceIndex];
+        
+        shadow_ray_emit_infinite_area(rayIdx, structUniform, tracingUniforms,
+                                      lightSource, randomVars.uvLightSource, shadowRay,
+                                      diffuseTex, samplr);
+        
+        shadowRay->pathScatter *= originalRayColor;
+        shadowRay->pathScatter *= totalDensity;
+        
+        lightingVirtual.write(float4(shadowRay->pathScatter, 1.0), tid);
+    }
+    else if (ray.maxDistance > 0)
+    {
+        lightingVirtual.write(float4(float3(1.0), 1.0), tid);
+    }
+}
+
+
 
 kernel void primary_scafold(uint2 tid [[thread_position_in_grid]],
                             device RayStructureUniform& structUniform [[buffer(0)]],
@@ -188,8 +244,6 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
         }
         else if (ray.bounce == 1)
         {
-            lightingVirtual.write(float4(shadowRay.pathScatter, 1.0), tid);
-            
             if (shadowIntersection > 0.0f)
                 lightingVirtualWithBlock.write(float4(shadowRay.pathScatter, 1.0), tid);
         }
