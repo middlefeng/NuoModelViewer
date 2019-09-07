@@ -314,25 +314,3 @@ void self_illumination(uint2 tid,
     }
 }
 
-
-
-
-/*static void shadow_ray_emit(uint2 tid,
-                            device RayStructureUniform& structUniform,
-                            constant NuoRayTracingUniforms& tracingUniforms,
-                            device NuoRayTracingRandomUnit* random,
-                            device RayBuffer* shadowRay,
-                            metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
-                            metal::sampler samplr)
-{
-    constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
-    const uint randomIndex = tid.y * uniforms.wViewPort + tid.x;
-    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    
-    uint lightIndex = floor(random[randomIndex].lightSource * 2.0);
-    device float2& r = random[randomIndex].uv;
-    
-    shadow_ray_emit_infinite_area(rayIdx, structUniform, tracingUniforms,
-                                  lightIndex, r, &shadowRay[rayIdx], diffuseTex, samplr);
-}
-*/
