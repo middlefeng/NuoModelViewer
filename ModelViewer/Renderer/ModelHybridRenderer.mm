@@ -221,7 +221,7 @@ static const uint32_t kRayBounce = 4;
     if (self)
     {
         _primaryRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                               withFunction:@"primary_ray_process"];
+                                                               withFunction:@"primary_ray_process_hybrid"];
         _primaryRaysPipeline.name = @"Primary Ray Process";
         
         _primaryAndIncidentRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device

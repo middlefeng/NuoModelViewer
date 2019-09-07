@@ -26,186 +26,17 @@ static const uint32_t kRandomBufferSize = 256;
 static const uint32_t kRayBounce = 4;
 
 
-@implementation ModelDirectLighting1
-
-@end
-
-
-@interface ModelRayTracingShadowPerLight1 : NuoRayTracingRenderer
-
-@property (nonatomic, readonly) NSArray<NuoRayBuffer*>* shadowRays;
-@property (nonatomic, readonly) id<MTLBuffer> shadowIntersection;
-@property (nonatomic, readonly) NSArray<id<MTLBuffer>>* shadeIndex;
-
-@property (nonatomic, weak) NuoLightSource* lightSource;
-
-@property (nonatomic, readonly) NSArray<NuoRenderPassTarget*>* normalizedIllumination;
-
-- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
-
-@end
-
-
-
-
-@implementation ModelRayTracingShadowPerLight1
-{
-    NuoComputePipeline* _shadowShadePipeline;
-    NuoComputePipeline* _differentialPipeline;
-    CGSize _drawableSize;
-}
-
-
-- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
-{
-    // use two channels for the opaque and translucent objects, respectivey
-    //
-    MTLPixelFormat format = MTLPixelFormatRGBA32Float;
-    
-    self = [super initWithCommandQueue:commandQueue
-                       withPixelFormat:format
-                       withTargetCount:6 /* 2 for opaque, 2 for translucent, 2 for virtual */];
-    
-    if (self)
-    {
-        _shadowShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                             withFunction:@"shadow_contribute"];
-        _differentialPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                              withFunction:@"shadow_illuminate"];
-        
-        _shadowShadePipeline.name = @"Shadow Shade (Opaque)";
-        _differentialPipeline.name = @"Illumination Normalizing";
-        
-        NuoRenderPassTarget* illumination[2];
-        for (uint i = 0; i < 2; ++i)
-        {
-            illumination[i] = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                withPixelFormat:format
-                                                                withSampleCount:1];
-            
-            NuoRenderPassTarget* illum = illumination[i];
-            
-            illum.manageTargetTexture = YES;
-            illum.sharedTargetTexture = NO;
-            illum.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
-            illum.colorAttachments[0].needWrite = YES;
-            illum.name = @"Ray Tracing Normalized";
-        }
-        
-        _normalizedIllumination = [[NSArray alloc] initWithObjects:illumination count:2];
-        
-        id<MTLCommandBuffer> commandBuffer = [commandQueue commandBuffer];
-        id<MTLBuffer> shadeIndexBuffer[kNuoRayIndex_Size];
-        id<MTLBlitCommandEncoder> encoder = [commandBuffer blitCommandEncoder];
-        for (uint i = 0; i < kNuoRayIndex_Size; ++i)
-        {
-            uint32 value = i;
-            
-            shadeIndexBuffer[i] = [commandQueue.device newBufferWithLength:sizeof(uint32)
-                                                                   options:MTLResourceStorageModePrivate];
-            id<MTLBuffer> buffer = [commandQueue.device newBufferWithBytes:&value length:sizeof(uint32)
-                                                                   options:MTLResourceStorageModeShared];
-            
-            [encoder copyFromBuffer:buffer sourceOffset:0 toBuffer:shadeIndexBuffer[i]
-                                      destinationOffset:0 size:sizeof(uint32)];
-        }
-        
-        [encoder endEncoding];
-        [commandBuffer commit];
-        
-        _shadeIndex = [[NSArray alloc] initWithObjects:shadeIndexBuffer count:kNuoRayIndex_Size];
-    }
-    
-    return self;
-}
-
-
-- (void)setDrawableSize:(CGSize)drawableSize
-{
-    [super setDrawableSize:drawableSize];
-    
-    if (CGSizeEqualToSize(_drawableSize, drawableSize))
-        return;
-    
-    _drawableSize = drawableSize;
-    for (NuoRenderPassTarget* illum in _normalizedIllumination)
-        illum.drawableSize = drawableSize;
-    
-    const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayIntersectionStride;
-    
-    NuoRayBuffer* shadowRayBuffers[kNuoRayIndex_Size];
-    
-    for (uint i = 0; i < kNuoRayIndex_Size; ++i)
-    {
-        shadowRayBuffers[i] = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
-        shadowRayBuffers[i].dimension = _drawableSize;
-    }
-    _shadowRays = [[NSArray alloc] initWithObjects:shadowRayBuffers count:kNuoRayIndex_Size];
-    _shadowIntersection = [self.commandQueue.device newBufferWithLength:intersectionSize
-                                                                options:MTLResourceStorageModePrivate];
-}
-
-
-- (void)runRayTraceShade:(NuoCommandBuffer*)commandBuffer
-{
-    for (uint i = 0; i < kNuoRayIndex_Size; ++i)
-    {
-        [self rayIntersect:commandBuffer withRays:_shadowRays[i]
-                                 withIntersection:_shadowIntersection];
-        
-        [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
-                   withParameter:@[_shadeIndex[i]]
-                  withExitantRay:_shadowRays[i].buffer
-                withIntersection:_shadowIntersection];
-    }
-}
-
-
-
-- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
-{
-    [super drawWithCommandBuffer:commandBuffer];
-    
-    for (NuoRenderPassTarget* illum in _normalizedIllumination)
-    {
-        [illum retainRenderPassEndcoder:commandBuffer];
-        [illum releaseRenderPassEndcoder];
-    }
-    
-    NuoComputeEncoder* encoder = [_differentialPipeline encoderWithCommandBuffer:commandBuffer];
-    
-    NSArray<id<MTLTexture>>* textures = self.targetTextures;
-    
-    uint i = 0;
-    
-    // only opaque and translucent surfaces need normalization
-    //
-    for (; i < 4; ++i)
-        [encoder setTexture:textures[i] atIndex:i];
-
-    [encoder setTexture:_normalizedIllumination[0].targetTexture atIndex:i];
-    [encoder setTexture:_normalizedIllumination[1].targetTexture atIndex:i+1];
-    
-    [encoder dispatch];
-}
-
-
-
-@end
-
 
 
 
 @implementation ModelRayTracingRenderer
 {
-    NuoComputePipeline* _primaryRaysPipeline;
+    NuoComputePipeline* _pimraryVirtualLighting;
     NuoComputePipeline* _primaryAndIncidentRaysPipeline;
     NuoComputePipeline* _rayShadePipeline;
     
     NuoBufferSwapChain* _rayTraceUniform;
     NuoBufferSwapChain* _randomBuffers;
-    
-    ModelRayTracingShadowPerLight1* _shadowPerLight[2];
     
     NuoRayBuffer* _incidentRaysBuffer;
     NuoRayBuffer* _shadowRaysBuffer;
@@ -220,21 +51,23 @@ static const uint32_t kRayBounce = 4;
 {
     self = [super initWithCommandQueue:commandQueue
                        withPixelFormat:MTLPixelFormatRGBA32Float
-                       withTargetCount:3 /* 2 for ambient/local-illumination, for normal and virtual surfaces,
-                                          * 1 for direct lighting */ ];
+                       withTargetCount:5 /* 2 for ambient/local-illumination, for normal and virtual surfaces,
+                                          * 1 for direct lighting,
+                                          * 2 for direct lighting on virtual surface */ ];
     
     if (self)
     {
-        _primaryRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                               withFunction:@"primary_ray_process"];
-        _primaryRaysPipeline.name = @"Primary Ray Process";
-        
         _primaryAndIncidentRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                                        withFunction:@"primary_scafold"];
-        _primaryAndIncidentRaysPipeline.name = @"Primary/Incident Ray Process";
+                                                                        withFunction:@"primary_ray_process"];
+        _pimraryVirtualLighting = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
+                                                                withFunction:@"primary_ray_virtual"];
         
         _rayShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
                                                           withFunction:@"incident_ray_process"];
+        
+        
+        _primaryAndIncidentRaysPipeline.name = @"Primary/Incident Ray Process";
+        _pimraryVirtualLighting.name = @"Virtual Lighting";
         _rayShadePipeline.name = @"Incident Ray Shading";
         
         _rng = std::make_shared<NuoRayTracingRandom>(kRandomBufferSize, kRayBounce, 1);
@@ -246,9 +79,6 @@ static const uint32_t kRayBounce = 4;
                                                      WithBufferSize:_rng->BytesSize()
                                                         withOptions:MTLResourceStorageModeManaged
                                                       withChainSize:kInFlightBufferCount];
-        
-        for (uint i = 0; i < 2; ++i)
-            _shadowPerLight[i] = [[ModelRayTracingShadowPerLight1 alloc] initWithCommandQueue:commandQueue];
     }
     
     return self;
@@ -258,9 +88,6 @@ static const uint32_t kRayBounce = 4;
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
-    
-    for (ModelRayTracingShadowPerLight1* renderer : _shadowPerLight)
-        [renderer setDrawableSize:drawableSize];
     
     _incidentRaysBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
     _incidentRaysBuffer.dimension = drawableSize;
@@ -274,28 +101,13 @@ static const uint32_t kRayBounce = 4;
 }
 
 
-- (void)setLightSource:(NuoLightSource*)lightSource forIndex:(uint)index
-{
-    [_shadowPerLight[index] setLightSource:lightSource];
-}
-
-
-- (void)resetResources
-{
-    for (ModelRayTracingShadowPerLight1* renderer : _shadowPerLight)
-        [renderer resetResources];
-    
-    [super resetResources];
-}
-
-
 - (void)updateUniforms:(id<NuoRenderInFlight>)inFlight
 {
     NuoRayTracingUniforms uniforms;
     
     for (uint i = 0; i < 2; ++i)
     {
-        NuoLightSource* lightSource = _shadowPerLight[i].lightSource;
+        NuoLightSource* lightSource = _lightSources[i];
         const NuoMatrixFloat44 matrix = NuoMatrixRotation(lightSource.lightingRotationX, lightSource.lightingRotationY);
         
         NuoRayTracingLightSource* lightSourceRayTracing = &(uniforms.lightSources[i]);
@@ -303,9 +115,9 @@ static const uint32_t kRayBounce = 4;
         lightSourceRayTracing->direction = matrix._m;
         lightSourceRayTracing->density = lightSource.lightingDensity;
         
-        // the code used to pass lightSource.shadowSoften into the shader, and the shader use it as diameter of
-        // a disk which is distant from the lighted surface by the scene's dimension (i.e. maxDistance). in this
-        // way, the calculatin is duplicated for each pixel each ray, and would even duplicate in multiple places
+        // the code used to pass lightSource.shadowSoften into the shader, which the shader had used as the diameter of
+        // a disk which was distant from the lighted surface by the scene's dimension (i.e. maxDistance). in this
+        // way, the calculation was duplicated for each pixel each ray, and would even duplicate in multiple places
         // among different shaders.
         //
         // now, the lightSource.shadowSoften is used as tangent of theta, with a scale factor that tries to
@@ -342,28 +154,15 @@ static const uint32_t kRayBounce = 4;
     id<MTLBuffer> rayTraceUniform = [_rayTraceUniform bufferForInFlight:commandBuffer];
     id<MTLBuffer> randomBuffer = [_randomBuffers bufferForInFlight:commandBuffer];
     
-    if ([self primaryRayIntersect:commandBuffer])
-    {
-        // generate rays for the two light sources, from opaque objects
-        //
-        [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
-                   withParameter:@[rayTraceUniform, randomBuffer,
-                                   _shadowPerLight[0].shadowRays[kNuoRayIndex_OnOpaque].buffer,
-                                   _shadowPerLight[1].shadowRays[kNuoRayIndex_OnOpaque].buffer]
-                  withExitantRay:nil
-                withIntersection:self.intersectionBuffer];
-    }
-    
     [self updatePrimaryRayMask:kNuoRayIndex_OnVirtual withCommandBuffer:commandBuffer];
     
     if ([self primaryRayIntersect:commandBuffer])
     {
-        // generate rays for the two light sources, from opaque objects
+        // generate rays for the two light sources, from virtual objects
         //
-        [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
+        [self runRayTraceCompute:_pimraryVirtualLighting withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
-                                   _shadowPerLight[0].shadowRays[kNuoRayIndex_OnVirtual].buffer,
-                                   _shadowPerLight[1].shadowRays[kNuoRayIndex_OnVirtual].buffer]
+                                   _shadowRaysBuffer.buffer]
                   withExitantRay:nil
                 withIntersection:self.intersectionBuffer];
     }
@@ -377,7 +176,6 @@ static const uint32_t kRayBounce = 4;
         [self runRayTraceCompute:_primaryAndIncidentRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowRaysBuffer.buffer,
-                                   _shadowIntersectionBuffer,
                                    _incidentRaysBuffer.buffer]
                   withExitantRay:nil
                 withIntersection:self.intersectionBuffer];
@@ -396,51 +194,22 @@ static const uint32_t kRayBounce = 4;
         }
     }
         
-    for (uint i = 0; i < 2; ++i)
-    {
-        // sub renderers detect intersection for each light source
-        // and accumulates the samplings
-        //
-        [_shadowPerLight[i] setRayStructure:self.rayStructure];
-        [_shadowPerLight[i] drawWithCommandBuffer:commandBuffer];
-    }
-    
     NuoInspectableMaster* inspect = [NuoInspectableMaster sharedMaster];
     [inspect updateTexture:self.targetTextures[2] forName:kInspectable_RayTracing];
-}
-
-
-- (id<MTLTexture>)shadowForLightSource:(uint)index withMask:(NuoSceneMask)mask
-{
-    uint i = (mask == kNuoSceneMask_Opaque ? 0 : 1);
-    return _shadowPerLight[index].normalizedIllumination[i].targetTexture;
+    [inspect updateTexture:self.targetTextures[4] forName:kInspectable_RayTracingVirtualBlocked];
 }
 
 
 
-- (NSArray<ModelDirectLighting1*>*)directLight
+- (id<MTLTexture>)directLightVirtual
 {
-    ModelDirectLighting1* lighting[2];
-    
-    for (uint i = 0; i < 2; ++i)
-    {
-        NSArray* textures = _shadowPerLight[i].targetTextures;
-        
-        lighting[i] = [ModelDirectLighting1 new];
-        lighting[i].lighting = textures[kNuoRayIndex_OnVirtual * 2];
-        lighting[i].blocked  = textures[kNuoRayIndex_OnVirtual * 2 + 1];
-    }
-    
-    return [[NSArray alloc] initWithObjects:lighting count:2];
+    return self.targetTextures[3];
 }
 
 
-- (void)rayStructUpdated
+- (id<MTLTexture>)directLightVirtualBlocked
 {
-    [super rayStructUpdated];
-    
-    for (uint i = 0; i < 2; ++i)
-        [_shadowPerLight[i] rayStructUpdated];
+    return self.targetTextures[4];
 }
 
 

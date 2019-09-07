@@ -141,8 +141,7 @@
         _rayTracingRenderer.fieldOfView = self.fieldOfView;
     }
     
-    for (uint i = 0; i < 2; ++i)
-        [_rayTracingRenderer setLightSource:self.lights[i] forIndex:i];
+    [_rayTracingRenderer setLightSources:self.lights];
     
     if (_rayTracingRecordStatus == kRecord_Start)
     {
@@ -171,6 +170,8 @@
     [_illuminationRenderer setImmediateResult:_rayTracingRenderer.targetTextures[2]];
     [_illuminationRenderer setIllumination:textures[0]];
     [_illuminationRenderer setIlluminationOnVirtual:textures[1]];
+    [_illuminationRenderer setDirectLightVirtual:textures[3]];
+    [_illuminationRenderer setDirectLightVirtualBlocked:textures[4]];
     
     [_illuminationRenderer drawWithCommandBuffer:commandBuffer];
 }
