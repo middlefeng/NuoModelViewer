@@ -292,6 +292,8 @@ void sample_scatter_ray(float maxDistance,
 
     const SurfaceInteraction interaction = { intersectionPoint, material };
     PathSample sample = sample_scatter(interaction, -ray.direction, r, Cdeterm);
+    
+    incidentRay.bounce = ray.bounce + 1;
 
     // terminate further tracing if the term is zero. this happens when the vector is out of
     // the hemisphere in the specular sampling
@@ -310,7 +312,6 @@ void sample_scatter_ray(float maxDistance,
         incidentRay.maxDistance = maxDistance;
         incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
         incidentRay.primaryHitMask = ray.primaryHitMask;
-        incidentRay.bounce = ray.bounce + 1;
         incidentRay.ambientIlluminated = ray.ambientIlluminated;
         
         // make the term of this reflection contribute to the path scatter

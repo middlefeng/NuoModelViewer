@@ -222,6 +222,16 @@ void self_illumination(uint2 tid,
     device RayBuffer& shadowRay = shadowRays[rayIdx];
     RayBuffer ray = structUniform.exitantRays[rayIdx];
     
+    // increase the bounce number no matter how the next path would be constructed according to
+    // how the intersection went
+    //
+    incidentRay.bounce = ray.bounce + 1;
+    
+    // mark the rays invalid unless later evidences show they are not
+    //
+    incidentRay.maxDistance = -1;
+    shadowRay.maxDistance = -1;
+    
     if (intersection.distance >= 0.0f)
     {
         const float maxDistance = tracingUniforms.bounds.span;
@@ -261,8 +271,6 @@ void self_illumination(uint2 tid,
             
             overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid,
                          overlayResult, overlayForVirtual);
-            
-            incidentRay.maxDistance = -1;
         }
         else
         {
@@ -308,9 +316,6 @@ void self_illumination(uint2 tid,
             overlayForVirtual.write(float4(globalIllum.ambient, 1.0), tid);
             incidentRay.ambientIlluminated = true;
         }
-        
-        incidentRay.maxDistance = -1;
-        shadowRay.maxDistance = -1;
     }
 }
 
