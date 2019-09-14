@@ -12,7 +12,7 @@
 
 @interface NuoArgumentUsage : NSObject
 
-@property (weak, nonatomic) id<MTLBuffer> argument;
+@property (weak, nonatomic) id<MTLResource> argument;
 @property (assign, nonatomic) MTLResourceUsage usage;
 
 @end

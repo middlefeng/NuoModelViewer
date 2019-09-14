@@ -64,6 +64,18 @@
 }
 
 
+- (void)setTexture:(id<MTLTexture>)texture for:(MTLResourceUsage)usage atIndex:(uint)index
+{
+    [_encoder setTexture:texture atIndex:index];
+    
+    NuoArgumentUsage* usageEntry = [NuoArgumentUsage new];
+    usageEntry.argument = texture;
+    usageEntry.usage = usage;
+    
+    [_usages addObject:usageEntry];
+}
+
+
 - (void)setInt:(uint32_t)value atIndex:(uint)index
 {
     uint32_t* addr = (uint32_t*)[_encoder constantDataAtIndex:index];
