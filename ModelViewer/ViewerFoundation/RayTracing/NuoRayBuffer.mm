@@ -17,6 +17,7 @@ const uint kRayBufferStride = 56;  //  base fields           - 32
                                    //  bounce                - 4
                                    //  primary hit mask      - 4
                                    //  ambient illuminateed  - 4
+                                   //  specular reflection   - 0 (packed into the above 4)
 
 
 

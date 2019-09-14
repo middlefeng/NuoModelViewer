@@ -44,6 +44,8 @@ struct RayBuffer
     // determine if the ambient calculation should terminate, which is independent from
     // whether boucing should terminate
     bool ambientIlluminated;
+    
+    bool specularReflection;
 };
 
 
@@ -85,6 +87,8 @@ struct PathSample
     // f * cos(theta) / pdf, see p875, pbr-book, [14.19]
     //
     float3 pathScatterTerm;
+    
+    bool specularReflection;
 };
 
 
@@ -326,6 +330,10 @@ void sample_scatter_ray(float maxDistance,
                         thread NuoRayTracingMaterial& material,
                         thread const RayBuffer& ray,
                         device RayBuffer& incidentRay);
+
+
+float ambient_distance_factor(float criteriaBlock, float criteriaUnblock,
+                              float intersection, float power);
 
 
 

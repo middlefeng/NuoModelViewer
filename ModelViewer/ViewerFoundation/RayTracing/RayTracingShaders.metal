@@ -64,6 +64,7 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     ray.bounce = 0;
     ray.primaryHitMask = 0;
     ray.ambientIlluminated = false;
+    ray.specularReflection = false;
     
     ray.maxDistance = INFINITY;
 }
@@ -318,6 +319,23 @@ void sample_scatter_ray(float maxDistance,
         //
         incidentRay.pathScatter = sample.pathScatterTerm * ray.pathScatter;
     }
+}
+
+
+float ambient_distance_factor(float criteriaBlock, float criteriaUnblock,
+                              float intersection, float power)
+{
+    if (intersection < criteriaBlock)
+    {
+        return 0.0;
+    }
+    
+    if (intersection > criteriaUnblock)
+    {
+        return 1.0;
+    }
+    
+    return pow((intersection - criteriaBlock) / (criteriaUnblock - criteriaBlock), power);
 }
 
 

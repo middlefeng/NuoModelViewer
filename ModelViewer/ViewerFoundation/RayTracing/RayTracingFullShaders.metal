@@ -294,9 +294,11 @@ void self_illumination(uint2 tid,
             sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, incidentRay);
         }
         
-        if (ray.bounce > 0 && !ray.ambientIlluminated && intersection.distance > ambientRadius)
+        float ambientFactor = ambient_distance_factor(ambientRadius / 20.0, ambientRadius,
+                                                      intersection.distance, 1.0);
+        if (ray.bounce > 0 && !ray.ambientIlluminated && ambientFactor > 0)
         {
-            color = ray.pathScatter * globalIllum.ambient;
+            color = ray.pathScatter * globalIllum.ambient * ambientFactor;
             overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, overlayResult, overlayForVirtual);
             incidentRay.ambientIlluminated = true;
         }
