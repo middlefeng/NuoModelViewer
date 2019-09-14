@@ -298,7 +298,11 @@ void self_illumination(uint2 tid,
     device NuoRayTracingMaterial* materials = structUniform.materials;
     device uint* index = structUniform.index;
     device RayBuffer& incidentRay = incidentRays[rayIdx];
-    RayBuffer ray = structUniform.exitantRays[rayIdx];
+    
+    // make a copy from the exitant rays buffer as the same buffer might be used as
+    // incident rays buffer
+    //
+    const RayBuffer ray = structUniform.exitantRays[rayIdx];
     
     if (intersection.distance >= 0.0f)
     {
@@ -308,12 +312,6 @@ void self_illumination(uint2 tid,
         unsigned int triangleIndex = intersection.primitiveIndex;
         device uint* vertexIndex = index + triangleIndex * 3;
         float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
-        
-        // the outgoing ray (that is the input ray buffer) would be stored in the same buffer as the
-        // incident ray (that is the output ray buffer) may be the same. so it's necessary to store the
-        // color before calcuating the bounce
-        //
-        float3 originalRayColor = ray.pathScatter;
         
         int illuminate = materials[*(vertexIndex)].shinessDisolveIllum.z;
         if (illuminate == 0)
@@ -354,7 +352,7 @@ void self_illumination(uint2 tid,
         
         if (ray.bounce > 0 && !ray.ambientIlluminated && intersection.distance > ambientRadius)
         {
-            color = originalRayColor * globalIllum.ambient;
+            color = ray.pathScatter * globalIllum.ambient;
             overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, overlayResult, overlayForVirtual);
             incidentRay.ambientIlluminated = true;
         }

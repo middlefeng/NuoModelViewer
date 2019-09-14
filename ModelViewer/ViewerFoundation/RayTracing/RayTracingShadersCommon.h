@@ -324,7 +324,7 @@ void sample_scatter_ray(float maxDistance,
                         device NuoRayTracingRandomUnit& random,
                         device Intersection& intersection,
                         thread NuoRayTracingMaterial& material,
-                        thread RayBuffer& ray,
+                        thread const RayBuffer& ray,
                         device RayBuffer& incidentRay);
 
 
