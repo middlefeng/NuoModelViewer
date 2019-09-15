@@ -224,16 +224,17 @@
     NuoComputeEncoder* computeEncoder = [pipeline encoderWithCommandBuffer:commandBuffer];
     id<MTLBuffer> effectiveRay = exitantRay ? exitantRay : [_rayStructure primaryRayBuffer].buffer;
     
+    uint i = 0;
+
     NuoArgumentBuffer* argumentBuffer = [self raystructUniform:pipeline
                                                   withInFlight:commandBuffer
                                                 withExitantRay:effectiveRay
                                               withIntersection:intersection];
-    
-    uint i = 0;
-    [computeEncoder setArgumentBuffer:argumentBuffer atIndex:i];
+    [computeEncoder setArgumentBuffer:argumentBuffer];
     
     NuoArgumentBuffer* targetBuffer = [self targetsUniform:pipeline];
-    [computeEncoder setArgumentBuffer:targetBuffer atIndex:++i];
+    [computeEncoder setArgumentBuffer:targetBuffer];
+    ++i;
     
     if (paramterBuffers)
     {
@@ -252,13 +253,6 @@
     }
     
     uint targetIndex = 0;
-    /*if (_rayTracingTargets)
-    for (NuoRenderPassTarget* target in _rayTracingTargets)
-    {
-        [computeEncoder setTargetTexture:target.targetTexture atIndex:targetIndex];
-        targetIndex += 1;
-    }*/
-    
     for (id<MTLTexture> diffuseTexture in _rayStructure.diffuseTextures)
     {
         [computeEncoder setTexture:diffuseTexture atIndex:targetIndex];
@@ -351,7 +345,7 @@
     buffer = [NuoArgumentBuffer new];
     
     uint i = 0;
-    [buffer encodeWith:encoder];
+    [buffer encodeWith:encoder forIndex:0];
     [buffer setBuffer:uniform for:MTLResourceUsageRead atIndex:i];
     [buffer setBuffer:[_rayStructure indexBuffer] for:MTLResourceUsageRead atIndex:++i];
     [buffer setBuffer:[_rayStructure materialBuffer] for:MTLResourceUsageRead atIndex:++i];
@@ -376,7 +370,7 @@
     
     id<MTLArgumentEncoder> encoder = [pipeline argumentEncoder:1];
     buffer = [NuoArgumentBuffer new];
-    [buffer encodeWith:encoder];
+    [buffer encodeWith:encoder forIndex:1];
     
     uint i = 0;
     for (NuoRenderPassTarget* target in _rayTracingTargets)

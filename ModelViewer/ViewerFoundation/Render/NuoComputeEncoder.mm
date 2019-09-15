@@ -165,11 +165,11 @@
 }
 
 
-- (void)setArgumentBuffer:(NuoArgumentBuffer*)buffer atIndex:(uint)index
+- (void)setArgumentBuffer:(NuoArgumentBuffer*)buffer
 {
-    _parameterState.SetState(index, kNuoParameter_CB);
+    _parameterState.SetState(buffer.index, kNuoParameter_CB);
     
-    [_encoder setBuffer:buffer.buffer offset:0 atIndex:index];
+    [_encoder setBuffer:buffer.buffer offset:0 atIndex:buffer.index];
     
     for (NuoArgumentUsage* usage in buffer.argumentsUsage)
         [_encoder useResource:usage.argument usage:usage.usage];
