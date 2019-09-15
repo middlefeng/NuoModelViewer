@@ -20,6 +20,17 @@ using namespace metal;
 
 
 
+struct RayTracingTargets
+{
+    texture2d<float, access::read_write> overlayResult              [[id(0)]];
+    texture2d<float, access::read_write> overlayForVirtual          [[id(1)]];
+    texture2d<float, access::read_write> lightingTracing            [[id(2)]];
+    texture2d<float, access::read_write> lightingVirtual            [[id(3)]];
+    texture2d<float, access::read_write> lightingVirtualWithBlock   [[id(4)]];
+};
+
+
+
 static void self_illumination(uint2 tid,
                               device RayStructureUniform& structUniform,
                               constant NuoRayTracingUniforms& tracingUniforms,
@@ -37,15 +48,11 @@ static void lightingTrcacingWrite(uint2 tid, float4 value,
 
 kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
                                 device RayStructureUniform& structUniform [[buffer(0)]],
+                                device RayTracingTargets& targets,
                                 constant NuoRayTracingUniforms& tracingUniforms,
                                 device NuoRayTracingRandomUnit* random,
                                 device RayBuffer* shadowRayMain,
                                 device uint* masks,
-                                texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                texture2d<float, access::read_write> overlayForVirtual,
-                                texture2d<float, access::read_write> lightingTracing,
-                                texture2d<float, access::read_write> lightingVirtual,
-                                texture2d<float, access::read_write> lightingVirtualWithBlock,
                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                 sampler samplr [[sampler(0)]])
 {
@@ -82,11 +89,11 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
         shadowRay->pathScatter *= originalRayColor;
         shadowRay->pathScatter *= totalDensity;
         
-        lightingVirtual.write(float4(shadowRay->pathScatter, 1.0), tid);
+        targets.lightingVirtual.write(float4(shadowRay->pathScatter, 1.0), tid);
     }
     else if (ray.maxDistance > 0)
     {
-        lightingVirtual.write(float4(float3(1.0), 1.0), tid);
+        targets.lightingVirtual.write(float4(float3(1.0), 1.0), tid);
     }
 }
 
@@ -94,16 +101,12 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
 
 kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 device RayStructureUniform& structUniform [[buffer(0)]],
+                                device RayTracingTargets& targets,
                                 constant NuoRayTracingUniforms& tracingUniforms,
                                 device NuoRayTracingRandomUnit* random,
                                 device RayBuffer* shadowRayMain,
                                 device RayBuffer* incidentRaysBuffer,
                                 device uint* masks,
-                                texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                texture2d<float, access::read_write> overlayForVirtual,
-                                texture2d<float, access::read_write> lightingTracing,
-                                texture2d<float, access::read_write> lightingVirtual,
-                                texture2d<float, access::read_write> lightingVirtualWithBlock,
                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                 sampler samplr [[sampler(0)]])
 {
@@ -121,22 +124,18 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     
     self_illumination(tid, structUniform, tracingUniforms,
                       shadowRayMain, incidentRaysBuffer,
-                      random, overlayResult, overlayForVirtual, diffuseTex, samplr);
+                      random, targets.overlayResult, targets.overlayForVirtual, diffuseTex, samplr);
 }
 
 
 
 kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  device RayStructureUniform& structUniform [[buffer(0)]],
+                                 device RayTracingTargets& targets,
                                  constant NuoRayTracingUniforms& tracingUniforms,
                                  device NuoRayTracingRandomUnit* random,
                                  device RayBuffer* shadowRayMain,
                                  device Intersection *intersections,
-                                 texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                 texture2d<float, access::read_write> overlayForVirtual,
-                                 texture2d<float, access::read_write> lightingTracing,
-                                 texture2d<float, access::read_write> lightingVirtual,
-                                 texture2d<float, access::read_write> lightingVirtualWithBlock,
                                  array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                  sampler samplr [[sampler(0)]])
 {
@@ -156,21 +155,21 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
         if ((shadowRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
         {
             if (shadowIntersection < 0.0f)
-                lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), lightingTracing);
+                lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), targets.lightingTracing);
             else
-                lightingTrcacingWrite(tid, float4(float3(0.0), 1.0), lightingTracing);
+                lightingTrcacingWrite(tid, float4(float3(0.0), 1.0), targets.lightingTracing);
         }
         else if (ray.bounce == 1)
         {
             if (shadowIntersection > 0.0f)
-                lightingVirtualWithBlock.write(float4(shadowRay.pathScatter, 1.0), tid);
+                targets.lightingVirtualWithBlock.write(float4(shadowRay.pathScatter, 1.0), tid);
         }
     }
     
     self_illumination(tid, structUniform, tracingUniforms,
                       shadowRayMain, structUniform.exitantRays /* incident rays are the
                                                                   exitant rays of the next path */,
-                      random, overlayResult, overlayForVirtual, diffuseTex, samplr);
+                      random, targets.overlayResult, targets.overlayForVirtual, diffuseTex, samplr);
 }
 
 
