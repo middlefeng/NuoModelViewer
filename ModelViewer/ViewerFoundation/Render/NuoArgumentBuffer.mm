@@ -25,7 +25,10 @@
     self = [super init];
     
     if (self)
+    {
         _usages = [NSMutableArray new];
+        _index = -1;
+    }
     
     return self;
 }
@@ -43,12 +46,13 @@
 }
 
 
-- (void)encodeWith:(id<MTLArgumentEncoder>)encoder
+- (void)encodeWith:(id<MTLArgumentEncoder>)encoder forIndex:(int)index
 {
     _buffer = [encoder.device newBufferWithLength:encoder.encodedLength options:0];
     
     [encoder setArgumentBuffer:_buffer offset:0];
     _encoder = encoder;
+    _index = index;
 }
 
 
@@ -58,6 +62,18 @@
     
     NuoArgumentUsage* usageEntry = [NuoArgumentUsage new];
     usageEntry.argument = buffer;
+    usageEntry.usage = usage;
+    
+    [_usages addObject:usageEntry];
+}
+
+
+- (void)setTexture:(id<MTLTexture>)texture for:(MTLResourceUsage)usage atIndex:(uint)index
+{
+    [_encoder setTexture:texture atIndex:index];
+    
+    NuoArgumentUsage* usageEntry = [NuoArgumentUsage new];
+    usageEntry.argument = texture;
     usageEntry.usage = usage;
     
     [_usages addObject:usageEntry];

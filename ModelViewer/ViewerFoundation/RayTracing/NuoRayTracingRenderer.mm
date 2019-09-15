@@ -74,6 +74,7 @@
     
     id<MTLSamplerState> _sampleState;
     NSMutableDictionary<NuoArgumentBufferKey*, NuoArgumentBuffer*>* _rayStructUniform;
+    NSMutableDictionary<NuoArgumentBufferKey*, NuoArgumentBuffer*>* _targetsUniform;
 }
 
 
@@ -159,6 +160,11 @@
 {
     [super setDrawableSize:drawableSize];
     
+    if (!CGSizeEqualToSize(_drawableSize, drawableSize))
+    {
+        _targetsUniform = [NSMutableDictionary new];
+    }
+    
     for (uint i = 0; i < _rayTracingTargets.count; ++i)
     {
         [_rayTracingTargets[i] setDrawableSize:drawableSize];
@@ -218,13 +224,17 @@
     NuoComputeEncoder* computeEncoder = [pipeline encoderWithCommandBuffer:commandBuffer];
     id<MTLBuffer> effectiveRay = exitantRay ? exitantRay : [_rayStructure primaryRayBuffer].buffer;
     
+    uint i = 0;
+
     NuoArgumentBuffer* argumentBuffer = [self raystructUniform:pipeline
                                                   withInFlight:commandBuffer
                                                 withExitantRay:effectiveRay
                                               withIntersection:intersection];
+    [computeEncoder setArgumentBuffer:argumentBuffer];
     
-    uint i = 0;
-    [computeEncoder setArgumentBuffer:argumentBuffer atIndex:i];
+    NuoArgumentBuffer* targetBuffer = [self targetsUniform:pipeline];
+    [computeEncoder setArgumentBuffer:targetBuffer];
+    ++i;
     
     if (paramterBuffers)
     {
@@ -243,12 +253,6 @@
     }
     
     uint targetIndex = 0;
-    for (NuoRenderPassTarget* target in _rayTracingTargets)
-    {
-        [computeEncoder setTargetTexture:target.targetTexture atIndex:targetIndex];
-        targetIndex += 1;
-    }
-    
     for (id<MTLTexture> diffuseTexture in _rayStructure.diffuseTextures)
     {
         [computeEncoder setTexture:diffuseTexture atIndex:targetIndex];
@@ -341,7 +345,7 @@
     buffer = [NuoArgumentBuffer new];
     
     uint i = 0;
-    [buffer encodeWith:encoder];
+    [buffer encodeWith:encoder forIndex:0];
     [buffer setBuffer:uniform for:MTLResourceUsageRead atIndex:i];
     [buffer setBuffer:[_rayStructure indexBuffer] for:MTLResourceUsageRead atIndex:++i];
     [buffer setBuffer:[_rayStructure materialBuffer] for:MTLResourceUsageRead atIndex:++i];
@@ -350,6 +354,33 @@
     
     [_rayStructUniform setObject:buffer forKey:key];
     
+    return buffer;
+}
+
+
+- (NuoArgumentBuffer*)targetsUniform:(NuoComputePipeline*)pipeline
+{
+    NuoArgumentBufferKey* key = [NuoArgumentBufferKey new];
+    key.pipeline = (uint64_t)pipeline;
+    
+    NuoArgumentBuffer* buffer = [_targetsUniform objectForKey:key];
+    
+    if (buffer)
+        return buffer;
+    
+    id<MTLArgumentEncoder> encoder = [pipeline argumentEncoder:1];
+    buffer = [NuoArgumentBuffer new];
+    [buffer encodeWith:encoder forIndex:1];
+    
+    uint i = 0;
+    for (NuoRenderPassTarget* target in _rayTracingTargets)
+    {
+        [buffer setTexture:target.targetTexture
+                       for:(MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite)
+                   atIndex:i++];
+    }
+    
+    [_targetsUniform setObject:buffer forKey:key];
     return buffer;
 }
 

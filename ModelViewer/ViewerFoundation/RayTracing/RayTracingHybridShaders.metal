@@ -20,13 +20,20 @@ using namespace metal;
 
 
 
+struct IlluminateTargets
+{
+    texture2d<float, access::read_write> overlayResult      [[id(0)]];
+    texture2d<float, access::read_write> overlayForVirtual  [[id(1)]];
+};
+
+
+
 static void self_illumination(uint2 tid,
                               device RayStructureUniform& structUniform,
+                              device IlluminateTargets& targets,
                               constant NuoRayTracingUniforms& tracingUniforms,
                               device RayBuffer* incidentRays,
                               device NuoRayTracingRandomUnit* random,
-                              texture2d<float, access::read_write> overlayResult,
-                              texture2d<float, access::read_write> overlayForVirtual,
                               array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                               sampler samplr);
 
@@ -34,14 +41,13 @@ static void self_illumination(uint2 tid,
 
 kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
                                        device RayStructureUniform& structUniform [[buffer(0)]],
+                                       device IlluminateTargets& targets,
                                        constant NuoRayTracingUniforms& tracingUniforms,
                                        device NuoRayTracingRandomUnit* random,
                                        device RayBuffer* shadowRays0,
                                        device RayBuffer* shadowRays1,
                                        device uint* masks,
-                                       texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                       texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
-                                       array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
+                                       array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(0)]],
                                        sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
@@ -76,15 +82,14 @@ kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
 
 kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                              device RayStructureUniform& structUniform [[buffer(0)]],
+                                             device IlluminateTargets& targets,
                                              constant NuoRayTracingUniforms& tracingUniforms,
                                              device NuoRayTracingRandomUnit* random,
                                              device RayBuffer* shadowRays0,
                                              device RayBuffer* shadowRays1,
                                              device RayBuffer* incidentRaysBuffer,
                                              device uint* masks,
-                                             texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                             texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
-                                             array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
+                                             array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(0)]],
                                              sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
@@ -115,20 +120,19 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
         shadowRay->pathScatter *= lightSource.density;
     }
     
-    self_illumination(tid, structUniform,
+    self_illumination(tid, structUniform, targets,
                       tracingUniforms, incidentRaysBuffer,
-                      random, overlayResult, overlayForVirtual, diffuseTex, samplr);
+                      random, diffuseTex, samplr);
 }
 
 
 
 kernel void incident_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
                                         device RayStructureUniform& structUniform [[buffer(0)]],
+                                        device IlluminateTargets& targets,
                                         constant NuoRayTracingUniforms& tracingUniforms,
                                         device NuoRayTracingRandomUnit* random,
-                                        texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                        texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
-                                        array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
+                                        array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(0)]],
                                         sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
@@ -136,10 +140,10 @@ kernel void incident_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
     
-    self_illumination(tid, structUniform,
+    self_illumination(tid, structUniform, targets,
                       tracingUniforms, structUniform.exitantRays /* incident rays are the
                                                                     exitant rays of the next path */,
-                      random, overlayResult, overlayForVirtual, diffuseTex, samplr);
+                      random, diffuseTex, samplr);
 }
 
 
@@ -150,14 +154,20 @@ enum LightingType
     kLighting_WithoutBlock = 0,
     kLighting_WithBlock,
 };
+    
+
+struct ShadowTargets
+{
+    texture_array<2, access::write>::t lightForOpaque  [[id(0)]];
+    texture_array<2, access::write>::t lightForTrans   [[id(2)]];
+    texture_array<2, access::write>::t lightForVirtual [[id(4)]];
+};
 
 
 kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
                               device RayStructureUniform& structUniform [[buffer(0)]],
-                              device uint* shadeIndex,
-                              texture_array<2, access::write>::t lightForOpaque  [[texture(0)]],
-                              texture_array<2, access::write>::t lightForTrans   [[texture(2)]],
-                              texture_array<2, access::write>::t lightForVirtual [[texture(4)]])
+                              device ShadowTargets& targets,
+                              device uint* shadeIndex)
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
     
@@ -169,9 +179,9 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
     device Intersection& intersection = structUniform.intersections[rayIdx];
     device RayBuffer& shadowRay = structUniform.exitantRays[rayIdx];
     
-    texture_array<2, access::write>::t lightsDst[] = { lightForOpaque,
-                                                       lightForTrans,
-                                                       lightForVirtual };
+    texture_array<2, access::write>::t lightsDst[] = { targets.lightForOpaque,
+                                                       targets.lightForTrans,
+                                                       targets.lightForVirtual };
     
     device uint& targetIndex = *shadeIndex;
     
@@ -269,11 +279,10 @@ kernel void lighting_accumulate(uint2 tid [[thread_position_in_grid]],
  *  write the result of illuminating surface and ambient
  */
 static void overlayWrite(uint hitType, float4 value, uint2 tid,
-                         texture2d<float, access::read_write> overlayResult,
-                         texture2d<float, access::read_write> overlayForVirtual)
+                         device IlluminateTargets& targets)
 {
     texture2d<float, access::read_write> texture = (hitType & kNuoRayMask_Virtual)?
-                                                    overlayForVirtual : overlayResult;
+                                                    targets.overlayForVirtual : targets.overlayResult;
     
     const float4 color = texture.read(tid);
     const float4 result = float4(color.rgb + value.rgb, saturate(color.a + value.a));
@@ -283,11 +292,10 @@ static void overlayWrite(uint hitType, float4 value, uint2 tid,
 
 void self_illumination(uint2 tid,
                        device RayStructureUniform& structUniform,
+                       device IlluminateTargets& targets,
                        constant NuoRayTracingUniforms& tracingUniforms,
                        device RayBuffer* incidentRays,
                        device NuoRayTracingRandomUnit* random,
-                       texture2d<float, access::read_write> overlayResult,
-                       texture2d<float, access::read_write> overlayForVirtual,
                        array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                        sampler samplr)
 {
@@ -335,8 +343,7 @@ void self_illumination(uint2 tid,
             if (ray.bounce == 0)
                 color = saturate(color);
             
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid,
-                         overlayResult, overlayForVirtual);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
             
             incidentRay.maxDistance = -1;
         }
@@ -355,7 +362,7 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientIlluminated && ambientFactor > 0)
         {
             color = ray.pathScatter * globalIllum.ambient * ambientFactor;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, overlayResult, overlayForVirtual);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
             incidentRay.ambientIlluminated = true;
         }
     }
@@ -364,12 +371,12 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientIlluminated)
         {
             float3 color = ray.pathScatter * globalIllum.ambient;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, overlayResult, overlayForVirtual);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
             incidentRay.ambientIlluminated = true;
         }
         else if (ray.bounce == 0)
         {
-            overlayForVirtual.write(float4(globalIllum.ambient, 1.0), tid);
+            targets.overlayForVirtual.write(float4(globalIllum.ambient, 1.0), tid);
             incidentRay.ambientIlluminated = true;
         }
         
