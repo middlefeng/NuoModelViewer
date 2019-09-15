@@ -26,6 +26,7 @@
 
 - (void)encodeWith:(id<MTLArgumentEncoder>)encoder;
 - (void)setBuffer:(id<MTLBuffer>)buffer for:(MTLResourceUsage)usage atIndex:(uint)index;
+- (void)setTexture:(id<MTLTexture>)texture for:(MTLResourceUsage)usage atIndex:(uint)index;
 - (void)setInt:(uint32_t)value atIndex:(uint)index;
 
 @end

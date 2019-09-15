@@ -74,6 +74,7 @@
     
     id<MTLSamplerState> _sampleState;
     NSMutableDictionary<NuoArgumentBufferKey*, NuoArgumentBuffer*>* _rayStructUniform;
+    NSMutableDictionary<NuoArgumentBufferKey*, NuoArgumentBuffer*>* _targetsUniform;
 }
 
 
@@ -159,6 +160,11 @@
 {
     [super setDrawableSize:drawableSize];
     
+    if (!CGSizeEqualToSize(_drawableSize, drawableSize))
+    {
+        _targetsUniform = [NSMutableDictionary new];
+    }
+    
     for (uint i = 0; i < _rayTracingTargets.count; ++i)
     {
         [_rayTracingTargets[i] setDrawableSize:drawableSize];
@@ -226,6 +232,9 @@
     uint i = 0;
     [computeEncoder setArgumentBuffer:argumentBuffer atIndex:i];
     
+    NuoArgumentBuffer* targetBuffer = [self targetsUniform:pipeline];
+    [computeEncoder setArgumentBuffer:targetBuffer atIndex:++i];
+    
     if (paramterBuffers)
     {
         for (id<MTLBuffer> param in paramterBuffers)
@@ -243,11 +252,12 @@
     }
     
     uint targetIndex = 0;
+    /*if (_rayTracingTargets)
     for (NuoRenderPassTarget* target in _rayTracingTargets)
     {
         [computeEncoder setTargetTexture:target.targetTexture atIndex:targetIndex];
         targetIndex += 1;
-    }
+    }*/
     
     for (id<MTLTexture> diffuseTexture in _rayStructure.diffuseTextures)
     {
@@ -350,6 +360,33 @@
     
     [_rayStructUniform setObject:buffer forKey:key];
     
+    return buffer;
+}
+
+
+- (NuoArgumentBuffer*)targetsUniform:(NuoComputePipeline*)pipeline
+{
+    NuoArgumentBufferKey* key = [NuoArgumentBufferKey new];
+    key.pipeline = (uint64_t)pipeline;
+    
+    NuoArgumentBuffer* buffer = [_targetsUniform objectForKey:key];
+    
+    if (buffer)
+        return buffer;
+    
+    id<MTLArgumentEncoder> encoder = [pipeline argumentEncoder:1];
+    buffer = [NuoArgumentBuffer new];
+    [buffer encodeWith:encoder];
+    
+    uint i = 0;
+    for (NuoRenderPassTarget* target in _rayTracingTargets)
+    {
+        [buffer setTexture:target.targetTexture
+                       for:(MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite)
+                   atIndex:i++];
+    }
+    
+    [_targetsUniform setObject:buffer forKey:key];
     return buffer;
 }
 
