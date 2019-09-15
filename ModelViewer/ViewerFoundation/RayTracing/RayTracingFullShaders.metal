@@ -22,11 +22,12 @@ using namespace metal;
 
 struct RayTracingTargets
 {
-    texture2d<float, access::read_write> overlayResult              [[id(0)]];
-    texture2d<float, access::read_write> overlayForVirtual          [[id(1)]];
-    texture2d<float, access::read_write> lightingTracing            [[id(2)]];
-    texture2d<float, access::read_write> lightingVirtual            [[id(3)]];
-    texture2d<float, access::read_write> lightingVirtualWithBlock   [[id(4)]];
+    texture2d<float, access::read_write> overlayResult                  [[id(0)]];
+    texture2d<float, access::read_write> overlayForVirtual              [[id(1)]];
+    texture2d<float, access::read_write> overlayForVirtualWithoutBlock  [[id(2)]];
+    texture2d<float, access::read_write> lightingTracing                [[id(3)]];
+    texture2d<float, access::read_write> lightingVirtual                ;
+    texture2d<float, access::read_write> lightingVirtualWithBlock       ;
 };
 
 

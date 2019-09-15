@@ -14,6 +14,18 @@
 
 
 
+enum kModelRayTracingTargets
+{
+    kModelRayTracingTargets_AmbientNormal = 0,
+    kModelRayTracingTargets_AmbientVirtual,
+    kModelRayTracingTargets_AmbientVirtualNB,
+    kModelRayTracingTargets_Direct,
+    kModelRayTracingTargets_DirectVirtual,
+    kModelRayTracingTargets_DirectVirtualBlocked
+};
+
+
+
 @interface ModelRayTracingRenderer : NuoRayTracingRenderer
 
 
@@ -22,8 +34,6 @@
 
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lightSources;
 
-@property (nonatomic, readonly) id<MTLTexture> directLightVirtual;
-@property (nonatomic, readonly) id<MTLTexture> directLightVirtualBlocked;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 

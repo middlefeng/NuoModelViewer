@@ -164,14 +164,15 @@
     
     NSArray* textures = _rayTracingRenderer.targetTextures;
         
-    [inspectMaster updateTexture:textures[0] forName:kInspectable_Illuminate];
+    [inspectMaster updateTexture:textures[kModelRayTracingTargets_AmbientNormal] forName:kInspectable_Illuminate];
     
     [_illuminationRenderer setRenderTarget:_delegateTarget];
-    [_illuminationRenderer setImmediateResult:_rayTracingRenderer.targetTextures[2]];
-    [_illuminationRenderer setIllumination:textures[0]];
-    [_illuminationRenderer setIlluminationOnVirtual:textures[1]];
-    [_illuminationRenderer setDirectLightVirtual:textures[3]];
-    [_illuminationRenderer setDirectLightVirtualBlocked:textures[4]];
+    [_illuminationRenderer setImmediateResult:textures[kModelRayTracingTargets_Direct]];
+    [_illuminationRenderer setIllumination:textures[kModelRayTracingTargets_AmbientNormal]];
+    [_illuminationRenderer setIlluminationOnVirtual:textures[kModelRayTracingTargets_AmbientVirtual]];
+    // virtual NB
+    [_illuminationRenderer setDirectLightVirtual:textures[kModelRayTracingTargets_DirectVirtual]];
+    [_illuminationRenderer setDirectLightVirtualBlocked:textures[kModelRayTracingTargets_DirectVirtualBlocked]];
     
     [_illuminationRenderer drawWithCommandBuffer:commandBuffer];
 }

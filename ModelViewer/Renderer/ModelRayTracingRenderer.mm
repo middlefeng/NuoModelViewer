@@ -51,7 +51,8 @@ static const uint32_t kRayBounce = 4;
 {
     self = [super initWithCommandQueue:commandQueue
                        withPixelFormat:MTLPixelFormatRGBA32Float
-                       withTargetCount:5 /* 2 for ambient/local-illumination, for normal and virtual surfaces,
+                       withTargetCount:6 /* 1 for ambient/local-illumination of normal
+                                          * 2 for ambient/local-illumination on virtual surfaces,
                                           * 1 for direct lighting,
                                           * 2 for direct lighting on virtual surface */ ];
     
@@ -195,21 +196,8 @@ static const uint32_t kRayBounce = 4;
     }
         
     NuoInspectableMaster* inspect = [NuoInspectableMaster sharedMaster];
-    [inspect updateTexture:self.targetTextures[2] forName:kInspectable_RayTracing];
+    [inspect updateTexture:self.targetTextures[3] forName:kInspectable_RayTracing];
     [inspect updateTexture:self.targetTextures[4] forName:kInspectable_RayTracingVirtualBlocked];
-}
-
-
-
-- (id<MTLTexture>)directLightVirtual
-{
-    return self.targetTextures[3];
-}
-
-
-- (id<MTLTexture>)directLightVirtualBlocked
-{
-    return self.targetTextures[4];
 }
 
 
