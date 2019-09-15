@@ -13,21 +13,27 @@
 #include "NuoMathVector.h"
 
 
+
+@interface NuoIlluminationTarget : NSObject
+
+
+//  values in the textures are relative to "directLighting" therefore physically based
+
+@property (strong, nonatomic) id<MTLTexture> normal;
+@property (strong, nonatomic) id<MTLTexture> ambientNormal;
+@property (strong, nonatomic) id<MTLTexture> ambientVirtual;
+// ambient virtual nonblocked
+@property (strong, nonatomic) id<MTLTexture> directVirtual;
+@property (strong, nonatomic) id<MTLTexture> directVirtualBlocked;
+
+@end
+
+
+
+
 @interface NuoIlluminationMesh : NuoTextureMesh
 
-//  all values below are relative to "directLighting" therefore physically based
-
-/**
- *  local light source and ambient
- */
-@property (nonatomic, weak) id<MTLTexture> illumination;
-@property (nonatomic, weak) id<MTLTexture> illuminationOnVirtual;
-
-/**
- *  direct lighting by the major sources
- */
-@property (nonatomic, weak) id<MTLTexture> directLighting;
-@property (nonatomic, weak) id<MTLTexture> directLightingWithShadow;
+@property (nonatomic, weak) NuoIlluminationTarget* illuminations;
 
 @property (nonatomic, weak) id<MTLTexture> translucentCoverMap;
 

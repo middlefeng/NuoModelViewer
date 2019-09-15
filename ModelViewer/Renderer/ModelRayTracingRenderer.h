@@ -14,18 +14,6 @@
 
 
 
-enum kModelRayTracingTargets
-{
-    kModelRayTracingTargets_AmbientNormal = 0,
-    kModelRayTracingTargets_AmbientVirtual,
-    kModelRayTracingTargets_AmbientVirtualNB,
-    kModelRayTracingTargets_Direct,
-    kModelRayTracingTargets_DirectVirtual,
-    kModelRayTracingTargets_DirectVirtualBlocked
-};
-
-
-
 @interface ModelRayTracingRenderer : NuoRayTracingRenderer
 
 

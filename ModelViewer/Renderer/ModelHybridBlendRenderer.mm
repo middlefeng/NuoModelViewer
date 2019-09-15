@@ -108,12 +108,11 @@
 
 - (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
+    _illuminations.directVirtual = _lightingWithoutBlock.targetTexture;
+    _illuminations.directVirtualBlocked = _lightingWithBlock.targetTexture;
+    
     NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
-    [_mesh setModelTexture:_immediateResult];
-    [_mesh setIllumination:_illumination];
-    [_mesh setIlluminationOnVirtual:_illuminationOnVirtual];
-    [_mesh setDirectLighting:_lightingWithoutBlock.targetTexture];
-    [_mesh setDirectLightingWithShadow:_lightingWithBlock.targetTexture];
+    [_mesh setIlluminations:_illuminations];
     [_mesh setTranslucentCoverMap:_translucentMap];
     [_mesh drawMesh:renderPass];
     [self releaseDefaultEncoder];

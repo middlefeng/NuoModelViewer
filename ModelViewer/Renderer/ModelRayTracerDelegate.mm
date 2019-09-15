@@ -19,9 +19,22 @@
 
 
 
+enum kModelRayTracingTargets
+{
+    kModelRayTracingTargets_AmbientNormal = 0,
+    kModelRayTracingTargets_AmbientVirtual,
+    kModelRayTracingTargets_AmbientVirtualNB,
+    kModelRayTracingTargets_Direct,
+    kModelRayTracingTargets_DirectVirtual,
+    kModelRayTracingTargets_DirectVirtualBlocked
+};
+
+
+
 @implementation ModelRayTracerDelegate
 {
     ModelRayTracingBlendRenderer* _illuminationRenderer;
+    NuoIlluminationTarget* _illuminations;
     
     ModelRayTracingRenderer* _rayTracingRenderer;
     
@@ -52,6 +65,7 @@
         _illuminationRenderer = [[ModelRayTracingBlendRenderer alloc] initWithCommandQueue:commandQueue
                                                                            withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                            withSampleCount:1];
+        _illuminations = [NuoIlluminationTarget new];
         
         _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:commandQueue];
         _rayTracingRenderer.rayStructure = accelerateSturcture;
@@ -167,12 +181,15 @@
     [inspectMaster updateTexture:textures[kModelRayTracingTargets_AmbientNormal] forName:kInspectable_Illuminate];
     
     [_illuminationRenderer setRenderTarget:_delegateTarget];
-    [_illuminationRenderer setImmediateResult:textures[kModelRayTracingTargets_Direct]];
-    [_illuminationRenderer setIllumination:textures[kModelRayTracingTargets_AmbientNormal]];
-    [_illuminationRenderer setIlluminationOnVirtual:textures[kModelRayTracingTargets_AmbientVirtual]];
+    
+    _illuminations.normal = textures[kModelRayTracingTargets_Direct];
+    _illuminations.ambientNormal = textures[kModelRayTracingTargets_AmbientNormal];
+    _illuminations.ambientVirtual = textures[kModelRayTracingTargets_AmbientVirtual];
     // virtual NB
-    [_illuminationRenderer setDirectLightVirtual:textures[kModelRayTracingTargets_DirectVirtual]];
-    [_illuminationRenderer setDirectLightVirtualBlocked:textures[kModelRayTracingTargets_DirectVirtualBlocked]];
+    _illuminations.directVirtual = textures[kModelRayTracingTargets_DirectVirtual];
+    _illuminations.directVirtualBlocked = textures[kModelRayTracingTargets_DirectVirtualBlocked];
+    
+    [_illuminationRenderer setIlluminations:_illuminations];
     
     [_illuminationRenderer drawWithCommandBuffer:commandBuffer];
 }

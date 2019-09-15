@@ -18,13 +18,9 @@
 @interface ModelRayTracingBlendRenderer : NuoRenderPass
 
 
-@property (nonatomic, weak) id<MTLTexture> immediateResult;
-@property (nonatomic, weak) id<MTLTexture> illumination;
-@property (nonatomic, weak) id<MTLTexture> illuminationOnVirtual;
-@property (nonatomic, weak) id<MTLTexture> translucentMap;
+@property (nonatomic, weak) NuoIlluminationTarget* illuminations;
 
-@property (nonatomic, weak) id<MTLTexture> directLightVirtual;
-@property (nonatomic, weak) id<MTLTexture> directLightVirtualBlocked;
+@property (nonatomic, weak) id<MTLTexture> translucentMap;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue

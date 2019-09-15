@@ -10,6 +10,13 @@
 
 
 
+@implementation NuoIlluminationTarget
+
+@end
+
+
+
+
 @implementation NuoIlluminationMesh
 {
     id<MTLBuffer> _paramBuffer;
@@ -54,10 +61,11 @@
 {
     [renderPass pushParameterState:@"Illumination"];
     
-    [renderPass setFragmentTexture:_illumination atIndex:1];
-    [renderPass setFragmentTexture:_illuminationOnVirtual atIndex:2];
-    [renderPass setFragmentTexture:_directLighting atIndex:3];
-    [renderPass setFragmentTexture:_directLightingWithShadow atIndex:4];
+    [self setModelTexture:_illuminations.normal];
+    [renderPass setFragmentTexture:_illuminations.ambientNormal atIndex:1];
+    [renderPass setFragmentTexture:_illuminations.ambientVirtual atIndex:2];
+    [renderPass setFragmentTexture:_illuminations.directVirtual atIndex:3];
+    [renderPass setFragmentTexture:_illuminations.directVirtualBlocked atIndex:4];
     
     if (_translucentCoverMap)
         [renderPass setFragmentTexture:_translucentCoverMap atIndex:5];

@@ -18,9 +18,8 @@
 @interface ModelHybridBlendRenderer : NuoRenderPass
 
 
-@property (nonatomic, weak) id<MTLTexture> immediateResult;
-@property (nonatomic, weak) id<MTLTexture> illumination;
-@property (nonatomic, weak) id<MTLTexture> illuminationOnVirtual;
+@property (nonatomic, weak) NuoIlluminationTarget* illuminations;
+
 @property (nonatomic, weak) id<MTLTexture> translucentMap;
 
 @property (nonatomic, strong) NSArray<ModelDirectLighting*>* directLighting;
