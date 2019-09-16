@@ -22,7 +22,7 @@
 @property (strong, nonatomic) id<MTLTexture> normal;
 @property (strong, nonatomic) id<MTLTexture> ambientNormal;
 @property (strong, nonatomic) id<MTLTexture> ambientVirtual;
-// ambient virtual nonblocked
+@property (strong, nonatomic) id<MTLTexture> ambientVirtualWithoutBlock;
 @property (strong, nonatomic) id<MTLTexture> directVirtual;
 @property (strong, nonatomic) id<MTLTexture> directVirtualBlocked;
 

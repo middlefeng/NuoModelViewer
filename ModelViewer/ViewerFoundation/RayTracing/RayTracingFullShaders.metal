@@ -52,6 +52,7 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
                                 constant NuoRayTracingUniforms& tracingUniforms,
                                 device NuoRayTracingRandomUnit* random,
                                 device RayBuffer* shadowRayMain,
+                                device RayBuffer* incidentRays,
                                 device uint* masks,
                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                 sampler samplr [[sampler(0)]])
@@ -64,15 +65,13 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & intersection = structUniform.intersections[rayIdx];
     device RayBuffer* shadowRay = shadowRayMain + rayIdx;
-    device RayBuffer& ray = structUniform.exitantRays[rayIdx];
+    const RayBuffer ray = structUniform.exitantRays[rayIdx];
+    
+    constant NuoRayTracingGlobalIlluminationParam& globalIllum = tracingUniforms.globalIllum;
     
     if (intersection.distance >= 0.0f)
     {
-        // the outgoing ray (that is the input ray buffer) would be stored in the same buffer as the
-        // incident ray (that is the output ray buffer) may be the same. so it's necessary to store the
-        // color before calcuating the bounce
-        //
-        float3 originalRayColor = ray.pathScatter;
+        // direct lighting on virtual surfaces as if no normal object present
         
         device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
             
@@ -86,14 +85,33 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
                                       lightSource, randomVars.uvLightSource, shadowRay,
                                       diffuseTex, samplr);
         
-        shadowRay->pathScatter *= originalRayColor;
+        shadowRay->pathScatter *= ray.pathScatter;
         shadowRay->pathScatter *= totalDensity;
         
         targets.lightingVirtual.write(float4(shadowRay->pathScatter, 1.0), tid);
+        
+        // ambient lighting on virtual surfaces as if no normal object present
+        
+        device uint* index = structUniform.index;
+        device NuoRayTracingMaterial* materials = structUniform.materials;
+        device RayBuffer& incidentRay = incidentRays[rayIdx];
+        const float maxDistance = tracingUniforms.bounds.span;
+        
+        float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
+        
+        NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
+        material.diffuseColor = color;
+        material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
+        
+        sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, incidentRay);
+        
+        float3 ambientColor = incidentRay.pathScatter * globalIllum.ambient;
+        targets.overlayForVirtualWithoutBlock.write(float4(ambientColor, 1.0), tid);
     }
     else if (ray.maxDistance > 0)
     {
-        targets.lightingVirtual.write(float4(float3(1.0), 1.0), tid);
+        targets.lightingVirtual.write(float4(1.0), tid);
+        targets.overlayForVirtualWithoutBlock.write(float4(globalIllum.ambient, 1.0), tid);
     }
 }
 

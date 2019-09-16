@@ -19,6 +19,7 @@ NSString* const kInspectable_RayTracing = @"inspectable_rayTracing";
 NSString* const kInspectable_RayTracingVirtualBlocked = @"inspectable_rayTracingVirtualBlocked";
 NSString* const kInspectable_Illuminate = @"inspectable_illuminate";
 NSString* const kInspectable_Ambient = @"inspectable_ambient";
+NSString* const kInspectable_AmbientVirtualWithoutBlock = @"inspectable_ambientVirtualWithoutBlock";
 NSString* const kInspectable_Shadow = @"inspectable_shadow";
 NSString* const kInspectable_ShadowTranslucent = @"inspectable_shadowTranslucent";
 NSString* const kInspectable_DirectLightWithShadow = @"inspectable_directLightWithShadow";
@@ -61,6 +62,7 @@ NSString* const kInspectable_DirectLightWithShadow = @"inspectable_directLightWi
               kInspectable_RayTracingVirtualBlocked: [NuoInspectable inspectableWithTitle:@"Ray Tracing Virtual Blocked" withMean:nil],
               kInspectable_Illuminate: [NuoInspectable inspectableWithTitle:@"Illumination" withMean:nil],
               kInspectable_Ambient: [NuoInspectable inspectableWithTitle:@"Ambient" withMean:nil],
+              kInspectable_AmbientVirtualWithoutBlock: [NuoInspectable inspectableWithTitle:@"Ambient without Block" withMean:nil],
               kInspectable_Shadow: [NuoInspectable inspectableWithTitle:@"Shadow on Opaque" withMean:nil],
               kInspectable_ShadowTranslucent: [NuoInspectable inspectableWithTitle:@"Shadow on Translucent" withMean:nil],
               kInspectable_DirectLightWithShadow: [NuoInspectable inspectableWithTitle:@"Direct Light (Shadow)" withMean:nil] };

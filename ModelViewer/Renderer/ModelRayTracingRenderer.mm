@@ -175,7 +175,8 @@ enum kModelRayTracingTargets
         //
         [self runRayTraceCompute:_pimraryVirtualLighting withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
-                                   _shadowRaysBuffer.buffer]
+                                   _shadowRaysBuffer.buffer,
+                                   _incidentRaysBuffer.buffer]
                   withExitantRay:nil
                 withIntersection:self.intersectionBuffer];
     }
@@ -207,12 +208,13 @@ enum kModelRayTracingTargets
         }
     }
     
-    NSArray<id<MTLTexture>>* textures = self.targetTextures;
+    NuoIlluminationTarget* targets = self.rayTracingResult;
         
     NuoInspectableMaster* inspect = [NuoInspectableMaster sharedMaster];
-    [inspect updateTexture:textures[kModelRayTracingTargets_Direct] forName:kInspectable_RayTracing];
-    [inspect updateTexture:textures[kModelRayTracingTargets_DirectVirtualBlocked] forName:kInspectable_RayTracingVirtualBlocked];
-    [inspect updateTexture:textures[kModelRayTracingTargets_AmbientNormal] forName:kInspectable_Illuminate];
+    [inspect updateTexture:targets.normal forName:kInspectable_RayTracing];
+    [inspect updateTexture:targets.directVirtualBlocked forName:kInspectable_RayTracingVirtualBlocked];
+    [inspect updateTexture:targets.ambientNormal forName:kInspectable_Illuminate];
+    [inspect updateTexture:targets.ambientVirtualWithoutBlock forName:kInspectable_AmbientVirtualWithoutBlock];
 }
 
 
@@ -224,7 +226,7 @@ enum kModelRayTracingTargets
     _rayTracingResult.normal = textures[kModelRayTracingTargets_Direct];
     _rayTracingResult.ambientNormal = textures[kModelRayTracingTargets_AmbientNormal];
     _rayTracingResult.ambientVirtual = textures[kModelRayTracingTargets_AmbientVirtual];
-    // virtual NB
+    _rayTracingResult.ambientVirtualWithoutBlock = textures[kModelRayTracingTargets_AmbientVirtualNB];
     _rayTracingResult.directVirtual = textures[kModelRayTracingTargets_DirectVirtual];
     _rayTracingResult.directVirtualBlocked = textures[kModelRayTracingTargets_DirectVirtualBlocked];
     
