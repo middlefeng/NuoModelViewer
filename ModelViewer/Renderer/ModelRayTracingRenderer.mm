@@ -11,6 +11,7 @@
 #import "NuoInspectableMaster.h"
 #import "NuoLightSource.h"
 
+#import "NuoIlluminationMesh.h"
 #import "NuoCommandBuffer.h"
 #import "NuoBufferSwapChain.h"
 #import "NuoRayBuffer.h"
@@ -26,7 +27,15 @@ static const uint32_t kRandomBufferSize = 256;
 static const uint32_t kRayBounce = 4;
 
 
-
+enum kModelRayTracingTargets
+{
+    kModelRayTracingTargets_AmbientNormal = 0,
+    kModelRayTracingTargets_AmbientVirtual,
+    kModelRayTracingTargets_AmbientVirtualNB,
+    kModelRayTracingTargets_Direct,
+    kModelRayTracingTargets_DirectVirtual,
+    kModelRayTracingTargets_DirectVirtualBlocked
+};
 
 
 @implementation ModelRayTracingRenderer
@@ -41,7 +50,8 @@ static const uint32_t kRayBounce = 4;
     NuoRayBuffer* _incidentRaysBuffer;
     NuoRayBuffer* _shadowRaysBuffer;
     id<MTLBuffer> _shadowIntersectionBuffer;
-
+    
+    NuoIlluminationTarget* _rayTracingResult;
     
     PNuoRayTracingRandom _rng;
 }
@@ -80,6 +90,8 @@ static const uint32_t kRayBounce = 4;
                                                      WithBufferSize:_rng->BytesSize()
                                                         withOptions:MTLResourceStorageModeManaged
                                                       withChainSize:kInFlightBufferCount];
+        
+        _rayTracingResult = [NuoIlluminationTarget new];
     }
     
     return self;
@@ -194,10 +206,29 @@ static const uint32_t kRayBounce = 4;
                     withIntersection:self.intersectionBuffer];
         }
     }
+    
+    NSArray<id<MTLTexture>>* textures = self.targetTextures;
         
     NuoInspectableMaster* inspect = [NuoInspectableMaster sharedMaster];
-    [inspect updateTexture:self.targetTextures[3] forName:kInspectable_RayTracing];
-    [inspect updateTexture:self.targetTextures[4] forName:kInspectable_RayTracingVirtualBlocked];
+    [inspect updateTexture:textures[kModelRayTracingTargets_Direct] forName:kInspectable_RayTracing];
+    [inspect updateTexture:textures[kModelRayTracingTargets_DirectVirtualBlocked] forName:kInspectable_RayTracingVirtualBlocked];
+    [inspect updateTexture:textures[kModelRayTracingTargets_AmbientNormal] forName:kInspectable_Illuminate];
+}
+
+
+
+- (NuoIlluminationTarget*)rayTracingResult
+{
+    NSArray<id<MTLTexture>>* textures = self.targetTextures;
+    
+    _rayTracingResult.normal = textures[kModelRayTracingTargets_Direct];
+    _rayTracingResult.ambientNormal = textures[kModelRayTracingTargets_AmbientNormal];
+    _rayTracingResult.ambientVirtual = textures[kModelRayTracingTargets_AmbientVirtual];
+    // virtual NB
+    _rayTracingResult.directVirtual = textures[kModelRayTracingTargets_DirectVirtual];
+    _rayTracingResult.directVirtualBlocked = textures[kModelRayTracingTargets_DirectVirtualBlocked];
+    
+    return _rayTracingResult;
 }
 
 

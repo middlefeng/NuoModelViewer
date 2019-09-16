@@ -11,6 +11,7 @@
 
 
 @class NuoLightSource;
+@class NuoIlluminationTarget;
 
 
 
@@ -21,6 +22,8 @@
 @property (nonatomic, assign) NuoRayTracingGlobalIlluminationParam globalIllum;
 
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lightSources;
+
+@property (nonatomic, readonly) NuoIlluminationTarget* rayTracingResult;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
