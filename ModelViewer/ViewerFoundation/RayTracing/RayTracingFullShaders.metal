@@ -95,11 +95,9 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
         device NuoRayTracingMaterial* materials = structUniform.materials;
         const float maxDistance = tracingUniforms.bounds.span;
         
-        float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
-        
-        NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
-        material.diffuseColor = color;
-        material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
+        NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
+                                                                   tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
+                                                                   index, intersection, samplr);
         
         RayBuffer incidentRay;
         sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, incidentRay);

@@ -81,7 +81,6 @@ kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
     
     // ambient lighting on virtual surfaces as if no normal object present
     //
-    
     if (cameraRay.mask == kNuoRayMask_Virtual)
     {
         constant NuoRayTracingGlobalIlluminationParam& globalIllum = tracingUniforms.globalIllum;
@@ -94,11 +93,9 @@ kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
             device NuoRayTracingMaterial* materials = structUniform.materials;
             const float maxDistance = tracingUniforms.bounds.span;
             
-            float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
-            
-            NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
-            material.diffuseColor = color;
-            material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
+            NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
+                                                                       tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
+                                                                       index, intersection, samplr);
             
             RayBuffer incidentRay;
             sample_scatter_ray(maxDistance, randomVars, intersection, material, cameraRay, incidentRay);
@@ -384,9 +381,9 @@ void self_illumination(uint2 tid,
         else
         {
             device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
-            NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
-            material.diffuseColor = color;
-            material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
+            NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
+                                                                       tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
+                                                                       index, intersection, samplr);
             
             RayBuffer currentIncident;
             sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, currentIncident);

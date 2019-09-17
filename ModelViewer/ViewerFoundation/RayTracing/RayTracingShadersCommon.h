@@ -189,6 +189,22 @@ inline float3 interpolate_color(device NuoRayTracingMaterial *materials,
 }
 
 
+inline NuoRayTracingMaterial interpolate_full_material(device NuoRayTracingMaterial *materials,
+                                                       metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                                                       float specularAdjust,
+                                                       device uint* index, Intersection intersection,
+                                                       metal::sampler samplr)
+{
+    float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
+    
+    NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
+    material.diffuseColor = color;
+    material.specularColor *= specularAdjust;
+    
+    return material;
+}
+
+
 
 #pragma mark -- Scatter Sampling
 

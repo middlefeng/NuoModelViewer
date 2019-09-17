@@ -46,7 +46,7 @@ NuoGlobalBuffers NuoModelBoard::GetGlobalBuffers() const
             // diffuse factor is used in ray tracing. set to 1.0 so the result illumination is relative to the
             // lighting strength (usually ambient). see more comments in the "illumination_blend()" fragment shader
             //
-            material.diffuseColor = NuoVectorFloat3(0.9, 0.1, 0.1)._vector;
+            material.diffuseColor = NuoVectorFloat3(1, 1, 1)._vector;
             material.specularColor = NuoVectorFloat3(0, 0, 0)._vector;
             material.shinessDisolveIllum = NuoVectorFloat3(1, 0, 2)._vector;
             
