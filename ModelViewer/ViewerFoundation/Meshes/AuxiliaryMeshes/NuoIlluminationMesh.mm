@@ -61,14 +61,21 @@
 {
     [renderPass pushParameterState:@"Illumination"];
     
+    uint i = 1;
+    
     [self setModelTexture:_illuminations.normal];
-    [renderPass setFragmentTexture:_illuminations.ambientNormal atIndex:1];
-    [renderPass setFragmentTexture:_illuminations.ambientVirtual atIndex:2];
-    [renderPass setFragmentTexture:_illuminations.directVirtual atIndex:3];
-    [renderPass setFragmentTexture:_illuminations.directVirtualBlocked atIndex:4];
+    [renderPass setFragmentTexture:_illuminations.ambientNormal atIndex:i];
+    [renderPass setFragmentTexture:_illuminations.ambientVirtual atIndex:++i];
+    
+    id<MTLTexture> ambientWithoutBlock = _illuminations.ambientVirtualWithoutBlock;
+    if (ambientWithoutBlock)
+        [renderPass setFragmentTexture:ambientWithoutBlock atIndex:++i];
+    
+    [renderPass setFragmentTexture:_illuminations.directVirtual atIndex:++i];
+    [renderPass setFragmentTexture:_illuminations.directVirtualBlocked atIndex:++i];
     
     if (_translucentCoverMap)
-        [renderPass setFragmentTexture:_translucentCoverMap atIndex:5];
+        [renderPass setFragmentTexture:_translucentCoverMap atIndex:++i];
     
     [renderPass setFragmentBuffer:_paramBuffer offset:0 atIndex:0];
     [super drawMesh:renderPass];
