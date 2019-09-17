@@ -354,7 +354,9 @@ void self_illumination(uint2 tid,
             material.diffuseColor = color;
             material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
             
-            sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, incidentRay);
+            RayBuffer currentIncident;
+            sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, currentIncident);
+            incidentRay = currentIncident;
         }
         
         float ambientFactor = ambient_distance_factor(ambientRadius / 20.0, ambientRadius,

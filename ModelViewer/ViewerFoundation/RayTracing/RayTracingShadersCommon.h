@@ -329,7 +329,7 @@ void sample_scatter_ray(float maxDistance,
                         device Intersection& intersection,
                         thread NuoRayTracingMaterial& material,
                         thread const RayBuffer& ray,
-                        device RayBuffer& incidentRay);
+                        thread RayBuffer& incidentRay);
 
 
 float ambient_distance_factor(float criteriaBlock, float criteriaUnblock,

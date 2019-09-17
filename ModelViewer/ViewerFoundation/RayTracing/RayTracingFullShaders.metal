@@ -52,7 +52,6 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
                                 constant NuoRayTracingUniforms& tracingUniforms,
                                 device NuoRayTracingRandomUnit* random,
                                 device RayBuffer* shadowRayMain,
-                                device RayBuffer* incidentRays,
                                 device uint* masks,
                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                 sampler samplr [[sampler(0)]])
@@ -94,7 +93,6 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
         
         device uint* index = structUniform.index;
         device NuoRayTracingMaterial* materials = structUniform.materials;
-        device RayBuffer& incidentRay = incidentRays[rayIdx];
         const float maxDistance = tracingUniforms.bounds.span;
         
         float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
@@ -103,6 +101,7 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
         material.diffuseColor = color;
         material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
         
+        RayBuffer incidentRay;
         sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, incidentRay);
         
         float3 ambientColor = incidentRay.pathScatter * globalIllum.ambient;
@@ -305,7 +304,9 @@ void self_illumination(uint2 tid,
             material.diffuseColor = color;
             material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
             
-            sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, incidentRay);
+            RayBuffer currentIncident;
+            sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, currentIncident);
+            incidentRay = currentIncident;
         }
         
         float ambientFactor = ambient_distance_factor(ambientRadius / 20.0, ambientRadius,

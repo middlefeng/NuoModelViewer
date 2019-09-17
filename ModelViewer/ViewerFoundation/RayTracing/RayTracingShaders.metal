@@ -285,7 +285,7 @@ void sample_scatter_ray(float maxDistance,
                         device Intersection& intersection,
                         thread NuoRayTracingMaterial& material,
                         thread const RayBuffer& ray,
-                        device RayBuffer& incidentRay)
+                        thread RayBuffer& incidentRay)
 {
     device float2& r = random.uv;
     device float& Cdeterm = random.pathTermDeterminator;
