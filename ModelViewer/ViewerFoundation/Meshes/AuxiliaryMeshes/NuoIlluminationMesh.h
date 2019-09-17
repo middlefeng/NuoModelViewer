@@ -37,8 +37,6 @@
 
 @property (nonatomic, weak) id<MTLTexture> translucentCoverMap;
 
-- (void)setAmbient:(const NuoVectorFloat3&)ambient;
-
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
                  withBlendMode:(ScreenSpaceBlendMode)blendMode
                     withHybrid:(BOOL)hybrid;

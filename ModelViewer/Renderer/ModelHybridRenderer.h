@@ -11,6 +11,7 @@
 
 
 @class NuoLightSource;
+@class NuoIlluminationTarget;
 
 
 
@@ -28,6 +29,7 @@
 
 @property (nonatomic, assign) NuoBounds sceneBounds;
 @property (nonatomic, assign) NuoRayTracingGlobalIlluminationParam globalIllum;
+@property (nonatomic, readonly) NuoIlluminationTarget* rayTracingResult;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;

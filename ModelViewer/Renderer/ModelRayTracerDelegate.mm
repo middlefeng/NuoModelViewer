@@ -100,7 +100,6 @@
 - (void)setAmbient:(const NuoVectorFloat3&)ambient
 {
     _ambient = ambient;
-    [_illuminationRenderer setAmbient:ambient];
 }
 
 

@@ -22,8 +22,9 @@ using namespace metal;
 
 struct IlluminateTargets
 {
-    texture2d<float, access::read_write> overlayResult      [[id(0)]];
-    texture2d<float, access::read_write> overlayForVirtual  [[id(1)]];
+    texture2d<float, access::read_write> overlayResult                  [[id(0)]];
+    texture2d<float, access::read_write> overlayForVirtual              [[id(1)]];
+    texture2d<float, access::read_write> overlayForVirtualWithoutBlock  [[id(2)]];
 };
 
 
@@ -57,10 +58,10 @@ kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & intersection = structUniform.intersections[rayIdx];
-    device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
     
     unsigned int triangleIndex = intersection.primitiveIndex;
-    cameraRay.primaryHitMask = masks[triangleIndex];
+    structUniform.exitantRays[rayIdx].primaryHitMask = masks[triangleIndex];
+    RayBuffer cameraRay = structUniform.exitantRays[rayIdx];
     
     device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
     device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16)].uv;
@@ -76,6 +77,39 @@ kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
         shadow_ray_emit_infinite_area(rayIdx, structUniform, tracingUniforms,
                                       lightSource, r, shadowRay, diffuseTex, samplr);
         shadowRay->pathScatter *= lightSource.density;
+    }
+    
+    // ambient lighting on virtual surfaces as if no normal object present
+    //
+    
+    if (cameraRay.mask == kNuoRayMask_Virtual)
+    {
+        constant NuoRayTracingGlobalIlluminationParam& globalIllum = tracingUniforms.globalIllum;
+        
+        if (intersection.distance >= 0.0f)
+        {
+            device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * cameraRay.bounce];
+            
+            device uint* index = structUniform.index;
+            device NuoRayTracingMaterial* materials = structUniform.materials;
+            const float maxDistance = tracingUniforms.bounds.span;
+            
+            float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
+            
+            NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
+            material.diffuseColor = color;
+            material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
+            
+            RayBuffer incidentRay;
+            sample_scatter_ray(maxDistance, randomVars, intersection, material, cameraRay, incidentRay);
+            
+            float3 ambientColor = incidentRay.pathScatter * globalIllum.ambient;
+            targets.overlayForVirtualWithoutBlock.write(float4(ambientColor, 1.0), tid);
+        }
+        else
+        {
+            targets.overlayForVirtualWithoutBlock.write(float4(globalIllum.ambient, 1.0), tid);
+        }
     }
 }
 

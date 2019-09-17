@@ -42,13 +42,6 @@
 }
 
 
-- (void)setAmbient:(const NuoVectorFloat3&)ambient
-{
-    [_mesh setAmbient:ambient];
-}
-
-
-
 - (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];

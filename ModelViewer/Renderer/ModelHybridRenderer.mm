@@ -14,6 +14,7 @@
 #import "NuoBufferSwapChain.h"
 #import "NuoRayBuffer.h"
 #import "NuoRayAccelerateStructure.h"
+#import "NuoIlluminationMesh.h"
 
 #include "NuoRayTracingRandom.h"
 #include "NuoComputeEncoder.h"
@@ -207,6 +208,7 @@ static const uint32_t kRayBounce = 4;
     ModelRayTracingShadowPerLight* _shadowPerLight[2];
     
     NuoRayBuffer* _incidentRaysBuffer;
+    NuoIlluminationTarget* _rayTracingResult;
     
     PNuoRayTracingRandom _rng;
 }
@@ -216,7 +218,7 @@ static const uint32_t kRayBounce = 4;
 {
     self = [super initWithCommandQueue:commandQueue
                        withPixelFormat:MTLPixelFormatRGBA32Float
-                       withTargetCount:2 /* for normal and virtual surfaces */ ];
+                       withTargetCount:3 /* for 1 normal and 2 virtual surfaces */ ];
     
     if (self)
     {
@@ -242,11 +244,25 @@ static const uint32_t kRayBounce = 4;
                                                         withOptions:MTLResourceStorageModeManaged
                                                       withChainSize:kInFlightBufferCount];
         
+        _rayTracingResult = [NuoIlluminationTarget new];
+        
         for (uint i = 0; i < 2; ++i)
             _shadowPerLight[i] = [[ModelRayTracingShadowPerLight alloc] initWithCommandQueue:commandQueue];
     }
     
     return self;
+}
+
+
+- (NuoIlluminationTarget*)rayTracingResult
+{
+    NSArray<id<MTLTexture>>* textures = self.targetTextures;
+    
+    _rayTracingResult.ambientNormal = textures[0];
+    _rayTracingResult.ambientVirtual = textures[1];
+    _rayTracingResult.ambientVirtualWithoutBlock = textures[2];
+    
+    return _rayTracingResult;
 }
 
 

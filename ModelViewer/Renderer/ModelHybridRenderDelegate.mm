@@ -26,7 +26,6 @@
     NuoRenderPassTarget* _immediateTarget;
     NuoDeferredRenderer* _deferredRenderer;
     ModelHybridBlendRenderer* _illuminationRenderer;
-    NuoIlluminationTarget* _illuminations;
     
     ModelHybridRenderer* _rayTracingRenderer;
     
@@ -69,7 +68,6 @@
         _illuminationRenderer = [[ModelHybridBlendRenderer alloc] initWithCommandQueue:commandQueue
                                                                        withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                        withSampleCount:1];
-        _illuminations = [NuoIlluminationTarget new];
         
         _rayTracingRenderer = [[ModelHybridRenderer alloc] initWithCommandQueue:commandQueue];
         _rayTracingRenderer.rayStructure = accelerateSturcture;
@@ -137,7 +135,6 @@
 - (void)setAmbient:(const NuoVectorFloat3&)ambient
 {
     _ambient = ambient;
-    [_illuminationRenderer setAmbient:ambient];
 }
 
 
@@ -262,16 +259,14 @@
     
     if (_rayTracingRecordStatus != kRecord_Stop)
     {
-        NSArray* textures = _rayTracingRenderer.targetTextures;
+        NuoIlluminationTarget* illuminations = _rayTracingRenderer.rayTracingResult;
+        illuminations.normal = _immediateTarget.targetTexture;
         
-        [inspectMaster updateTexture:textures[0] forName:kInspectable_Illuminate];
-        
-        _illuminations.normal = _immediateTarget.targetTexture;
-        _illuminations.ambientNormal = textures[0];
-        _illuminations.ambientVirtual = textures[1];
+        [inspectMaster updateTexture:illuminations.ambientNormal forName:kInspectable_Illuminate];
+        [inspectMaster updateTexture:illuminations.ambientVirtualWithoutBlock forName:kInspectable_AmbientVirtualWithoutBlock];
         
         [_illuminationRenderer setRenderTarget:_delegateTarget];
-        [_illuminationRenderer setIlluminations:_illuminations];
+        [_illuminationRenderer setIlluminations:illuminations];
         [_illuminationRenderer setTranslucentMap:[_deferredRenderer ambientBuffer]];
         
         [_illuminationRenderer drawWithCommandBuffer:commandBuffer];

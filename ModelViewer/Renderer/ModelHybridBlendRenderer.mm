@@ -69,13 +69,6 @@
 }
 
 
-- (void)setAmbient:(const NuoVectorFloat3&)ambient
-{
-    [_mesh setAmbient:ambient];
-}
-
-
-
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [_lightingWithoutBlock setDrawableSize:drawableSize];

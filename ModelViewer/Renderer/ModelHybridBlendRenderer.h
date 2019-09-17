@@ -29,8 +29,6 @@
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                      withSampleCount:(uint)sampleCount;
 
-- (void)setAmbient:(const NuoVectorFloat3&)ambient;
-
 
 @end
 
