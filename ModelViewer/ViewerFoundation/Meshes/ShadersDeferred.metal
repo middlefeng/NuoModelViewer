@@ -112,13 +112,13 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
  */
 
 fragment float4 illumination_blend_hybrid(PositionTextureSimple vert [[stage_in]],
-                                          constant float3& ambient [[buffer(0)]],
                                           texture2d<float> source [[texture(0)]],
                                           texture2d<float> illumination [[texture(1)]],
                                           texture2d<float> illuminationOnVirtual [[texture(2)]],
-                                          texture2d<float> directLighting [[texture(3)]],
-                                          texture2d<float> directBlock [[texture(4)]],
-                                          texture2d<float> translucentCoverMap [[texture(5)]],
+                                          texture2d<float> illuminationOnVirtualWithoutBlock,
+                                          texture2d<float> directLighting,
+                                          texture2d<float> directBlock,
+                                          texture2d<float> translucentCoverMap,
                                           sampler samplr [[sampler(0)]])
 {
     const float4 sourceColor = source.sample(samplr, vert.texCoord);
@@ -168,7 +168,7 @@ fragment float4 illumination_blend_hybrid(PositionTextureSimple vert [[stage_in]
 
     const float3 direct = directLighting.sample(samplr, vert.texCoord).rgb;
     const float3 directBlocked = directBlock.sample(samplr, vert.texCoord).rgb;
-    const float3 ambientWithoutBlock = ambient;
+    const float3 ambientWithoutBlock = illuminationOnVirtualWithoutBlock.sample(samplr, vert.texCoord).rgb;
     
     // numerator should be masked by normal object, denominator shoud not
     //
@@ -204,12 +204,12 @@ fragment float4 illumination_blend_hybrid(PositionTextureSimple vert [[stage_in]
 
 
 fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
-                                   constant float3& ambient [[buffer(0)]],
                                    texture2d<float> source [[texture(0)]],
                                    texture2d<float> illumination [[texture(1)]],
                                    texture2d<float> illuminationOnVirtual [[texture(2)]],
-                                   texture2d<float> directLighting [[texture(3)]],
-                                   texture2d<float> directBlock [[texture(4)]],
+                                   texture2d<float> illuminationOnVirtualWithoutBlock,
+                                   texture2d<float> directLighting,
+                                   texture2d<float> directBlock,
                                    sampler samplr [[sampler(0)]])
 {
     const float4 sourceColor = source.sample(samplr, vert.texCoord);
@@ -220,7 +220,7 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     
     const float3 direct = directLighting.sample(samplr, vert.texCoord).rgb;
     const float3 directBlocked = directBlock.sample(samplr, vert.texCoord).rgb;
-    const float3 ambientWithoutBlock = ambient;
+    const float3 ambientWithoutBlock = illuminationOnVirtualWithoutBlock.sample(samplr, vert.texCoord).rgb;
     
     // numerator should be masked by normal object, denominator shoud not
     //

@@ -139,7 +139,12 @@ void shadow_ray_emit_infinite_area(uint rayIdx,
         //
         shadowRay->mask = kNuoRayMask_Opaue;
         
-        NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
+        NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
+                                                                   // try to normalize to uphold Cdiff + Cspec < 1.0
+                                                                   // this is best effort and user trial-and-error as OBJ is not always PBR
+                                                                   //
+                                                                   tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
+                                                                   index, intersection, samplr);
         
         float3 normal = material.normal;
         float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
@@ -154,13 +159,8 @@ void shadow_ray_emit_infinite_area(uint rayIdx,
         float3 eyeDirection = -ray.direction;
         float3 halfway = normalize(shadowVec + eyeDirection);
         
-        // try to normalize to uphold Cdiff + Cspec < 1.0
-        // this is best effort and user trial-and-error as OBJ is not always PBR
-        //
-        float3 specularColor = material.specularColor * (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
-        
-        float3 diffuseTerm = interpolate_color(materials, diffuseTex, index, intersection, samplr);
-        float3 specularTerm = specular_common_physically(specularColor, specularPower,
+        float3 diffuseTerm = material.diffuseColor;
+        float3 specularTerm = specular_common_physically(material.specularColor, specularPower,
                                                          shadowVec, normal, halfway);
         
         // the cosine factor is counted into the path scatter term, as the geometric coupling term,
@@ -285,7 +285,7 @@ void sample_scatter_ray(float maxDistance,
                         device Intersection& intersection,
                         thread NuoRayTracingMaterial& material,
                         thread const RayBuffer& ray,
-                        device RayBuffer& incidentRay)
+                        thread RayBuffer& incidentRay)
 {
     device float2& r = random.uv;
     device float& Cdeterm = random.pathTermDeterminator;

@@ -22,7 +22,6 @@
 @implementation ModelRayTracerDelegate
 {
     ModelRayTracingBlendRenderer* _illuminationRenderer;
-    
     ModelRayTracingRenderer* _rayTracingRenderer;
     
     NuoVectorFloat3 _ambient;
@@ -101,7 +100,6 @@
 - (void)setAmbient:(const NuoVectorFloat3&)ambient
 {
     _ambient = ambient;
-    [_illuminationRenderer setAmbient:ambient];
 }
 
 
@@ -158,21 +156,10 @@
 
 - (void)drawWithCommandBuffer:(NuoCommandBuffer *)commandBuffer
 {
-    NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
-    
     assert(_rayTracingRecordStatus != kRecord_Stop);
     
-    NSArray* textures = _rayTracingRenderer.targetTextures;
-        
-    [inspectMaster updateTexture:textures[0] forName:kInspectable_Illuminate];
-    
     [_illuminationRenderer setRenderTarget:_delegateTarget];
-    [_illuminationRenderer setImmediateResult:_rayTracingRenderer.targetTextures[2]];
-    [_illuminationRenderer setIllumination:textures[0]];
-    [_illuminationRenderer setIlluminationOnVirtual:textures[1]];
-    [_illuminationRenderer setDirectLightVirtual:textures[3]];
-    [_illuminationRenderer setDirectLightVirtualBlocked:textures[4]];
-    
+    [_illuminationRenderer setIlluminations:_rayTracingRenderer.rayTracingResult];
     [_illuminationRenderer drawWithCommandBuffer:commandBuffer];
 }
 

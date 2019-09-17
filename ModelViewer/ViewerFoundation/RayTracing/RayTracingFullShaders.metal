@@ -22,11 +22,12 @@ using namespace metal;
 
 struct RayTracingTargets
 {
-    texture2d<float, access::read_write> overlayResult              [[id(0)]];
-    texture2d<float, access::read_write> overlayForVirtual          [[id(1)]];
-    texture2d<float, access::read_write> lightingTracing            [[id(2)]];
-    texture2d<float, access::read_write> lightingVirtual            [[id(3)]];
-    texture2d<float, access::read_write> lightingVirtualWithBlock   [[id(4)]];
+    texture2d<float, access::read_write> overlayResult                  [[id(0)]];
+    texture2d<float, access::read_write> overlayForVirtual              [[id(1)]];
+    texture2d<float, access::read_write> overlayForVirtualWithoutBlock  [[id(2)]];
+    texture2d<float, access::read_write> lightingTracing                [[id(3)]];
+    texture2d<float, access::read_write> lightingVirtual                ;
+    texture2d<float, access::read_write> lightingVirtualWithBlock       ;
 };
 
 
@@ -37,8 +38,7 @@ static void self_illumination(uint2 tid,
                               device RayBuffer* shadowRay,
                               device RayBuffer* incidentRays,
                               device NuoRayTracingRandomUnit* random,
-                              texture2d<float, access::read_write> overlayResult,
-                              texture2d<float, access::read_write> overlayForVirtual,
+                              device RayTracingTargets& targets,
                               array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                               sampler samplr);
 
@@ -64,15 +64,13 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & intersection = structUniform.intersections[rayIdx];
     device RayBuffer* shadowRay = shadowRayMain + rayIdx;
-    device RayBuffer& ray = structUniform.exitantRays[rayIdx];
+    const RayBuffer ray = structUniform.exitantRays[rayIdx];
+    
+    constant NuoRayTracingGlobalIlluminationParam& globalIllum = tracingUniforms.globalIllum;
     
     if (intersection.distance >= 0.0f)
     {
-        // the outgoing ray (that is the input ray buffer) would be stored in the same buffer as the
-        // incident ray (that is the output ray buffer) may be the same. so it's necessary to store the
-        // color before calcuating the bounce
-        //
-        float3 originalRayColor = ray.pathScatter;
+        // direct lighting on virtual surfaces as if no normal object present
         
         device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
             
@@ -86,14 +84,31 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
                                       lightSource, randomVars.uvLightSource, shadowRay,
                                       diffuseTex, samplr);
         
-        shadowRay->pathScatter *= originalRayColor;
+        shadowRay->pathScatter *= ray.pathScatter;
         shadowRay->pathScatter *= totalDensity;
         
         targets.lightingVirtual.write(float4(shadowRay->pathScatter, 1.0), tid);
+        
+        // ambient lighting on virtual surfaces as if no normal object present
+        
+        device uint* index = structUniform.index;
+        device NuoRayTracingMaterial* materials = structUniform.materials;
+        const float maxDistance = tracingUniforms.bounds.span;
+        
+        NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
+                                                                   tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
+                                                                   index, intersection, samplr);
+        
+        RayBuffer incidentRay;
+        sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, incidentRay);
+        
+        float3 ambientColor = incidentRay.pathScatter * globalIllum.ambient;
+        targets.overlayForVirtualWithoutBlock.write(float4(ambientColor, 1.0), tid);
     }
     else if (ray.maxDistance > 0)
     {
-        targets.lightingVirtual.write(float4(float3(1.0), 1.0), tid);
+        targets.lightingVirtual.write(float4(1.0), tid);
+        targets.overlayForVirtualWithoutBlock.write(float4(globalIllum.ambient, 1.0), tid);
     }
 }
 
@@ -124,7 +139,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     
     self_illumination(tid, structUniform, tracingUniforms,
                       shadowRayMain, incidentRaysBuffer,
-                      random, targets.overlayResult, targets.overlayForVirtual, diffuseTex, samplr);
+                      random, targets, diffuseTex, samplr);
 }
 
 
@@ -169,7 +184,7 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     self_illumination(tid, structUniform, tracingUniforms,
                       shadowRayMain, structUniform.exitantRays /* incident rays are the
                                                                   exitant rays of the next path */,
-                      random, targets.overlayResult, targets.overlayForVirtual, diffuseTex, samplr);
+                      random, targets, diffuseTex, samplr);
 }
 
 
@@ -179,11 +194,10 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
  *  write the result of illuminating surface and ambient
  */
 static void overlayWrite(uint hitType, float4 value, uint2 tid,
-                         texture2d<float, access::read_write> overlayResult,
-                         texture2d<float, access::read_write> overlayForVirtual)
+                         device RayTracingTargets& targets)
 {
     texture2d<float, access::read_write> texture = (hitType & kNuoRayMask_Virtual)?
-                                                    overlayForVirtual : overlayResult;
+                                                    targets.overlayForVirtual : targets.overlayResult;
     
     const float4 color = texture.read(tid);
     const float4 result = float4(color.rgb + value.rgb, saturate(color.a + value.a));
@@ -206,8 +220,7 @@ void self_illumination(uint2 tid,
                        device RayBuffer* shadowRays,
                        device RayBuffer* incidentRays,
                        device NuoRayTracingRandomUnit* random,
-                       texture2d<float, access::read_write> overlayResult,
-                       texture2d<float, access::read_write> overlayForVirtual,
+                       device RayTracingTargets& targets,
                        array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                        sampler samplr)
 {
@@ -266,8 +279,7 @@ void self_illumination(uint2 tid,
             if (ray.bounce == 0)
                 color = saturate(color);
             
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid,
-                         overlayResult, overlayForVirtual);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
         }
         else
         {
@@ -290,7 +302,9 @@ void self_illumination(uint2 tid,
             material.diffuseColor = color;
             material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
             
-            sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, incidentRay);
+            RayBuffer currentIncident;
+            sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, currentIncident);
+            incidentRay = currentIncident;
         }
         
         float ambientFactor = ambient_distance_factor(ambientRadius / 20.0, ambientRadius,
@@ -298,7 +312,7 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientIlluminated && ambientFactor > 0)
         {
             color = ray.pathScatter * globalIllum.ambient * ambientFactor;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, overlayResult, overlayForVirtual);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
             incidentRay.ambientIlluminated = true;
         }
     }
@@ -307,12 +321,12 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientIlluminated)
         {
             float3 color = ray.pathScatter * globalIllum.ambient;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, overlayResult, overlayForVirtual);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
             incidentRay.ambientIlluminated = true;
         }
         else if (ray.bounce == 0)
         {
-            overlayForVirtual.write(float4(globalIllum.ambient, 1.0), tid);
+            targets.overlayForVirtual.write(float4(globalIllum.ambient, 1.0), tid);
             incidentRay.ambientIlluminated = true;
         }
     }

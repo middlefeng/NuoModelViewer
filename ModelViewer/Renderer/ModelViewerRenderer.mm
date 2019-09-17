@@ -106,9 +106,6 @@
         _viewTranslation = NuoMatrixFloat44Identity;
         
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
-        
-        //[self switchToHybrid];
-        //[self switchToRayTracing];
     }
 
     return self;

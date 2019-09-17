@@ -135,7 +135,6 @@
 - (void)setAmbient:(const NuoVectorFloat3&)ambient
 {
     _ambient = ambient;
-    [_illuminationRenderer setAmbient:ambient];
 }
 
 
@@ -260,14 +259,14 @@
     
     if (_rayTracingRecordStatus != kRecord_Stop)
     {
-        NSArray* textures = _rayTracingRenderer.targetTextures;
+        NuoIlluminationTarget* illuminations = _rayTracingRenderer.rayTracingResult;
+        illuminations.normal = _immediateTarget.targetTexture;
         
-        [inspectMaster updateTexture:textures[0] forName:kInspectable_Illuminate];
+        [inspectMaster updateTexture:illuminations.ambientNormal forName:kInspectable_Illuminate];
+        [inspectMaster updateTexture:illuminations.ambientVirtualWithoutBlock forName:kInspectable_AmbientVirtualWithoutBlock];
         
         [_illuminationRenderer setRenderTarget:_delegateTarget];
-        [_illuminationRenderer setImmediateResult:_immediateTarget.targetTexture];
-        [_illuminationRenderer setIllumination:textures[0]];
-        [_illuminationRenderer setIlluminationOnVirtual:textures[1]];
+        [_illuminationRenderer setIlluminations:illuminations];
         [_illuminationRenderer setTranslucentMap:[_deferredRenderer ambientBuffer]];
         
         [_illuminationRenderer drawWithCommandBuffer:commandBuffer];

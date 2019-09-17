@@ -42,21 +42,10 @@
 }
 
 
-- (void)setAmbient:(const NuoVectorFloat3&)ambient
-{
-    [_mesh setAmbient:ambient];
-}
-
-
-
 - (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
     NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
-    [_mesh setModelTexture:_immediateResult];
-    [_mesh setIllumination:_illumination];
-    [_mesh setIlluminationOnVirtual:_illuminationOnVirtual];
-    [_mesh setDirectLighting:_directLightVirtual];
-    [_mesh setDirectLightingWithShadow:_directLightVirtualBlocked];
+    [_mesh setIlluminations:_illuminations];
     [_mesh setTranslucentCoverMap:_translucentMap];
     [_mesh drawMesh:renderPass];
     [self releaseDefaultEncoder];
