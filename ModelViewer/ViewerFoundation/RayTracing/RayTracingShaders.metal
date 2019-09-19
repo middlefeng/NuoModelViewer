@@ -159,6 +159,10 @@ void shadow_ray_emit_infinite_area(uint rayIdx,
         float3 eyeDirection = -ray.direction;
         float3 halfway = normalize(shadowVec + eyeDirection);
         
+        // for now, the diffuse term is not reduced by the translucent factor as it is in the
+        // scattering-path-construction. this results in closer result to the rasterization/hybrid,
+        // whose reason is yet to be analyzed
+        //
         float3 diffuseTerm = material.diffuseColor;
         float3 specularTerm = specular_common_physically(material.specularColor, specularPower,
                                                          shadowVec, normal, halfway);
@@ -220,9 +224,21 @@ PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 r
     float CdiffSampleProbable = max(Cdiff.x, max(Cdiff.y, Cdiff.z));
     float CspecSampleProbable = min(Cspec.x, min(Cspec.y, Cspec.z));
     
-    float probableTotal = CdiffSampleProbable + CspecSampleProbable;
+    float transmissionPercent = 1.0 - interaction.material.shinessDisolveIllum.y;
+    float Tr = transmissionPercent > 1e-6 ? transmissionPercent : 0.0;
+    float probableTotal = CdiffSampleProbable * (1.0 - Tr) + CspecSampleProbable + Tr;
     
-    if (Cdeterminator < CdiffSampleProbable / probableTotal)
+    result.transmission = false;
+    
+    // transmission (first branch) and two types of reflections
+    
+    if (Cdeterminator < Tr / probableTotal)
+    {
+        result.direction = -ray;
+        result.pathScatterTerm = probableTotal;
+        result.transmission = true;
+    }
+    else if (Cdeterminator < (Tr + CdiffSampleProbable * (1.0 - Tr)) / probableTotal)
     {
         float3 wi = sample_cosine_weighted_hemisphere(sampleUV, 1);
         result.direction = align_hemisphere_normal(wi, normal);
@@ -309,11 +325,15 @@ void sample_scatter_ray(float maxDistance,
     else
     {
         incidentRay.direction = sample.direction;
-        incidentRay.origin = intersectionPoint + normalize(material.normal) * (maxDistance / 20000.0);
         incidentRay.maxDistance = maxDistance;
         incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
         incidentRay.primaryHitMask = ray.primaryHitMask;
-        incidentRay.ambientIlluminated = ray.ambientIlluminated;
+        
+        // different calculation for origin and ambient between transmission and reflection.
+        //
+        float3 normal =  sample.transmission ? -normalize(material.normal) : normalize(material.normal);
+        incidentRay.origin = intersectionPoint + normal * (maxDistance / 20000.0);
+        incidentRay.ambientIlluminated = ray.ambientIlluminated || sample.transmission;
         
         // make the term of this reflection contribute to the path scatter
         //

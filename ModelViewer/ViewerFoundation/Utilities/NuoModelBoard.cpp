@@ -48,7 +48,7 @@ NuoGlobalBuffers NuoModelBoard::GetGlobalBuffers() const
             //
             material.diffuseColor = NuoVectorFloat3(1, 1, 1)._vector;
             material.specularColor = NuoVectorFloat3(0, 0, 0)._vector;
-            material.shinessDisolveIllum = NuoVectorFloat3(1, 0, 2)._vector;
+            material.shinessDisolveIllum = NuoVectorFloat3(1, 1, 2)._vector;
             
             result._materials.push_back(material);
         }

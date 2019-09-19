@@ -89,6 +89,7 @@ struct PathSample
     float3 pathScatterTerm;
     
     bool specularReflection;
+    bool transmission;
 };
 
 
@@ -139,12 +140,17 @@ inline NuoRayTracingMaterial interpolate_material(device NuoRayTracingMaterial *
     float sp1 = material1.shinessDisolveIllum.x;
     float sp2 = material2.shinessDisolveIllum.x;
     
+    float sd0 = material0.shinessDisolveIllum.y;
+    float sd1 = material1.shinessDisolveIllum.y;
+    float sd2 = material2.shinessDisolveIllum.y;
+    
     NuoRayTracingMaterial result;
     
     // compute sum of vertex attributes weighted by barycentric coordinates
     result.normal = metal::normalize(uvw.x * n0 + uvw.y * n1 + uvw.z * n2);
     result.specularColor = uvw.x * s0 + uvw.y * s1 + uvw.z * s2;
     result.shinessDisolveIllum.x = uvw.x * sp0 + uvw.y * sp1 + uvw.z * sp2;
+    result.shinessDisolveIllum.y = uvw.x * sd0 + uvw.y * sd1 + uvw.z * sd2;
     
     return result;
 }
@@ -265,6 +271,8 @@ inline float3 sample_cone_uniform(float2 u, float cosThetaMax)
 
 PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 ray,
                           float2 sampleUV, float Cdeterminator  /* randoms */ );
+
+PathSample sample_transmit(const thread SurfaceInteraction& interaction, float3 ray);
 
 
 
