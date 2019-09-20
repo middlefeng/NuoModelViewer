@@ -104,6 +104,7 @@
 
 - (void)makePipelineState;
 - (void)makeDepthStencilState;
+- (void)applyTransmissionBlending:(MTLRenderPipelineColorAttachmentDescriptor*)colorAttachment;
 
 - (void)makeGPUStates;
 

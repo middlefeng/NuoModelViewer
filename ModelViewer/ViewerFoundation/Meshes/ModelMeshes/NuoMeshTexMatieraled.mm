@@ -146,12 +146,8 @@
     
     // blending is ON, except for the selection indicator mode
     //
-    colorAttachment.blendingEnabled = (self.meshMode != kMeshMode_Selection);
-    colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
-    colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
-    colorAttachment.sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
-    colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
-    colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+    if (self.meshMode != kMeshMode_Selection)
+        [self applyTransmissionBlending:colorAttachment];
     
     unsigned int offset = 0;
     unsigned int attrIndex = 0;
@@ -345,11 +341,8 @@
     
     // blending is ON, except for the selection indicator mode
     //
-    colorAttachment.blendingEnabled = (self.meshMode != kMeshMode_Selection);
-    colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
-    colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
-    colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
-    colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+    if (self.meshMode != kMeshMode_Selection)
+        [self applyTransmissionBlending:colorAttachment];
     
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];
     vertexDescriptor.attributes[0].format = MTLVertexFormatFloat4;

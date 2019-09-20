@@ -79,13 +79,14 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
 {
     float3 normal = normalize(vert.normal);
     float3 colorForLights = 0.0;
+    float opacity = modelCharacterUniforms.opacity;
     
     for (unsigned i = 0; i < 4; ++i)
     {
         const NuoLightParameterUniformField lightParams = lightUniform.lightParams[i];
         
         float cosTheta = saturate(dot(normal, normalize(lightParams.direction.xyz)));
-        float3 diffuseTerm = material.diffuseColor * cosTheta * lightParams.density;
+        float3 diffuseTerm = material.diffuseColor * opacity * cosTheta * lightParams.density;
         
         float3 specularTerm(0);
         if (cosTheta > 0)
@@ -100,7 +101,7 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
         colorForLights += diffuseTerm + specularTerm;
     }
     
-    return float4(colorForLights, modelCharacterUniforms.opacity);
+    return float4(colorForLights, opacity);
 }
 
 
@@ -262,9 +263,13 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
                                             texture_array<2>::t shadowMapsExt,
                                             sampler samplr)
 {
-    float3 colorForLights = 0.0;
+    // for transparent objects, the blending formula is
+    //   Cfront + Cback * (1 - opacity), where Cfront = Cdiff * opacity + Cspec
+    //
+    // note that whether or not to multiple a reflectance by the opacity is arbitrary, yet most existing
+    // model files define in such a way that the Cdiff should be down-scaled, but the Cspec should not
     
-    float3 transparency = (1 - vert.opacity);
+    float3 colorForLights = 0.0;
     
     for (unsigned i = 0; i < 4; ++i)
     {
@@ -272,7 +277,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         
         float3 lightVector = normalize(lightParams.direction.xyz);
         float cosTheta = saturate(dot(vert.normal, lightVector));
-        float3 diffuseTerm = vert.diffuseColor * cosTheta * lightParams.density;
+        float3 diffuseTerm = vert.diffuseColor * vert.opacity * cosTheta * lightParams.density;
         
         float3 shadowPercent = float3(0.0);
         if (i < 2)
@@ -297,13 +302,12 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             
             specularTerm = specular_common(vert.specularColor, vert.specularPower,
                                            lightParams, vert.normal, halfway, cosTheta);
-            transparency *= 1 - saturate(specularTerm * (1 - shadowPercent));
         }
         
         colorForLights += (diffuseTerm + specularTerm) * (1 - shadowPercent);
     }
     
-    return float4(colorForLights, color_to_grayscale(1.0 - transparency));
+    return float4(colorForLights, vert.opacity);
 }
 
 
