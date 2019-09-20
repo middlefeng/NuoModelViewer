@@ -80,12 +80,7 @@
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
-    colorAttachment.blendingEnabled = YES;
-    colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
-    colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
-    colorAttachment.sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
-    colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
-    colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+    [self applyTransmissionBlending:colorAttachment];
     
     return pipelineDescriptor;
 }

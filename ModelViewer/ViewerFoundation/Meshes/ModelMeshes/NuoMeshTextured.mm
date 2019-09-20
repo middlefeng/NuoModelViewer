@@ -140,14 +140,7 @@ static CIContext* sCIContext = nil;
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
     if ([self hasTransparency])
-    {
-        colorAttachment.blendingEnabled = YES;
-        colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
-        colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
-        colorAttachment.sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
-        colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
-        colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
-    }
+        [self applyTransmissionBlending:colorAttachment];
     
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor new];
     vertexDescriptor.attributes[0].format = MTLVertexFormatFloat4;

@@ -413,14 +413,30 @@
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
+    [self applyTransmissionBlending:colorAttachment];
+    
+    return pipelineDescriptor;
+}
+
+- (void)applyTransmissionBlending:(MTLRenderPipelineColorAttachmentDescriptor*)colorAttachment
+{
     colorAttachment.blendingEnabled = YES;
     colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
     colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
-    colorAttachment.sourceRGBBlendFactor = MTLBlendFactorSourceAlpha;
+    
+    // the source blend factor is set to 1.0 because the engergy of front-surface reflection and
+    // back-surface going-through should be simply added
+    //
+    // note that when non-1.0 constant is used (like source-alpha which was mistakenly used), compensations
+    // like up-scaling the reflectance factor in shader won't always work, because some target is normalized
+    // to [0, 1.0] in prior of the blending.
+    //
+    colorAttachment.sourceRGBBlendFactor = MTLBlendFactorOne;
+    
+    // the going-through ratio of the front-surface is considered as its opacity
+    //
     colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
     colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
-    
-    return pipelineDescriptor;
 }
 
 - (void)makePipelineState
