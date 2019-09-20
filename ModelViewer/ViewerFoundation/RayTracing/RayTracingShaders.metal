@@ -167,6 +167,12 @@ void shadow_ray_emit_infinite_area(uint rayIdx,
         float3 specularTerm = specular_common_physically(material.specularColor, specularPower,
                                                          shadowVec, normal, halfway);
         
+        // whether or not to adjust the reflection factor is arbitrary depending on how material
+        // is defined. most OBJ models define it in a way that Cdiff need to be down-scaled. the scatter
+        // sampling function does the same thing (see sample_scatter())
+        //
+        diffuseTerm *= material.shinessDisolveIllum.y;
+        
         // the cosine factor is counted into the path scatter term, as the geometric coupling term,
         // because samples are generated from an inifinit distant area light (uniform on a finit
         // contending solid angle)
@@ -231,6 +237,9 @@ PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 r
     result.transmission = false;
     
     // transmission (first branch) and two types of reflections
+    //
+    // to retain the parity with shadow_ray_emit_infinite_area, Cdiff is down-scaled
+    // by the opacity
     
     if (Cdeterminator < Tr / probableTotal)
     {
