@@ -12,12 +12,13 @@
 
 
 
-const uint kRayBufferStride = 56;  //  base fields           - 32
+const uint kRayBufferStride = 60;  //  base fields           - 32
                                    //  path scatter          - 12
+                                   //  opacity               - 4
                                    //  bounce                - 4
                                    //  primary hit mask      - 4
                                    //  ambient illuminateed  - 4
-                                   //  specular reflection   - 0 (packed into the above 4)
+                                   //  specular reflection   - 0 (packed into above)
 
 
 

@@ -62,6 +62,7 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     ray.mask = kNuoRayMask_Opaue;
     
     ray.bounce = 0;
+    ray.opacity = -1.0;
     ray.primaryHitMask = 0;
     ray.ambientIlluminated = false;
     ray.specularReflection = false;
@@ -171,7 +172,10 @@ void shadow_ray_emit_infinite_area(uint rayIdx,
         // is defined. most OBJ models define it in a way that Cdiff need to be down-scaled. the scatter
         // sampling function does the same thing (see sample_scatter())
         //
-        diffuseTerm *= material.shinessDisolveIllum.y;
+        float surfaceOpacity = material.shinessDisolveIllum.y;
+        surfaceOpacity = (1.0 - surfaceOpacity) < 1e-6 ? 1.0 : surfaceOpacity;
+        diffuseTerm *= surfaceOpacity;
+        shadowRay->opacity = ray.opacity < 0.0 ? surfaceOpacity : ray.opacity;
         
         // the cosine factor is counted into the path scatter term, as the geometric coupling term,
         // because samples are generated from an inifinit distant area light (uniform on a finit
@@ -343,6 +347,22 @@ void sample_scatter_ray(float maxDistance,
         float3 normal =  sample.transmission ? -normalize(material.normal) : normalize(material.normal);
         incidentRay.origin = intersectionPoint + normal * (maxDistance / 20000.0);
         incidentRay.ambientIlluminated = ray.ambientIlluminated || sample.transmission;
+        
+        float opacity = material.shinessDisolveIllum.y;
+        opacity = (1.0 - opacity) < 1e-6 ? 1.0 : opacity;
+        
+        if (sample.transmission)
+        {
+            incidentRay.opacity = 1.0 / (1.0 - opacity);
+        }
+        else if (ray.opacity < 0.0)
+        {
+            incidentRay.opacity = opacity;
+        }
+        else
+        {
+            incidentRay.opacity = ray.opacity;
+        }
         
         // make the term of this reflection contribute to the path scatter
         //
