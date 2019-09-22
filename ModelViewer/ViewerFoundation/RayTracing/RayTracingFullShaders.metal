@@ -292,6 +292,19 @@ void self_illumination(uint2 tid,
             shadowRay.pathScatter *= ray.pathScatter;
             shadowRay.pathScatter *= totalDensity;
             
+            // if the ray has transmitted through translucent objects and land on a virtual surface,
+            // treat it as the first-bounce shadow ray so it could be rendered onto the virtual target
+            //
+            if (ray.opacity > 1.0)
+            {
+                uint surfaceMask = surface_mask(rayIdx, structUniform);
+                if (surfaceMask & kNuoRayMask_Virtual)
+                {
+                    shadowRay.primaryHitMask = kNuoRayMask_Virtual;
+                    shadowRay.bounce = 1;
+                }
+            }
+            
             NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
             material.diffuseColor = color;
             material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
