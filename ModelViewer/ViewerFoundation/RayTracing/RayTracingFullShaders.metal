@@ -52,7 +52,6 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
                                 constant NuoRayTracingUniforms& tracingUniforms,
                                 device NuoRayTracingRandomUnit* random,
                                 device RayBuffer* shadowRayMain,
-                                device uint* masks,
                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                 sampler samplr [[sampler(0)]])
 {
@@ -121,7 +120,6 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 device NuoRayTracingRandomUnit* random,
                                 device RayBuffer* shadowRayMain,
                                 device RayBuffer* incidentRaysBuffer,
-                                device uint* masks,
                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                 sampler samplr [[sampler(0)]])
 {
@@ -131,11 +129,8 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
         return;
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    device Intersection & intersection = structUniform.intersections[rayIdx];
     device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
-    
-    unsigned int triangleIndex = intersection.primitiveIndex;
-    cameraRay.primaryHitMask = masks[triangleIndex];
+    cameraRay.primaryHitMask = surface_mask(rayIdx, structUniform);
     
     self_illumination(tid, structUniform, tracingUniforms,
                       shadowRayMain, incidentRaysBuffer,

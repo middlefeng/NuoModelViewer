@@ -33,6 +33,13 @@ static RayBuffer primary_ray(matrix44 viewTrans, float3 endPoint)
 
 
 
+uint surface_mask(uint rayIdx, device RayStructureUniform& structUniform)
+{
+    device Intersection & intersection = structUniform.intersections[rayIdx];
+    unsigned int triangleIndex = intersection.primitiveIndex;
+    return structUniform.masks[triangleIndex];
+}
+
 
 #pragma mark -- Primary / Shadow Ray Emission, General Ray Mask
 
