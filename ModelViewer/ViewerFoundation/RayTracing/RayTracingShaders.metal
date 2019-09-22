@@ -111,7 +111,8 @@ kernel void ray_set_mask_illuminating(uint2 tid [[thread_position_in_grid]],
 }
 
 
-void shadow_ray_emit_infinite_area(uint rayIdx,
+void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
+                                   device Intersection& intersection,
                                    device RayStructureUniform& structUniform,
                                    constant NuoRayTracingUniforms& tracingUniforms,
                                    constant NuoRayTracingLightSource& lightSource,
@@ -120,10 +121,8 @@ void shadow_ray_emit_infinite_area(uint rayIdx,
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr)
 {
-    device Intersection& intersection = structUniform.intersections[rayIdx];
     device NuoRayTracingMaterial* materials = structUniform.materials;
     device uint* index = structUniform.index;
-    RayBuffer ray = structUniform.exitantRays[rayIdx];
     
     const float maxDistance = tracingUniforms.bounds.span;
     
@@ -131,6 +130,8 @@ void shadow_ray_emit_infinite_area(uint rayIdx,
     // (took 2 days to figure this out after spot the problem in debugger 8/21/2018)
     //
     shadowRay->pathScatter = 0.0f;
+    
+    shadowRay->bounce = ray.bounce + 1;
     
     if (intersection.distance >= 0.0f)
     {

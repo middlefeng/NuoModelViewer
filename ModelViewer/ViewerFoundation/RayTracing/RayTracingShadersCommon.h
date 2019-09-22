@@ -346,7 +346,8 @@ inline float3 relative_to_hemisphere_normal(float3 w, float3 n)
  *  shadow ray optimization
  */
 
-void shadow_ray_emit_infinite_area(uint rayIdx,
+void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
+                                   device Intersection& intersection,
                                    device RayStructureUniform& structUniform,
                                    constant NuoRayTracingUniforms& tracingUniforms,
                                    constant NuoRayTracingLightSource& lightSource,
