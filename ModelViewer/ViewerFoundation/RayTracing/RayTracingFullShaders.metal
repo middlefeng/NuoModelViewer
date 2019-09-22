@@ -79,7 +79,7 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
         
         constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[lightSourceIndex];
         
-        shadow_ray_emit_infinite_area(rayIdx, structUniform, tracingUniforms,
+        shadow_ray_emit_infinite_area(ray, intersection, structUniform, tracingUniforms,
                                       lightSource, randomVars.uvLightSource, shadowRay,
                                       diffuseTex, samplr);
         
@@ -157,7 +157,6 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     const unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & shadowIntersectionInfo = intersections[rayIdx];
     device RayBuffer& shadowRay = shadowRayMain[rayIdx];
-    RayBuffer ray = structUniform.exitantRays[rayIdx];
     float shadowIntersection = shadowIntersectionInfo.distance;
     
     if (shadowRay.maxDistance > 0.0f)
@@ -169,7 +168,7 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
             else
                 lightingTrcacingWrite(tid, float4(float3(0.0), 1.0), targets.lightingTracing);
         }
-        else if (ray.bounce == 1)
+        else if (shadowRay.bounce == 1)
         {
             if (shadowIntersection > 0.0f)
                 targets.lightingVirtualWithBlock.write(float4(shadowRay.pathScatter, 1.0), tid);
@@ -286,7 +285,7 @@ void self_illumination(uint2 tid,
             
             constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[lightSourceIndex];
             
-            shadow_ray_emit_infinite_area(rayIdx, structUniform, tracingUniforms,
+            shadow_ray_emit_infinite_area(ray, intersection, structUniform, tracingUniforms,
                                           lightSource, randomVars.uvLightSource, &shadowRay,
                                           diffuseTex, samplr);
             
