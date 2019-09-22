@@ -242,16 +242,6 @@
             [computeEncoder setBuffer:param offset:0 atIndex:++i];
     }
     
-    // for primary rays, pass in the mask buffer to detect of the intersected
-    // surface character (which corresponds to screen space directly, and would be used
-    // for post-process)
-    //
-    if (!exitantRay)
-    {
-        [computeEncoder setBuffer:[_rayStructure maskBuffer] offset:0
-                          atIndex:++i];
-    }
-    
     uint targetIndex = 0;
     for (id<MTLTexture> diffuseTexture in _rayStructure.diffuseTextures)
     {
@@ -348,6 +338,7 @@
     [buffer encodeWith:encoder forIndex:0];
     [buffer setBuffer:uniform for:MTLResourceUsageRead atIndex:i];
     [buffer setBuffer:[_rayStructure indexBuffer] for:MTLResourceUsageRead atIndex:++i];
+    [buffer setBuffer:[_rayStructure maskBuffer] for:MTLResourceUsageRead atIndex:++i];
     [buffer setBuffer:[_rayStructure materialBuffer] for:MTLResourceUsageRead atIndex:++i];
     [buffer setBuffer:exitantRay for:MTLResourceUsageRead | MTLResourceUsageWrite atIndex:++i];
     [buffer setBuffer:intersection for:MTLResourceUsageRead atIndex:++i];

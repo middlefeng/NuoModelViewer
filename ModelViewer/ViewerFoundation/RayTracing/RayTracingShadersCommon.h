@@ -69,9 +69,10 @@ struct RayStructureUniform
 {
     constant NuoRayVolumeUniform& rayUniform [[id(0)]];
     device uint* index [[id(1)]];
-    device NuoRayTracingMaterial* materials[[id(2)]];
-    device RayBuffer* exitantRays [[id(3)]];
-    device Intersection *intersections [[id(4)]];
+    device uint* masks;
+    device NuoRayTracingMaterial* materials;
+    device RayBuffer* exitantRays;
+    device Intersection *intersections;
 };
 
 
@@ -273,6 +274,9 @@ PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 r
                           float2 sampleUV, float Cdeterminator  /* randoms */ );
 
 PathSample sample_transmit(const thread SurfaceInteraction& interaction, float3 ray);
+
+
+uint surface_mask(uint rayIdx, device RayStructureUniform& structUniform);
 
 
 

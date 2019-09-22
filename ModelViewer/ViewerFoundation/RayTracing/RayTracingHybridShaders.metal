@@ -47,7 +47,6 @@ kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
                                        device NuoRayTracingRandomUnit* random,
                                        device RayBuffer* shadowRays0,
                                        device RayBuffer* shadowRays1,
-                                       device uint* masks,
                                        array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(0)]],
                                        sampler samplr [[sampler(0)]])
 {
@@ -59,8 +58,7 @@ kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & intersection = structUniform.intersections[rayIdx];
     
-    unsigned int triangleIndex = intersection.primitiveIndex;
-    structUniform.exitantRays[rayIdx].primaryHitMask = masks[triangleIndex];
+    structUniform.exitantRays[rayIdx].primaryHitMask = surface_mask(rayIdx, structUniform);
     RayBuffer cameraRay = structUniform.exitantRays[rayIdx];
     
     device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
@@ -119,7 +117,6 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
                                              device RayBuffer* shadowRays0,
                                              device RayBuffer* shadowRays1,
                                              device RayBuffer* incidentRaysBuffer,
-                                             device uint* masks,
                                              array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(0)]],
                                              sampler samplr [[sampler(0)]])
 {
@@ -129,11 +126,8 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
         return;
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    device Intersection & intersection = structUniform.intersections[rayIdx];
     device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
-    
-    unsigned int triangleIndex = intersection.primitiveIndex;
-    cameraRay.primaryHitMask = masks[triangleIndex];
+    cameraRay.primaryHitMask = surface_mask(rayIdx, structUniform);
     
     device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
     device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16)].uv;
