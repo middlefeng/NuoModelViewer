@@ -301,6 +301,7 @@ void self_illumination(uint2 tid,
                 if (surfaceMask & kNuoRayMask_Virtual)
                 {
                     shadowRay.primaryHitMask = kNuoRayMask_Virtual;
+                    shadowRay.pathScatter *= ray.opacity;
                     shadowRay.bounce = 1;
                 }
             }
