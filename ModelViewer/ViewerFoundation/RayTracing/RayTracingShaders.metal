@@ -359,6 +359,10 @@ void sample_scatter_ray(float maxDistance,
         float opacity = material.shinessDisolveIllum.y;
         opacity = (1.0 - opacity) < 1e-6 ? 1.0 : opacity;
         
+        // transmiting rays are sampled by the importance of translucency so their opacity is
+        // divided by (1.0 - opacity), reflected rays are sampled by the importance of surface
+        // reflection so the opacity is assigned to the rays directly
+        //
         if (sample.transmission)
         {
             incidentRay.opacity = 1.0 / (1.0 - opacity);

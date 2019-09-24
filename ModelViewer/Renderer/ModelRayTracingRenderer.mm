@@ -35,7 +35,7 @@ enum kModelRayTracingTargets
     kModelRayTracingTargets_Direct,
     kModelRayTracingTargets_DirectVirtual,
     kModelRayTracingTargets_DirectVirtualBlocked,
-    kModelRayTracingTargets_OpaqueMask,
+    kModelRayTracingTargets_ModelMask,
 };
 
 
@@ -230,7 +230,7 @@ enum kModelRayTracingTargets
     _rayTracingResult.ambientVirtualWithoutBlock = textures[kModelRayTracingTargets_AmbientVirtualNB];
     _rayTracingResult.directVirtual = textures[kModelRayTracingTargets_DirectVirtual];
     _rayTracingResult.directVirtualBlocked = textures[kModelRayTracingTargets_DirectVirtualBlocked];
-    _rayTracingResult.opaqueMask = textures[kModelRayTracingTargets_OpaqueMask];
+    _rayTracingResult.modelMask = textures[kModelRayTracingTargets_ModelMask];
     
     return _rayTracingResult;
 }

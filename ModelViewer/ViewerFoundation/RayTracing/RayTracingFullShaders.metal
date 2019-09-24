@@ -28,7 +28,7 @@ struct RayTracingTargets
     texture2d<float, access::read_write> lightingTracing                [[id(3)]];
     texture2d<float, access::read_write> lightingVirtual;
     texture2d<float, access::read_write> lightingVirtualWithBlock;
-    texture2d<float, access::read_write> opaqueMask;
+    texture2d<float, access::read_write> modelMask;
 };
 
 
@@ -133,13 +133,12 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
     cameraRay.primaryHitMask = surface_mask(rayIdx, structUniform);
     
-    if ((cameraRay.primaryHitMask & kNuoRayMask_Opaque) &&
-        (cameraRay.primaryHitMask & kNuoRayMask_Translucent) == 0 &&
-        (cameraRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
+    if ((cameraRay.primaryHitMask & (kNuoRayMask_Opaque | kNuoRayMask_Translucent)) &&
+        (cameraRay.primaryHitMask & (kNuoRayMask_Virtual)) == 0)
     {
         device Intersection& intersection = structUniform.intersections[rayIdx];
         if (intersection.distance >= 0.0)
-            targets.opaqueMask.write(float(1.0), tid);
+            targets.modelMask.write(float(1.0), tid);
     }
     
     self_illumination(tid, structUniform, tracingUniforms,
@@ -302,8 +301,19 @@ void self_illumination(uint2 tid,
             shadowRay.pathScatter *= ray.pathScatter;
             shadowRay.pathScatter *= totalDensity;
             
-            // if the ray has transmitted through translucent objects and land on a virtual surface,
-            // treat it as the first-bounce shadow ray so it could be rendered onto the virtual target
+            NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
+            material.diffuseColor = color;
+            material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
+            
+            RayBuffer currentIncident;
+            sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, currentIncident);
+            incidentRay = currentIncident;
+            
+            // if the ray has transmitted through translucent objects and then lands on a virtual surface,
+            //   1. treat it as a first-bounce primary ray, so the shadow ray so it could be rendered
+            //      onto the virtual target
+            //   2. scale up the shadow ray's path-scatter as that's used for shadow result
+            //   3. turn back on the ambient
             //
             if (ray.opacity > 1.0)
             {
@@ -313,16 +323,11 @@ void self_illumination(uint2 tid,
                     shadowRay.primaryHitMask = kNuoRayMask_Virtual;
                     shadowRay.pathScatter *= ray.opacity;
                     shadowRay.bounce = 1;
+                    
+                    incidentRay.primaryHitMask = kNuoRayMask_Virtual;
+                    incidentRay.ambientIlluminated = false;
                 }
             }
-            
-            NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
-            material.diffuseColor = color;
-            material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
-            
-            RayBuffer currentIncident;
-            sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, currentIncident);
-            incidentRay = currentIncident;
         }
         
         float ambientFactor = ambient_distance_factor(ambientRadius / 20.0, ambientRadius,
