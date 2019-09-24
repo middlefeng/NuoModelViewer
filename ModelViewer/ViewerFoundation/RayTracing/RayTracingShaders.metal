@@ -183,6 +183,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         float surfaceOpacity = material.shinessDisolveIllum.y;
         surfaceOpacity = (1.0 - surfaceOpacity) < 1e-6 ? 1.0 : surfaceOpacity;
         diffuseTerm *= surfaceOpacity;
+        
         shadowRay->opacity = ray.opacity < 0.0 ? surfaceOpacity : ray.opacity;
         
         // the cosine factor is counted into the path scatter term, as the geometric coupling term,
