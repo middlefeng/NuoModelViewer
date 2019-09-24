@@ -543,7 +543,7 @@
     if (_enabled)
     {
         mask = self.hasTransparency ? kNuoRayMask_Translucent :
-                                      kNuoRayMask_Opaue;
+                                      kNuoRayMask_Opaque;
     }
     
     const size_t indicesNumber = _rawModel->GetIndicesNumber();

@@ -66,7 +66,7 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     // primary rays are generated with mask as opaque. rays for translucent mask are got by
     // set the mask later by "ray_set_mask"
     //
-    ray.mask = kNuoRayMask_Opaue;
+    ray.mask = kNuoRayMask_Opaque;
     
     ray.bounce = 0;
     ray.opacity = -1.0;
@@ -146,7 +146,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         // either opaque blocker is checked, or no blocker is considered at all (for getting the
         // denominator light amount)
         //
-        shadowRay->mask = kNuoRayMask_Opaue;
+        shadowRay->mask = kNuoRayMask_Opaque;
         
         NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
                                                                    // try to normalize to uphold Cdiff + Cspec < 1.0
@@ -347,7 +347,7 @@ void sample_scatter_ray(float maxDistance,
     {
         incidentRay.direction = sample.direction;
         incidentRay.maxDistance = maxDistance;
-        incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
+        incidentRay.mask = kNuoRayMask_Opaque | kNuoRayMask_Illuminating;
         incidentRay.primaryHitMask = ray.primaryHitMask;
         
         // different calculation for origin and ambient between transmission and reflection.

@@ -26,8 +26,9 @@ struct RayTracingTargets
     texture2d<float, access::read_write> overlayForVirtual              [[id(1)]];
     texture2d<float, access::read_write> overlayForVirtualWithoutBlock  [[id(2)]];
     texture2d<float, access::read_write> lightingTracing                [[id(3)]];
-    texture2d<float, access::read_write> lightingVirtual                ;
-    texture2d<float, access::read_write> lightingVirtualWithBlock       ;
+    texture2d<float, access::read_write> lightingVirtual;
+    texture2d<float, access::read_write> lightingVirtualWithBlock;
+    texture2d<float, access::read_write> opaqueMask;
 };
 
 
@@ -131,6 +132,15 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
     cameraRay.primaryHitMask = surface_mask(rayIdx, structUniform);
+    
+    if ((cameraRay.primaryHitMask & kNuoRayMask_Opaque) &&
+        (cameraRay.primaryHitMask & kNuoRayMask_Translucent) == 0 &&
+        (cameraRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
+    {
+        device Intersection& intersection = structUniform.intersections[rayIdx];
+        if (intersection.distance >= 0.0)
+            targets.opaqueMask.write(float(1.0), tid);
+    }
     
     self_illumination(tid, structUniform, tracingUniforms,
                       shadowRayMain, incidentRaysBuffer,

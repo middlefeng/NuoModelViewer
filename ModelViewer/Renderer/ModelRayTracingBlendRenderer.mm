@@ -46,7 +46,7 @@
 {
     NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     [_mesh setIlluminations:_illuminations];
-    [_mesh setTranslucentCoverMap:_translucentMap];
+    [_mesh setTranslucentCoverMap:_illuminations.opaqueMask];
     [_mesh drawMesh:renderPass];
     [self releaseDefaultEncoder];
 }

@@ -26,7 +26,7 @@ NuoRayIndex;
 
 typedef enum
 {
-    kNuoRayMask_Opaue           = 1,
+    kNuoRayMask_Opaque          = 1,
     kNuoRayMask_Translucent     = 2,
     kNuoRayMask_Illuminating    = 4,
     kNuoRayMask_Virtual         = 8,

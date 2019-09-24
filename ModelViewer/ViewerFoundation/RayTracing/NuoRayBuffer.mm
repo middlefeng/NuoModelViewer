@@ -56,8 +56,8 @@ const uint kRayBufferStride = 60;  //  base fields           - 32
 {
     id<MTLDevice> device = _commandQueue.device;
     
-    uint32 pipelineMask[] = { kNuoRayMask_Opaue | kNuoRayMask_Virtual,
-                              kNuoRayMask_Opaue | kNuoRayMask_Virtual | kNuoRayMask_Translucent,
+    uint32 pipelineMask[] = { kNuoRayMask_Opaque | kNuoRayMask_Virtual,
+                              kNuoRayMask_Opaque | kNuoRayMask_Virtual | kNuoRayMask_Translucent,
                               kNuoRayMask_Virtual,
                               kNuoRayMask_Illuminating };
     
