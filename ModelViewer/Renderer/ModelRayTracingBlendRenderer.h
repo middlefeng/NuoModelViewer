@@ -11,10 +11,6 @@
 
 
 
-@class ModelDirectLighting1;
-
-
-
 @interface ModelRayTracingBlendRenderer : NuoRenderPass
 
 

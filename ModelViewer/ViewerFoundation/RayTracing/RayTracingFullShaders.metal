@@ -26,8 +26,9 @@ struct RayTracingTargets
     texture2d<float, access::read_write> overlayForVirtual              [[id(1)]];
     texture2d<float, access::read_write> overlayForVirtualWithoutBlock  [[id(2)]];
     texture2d<float, access::read_write> lightingTracing                [[id(3)]];
-    texture2d<float, access::read_write> lightingVirtual                ;
-    texture2d<float, access::read_write> lightingVirtualWithBlock       ;
+    texture2d<float, access::read_write> lightingVirtual;
+    texture2d<float, access::read_write> lightingVirtualWithBlock;
+    texture2d<float, access::read_write> modelMask;
 };
 
 
@@ -132,6 +133,14 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
     cameraRay.primaryHitMask = surface_mask(rayIdx, structUniform);
     
+    if ((cameraRay.primaryHitMask & (kNuoRayMask_Opaque | kNuoRayMask_Translucent)) &&
+        (cameraRay.primaryHitMask & (kNuoRayMask_Virtual)) == 0)
+    {
+        device Intersection& intersection = structUniform.intersections[rayIdx];
+        if (intersection.distance >= 0.0)
+            targets.modelMask.write(float(1.0), tid);
+    }
+    
     self_illumination(tid, structUniform, tracingUniforms,
                       shadowRayMain, incidentRaysBuffer,
                       random, targets, diffuseTex, samplr);
@@ -164,9 +173,9 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
         if ((shadowRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
         {
             if (shadowIntersection < 0.0f)
-                lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), targets.lightingTracing);
+                lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, shadowRay.opacity), targets.lightingTracing);
             else
-                lightingTrcacingWrite(tid, float4(float3(0.0), 1.0), targets.lightingTracing);
+                lightingTrcacingWrite(tid, float4(float3(0.0), shadowRay.opacity), targets.lightingTracing);
         }
         else if (shadowRay.bounce == 1)
         {
@@ -194,7 +203,7 @@ static void overlayWrite(uint hitType, float4 value, uint2 tid,
                                                     targets.overlayForVirtual : targets.overlayResult;
     
     const float4 color = texture.read(tid);
-    const float4 result = float4(color.rgb + value.rgb, saturate(color.a + value.a));
+    const float4 result = float4(color.rgb + value.rgb, 1.0);
     texture.write(result, tid);
 }
 
@@ -203,7 +212,7 @@ static void lightingTrcacingWrite(uint2 tid, float4 value,
                                   texture2d<float, access::read_write> texture)
 {
     const float4 color = texture.read(tid);
-    const float4 result = float4(color.rgb + value.rgb, saturate(color.a + value.a));
+    const float4 result = float4(color.rgb + value.rgb, value.a);
     texture.write(result, tid);
 }
 
@@ -273,7 +282,7 @@ void self_illumination(uint2 tid,
             if (ray.bounce == 0)
                 color = saturate(color);
             
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
+            overlayWrite(ray.primaryHitMask, float4(color, ray.opacity), tid, targets);
         }
         else
         {
@@ -299,6 +308,26 @@ void self_illumination(uint2 tid,
             RayBuffer currentIncident;
             sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, currentIncident);
             incidentRay = currentIncident;
+            
+            // if the ray has transmitted through translucent objects and then lands on a virtual surface,
+            //   1. treat it as a first-bounce primary ray, so the shadow ray so it could be rendered
+            //      onto the virtual target
+            //   2. scale up the shadow ray's path-scatter as that's used for shadow result
+            //   3. turn back on the ambient
+            //
+            if (ray.opacity > 1.0)
+            {
+                uint surfaceMask = surface_mask(rayIdx, structUniform);
+                if (surfaceMask & kNuoRayMask_Virtual)
+                {
+                    shadowRay.primaryHitMask = kNuoRayMask_Virtual;
+                    shadowRay.pathScatter *= ray.opacity;
+                    shadowRay.bounce = 1;
+                    
+                    incidentRay.primaryHitMask = kNuoRayMask_Virtual;
+                    incidentRay.ambientIlluminated = false;
+                }
+            }
         }
         
         float ambientFactor = ambient_distance_factor(ambientRadius / 20.0, ambientRadius,
@@ -306,7 +335,7 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientIlluminated && ambientFactor > 0)
         {
             color = ray.pathScatter * globalIllum.ambient * ambientFactor;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
+            overlayWrite(ray.primaryHitMask, float4(color, ray.opacity), tid, targets);
             incidentRay.ambientIlluminated = true;
         }
     }
@@ -315,7 +344,7 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientIlluminated)
         {
             float3 color = ray.pathScatter * globalIllum.ambient;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
+            overlayWrite(ray.primaryHitMask, float4(color, ray.opacity), tid, targets);
             incidentRay.ambientIlluminated = true;
         }
         else if (ray.bounce == 0)

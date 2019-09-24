@@ -66,9 +66,10 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     // primary rays are generated with mask as opaque. rays for translucent mask are got by
     // set the mask later by "ray_set_mask"
     //
-    ray.mask = kNuoRayMask_Opaue;
+    ray.mask = kNuoRayMask_Opaque;
     
     ray.bounce = 0;
+    ray.opacity = -1.0;
     ray.primaryHitMask = 0;
     ray.ambientIlluminated = false;
     ray.specularReflection = false;
@@ -145,7 +146,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         // either opaque blocker is checked, or no blocker is considered at all (for getting the
         // denominator light amount)
         //
-        shadowRay->mask = kNuoRayMask_Opaue;
+        shadowRay->mask = kNuoRayMask_Opaque;
         
         NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
                                                                    // try to normalize to uphold Cdiff + Cspec < 1.0
@@ -179,7 +180,10 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         // is defined. most OBJ models define it in a way that Cdiff need to be down-scaled. the scatter
         // sampling function does the same thing (see sample_scatter())
         //
-        diffuseTerm *= material.shinessDisolveIllum.y;
+        float surfaceOpacity = material.shinessDisolveIllum.y;
+        surfaceOpacity = (1.0 - surfaceOpacity) < 1e-6 ? 1.0 : surfaceOpacity;
+        diffuseTerm *= surfaceOpacity;
+        shadowRay->opacity = ray.opacity < 0.0 ? surfaceOpacity : ray.opacity;
         
         // the cosine factor is counted into the path scatter term, as the geometric coupling term,
         // because samples are generated from an inifinit distant area light (uniform on a finit
@@ -343,7 +347,7 @@ void sample_scatter_ray(float maxDistance,
     {
         incidentRay.direction = sample.direction;
         incidentRay.maxDistance = maxDistance;
-        incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
+        incidentRay.mask = kNuoRayMask_Opaque | kNuoRayMask_Illuminating;
         incidentRay.primaryHitMask = ray.primaryHitMask;
         
         // different calculation for origin and ambient between transmission and reflection.
@@ -351,6 +355,26 @@ void sample_scatter_ray(float maxDistance,
         float3 normal =  sample.transmission ? -normalize(material.normal) : normalize(material.normal);
         incidentRay.origin = intersectionPoint + normal * (maxDistance / 20000.0);
         incidentRay.ambientIlluminated = ray.ambientIlluminated || sample.transmission;
+        
+        float opacity = material.shinessDisolveIllum.y;
+        opacity = (1.0 - opacity) < 1e-6 ? 1.0 : opacity;
+        
+        // transmiting rays are sampled by the importance of translucency so their opacity is
+        // divided by (1.0 - opacity), reflected rays are sampled by the importance of surface
+        // reflection so the opacity is assigned to the rays directly
+        //
+        if (sample.transmission)
+        {
+            incidentRay.opacity = 1.0 / (1.0 - opacity);
+        }
+        else if (ray.opacity < 0.0)
+        {
+            incidentRay.opacity = opacity;
+        }
+        else
+        {
+            incidentRay.opacity = ray.opacity;
+        }
         
         // make the term of this reflection contribute to the path scatter
         //
