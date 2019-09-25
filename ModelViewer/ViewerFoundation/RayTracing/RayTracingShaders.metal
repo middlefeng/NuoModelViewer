@@ -230,24 +230,26 @@ inline static float3 reflection_vector(float3 wo, float3 normal);
 inline bool same_hemisphere(float3 w, float3 wp);
 
 
-PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 ray,
-                          float2 sampleUV, float Cdeterminator  /* randoms */ )
+static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
+                                 float3 ray, float rayOpacity,
+                                 float2 sampleUV, float Cdeterminator  /* randoms */ )
 {
     PathSample result;
     
-    const float3 Cdiff = interaction.material.diffuseColor;
-    const float3 Cspec = interaction.material.specularColor;
-    const float Mspec = interaction.material.shinessDisolveIllum.x;
-    const float3 normal = interaction.material.normal;
+    const float3 Cdiff = material.diffuseColor;
+    const float3 Cspec = material.specularColor;
+    const float Mspec = material.shinessDisolveIllum.x;
+    const float3 normal = material.normal;
     
     float CdiffSampleProbable = max(Cdiff.x, max(Cdiff.y, Cdiff.z));
     float CspecSampleProbable = min(Cspec.x, min(Cspec.y, Cspec.z));
     
-    float transmissionPercent = 1.0 - interaction.material.shinessDisolveIllum.y;
+    float transmissionPercent = 1.0 - material.shinessDisolveIllum.y;
     float Tr = transmissionPercent > 1e-6 ? transmissionPercent : 0.0;
     float probableTotal = CdiffSampleProbable * (1.0 - Tr) + CspecSampleProbable + Tr;
     
     result.transmission = false;
+    result.opacity = rayOpacity < 0.0 ? (1 - Tr) : rayOpacity;
     
     // transmission (first branch) and two types of reflections
     //
@@ -259,6 +261,12 @@ PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 r
         result.direction = -ray;
         result.pathScatterTerm = probableTotal;
         result.transmission = true;
+        
+        // transmiting rays are sampled by the importance of translucency so their opacity is
+        // divided by Tr, reflected rays are sampled by the importance of surface
+        // reflection so the opacity is assigned to the rays directly
+        //
+        result.opacity = 1.0 / Tr;
     }
     else if (Cdeterminator < (Tr + CdiffSampleProbable * (1.0 - Tr)) / probableTotal)
     {
@@ -321,7 +329,7 @@ inline bool same_hemisphere(float3 w, float3 wp)
 void sample_scatter_ray(float maxDistance,
                         device NuoRayTracingRandomUnit& random,
                         device Intersection& intersection,
-                        thread NuoRayTracingMaterial& material,
+                        thread const NuoRayTracingMaterial& material,
                         thread const RayBuffer& ray,
                         thread RayBuffer& incidentRay)
 {
@@ -329,8 +337,7 @@ void sample_scatter_ray(float maxDistance,
     device float& Cdeterm = random.pathTermDeterminator;
     float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
 
-    const SurfaceInteraction interaction = { intersectionPoint, material };
-    PathSample sample = sample_scatter(interaction, -ray.direction, r, Cdeterm);
+    PathSample sample = sample_scatter(material, -ray.direction, ray.opacity, r, Cdeterm);
     
     incidentRay.bounce = ray.bounce + 1;
 
@@ -350,32 +357,13 @@ void sample_scatter_ray(float maxDistance,
         incidentRay.maxDistance = maxDistance;
         incidentRay.mask = kNuoRayMask_Opaque | kNuoRayMask_Illuminating;
         incidentRay.primaryHitMask = ray.primaryHitMask;
+        incidentRay.opacity = sample.opacity;
         
         // different calculation for origin and ambient between transmission and reflection.
         //
         float3 normal =  sample.transmission ? -normalize(material.normal) : normalize(material.normal);
         incidentRay.origin = intersectionPoint + normal * (maxDistance / 20000.0);
         incidentRay.ambientIlluminated = ray.ambientIlluminated || sample.transmission;
-        
-        float opacity = material.shinessDisolveIllum.y;
-        opacity = (1.0 - opacity) < 1e-6 ? 1.0 : opacity;
-        
-        // transmiting rays are sampled by the importance of translucency so their opacity is
-        // divided by (1.0 - opacity), reflected rays are sampled by the importance of surface
-        // reflection so the opacity is assigned to the rays directly
-        //
-        if (sample.transmission)
-        {
-            incidentRay.opacity = 1.0 / (1.0 - opacity);
-        }
-        else if (ray.opacity < 0.0)
-        {
-            incidentRay.opacity = opacity;
-        }
-        else
-        {
-            incidentRay.opacity = ray.opacity;
-        }
         
         // make the term of this reflection contribute to the path scatter
         //

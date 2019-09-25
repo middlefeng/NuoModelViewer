@@ -96,18 +96,11 @@ struct PathSample
     //
     float3 pathScatterTerm;
     
+    float opacity;
+    
     bool specularReflection;
     bool transmission;
 };
-
-
-
-struct SurfaceInteraction
-{
-    float3 p;
-    NuoRayTracingMaterial material;
-};
-
 
 
 
@@ -277,12 +270,6 @@ inline float3 sample_cone_uniform(float2 u, float cosThetaMax)
 
 
 
-PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 ray,
-                          float2 sampleUV, float Cdeterminator  /* randoms */ );
-
-PathSample sample_transmit(const thread SurfaceInteraction& interaction, float3 ray);
-
-
 uint surface_mask(uint rayIdx, device RayStructureUniform& structUniform);
 
 
@@ -363,7 +350,7 @@ uint light_source_select(constant NuoRayTracingUniforms& tracingUniforms,
 void sample_scatter_ray(float maxDistance,
                         device NuoRayTracingRandomUnit& random,
                         device Intersection& intersection,
-                        thread NuoRayTracingMaterial& material,
+                        thread const NuoRayTracingMaterial& material,
                         thread const RayBuffer& ray,
                         thread RayBuffer& incidentRay);
 
