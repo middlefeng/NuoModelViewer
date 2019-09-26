@@ -173,9 +173,9 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
         if ((shadowRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
         {
             if (shadowIntersection < 0.0f)
-                lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, shadowRay.opacity), targets.lightingTracing);
+                lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), targets.lightingTracing);
             else
-                lightingTrcacingWrite(tid, float4(float3(0.0), shadowRay.opacity), targets.lightingTracing);
+                lightingTrcacingWrite(tid, float4(float3(0.0), 1.0), targets.lightingTracing);
         }
         else if (shadowRay.bounce == 1)
         {
@@ -282,7 +282,7 @@ void self_illumination(uint2 tid,
             if (ray.bounce == 0)
                 color = saturate(color);
             
-            overlayWrite(ray.primaryHitMask, float4(color, ray.opacity), tid, targets);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
         }
         else
         {
@@ -315,13 +315,12 @@ void self_illumination(uint2 tid,
             //   2. scale up the shadow ray's path-scatter as that's used for shadow result
             //   3. turn back on the ambient
             //
-            if (ray.opacity > 1.0)
+            if (ray.transThrough)
             {
                 uint surfaceMask = surface_mask(rayIdx, structUniform);
                 if (surfaceMask & kNuoRayMask_Virtual)
                 {
                     shadowRay.primaryHitMask = kNuoRayMask_Virtual;
-                    shadowRay.pathScatter *= ray.opacity;
                     shadowRay.bounce = 1;
                     
                     incidentRay.primaryHitMask = kNuoRayMask_Virtual;
@@ -335,7 +334,7 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientIlluminated && ambientFactor > 0)
         {
             color = ray.pathScatter * globalIllum.ambient * ambientFactor;
-            overlayWrite(ray.primaryHitMask, float4(color, ray.opacity), tid, targets);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
             incidentRay.ambientIlluminated = true;
         }
     }
@@ -344,7 +343,7 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientIlluminated)
         {
             float3 color = ray.pathScatter * globalIllum.ambient;
-            overlayWrite(ray.primaryHitMask, float4(color, ray.opacity), tid, targets);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
             incidentRay.ambientIlluminated = true;
         }
         else if (ray.bounce == 0)

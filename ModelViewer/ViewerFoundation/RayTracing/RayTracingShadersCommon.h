@@ -35,12 +35,9 @@ struct RayBuffer
     //
     packed_float3 pathScatter;
     
-    // -1.0     : primary ray, not scattered
-    // (0, 1.0) : reflected, valued is the first surface opacity (subsequent bounces not considering translucent
-    // (1.0+)   : transmitted, value is (1.0 / surfaceOpaticy), in order to integrate lighting on a surface
-    //            behind a translucent
+    // if the ray has already deviated from the original camera direction
     //
-    float opacity;
+    bool transThrough;
     
     // the lenght of path in terms of the number of subpaths, and
     // the mask type of the first hit surface
@@ -100,6 +97,7 @@ struct PathSample
     
     bool specularReflection;
     bool transmission;
+    bool transThrough;
 };
 
 
