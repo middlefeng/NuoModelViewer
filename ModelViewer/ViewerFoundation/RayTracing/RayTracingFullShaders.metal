@@ -120,6 +120,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 constant NuoRayTracingUniforms& tracingUniforms,
                                 device NuoRayTracingRandomUnit* random,
                                 device RayBuffer* shadowRayMain,
+                                device RayBuffer* primarySpawnRays,
                                 device RayBuffer* incidentRaysBuffer,
                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                 sampler samplr [[sampler(0)]])
@@ -131,14 +132,45 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
+    device RayBuffer& primarySpawnRay = primarySpawnRays[rayIdx];
     cameraRay.primaryHitMask = surface_mask(rayIdx, structUniform);
+    device Intersection& intersection = structUniform.intersections[rayIdx];
     
-    if ((cameraRay.primaryHitMask & (kNuoRayMask_Opaque | kNuoRayMask_Translucent)) &&
+    /*if ((cameraRay.primaryHitMask & (kNuoRayMask_Opaque | kNuoRayMask_Translucent)) &&
         (cameraRay.primaryHitMask & (kNuoRayMask_Virtual)) == 0)
     {
-        device Intersection& intersection = structUniform.intersections[rayIdx];
         if (intersection.distance >= 0.0)
             targets.modelMask.write(float(1.0), tid);
+    }*/
+    
+    if ((intersection.distance >= 0.0) &&
+        (cameraRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
+    {
+        device uint* index = structUniform.index;
+        device NuoRayTracingMaterial* materials = structUniform.materials;
+        NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
+                                                                   tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
+                                                                   index, intersection, samplr);
+        
+        float opacity = material.shinessDisolveIllum.y;
+        float Tr = (1.0 - opacity) < 1e-6 ? 0.0 : 1.0 - opacity;
+        
+        const float maxDistance = tracingUniforms.bounds.span;
+        float3 intersectPoint = cameraRay.origin + intersection.distance * cameraRay.direction;
+        primarySpawnRay = cameraRay;
+        primarySpawnRay.mask &= (~kNuoRayMask_Virtual);
+        primarySpawnRay.pathScatter *= Tr;
+        primarySpawnRay.origin = intersectPoint + cameraRay.direction * (maxDistance / 20000.0);
+        
+        if (Tr == 0.0)
+            primarySpawnRay.maxDistance = -1;
+        
+        targets.modelMask.write(float4(float3(0.0), 1.0), tid);
+    }
+    else
+    {
+        primarySpawnRay.maxDistance = -1;
+        primarySpawnRay.pathScatter = 1.0;
     }
     
     self_illumination(tid, structUniform, tracingUniforms,
@@ -154,7 +186,9 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  constant NuoRayTracingUniforms& tracingUniforms,
                                  device NuoRayTracingRandomUnit* random,
                                  device RayBuffer* shadowRayMain,
+                                 device RayBuffer* primarySpawnRays,
                                  device Intersection *intersections,
+                                 device Intersection *primarySpawnIntersections,
                                  array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                  sampler samplr [[sampler(0)]])
 {
@@ -188,6 +222,55 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                       shadowRayMain, structUniform.exitantRays /* incident rays are the
                                                                   exitant rays of the next path */,
                       random, targets, diffuseTex, samplr);
+    
+    device RayBuffer& primarySpawnRay = primarySpawnRays[rayIdx];
+    device Intersection & primaryIntersectionInfo = primarySpawnIntersections[rayIdx];
+    if (primarySpawnRay.maxDistance > 0)
+    {
+        if (primaryIntersectionInfo.distance >= 0)
+        {
+            device uint* index = structUniform.index;
+            device NuoRayTracingMaterial* materials = structUniform.materials;
+            NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
+                                                                       tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
+                                                                       index, primaryIntersectionInfo, samplr);
+            
+            float opacity = saturate(material.shinessDisolveIllum.y);
+            if (surface_mask(rayIdx, structUniform) & kNuoRayMask_Virtual)
+                opacity = 0.0;
+                
+            float Tr = (1.0 - opacity) < 1e-6 ? 0.0 : 1.0 - opacity;
+            primarySpawnRay.pathScatter *= Tr;
+            
+            if (Tr == 0.0)
+            {
+                primarySpawnRay.maxDistance = -1;
+            }
+            else
+            {
+                //if (shadowRay.bounce == 2)
+                //    primarySpawnRay.maxDistance = -1;
+                
+                const float maxDistance = tracingUniforms.bounds.span;
+                float3 intersectPoint = primarySpawnRay.origin + primaryIntersectionInfo.distance * primarySpawnRay.direction;
+                primarySpawnRay.origin = intersectPoint + primarySpawnRay.direction * (maxDistance / 20000.0);
+                
+                //targets.modelMask.write(float4(float3(0.0), 1.0 - primarySpawnRay.pathScatter[0]), tid);
+                //primarySpawnRay.maxDistance = -1;
+            }
+            //primarySpawnRay.pathScatter = 0.5;
+            //primarySpawnRay.maxDistance = -1;
+        }
+        else
+        {
+            primarySpawnRay.maxDistance = -1;
+        }
+    }
+    
+    if (primarySpawnRay.maxDistance  < 0.0)
+    {
+        targets.modelMask.write(float4(float3(0.0), 1.0 - primarySpawnRay.pathScatter[0]), tid);
+    }
 }
 
 

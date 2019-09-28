@@ -129,7 +129,7 @@
     if (self.shadowOverlayOnly)
     {
         for (uint32& item : oneBuffer)
-            item |= kNuoRayMask_Virtual;
+            item = kNuoRayMask_Virtual;
     }
     
     return oneBuffer;

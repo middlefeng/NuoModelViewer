@@ -49,8 +49,10 @@ enum kModelRayTracingTargets
     NuoBufferSwapChain* _randomBuffers;
     
     NuoRayBuffer* _incidentRaysBuffer;
+    NuoRayBuffer* _primarySpawnRayBuffer;
     NuoRayBuffer* _shadowRaysBuffer;
     id<MTLBuffer> _shadowIntersectionBuffer;
+    id<MTLBuffer> _primarySpawnIntersectionBuffer;
     
     NuoIlluminationTarget* _rayTracingResult;
     
@@ -107,12 +109,17 @@ enum kModelRayTracingTargets
     _incidentRaysBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
     _incidentRaysBuffer.dimension = drawableSize;
     
+    _primarySpawnRayBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
+    _primarySpawnRayBuffer.dimension = drawableSize;
+    
     _shadowRaysBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
     _shadowRaysBuffer.dimension = drawableSize;
     
     const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayIntersectionStride;
     _shadowIntersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
                                                                       options:MTLResourceStorageModePrivate];
+    _primarySpawnIntersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
+                                                                            options:MTLResourceStorageModePrivate];
 }
 
 
@@ -191,6 +198,7 @@ enum kModelRayTracingTargets
         [self runRayTraceCompute:_primaryAndIncidentRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowRaysBuffer.buffer,
+                                   _primarySpawnRayBuffer.buffer,
                                    _incidentRaysBuffer.buffer]
                   withExitantRay:nil
                 withIntersection:self.intersectionBuffer];
@@ -199,11 +207,14 @@ enum kModelRayTracingTargets
         {
             [self rayIntersect:commandBuffer withRays:_shadowRaysBuffer withIntersection:_shadowIntersectionBuffer];
             [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.intersectionBuffer];
+            [self rayIntersect:commandBuffer withRays:_primarySpawnRayBuffer withIntersection:_primarySpawnIntersectionBuffer];
             
             [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
                        withParameter:@[rayTraceUniform, randomBuffer,
                                        _shadowRaysBuffer.buffer,
-                                       _shadowIntersectionBuffer]
+                                       _primarySpawnRayBuffer.buffer,
+                                       _shadowIntersectionBuffer,
+                                       _primarySpawnIntersectionBuffer]
                       withExitantRay:_incidentRaysBuffer.buffer
                     withIntersection:self.intersectionBuffer];
         }

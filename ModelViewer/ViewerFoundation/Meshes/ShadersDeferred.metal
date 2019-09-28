@@ -228,7 +228,7 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     // all terms in the numerator have already been masked (because they are stored in "virtual-only" results), except
     // the ambientWithoutBlock
     //
-    const float objectMask = 1.0 - modelMask.sample(samplr, vert.texCoord).a;
+    const float objectMask = modelMask.sample(samplr, vert.texCoord).a;
     const float shadowFactor = color_to_grayscale(safe_divide(directBlocked - illumiOnVirtual + ambientWithoutBlock * objectMask,
                                                               direct + ambientWithoutBlock));
     
@@ -239,5 +239,6 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     float shadowAdd = sourceColor.a + shadowFactor;
     float shadowBlend = shadowAdd - sourceColor.a * shadowFactor;
     
-    return (float4(color, (objectMask < 1e-9 ? shadowBlend : shadowAdd)));
+    return float4(float3(0), objectMask);
+    //return (float4(color, (objectMask < 1e-9 ? shadowBlend : shadowAdd)));
 }
