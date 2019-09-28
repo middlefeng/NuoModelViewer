@@ -209,7 +209,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     
 - (void)setMaskBuffer:(NuoMeshSceneRoot*)root
 {
-    std::vector<uint32_t> mask = [root maskBuffer];
+    std::vector<NuoRayMask> mask = [root maskBuffer];
     uint32_t maskBufferSize = (uint32_t)(mask.size() * sizeof(uint32_t));
     
     if (!_maskBuffer)

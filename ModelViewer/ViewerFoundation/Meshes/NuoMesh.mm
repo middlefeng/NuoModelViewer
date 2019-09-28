@@ -537,7 +537,7 @@
 }
 
 
-- (std::vector<uint32_t>)maskBuffer
+- (std::vector<NuoRayMask>)maskBuffer
 {
     NuoRayMask mask = kNuoRayMask_Disabled;
     if (_enabled)
@@ -549,7 +549,7 @@
     const size_t indicesNumber = _rawModel->GetIndicesNumber();
     const size_t bufferSize = indicesNumber / 3;
     
-    std::vector<uint32_t> oneBuffer;
+    std::vector<NuoRayMask> oneBuffer;
     oneBuffer.resize(bufferSize);
     std::fill(oneBuffer.begin(), oneBuffer.end(), mask);
     
@@ -557,7 +557,7 @@
     {
         NuoMaterial material = _rawModel->GetMaterial(i);
         if (material.id != -1 && material.illum == 0)
-            oneBuffer[i] |= kNuoRayMask_Illuminating;
+            oneBuffer[i] = kNuoRayMask_Illuminating;
     }
     
     return oneBuffer;

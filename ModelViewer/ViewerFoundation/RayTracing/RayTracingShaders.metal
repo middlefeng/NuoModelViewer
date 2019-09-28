@@ -355,7 +355,7 @@ void sample_scatter_ray(float maxDistance,
     {
         incidentRay.direction = sample.direction;
         incidentRay.maxDistance = maxDistance;
-        incidentRay.mask = kNuoRayMask_Opaque | kNuoRayMask_Illuminating;
+        incidentRay.mask = kNuoRayMask_Opaque | kNuoRayMask_Virtual | kNuoRayMask_Illuminating;
         incidentRay.primaryHitMask = ray.primaryHitMask;
         incidentRay.opacity = sample.opacity;
         
