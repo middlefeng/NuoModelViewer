@@ -462,7 +462,8 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
     int blockerSampleCount = 0;
     int blockerSampleSkipped = 0;
     
-    const float sampleEnlargeFactor = occluderRadius;
+    const float sampleEnlargeFactor = occluderRadius *
+                                      ((shadowMapSampleRadius + 1.0) * 2.0 + 1) / (shadowMapSampleRadius * 2.0 + 1);
     
     const float2 searchSampleSize = texelSize * sampleEnlargeFactor;
     const float2 searchRegion = shadowMapSampleRadius * 2 * searchSampleSize;
@@ -550,7 +551,7 @@ float3 shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translu
         float penumbraFactor = 1.0;
         if (kShadowPCSS)
         {
-            penumbraFactor = shadow_penumbra_factor(kSampleSizeBase, shadowMapSampleRadius, shadowParams.occluderRadius,
+            penumbraFactor = shadow_penumbra_factor(kSampleSizeBase, shadowMapSampleRadius - 1, shadowParams.occluderRadius,
                                                     shadowMapBias, modelDepth, shadowCoord,
                                                     shadowMap, samplr);
             
