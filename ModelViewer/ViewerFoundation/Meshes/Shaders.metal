@@ -23,10 +23,10 @@ struct ProjectedVertex
 };
 
 
-ProjectedVertex vertex_project_common(device Vertex *vertices,
+ProjectedVertex vertex_project_common(device const Vertex *vertices,
                                       constant NuoUniforms &uniforms,
                                       constant NuoMeshUniforms &meshUniform,
-                                      uint vid [[vertex_id]]);
+                                      uint vid);
 
 float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway);
 
@@ -37,7 +37,7 @@ float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
  *  or depth-only rendering (e.g. shadow-map)
  */
 
-vertex PositionSimple vertex_simple(device Vertex *vertices [[buffer(0)]],
+vertex PositionSimple vertex_simple(device const Vertex *vertices [[buffer(0)]],
                                     constant NuoUniforms &uniforms [[buffer(1)]],
                                     constant NuoMeshUniforms &meshUniform [[buffer(2)]],
                                     uint vid [[vertex_id]])
@@ -62,7 +62,7 @@ fragment float4 depth_simple(PositionSimple vert [[stage_in]])
  *  used for simple annotation.
  */
 
-vertex ProjectedVertex vertex_project(device Vertex *vertices [[buffer(0)]],
+vertex ProjectedVertex vertex_project(device const Vertex *vertices [[buffer(0)]],
                                       constant NuoUniforms &uniforms [[buffer(1)]],
                                       constant NuoMeshUniforms &meshUniform [[buffer(2)]],
                                       uint vid [[vertex_id]])
@@ -109,7 +109,7 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
 #pragma mark -- Screen Space Shaders --
 
 
-vertex VertexScreenSpace vertex_project_screen_space(device Vertex *vertices [[buffer(0)]],
+vertex VertexScreenSpace vertex_project_screen_space(device const Vertex *vertices [[buffer(0)]],
                                                      constant NuoUniforms &uniforms [[buffer(1)]],
                                                      constant NuoMeshUniforms &meshUniform [[buffer(3)]],
                                                      uint vid [[vertex_id]])
@@ -152,7 +152,7 @@ fragment FragementScreenSpace fragement_screen_space(VertexScreenSpace vert [[st
  *  shaders that generate phong result with shadow casting,
  */
 
-vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)]],
+vertex ProjectedVertex vertex_project_shadow(device const Vertex *vertices [[buffer(0)]],
                                              constant NuoUniforms &uniforms [[buffer(1)]],
                                              constant NuoLightVertexUniforms &lightCast [[buffer(2)]],
                                              constant NuoMeshUniforms &meshUniform [[buffer(3)]],
@@ -312,7 +312,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
 
 
 
-ProjectedVertex vertex_project_common(device Vertex *vertices,
+ProjectedVertex vertex_project_common(device const Vertex *vertices,
                                       constant NuoUniforms &uniforms,
                                       constant NuoMeshUniforms &meshUniform,
                                       uint vid [[vertex_id]])

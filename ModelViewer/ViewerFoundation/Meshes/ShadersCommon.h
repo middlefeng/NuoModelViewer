@@ -181,7 +181,7 @@ metal::float3 safe_divide(metal::float3 dividee, metal::float3 divider);
 
 
 template <class T>
-PositionSimple vertex_simple(device T *vertices [[buffer(0)]],
+PositionSimple vertex_simple(device const T *vertices [[buffer(0)]],
                              constant NuoUniforms &uniforms [[buffer(1)]],
                              constant NuoMeshUniforms &meshUniform [[buffer(2)]],
                              metal::uint vid [[vertex_id]])

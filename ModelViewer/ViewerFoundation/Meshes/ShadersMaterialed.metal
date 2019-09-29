@@ -35,7 +35,7 @@ struct ProjectedVertex
 static VertexFragmentCharacters vertex_characters(ProjectedVertex vert);
 
 
-vertex PositionSimple vertex_simple_materialed(device Vertex *vertices [[buffer(0)]],
+vertex PositionSimple vertex_simple_materialed(device const Vertex *vertices [[buffer(0)]],
                                                constant NuoUniforms &uniforms [[buffer(1)]],
                                                constant NuoMeshUniforms &meshUniforms [[buffer(2)]],
                                                uint vid [[vertex_id]])
@@ -47,7 +47,7 @@ vertex PositionSimple vertex_simple_materialed(device Vertex *vertices [[buffer(
 #pragma mark -- Phong Model Shaders --
 
 
-vertex ProjectedVertex vertex_project_materialed(device Vertex *vertices [[buffer(0)]],
+vertex ProjectedVertex vertex_project_materialed(device const Vertex *vertices [[buffer(0)]],
                                                  constant NuoUniforms &uniforms [[buffer(1)]],
                                                  constant NuoLightVertexUniforms &lightCast [[buffer(2)]],
                                                  constant NuoMeshUniforms &meshUniforms [[buffer(3)]],
@@ -112,7 +112,7 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
 #pragma mark -- Screen Space Shaders --
 
 
-vertex VertexScreenSpace vertex_screen_space_materialed(device Vertex *vertices [[buffer(0)]],
+vertex VertexScreenSpace vertex_screen_space_materialed(device const Vertex *vertices [[buffer(0)]],
                                                         constant NuoUniforms &uniforms [[buffer(1)]],
                                                         constant NuoMeshUniforms &meshUniform [[buffer(3)]],
                                                         uint vid [[vertex_id]])
