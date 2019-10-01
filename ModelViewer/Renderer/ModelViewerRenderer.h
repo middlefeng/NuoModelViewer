@@ -130,5 +130,9 @@ class NuoLua;
 - (void)switchToHybrid;
 - (void)switchToRayTracing;
 
+- (void)beginUserInteract;
+- (void)continueUserInteract;
+- (void)endUserInteract:(RecordStatus)recordStatus;
+
 
 @end

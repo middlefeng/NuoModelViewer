@@ -146,6 +146,31 @@
 }
 
 
+- (void)beginUserInteract
+{
+    if (_rayTracingHybrid)
+        _rayTracingRecordStatus = kRecord_Stop;
+}
+
+
+- (void)continueUserInteract
+{
+    if (!_rayTracingHybrid)
+    {
+        [self setRayTracingRecordStatus:kRecord_Stop];
+        [self syncRayTracingBuffers];
+        [self setRayTracingRecordStatus:_rayTracingRecordStatus];
+    }
+}
+
+
+- (void)endUserInteract:(RecordStatus)recordStatus
+{
+    if (_rayTracingHybrid)
+        _rayTracingRecordStatus = recordStatus;
+}
+
+
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
