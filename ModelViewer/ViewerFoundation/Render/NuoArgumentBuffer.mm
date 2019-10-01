@@ -48,6 +48,9 @@
 
 - (void)encodeWith:(id<MTLArgumentEncoder>)encoder forIndex:(int)index
 {
+    // should be encoded for only once
+    assert(_index == -1);
+    
     _buffer = [encoder.device newBufferWithLength:encoder.encodedLength options:0];
     
     [encoder setArgumentBuffer:_buffer offset:0];

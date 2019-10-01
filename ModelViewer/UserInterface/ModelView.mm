@@ -143,15 +143,21 @@ MouseDragMode;
     BOOL endingDrag = event.type == NSEventTypeLeftMouseUp;
     BOOL dragging = event.type == NSEventTypeLeftMouseDragged;
     
-    if (startingDrag || dragging)
+    if (startingDrag)
     {
         [_modelRender setSampleCount:1];
-        [_modelRender setRayTracingRecordStatus:kRecord_Stop];
+        [_modelRender beginUserInteract];
+    }
+        
+    if (dragging)
+    {
+        [_modelRender setSampleCount:1];
+        [_modelRender continueUserInteract];
     }
     
     if (endingDrag)
     {
-        [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
+        [_modelRender endUserInteract:_modelPanel.rayTracingRecordStatus];
         [_modelRender setSampleCount:kSampleCount];
     }
 }

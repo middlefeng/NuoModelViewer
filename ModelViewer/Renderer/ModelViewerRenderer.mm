@@ -157,9 +157,11 @@
 {
     if (!_rayTracingHybrid)
     {
+        RecordStatus orginalStatus = _rayTracingRecordStatus;
+        
         [self setRayTracingRecordStatus:kRecord_Stop];
         [self syncRayTracingBuffers];
-        [self setRayTracingRecordStatus:_rayTracingRecordStatus];
+        [self setRayTracingRecordStatus:orginalStatus];
     }
 }
 
