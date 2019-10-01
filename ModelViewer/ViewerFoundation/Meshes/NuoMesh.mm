@@ -209,6 +209,14 @@
 
 
 
+- (void)setEnabled:(BOOL)enabled
+{
+    _enabled = enabled;
+    _globalBufferCachedTrans = NuoMatrixFloat44Identity;
+}
+
+
+
 - (void)smoothWithTolerance:(float)tolerance
 {
     _smoothTolerance = tolerance;

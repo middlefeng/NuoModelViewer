@@ -734,7 +734,7 @@
 {
     _animationProgress = _animationSlider.floatValue;
     
-    [_optionUpdateDelegate modelOptionUpdate:0];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
 
 
