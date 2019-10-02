@@ -28,7 +28,6 @@
 // sub renderers
 //
 #import "NuoRayAccelerateStructure.h"
-#import "ModelRenderDelegate.h"
 #import "ModelHybridRenderDelegate.h"
 #import "ModelRayTracerDelegate.h"
 
