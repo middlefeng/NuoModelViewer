@@ -25,6 +25,11 @@
 @end
 
 
+/**
+ *  provider of info that required by render a scene
+ *
+ *  shadow map is option for a ray tracing based renderer
+ */
 
 @interface ModelSceneParameters : NSObject < NuoMeshSceneParametersProvider >
 

@@ -20,51 +20,35 @@ using namespace metal;
 
 
 
-struct PathSample
+struct IlluminateTargets
 {
-    float3 direction;
-
-    // the path scatter term contributed by the reflection where the current sample
-    // plays as incident ray. it is
-    //
-    // f * cos(theta) / pdf, see p875, pbr-book, [14.19]
-    //
-    float3 pathScatterTerm;
-};
-
-
-
-struct SurfaceInteraction
-{
-    float3 p;
-    NuoRayTracingMaterial material;
+    texture2d<float, access::read_write> overlayResult                  [[id(0)]];
+    texture2d<float, access::read_write> overlayForVirtual              [[id(1)]];
+    texture2d<float, access::read_write> overlayForVirtualWithoutBlock  [[id(2)]];
 };
 
 
 
 static void self_illumination(uint2 tid,
                               device RayStructureUniform& structUniform,
+                              device IlluminateTargets& targets,
                               constant NuoRayTracingUniforms& tracingUniforms,
                               device RayBuffer* incidentRays,
                               device NuoRayTracingRandomUnit* random,
-                              texture2d<float, access::read_write> overlayResult,
-                              texture2d<float, access::read_write> overlayForVirtual,
                               array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                               sampler samplr);
 
 
 
-kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
-                                device RayStructureUniform& structUniform [[buffer(0)]],
-                                constant NuoRayTracingUniforms& tracingUniforms,
-                                device NuoRayTracingRandomUnit* random,
-                                device RayBuffer* shadowRays0,
-                                device RayBuffer* shadowRays1,
-                                device uint* masks,
-                                texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
-                                array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
-                                sampler samplr [[sampler(0)]])
+kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
+                                       device RayStructureUniform& structUniform [[buffer(0)]],
+                                       device IlluminateTargets& targets,
+                                       constant NuoRayTracingUniforms& tracingUniforms,
+                                       device NuoRayTracingRandomUnit* random,
+                                       device RayBuffer* shadowRays0,
+                                       device RayBuffer* shadowRays1,
+                                       array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(0)]],
+                                       sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
     
@@ -73,13 +57,12 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & intersection = structUniform.intersections[rayIdx];
-    device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
     
-    unsigned int triangleIndex = intersection.primitiveIndex;
-    cameraRay.primaryHitMask = masks[triangleIndex];
+    structUniform.exitantRays[rayIdx].primaryHitMask = surface_mask(rayIdx, structUniform);
+    RayBuffer cameraRay = structUniform.exitantRays[rayIdx];
     
     device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
-    device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16)].uv;
+    device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16)];
     
     // directional light sources in the scene definition are considered area lights with finite
     // subtending solid angles, in far distance
@@ -89,24 +72,30 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
         device RayBuffer* shadowRay = &shadowRays[i][rayIdx];
         constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[i];
         
-        shadow_ray_emit_infinite_area(rayIdx, structUniform, tracingUniforms,
-                                      lightSource, r, shadowRay, diffuseTex, samplr);
+        shadow_ray_emit_infinite_area(cameraRay, intersection, structUniform, tracingUniforms,
+                                      lightSource, randomVars.uv, shadowRay, diffuseTex, samplr);
         shadowRay->pathScatter *= lightSource.density;
+    }
+    
+    // ambient lighting on virtual surfaces as if no normal object present
+    //
+    if (cameraRay.mask == kNuoRayMask_Virtual)
+    {
+        ambient_with_no_block(tid, structUniform, tracingUniforms, cameraRay, intersection, randomVars,
+                              targets.overlayForVirtualWithoutBlock, diffuseTex, samplr);
     }
 }
 
 
 kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                              device RayStructureUniform& structUniform [[buffer(0)]],
+                                             device IlluminateTargets& targets,
                                              constant NuoRayTracingUniforms& tracingUniforms,
                                              device NuoRayTracingRandomUnit* random,
                                              device RayBuffer* shadowRays0,
                                              device RayBuffer* shadowRays1,
                                              device RayBuffer* incidentRaysBuffer,
-                                             device uint* masks,
-                                             texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                             texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
-                                             array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
+                                             array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(0)]],
                                              sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
@@ -115,11 +104,8 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
         return;
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    device Intersection & intersection = structUniform.intersections[rayIdx];
-    device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
-    
-    unsigned int triangleIndex = intersection.primitiveIndex;
-    cameraRay.primaryHitMask = masks[triangleIndex];
+    structUniform.exitantRays[rayIdx].primaryHitMask = surface_mask(rayIdx, structUniform);
+    RayBuffer cameraRay = structUniform.exitantRays[rayIdx];
     
     device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
     device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16)].uv;
@@ -129,39 +115,39 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
     //
     for (uint i = 0; i < 2; ++i)
     {
+        device Intersection & intersection = structUniform.intersections[rayIdx];
         device RayBuffer* shadowRay = &shadowRays[i][rayIdx];
         constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[i];
         
-        shadow_ray_emit_infinite_area(rayIdx, structUniform, tracingUniforms,
+        shadow_ray_emit_infinite_area(cameraRay, intersection, structUniform, tracingUniforms,
                                       lightSource, r, &shadowRays[i][rayIdx], diffuseTex, samplr);
         shadowRay->pathScatter *= lightSource.density;
     }
     
-    self_illumination(tid, structUniform,
+    self_illumination(tid, structUniform, targets,
                       tracingUniforms, incidentRaysBuffer,
-                      random, overlayResult, overlayForVirtual, diffuseTex, samplr);
+                      random, diffuseTex, samplr);
 }
 
 
 
-kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
-                                 device RayStructureUniform& structUniform [[buffer(0)]],
-                                 constant NuoRayTracingUniforms& tracingUniforms,
-                                 device NuoRayTracingRandomUnit* random,
-                                 texture2d<float, access::read_write> overlayResult [[texture(0)]],
-                                 texture2d<float, access::read_write> overlayForVirtual [[texture(1)]],
-                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(2)]],
-                                 sampler samplr [[sampler(0)]])
+kernel void incident_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
+                                        device RayStructureUniform& structUniform [[buffer(0)]],
+                                        device IlluminateTargets& targets,
+                                        constant NuoRayTracingUniforms& tracingUniforms,
+                                        device NuoRayTracingRandomUnit* random,
+                                        array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(0)]],
+                                        sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
     
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;
     
-    self_illumination(tid, structUniform,
+    self_illumination(tid, structUniform, targets,
                       tracingUniforms, structUniform.exitantRays /* incident rays are the
                                                                     exitant rays of the next path */,
-                      random, overlayResult, overlayForVirtual, diffuseTex, samplr);
+                      random, diffuseTex, samplr);
 }
 
 
@@ -172,14 +158,20 @@ enum LightingType
     kLighting_WithoutBlock = 0,
     kLighting_WithBlock,
 };
+    
+
+struct ShadowTargets
+{
+    texture_array<2, access::write>::t lightForOpaque  [[id(0)]];
+    texture_array<2, access::write>::t lightForTrans   [[id(2)]];
+    texture_array<2, access::write>::t lightForVirtual [[id(4)]];
+};
 
 
 kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
                               device RayStructureUniform& structUniform [[buffer(0)]],
-                              device uint* shadeIndex,
-                              texture_array<2, access::write>::t lightForOpaque  [[texture(0)]],
-                              texture_array<2, access::write>::t lightForTrans   [[texture(2)]],
-                              texture_array<2, access::write>::t lightForVirtual [[texture(4)]])
+                              device ShadowTargets& targets,
+                              device uint* shadeIndex)
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
     
@@ -191,9 +183,9 @@ kernel void shadow_contribute(uint2 tid [[thread_position_in_grid]],
     device Intersection& intersection = structUniform.intersections[rayIdx];
     device RayBuffer& shadowRay = structUniform.exitantRays[rayIdx];
     
-    texture_array<2, access::write>::t lightsDst[] = { lightForOpaque,
-                                                       lightForTrans,
-                                                       lightForVirtual };
+    texture_array<2, access::write>::t lightsDst[] = { targets.lightForOpaque,
+                                                       targets.lightForTrans,
+                                                       targets.lightForVirtual };
     
     device uint& targetIndex = *shadeIndex;
     
@@ -286,20 +278,15 @@ kernel void lighting_accumulate(uint2 tid [[thread_position_in_grid]],
 }
 
 
-
-static PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 ray,
-                                 float2 sampleUV, float Cdeterminator  /* randoms */ );
-
     
 /**
  *  write the result of illuminating surface and ambient
  */
-void overlayWrite(uint hitType, float4 value, uint2 tid,
-                  texture2d<float, access::read_write> overlayResult,
-                  texture2d<float, access::read_write> overlayForVirtual)
+static void overlayWrite(uint hitType, float4 value, uint2 tid,
+                         device IlluminateTargets& targets)
 {
     texture2d<float, access::read_write> texture = (hitType & kNuoRayMask_Virtual)?
-                                                    overlayForVirtual : overlayResult;
+                                                    targets.overlayForVirtual : targets.overlayResult;
     
     const float4 color = texture.read(tid);
     const float4 result = float4(color.rgb + value.rgb, saturate(color.a + value.a));
@@ -309,11 +296,10 @@ void overlayWrite(uint hitType, float4 value, uint2 tid,
 
 void self_illumination(uint2 tid,
                        device RayStructureUniform& structUniform,
+                       device IlluminateTargets& targets,
                        constant NuoRayTracingUniforms& tracingUniforms,
                        device RayBuffer* incidentRays,
                        device NuoRayTracingRandomUnit* random,
-                       texture2d<float, access::read_write> overlayResult,
-                       texture2d<float, access::read_write> overlayForVirtual,
                        array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                        sampler samplr)
 {
@@ -324,7 +310,11 @@ void self_illumination(uint2 tid,
     device NuoRayTracingMaterial* materials = structUniform.materials;
     device uint* index = structUniform.index;
     device RayBuffer& incidentRay = incidentRays[rayIdx];
-    RayBuffer ray = structUniform.exitantRays[rayIdx];
+    
+    // make a copy from the exitant rays buffer as the same buffer might be used as
+    // incident rays buffer
+    //
+    const RayBuffer ray = structUniform.exitantRays[rayIdx];
     
     if (intersection.distance >= 0.0f)
     {
@@ -334,12 +324,6 @@ void self_illumination(uint2 tid,
         unsigned int triangleIndex = intersection.primitiveIndex;
         device uint* vertexIndex = index + triangleIndex * 3;
         float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
-        
-        // the outgoing ray (that is the input ray buffer) would be stored in the same buffer as the
-        // incident ray (that is the output ray buffer) may be the same. so it's necessary to store the
-        // color before calcuating the bounce
-        //
-        float3 originalRayColor = ray.pathScatter;
         
         int illuminate = materials[*(vertexIndex)].shinessDisolveIllum.z;
         if (illuminate == 0)
@@ -363,56 +347,28 @@ void self_illumination(uint2 tid,
             if (ray.bounce == 0)
                 color = saturate(color);
             
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid,
-                         overlayResult, overlayForVirtual);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
             
             incidentRay.maxDistance = -1;
         }
         else
         {
             device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
-            device float2& r = randomVars.uv;
-            device float& Cdeterm = randomVars.pathTermDeterminator;
+            NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
+                                                                       tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
+                                                                       index, intersection, samplr);
             
-            float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
-            
-            NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
-            material.diffuseColor = color;
-            material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
-            
-            const SurfaceInteraction interaction = { intersectionPoint, material };
-            PathSample sample = sample_scatter(interaction, -ray.direction, r, Cdeterm);
-            
-            // terminate further tracing if the term is zero. this happens when the vector is out of
-            // the hemisphere in the specular sampling
-            //
-            if (sample.pathScatterTerm.x == 0 &&
-                sample.pathScatterTerm.y == 0 &&
-                sample.pathScatterTerm.z == 0)
-            {
-                incidentRay.maxDistance = -1;
-                incidentRay.pathScatter = 0.0;
-            }
-            else
-            {
-                incidentRay.direction = sample.direction;
-                incidentRay.origin = intersectionPoint + normalize(material.normal) * (maxDistance / 20000.0);
-                incidentRay.maxDistance = maxDistance;
-                incidentRay.mask = kNuoRayMask_Opaue | kNuoRayMask_Illuminating;
-                incidentRay.primaryHitMask = ray.primaryHitMask;
-                incidentRay.bounce = ray.bounce + 1;
-                incidentRay.ambientIlluminated = ray.ambientIlluminated;
-                
-                // make the term of this reflection contribute to the path scatter
-                //
-                incidentRay.pathScatter = sample.pathScatterTerm * ray.pathScatter;
-            }
+            RayBuffer currentIncident;
+            sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, currentIncident);
+            incidentRay = currentIncident;
         }
         
-        if (ray.bounce > 0 && !ray.ambientIlluminated && intersection.distance > ambientRadius)
+        float ambientFactor = ambient_distance_factor(ambientRadius / 20.0, ambientRadius,
+                                                      intersection.distance, 1.0);
+        if (ray.bounce > 0 && !ray.ambientIlluminated && ambientFactor > 0)
         {
-            color = originalRayColor * globalIllum.ambient;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, overlayResult, overlayForVirtual);
+            color = ray.pathScatter * globalIllum.ambient * ambientFactor;
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
             incidentRay.ambientIlluminated = true;
         }
     }
@@ -421,12 +377,12 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientIlluminated)
         {
             float3 color = ray.pathScatter * globalIllum.ambient;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, overlayResult, overlayForVirtual);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
             incidentRay.ambientIlluminated = true;
         }
         else if (ray.bounce == 0)
         {
-            overlayForVirtual.write(float4(float3(globalIllum.ambient), 1.0), tid);
+            targets.overlayForVirtual.write(float4(globalIllum.ambient, 1.0), tid);
             incidentRay.ambientIlluminated = true;
         }
         
@@ -434,78 +390,3 @@ void self_illumination(uint2 tid,
     }
 }
 
-
-inline static float3 reflection_vector(float3 wo, float3 normal);
-inline bool same_hemisphere(float3 w, float3 wp);
-
-
-PathSample sample_scatter(const thread SurfaceInteraction& interaction, float3 ray,
-                          float2 sampleUV, float Cdeterminator  /* randoms */ )
-{
-    PathSample result;
-    
-    const float3 Cdiff = interaction.material.diffuseColor;
-    const float3 Cspec = interaction.material.specularColor;
-    const float Mspec = interaction.material.shinessDisolveIllum.x;
-    const float3 normal = interaction.material.normal;
-    
-    float CdiffSampleProbable = max(Cdiff.x, max(Cdiff.y, Cdiff.z));
-    float CspecSampleProbable = min(Cspec.x, min(Cspec.y, Cspec.z));
-    
-    float probableTotal = CdiffSampleProbable + CspecSampleProbable;
-    
-    if (Cdeterminator < CdiffSampleProbable / probableTotal)
-    {
-        float3 wi = sample_cosine_weighted_hemisphere(sampleUV, 1);
-        result.direction = align_hemisphere_normal(wi, normal);
-        result.pathScatterTerm = Cdiff * (probableTotal / CdiffSampleProbable);
-    }
-    else
-    {
-        float3 wo = relative_to_hemisphere_normal(ray, normal);
-        float3 wh = sample_cosine_weighted_hemisphere(sampleUV, Mspec);
-        float3 wi = reflection_vector(wo, wh);
-        
-        if (!same_hemisphere(wo, wi))
-        {
-            result.pathScatterTerm = 0.0;
-            return result;
-        }
-        
-        // all the following factor omit a 1/pi factor, which would have been cancelled
-        // in the calculation of cosinedPdfScale anyway
-        //
-        // hwPdf  -   PDF of the half vector in terms of theta_h, which is a cosine-weighed
-        //            distribution based on micro-facet (and simplified by the Blinn-Phong).
-        //            see comments in cosine_pow_pdf()
-        //
-        // f      -   BRDF specular term. note the normalization factor is (m + 8) / (8 * pi) because
-        //            it is related to theta rather than theta_h.
-        //            for the details of how the above normalization term is deduced, see http://www.farbrausch.de/%7Efg/stuff/phong.pdf
-        //
-        // pdf    -   PDF of the reflection vector. note this is not a analytical form in terms of theta,
-        //            rather it is a value in terms of wo and the half-vector
-        //            see p813, pbr-book
-        //
-        float hwPdf = (Mspec + 2.0) / 2.0;
-        float pdf = hwPdf / (4.0 * dot(wo, wh));
-        float3 f = specular_refectance_normalized(Cspec, Mspec, wo, wh);
-        
-        result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdf * wi.y /* cosine factor of incident ray */;
-        result.direction = align_hemisphere_normal(wi, normal);
-    }
-    
-    return result;
-}
-
-
-inline static float3 reflection_vector(float3 wo, float3 normal)
-{
-    return -wo + 2 * dot(wo, normal) * normal;
-}
-
-
-inline bool same_hemisphere(float3 w, float3 wp)
-{
-    return w.y * wp.y > 0;
-}

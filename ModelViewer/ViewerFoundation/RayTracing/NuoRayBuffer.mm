@@ -12,11 +12,13 @@
 
 
 
-const uint kRayBufferStride = 56;  //  base fields           - 32
+const uint kRayBufferStride = 60;  //  base fields           - 32
                                    //  path scatter          - 12
+                                   //  opacity               - 4
                                    //  bounce                - 4
                                    //  primary hit mask      - 4
                                    //  ambient illuminateed  - 4
+                                   //  specular reflection   - 0 (packed into above)
 
 
 
@@ -54,8 +56,8 @@ const uint kRayBufferStride = 56;  //  base fields           - 32
 {
     id<MTLDevice> device = _commandQueue.device;
     
-    uint32 pipelineMask[] = { kNuoRayMask_Opaue | kNuoRayMask_Virtual,
-                              kNuoRayMask_Opaue | kNuoRayMask_Virtual | kNuoRayMask_Translucent,
+    uint32 pipelineMask[] = { kNuoRayMask_Opaque | kNuoRayMask_Virtual,
+                              kNuoRayMask_Opaque | kNuoRayMask_Virtual | kNuoRayMask_Translucent,
                               kNuoRayMask_Virtual,
                               kNuoRayMask_Illuminating };
     

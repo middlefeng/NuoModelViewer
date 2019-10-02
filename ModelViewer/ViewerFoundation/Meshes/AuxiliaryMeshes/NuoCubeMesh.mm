@@ -94,7 +94,7 @@ static uint16_t kIndices[] =
                                                            withOptions:MTLResourceStorageModeManaged
                                                          withChainSize:kInFlightBufferCount];
             
-        self.sampleCount = kSampleCount;
+        self.sampleCount = 1;
     }
     
     return self;
@@ -172,6 +172,8 @@ static uint16_t kIndices[] =
 
 - (void)drawMesh:(NuoRenderPassEncoder*)renderPass
 {
+    [renderPass pushParameterState:@"Cube mesh"];
+    
     [renderPass setFrontFacingWinding:MTLWindingCounterClockwise];
     [renderPass setCullMode:MTLCullModeBack];
     [renderPass setRenderPipelineState:self.renderPipelineState];
@@ -184,6 +186,8 @@ static uint16_t kIndices[] =
     
     // 16-bit packed
     [renderPass drawPackedWithIndices:self.indexBuffer];
+    
+    [renderPass popParameterState];
 }
 
 

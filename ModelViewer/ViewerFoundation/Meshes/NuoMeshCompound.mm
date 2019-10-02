@@ -165,14 +165,14 @@
 }
 
 
-- (std::vector<uint32_t>)maskBuffer
+- (std::vector<NuoRayMask>)maskBuffer
 {
-    std::vector<uint32_t> buffer;
+    std::vector<NuoRayMask> buffer;
     
     for (NuoMesh* mesh in _meshes)
     {
         NuoMeshCompound* compoundOne = (NuoMeshCompound*)mesh;
-        std::vector<uint32_t> oneBuffer = [compoundOne maskBuffer];
+        std::vector<NuoRayMask> oneBuffer = [compoundOne maskBuffer];
         buffer.insert(buffer.end(), oneBuffer.begin(), oneBuffer.end());
     }
     

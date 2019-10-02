@@ -122,14 +122,14 @@
 }
 
 
-- (std::vector<uint32_t>)maskBuffer
+- (std::vector<NuoRayMask>)maskBuffer
 {
-    std::vector<uint32_t> oneBuffer = [super maskBuffer];
+    std::vector<NuoRayMask> oneBuffer = [super maskBuffer];
     
     if (self.shadowOverlayOnly)
     {
-        for (uint32& item : oneBuffer)
-            item |= kNuoRayMask_Virtual;
+        for (NuoRayMask& item : oneBuffer)
+            item = kNuoRayMask_Virtual;
     }
     
     return oneBuffer;

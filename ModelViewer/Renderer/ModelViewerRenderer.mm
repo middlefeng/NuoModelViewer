@@ -27,11 +27,9 @@
 
 // sub renderers
 //
-#import "NuoShadowMapRenderer.h"
-#import "NuoDeferredRenderer.h"
 #import "NuoRayAccelerateStructure.h"
-#import "ModelRayTracingRenderer.h"
-#import "ModelRayTracingBlendRenderer.h"
+#import "ModelHybridRenderDelegate.h"
+#import "ModelRayTracerDelegate.h"
 
 #import "NuoDirectoryUtils.h"
 #import "NuoModelLoaderGPU.h"
@@ -43,7 +41,7 @@
 #import "NuoInspectableMaster.h"
 
 
-@interface ModelRenderer () < ModelShadowMapProvider >
+@interface ModelRenderer ()
 
 
 @property (nonatomic, weak) NuoMeshCompound* mainModelMesh;
@@ -71,20 +69,15 @@
 
 @implementation ModelRenderer
 {
-    NuoShadowMapRenderer* _shadowMapRenderer[2];
-    NuoRenderPassTarget* _immediateTarget;
-    NuoDeferredRenderer* _deferredRenderer;
-    ModelRayTracingBlendRenderer* _illuminationRenderer;
-    
     NuoCheckboardMesh* _checkerboard;
     
     NuoRayAccelerateStructure* _rayAccelerator;
-    ModelRayTracingRenderer* _rayTracingRenderer;
-    
     BOOL _rayAcceleratorOutOfSync;
     BOOL _rayAcceleratorNeedRebuild;
     
     NuoAmbientUniformField _ambientParameters;
+    id<ModelRenderDelegate> _renderDelegate;
+    BOOL _rayTracingHybrid;
 }
 
 
@@ -94,78 +87,97 @@
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
-    if ((self = [super initWithCommandQueue:commandQueue]))
+    if (self = [super init])
     {
+        self.commandQueue = commandQueue;
+        
         _modelOptions = [NuoMeshOption new];
-        
-        _shadowMapRenderer[0] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 0"];
-        _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 1"];
-        
-        _immediateTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                             withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                             withSampleCount:kSampleCount];
-        _immediateTarget.name = @"immediate";
-        _immediateTarget.manageTargetTexture = YES;
-        _immediateTarget.sharedTargetTexture = NO;
-        
-        _sceneParameters = [[ModelSceneParameters alloc] initWithDevice:commandQueue.device];
-        _sceneParameters.shadowMap = self;
-        self.paramsProvider = _sceneParameters;
-        
-        _deferredRenderer = [[NuoDeferredRenderer alloc] initWithCommandQueue:commandQueue
-                                                           withSceneParameter:_sceneParameters];
-        
-        _illuminationRenderer = [[ModelRayTracingBlendRenderer alloc] initWithCommandQueue:commandQueue
-                                                                           withPixelFormat:MTLPixelFormatBGRA8Unorm
-                                                                           withSampleCount:1];
         
         _checkerboard = [[NuoCheckboardMesh alloc] initWithCommandQueue:commandQueue];
         
         _sceneRoot = [[NuoMeshSceneRoot alloc] init];
-        _sceneParameters.sceneRoot = _sceneRoot;
         _boardMeshes = [NSMutableArray new];
+        
+        _sceneParameters = [[ModelSceneParameters alloc] initWithDevice:commandQueue.device];
+        _sceneParameters.sceneRoot = _sceneRoot;
         
         _viewRotation = NuoMatrixFloat44Identity;
         _viewTranslation = NuoMatrixFloat44Identity;
         
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
-        _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:commandQueue];
-        _rayTracingRenderer.rayStructure = _rayAccelerator;
     }
 
     return self;
 }
 
 
+- (void)switchToHybrid
+{
+    if (_rayTracingHybrid && _renderDelegate)
+        return;
+    
+    _renderDelegate = [[ModelHybridRenderDelegate alloc] initWithCommandQueue:self.commandQueue
+                                                              withAccelerator:_rayAccelerator
+                                                                withSceneRoot:_sceneRoot
+                                                          withSceneParameters:_sceneParameters];
+    
+    _rayTracingHybrid = YES;
+}
+
+
+- (void)switchToRayTracing
+{
+    if (!_rayTracingHybrid && _renderDelegate)
+        return;
+    
+    _renderDelegate = [[ModelRayTracerDelegate alloc] initWithCommandQueue:self.commandQueue
+                                                           withAccelerator:_rayAccelerator
+                                                             withSceneRoot:_sceneRoot];
+        
+    _rayTracingHybrid = NO;
+}
+
 
 - (void)setRayTracingRecordStatus:(RecordStatus)rayTracingRecordStatus
 {
-    BOOL changed = (_rayTracingRecordStatus != rayTracingRecordStatus);
-    
     _rayTracingRecordStatus = rayTracingRecordStatus;
-    
-    if (rayTracingRecordStatus == kRecord_Stop)
-        [_rayTracingRenderer resetResources];
-    
-    if (changed)
+    _renderDelegate.rayTracingRecordStatus = rayTracingRecordStatus;
+}
+
+
+- (void)beginUserInteract
+{
+    if (_rayTracingHybrid)
+        _rayTracingRecordStatus = kRecord_Stop;
+}
+
+
+- (void)continueUserInteract
+{
+    if (!_rayTracingHybrid)
     {
-        [_sceneRoot setShadowOptionRayTracing:_rayTracingRecordStatus != kRecord_Stop];
-        [_sceneRoot makeGPUStates];
+        RecordStatus orginalStatus = _rayTracingRecordStatus;
+        
+        [self setRayTracingRecordStatus:kRecord_Stop];
+        [self syncRayTracingBuffers];
+        [self setRayTracingRecordStatus:orginalStatus];
     }
+}
+
+
+- (void)endUserInteract:(RecordStatus)recordStatus
+{
+    if (_rayTracingHybrid)
+        _rayTracingRecordStatus = recordStatus;
 }
 
 
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
-    [_immediateTarget setDrawableSize:drawableSize];
-    [_shadowMapRenderer[0] setDrawableSize:drawableSize];
-    [_shadowMapRenderer[1] setDrawableSize:drawableSize];
-    [_deferredRenderer setDrawableSize:drawableSize];
     [_rayAccelerator setDrawableSize:drawableSize];
-    [_rayTracingRenderer setDrawableSize:drawableSize];
-    [_illuminationRenderer setDrawableSize:drawableSize];
     
+    [_renderDelegate setDrawableSize:drawableSize];
     [_sceneParameters setDrawableSize:drawableSize];
 }
 
@@ -198,11 +210,10 @@
     // count of the final target is always 1
     
     // no calling to shadow map render. they are not MSAA-ed
+    // no calling to cube/backdrop render. they are not MSAA-ed
     
-    [_immediateTarget setSampleCount:sampleCount];
-    [_deferredRenderer setSampleCount:sampleCount];
+    [_renderDelegate setSampleCount:sampleCount];
     [_sceneRoot setSampleCount:sampleCount];
-    [_cubeMesh setSampleCount:sampleCount];
 }
 
 
@@ -856,9 +867,11 @@
 - (void)setAmbientParameters:(const NuoAmbientUniformField&)ambientParameters
 {
     _ambientParameters = ambientParameters;
-    [_deferredRenderer setParameters:ambientParameters];
     
-    [_illuminationRenderer setAmbient:_sceneParameters.ambient];
+    [_renderDelegate setAmbientParameters:ambientParameters];
+    
+    NuoVectorFloat3 ambient(_ambientDensity, _ambientDensity, _ambientDensity);
+    [_renderDelegate setAmbient:ambient];
 }
 
 
@@ -983,6 +996,8 @@
 {
     [self updateUniformsForView:commandBuffer];
     
+    _renderDelegate.rayTracingRecordStatus = _rayTracingRecordStatus;
+    
     if (_rayTracingRecordStatus != kRecord_Stop)
     {
         // updat to the intersector accelerating sturcture
@@ -994,98 +1009,32 @@
         
         [_rayAccelerator setView:[self viewMatrix]];
         
-        // update to the ray tracer renderer
-        
-        if (_rayAcceleratorNeedRebuild)
-            [_rayTracingRenderer rayStructUpdated];
-        
         if (_rayAcceleratorOutOfSync)
         {
-            const NuoMatrixFloat44 viewTrans = [self viewMatrix];
-            const NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
-            
-            NuoRayTracingGlobalIlluminationParam illumParams;
-            illumParams.ambient = _sceneParameters.ambient._vector;
-            illumParams.ambientRadius = _ambientParameters.sampleRadius;
-            illumParams.illuminationStrength = _illuminationStrength;
-            illumParams.specularMaterialAdjust = _lights[0].lightingSpecular;
-            
-            _rayTracingRenderer.sceneBounds = bounds;
-            _rayTracingRenderer.globalIllum = illumParams;
-            _rayTracingRenderer.fieldOfView = self.fieldOfView;
+            [_renderDelegate setViewMatrix:[self viewMatrix]];
+            [_renderDelegate setAmbient:_ambientDensity];
+            [_renderDelegate setAmbientParameters:_ambientParameters];
+            [_renderDelegate setIlluminationStrength:_illuminationStrength];
         }
-        
-        for (uint i = 0; i < 2; ++i)
-            [_rayTracingRenderer setLightSource:_lights[i] forIndex:i];
-        
+    }
+    
+    [_renderDelegate setLights:_lights];
+    [_renderDelegate setDelegateTarget:self.renderTarget];
+    [_renderDelegate predrawWithCommandBuffer:commandBuffer
+                         withRayStructChanged:_rayAcceleratorNeedRebuild
+                        withRayStructAdjusted:_rayAcceleratorOutOfSync];
+    
+    if (_rayTracingRecordStatus != kRecord_Stop)
+    {
         _rayAcceleratorNeedRebuild = NO;
         _rayAcceleratorOutOfSync = NO;
-    }
-    
-    if (_rayTracingRecordStatus == kRecord_Start)
-    {
-        [_rayTracingRenderer drawWithCommandBuffer:commandBuffer];
-        
-        [_illuminationRenderer setDirectLighting:_rayTracingRenderer.directLight];
-        [_illuminationRenderer predrawWithCommandBuffer:commandBuffer];
-    }
-    
-    if (_rayTracingRecordStatus == kRecord_Stop)
-    {
-        // generate shadow map
-        //
-        for (unsigned int i = 0; i < 2 /* for two light sources only */; ++i)
-        {
-            _shadowMapRenderer[i].sceneRoot = _sceneRoot;
-            _shadowMapRenderer[i].lightSource = _lights[i];
-            [_shadowMapRenderer[i] drawWithCommandBuffer:commandBuffer];
-        }
-        
-        // store the light view point projection for shadow map detection in the scene
-        //
-        NuoLightVertexUniforms lightUniforms;
-        lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix._m;
-        lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix._m;
-        
-        [_sceneParameters updateLightCastWithInFlight:commandBuffer withContent:&lightUniforms];
-    
-        // seems unnecessary with ray tracing running, and it slows down ray tracing on
-        // 10.14.2 occasionally for unknown reason
-        
-        [_deferredRenderer setRoot:_sceneRoot];
-        [_deferredRenderer predrawWithCommandBuffer:commandBuffer];
     }
 }
 
 
 - (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
-    // get the target render pass and draw the scene in the forward rendering
-    //
-    NuoRenderPassEncoder* renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
-    if (!renderPass)
-        return;
-    
-    renderPass.label = @"Scene Render Pass";
-    
-    if (_cubeMesh)
-    {
-        [renderPass pushParameterState:@"Cube mesh"];
-        [_cubeMesh drawMesh:renderPass];
-        [renderPass popParameterState];
-    }
-    
-    [self setSceneBuffersTo:renderPass];
-    
-    BOOL rayTracingMode = (_rayTracingRecordStatus != kRecord_Stop);
-    
-    [_sceneRoot drawMesh:renderPass];
-    
-    [_immediateTarget releaseRenderPassEndcoder];
-    
-    NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
-    [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_Immediate];
-    [inspectMaster updateTexture:_immediateTarget.targetTexture forName:kInspectable_ImmediateAlpha];
+    [_renderDelegate drawWithCommandBufferPriorBackdrop:commandBuffer];
     
     // deferred rendering for the illumination
     
@@ -1094,36 +1043,20 @@
     if (_showCheckerboard)
         [_checkerboard drawMesh:deferredRenderPass];
     
+    if (_cubeMesh)
+        [_cubeMesh drawMesh:deferredRenderPass];
+    
     BOOL drawBackdrop = _backdropMesh && _backdropMesh.enabled;
     if (drawBackdrop)
         [_backdropMesh drawMesh:deferredRenderPass];
 
     if (_mainModelMesh.enabled)
     {
-        if (rayTracingMode)
-        {
-            NSArray* textures = _rayTracingRenderer.targetTextures;
-            
-            [inspectMaster updateTexture:textures[0] forName:kInspectable_Illuminate];
-            
-            [_illuminationRenderer setRenderTarget:self.renderTarget];
-            [_illuminationRenderer setImmediateResult:_immediateTarget.targetTexture];
-            [_illuminationRenderer setIllumination:textures[0]];
-            [_illuminationRenderer setIlluminationOnVirtual:textures[1]];
-            [_illuminationRenderer setTranslucentMap:[_deferredRenderer ambientBuffer]];
-            
-            [_illuminationRenderer drawWithCommandBuffer:commandBuffer];
-        }
-        else
-        {
-            [renderPass pushParameterState:@"Deferred render"];
-            
-            [_deferredRenderer setRenderTarget:self.renderTarget];
-            [_deferredRenderer setImmediateResult:_immediateTarget.targetTexture];
-            [_deferredRenderer drawWithCommandBuffer:commandBuffer];
-            
-            [renderPass popParameterState];
-        }
+        [deferredRenderPass pushParameterState:@"Deferred render"];
+        
+        [_renderDelegate drawWithCommandBuffer:commandBuffer];
+        
+        [deferredRenderPass popParameterState];
     }
     
     [self releaseDefaultEncoder];
@@ -1183,23 +1116,7 @@
 
 - (void)setResolveDepth:(BOOL)resolveDepth
 {
-    [_immediateTarget setResolveDepth:resolveDepth];
-}
-
-
-#pragma mark -- Protocol ModelShadowMapProvider
-
-- (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
-{
-    if (_rayTracingRecordStatus != kRecord_Stop)
-        return [_rayTracingRenderer shadowForLightSource:index withMask:mask];
-    else
-        return _shadowMapRenderer[index].renderTarget.targetTexture;
-}
-
-- (id<MTLTexture>)depthMap
-{
-    return _immediateTarget.depthTexture;
+    [_renderDelegate setResolveDepth:resolveDepth];
 }
 
 

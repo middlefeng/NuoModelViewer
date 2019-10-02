@@ -39,7 +39,7 @@ struct ProjectedVertex
 
 
 
-vertex ProjectedVertex vertex_tex_materialed_tangent(device Vertex *vertices [[buffer(0)]],
+vertex ProjectedVertex vertex_tex_materialed_tangent(device const Vertex *vertices [[buffer(0)]],
                                                      constant NuoUniforms &uniforms [[buffer(1)]],
                                                      constant NuoLightVertexUniforms &lightCast [[buffer(2)]],
                                                      constant NuoMeshUniforms &meshUniforms [[buffer(3)]],
@@ -83,7 +83,7 @@ static float3 bumpped_normal(float3 normal, float3 tangent, float3 bitangent, fl
  *  or depth-only rendering (e.g. shadow-map)
  */
 
-vertex PositionSimple vertex_simple_tex_materialed_bump(device Vertex *vertices [[buffer(0)]],
+vertex PositionSimple vertex_simple_tex_materialed_bump(device const Vertex *vertices [[buffer(0)]],
                                                         constant NuoUniforms &uniforms [[buffer(1)]],
                                                         constant NuoMeshUniforms &meshUniforms [[buffer(2)]],
                                                         uint vid [[vertex_id]])
@@ -164,7 +164,7 @@ float3 bumpped_normal(float3 normal, float3 tangent, float3 bitangent, float3 bu
 #pragma mark -- Screen Space Shader --
 
 
-vertex VertexScreenSpace vertex_screen_space_tex_materialed_bump(device Vertex *vertices [[buffer(0)]],
+vertex VertexScreenSpace vertex_screen_space_tex_materialed_bump(device const Vertex *vertices [[buffer(0)]],
                                                                  constant NuoUniforms &uniforms [[buffer(1)]],
                                                                  constant NuoMeshUniforms &meshUniform [[buffer(3)]],
                                                                  uint vid [[vertex_id]])

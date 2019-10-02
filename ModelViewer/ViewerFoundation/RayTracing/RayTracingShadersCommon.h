@@ -35,6 +35,16 @@ struct RayBuffer
     //
     packed_float3 pathScatter;
     
+    // TODO: this pattern works only because scattered rays do not intersect with translucent surfaces.
+    //       need overhaul on the next iteration (supporting translucent on scatter rays)
+    //
+    // -1.0     : primary ray, not scattered
+    // (0, 1.0) : reflected, valued is the first surface opacity (subsequent bounces not considering translucent
+    // (1.0+)   : transmitted, value is (1.0 / surfaceOpaticy), in order to integrate lighting on a surface
+    //            behind a translucent
+    //
+    float opacity;
+    
     // the lenght of path in terms of the number of subpaths, and
     // the mask type of the first hit surface
     //
@@ -67,11 +77,31 @@ struct RayStructureUniform
 {
     constant NuoRayVolumeUniform& rayUniform [[id(0)]];
     device uint* index [[id(1)]];
-    device NuoRayTracingMaterial* materials[[id(2)]];
-    device RayBuffer* exitantRays [[id(3)]];
-    device Intersection *intersections [[id(4)]];
+    device uint* masks;
+    device NuoRayTracingMaterial* materials;
+    device RayBuffer* exitantRays;
+    device Intersection *intersections;
 };
 
+
+
+
+struct PathSample
+{
+    float3 direction;
+    
+    // the path scatter term contributed by the reflection where the current sample
+    // plays as incident ray. it is
+    //
+    // f * cos(theta) / pdf, see p875, pbr-book, [14.19]
+    //
+    float3 pathScatterTerm;
+    
+    float opacity;
+    
+    bool specularReflection;
+    bool transmission;
+};
 
 
 
@@ -112,12 +142,17 @@ inline NuoRayTracingMaterial interpolate_material(device NuoRayTracingMaterial *
     float sp1 = material1.shinessDisolveIllum.x;
     float sp2 = material2.shinessDisolveIllum.x;
     
+    float sd0 = material0.shinessDisolveIllum.y;
+    float sd1 = material1.shinessDisolveIllum.y;
+    float sd2 = material2.shinessDisolveIllum.y;
+    
     NuoRayTracingMaterial result;
     
     // compute sum of vertex attributes weighted by barycentric coordinates
     result.normal = metal::normalize(uvw.x * n0 + uvw.y * n1 + uvw.z * n2);
     result.specularColor = uvw.x * s0 + uvw.y * s1 + uvw.z * s2;
     result.shinessDisolveIllum.x = uvw.x * sp0 + uvw.y * sp1 + uvw.z * sp2;
+    result.shinessDisolveIllum.y = uvw.x * sd0 + uvw.y * sd1 + uvw.z * sd2;
     
     return result;
 }
@@ -159,6 +194,22 @@ inline float3 interpolate_color(device NuoRayTracingMaterial *materials,
     }
     
     return color;
+}
+
+
+inline NuoRayTracingMaterial interpolate_full_material(device NuoRayTracingMaterial *materials,
+                                                       metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                                                       float specularAdjust,
+                                                       device uint* index, Intersection intersection,
+                                                       metal::sampler samplr)
+{
+    float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
+    
+    NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
+    material.diffuseColor = color;
+    material.specularColor *= specularAdjust;
+    
+    return material;
 }
 
 
@@ -217,6 +268,10 @@ inline float3 sample_cone_uniform(float2 u, float cosThetaMax)
                   cosTheta,
                   metal::sin(phi) * sinTheta);
 }
+
+
+
+uint surface_mask(uint rayIdx, device RayStructureUniform& structUniform);
 
 
 
@@ -279,7 +334,8 @@ inline float3 relative_to_hemisphere_normal(float3 w, float3 n)
  *  shadow ray optimization
  */
 
-void shadow_ray_emit_infinite_area(uint rayIdx,
+void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
+                                   device Intersection& intersection,
                                    device RayStructureUniform& structUniform,
                                    constant NuoRayTracingUniforms& tracingUniforms,
                                    constant NuoRayTracingLightSource& lightSource,
@@ -287,6 +343,32 @@ void shadow_ray_emit_infinite_area(uint rayIdx,
                                    device RayBuffer* shadowRays,
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr);
+
+uint light_source_select(constant NuoRayTracingUniforms& tracingUniforms,
+                         float random, thread float* totalDensity);
+
+
+void ambient_with_no_block(uint2 tid,
+                           device RayStructureUniform& structUniform,
+                           constant NuoRayTracingUniforms& tracingUniforms,
+                           thread const RayBuffer& cameraRay,
+                           device Intersection& intersection,
+                           device NuoRayTracingRandomUnit& randomVars,
+                           metal::texture2d<float, metal::access::read_write> target,
+                           metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                           metal::sampler samplr);
+
+
+void sample_scatter_ray(float maxDistance,
+                        device NuoRayTracingRandomUnit& random,
+                        device Intersection& intersection,
+                        thread const NuoRayTracingMaterial& material,
+                        thread const RayBuffer& ray,
+                        thread RayBuffer& incidentRay);
+
+
+float ambient_distance_factor(float criteriaBlock, float criteriaUnblock,
+                              float intersection, float power);
 
 
 

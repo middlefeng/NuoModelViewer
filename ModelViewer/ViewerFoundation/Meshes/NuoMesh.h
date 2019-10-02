@@ -109,7 +109,7 @@
 - (void)makeGPUStates;
 
 
-- (std::vector<uint32_t>)maskBuffer;
+- (std::vector<NuoRayMask>)maskBuffer;
 
 
 - (void)setRawModel:(const PNuoModelBase&)model;

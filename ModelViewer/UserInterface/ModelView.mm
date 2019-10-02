@@ -143,15 +143,21 @@ MouseDragMode;
     BOOL endingDrag = event.type == NSEventTypeLeftMouseUp;
     BOOL dragging = event.type == NSEventTypeLeftMouseDragged;
     
-    if (startingDrag || dragging)
+    if (startingDrag)
     {
         [_modelRender setSampleCount:1];
-        [_modelRender setRayTracingRecordStatus:kRecord_Stop];
+        [_modelRender beginUserInteract];
+    }
+        
+    if (dragging)
+    {
+        [_modelRender setSampleCount:1];
+        [_modelRender continueUserInteract];
     }
     
     if (endingDrag)
     {
-        [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
+        [_modelRender endUserInteract:_modelPanel.rayTracingRecordStatus];
         [_modelRender setSampleCount:kSampleCount];
     }
 }
@@ -593,6 +599,16 @@ MouseDragMode;
     [_modelRender setRenderTarget:modelRenderTarget];
     lastTarget = modelRenderTarget;
     
+    if (_modelPanel.rayTracingHybrid ||
+        _modelPanel.rayTracingRecordStatus == kRecord_Stop)
+    {
+        [_modelRender switchToHybrid];
+    }
+    else
+    {
+        [_modelRender switchToRayTracing];
+    }
+    
     if (_modelPanel.rayTracingRecordStatus == kRecord_Start &&
         _modelPanel.motionBlurRecordStatus != kRecord_Start)
     {
@@ -768,7 +784,7 @@ MouseDragMode;
     if (!_trackingLighting && _modelPanel.motionBlurRecordStatus == kRecord_Stop)
         [_modelRender setAdvancedShaowEnabled:NO];
     
-    [_modelRender setRayTracingRecordStatus:kRecord_Stop];
+    [_modelRender beginUserInteract];
     [_modelRender setSampleCount:1];
     
     _mouseMoved = NO;
@@ -779,7 +795,7 @@ MouseDragMode;
 {
     [_modelRender setAdvancedShaowEnabled:YES];
     [_modelRender setSampleCount:kSampleCount];
-    [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
+    [_modelRender endUserInteract:_modelPanel.rayTracingRecordStatus];
     
     _trackingLighting = NO;
     _trackingSplitView = NO;
@@ -858,7 +874,7 @@ MouseDragMode;
         }
     }
     
-    [_modelRender syncRayTracingBuffers];
+    [_modelRender continueUserInteract];
     [self render];
 }
 
@@ -870,9 +886,7 @@ MouseDragMode;
     else
         _modelRender.zoomDelta = 10 * event.magnification;
     
-    [_modelRender setRayTracingRecordStatus:kRecord_Stop];
-    [_modelRender syncRayTracingBuffers];
-    [_modelRender setRayTracingRecordStatus:_modelPanel.rayTracingRecordStatus];
+    [_modelRender continueUserInteract];
     [self render];
 }
 

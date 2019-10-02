@@ -111,15 +111,15 @@ fragment float4 fragement_deferred(PositionTextureSimple vert                   
  *     the same texute)
  */
 
-fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
-                                   constant float3& ambient [[buffer(0)]],
-                                   texture2d<float> source [[texture(0)]],
-                                   texture2d<float> illumination [[texture(1)]],
-                                   texture2d<float> illuminationOnVirtual [[texture(2)]],
-                                   texture2d<float> directLighting [[texture(3)]],
-                                   texture2d<float> directBlock [[texture(4)]],
-                                   texture2d<float> translucentCoverMap [[texture(5)]],
-                                   sampler samplr [[sampler(0)]])
+fragment float4 illumination_blend_hybrid(PositionTextureSimple vert [[stage_in]],
+                                          texture2d<float> source [[texture(0)]],
+                                          texture2d<float> illumination [[texture(1)]],
+                                          texture2d<float> illuminationOnVirtual [[texture(2)]],
+                                          texture2d<float> illuminationOnVirtualWithoutBlock,
+                                          texture2d<float> directLighting,
+                                          texture2d<float> directBlock,
+                                          texture2d<float> translucentCoverMap,
+                                          sampler samplr [[sampler(0)]])
 {
     const float4 sourceColor = source.sample(samplr, vert.texCoord);
     const float3 illumiColor = illumination.sample(samplr, vert.texCoord).rgb;
@@ -168,7 +168,7 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
 
     const float3 direct = directLighting.sample(samplr, vert.texCoord).rgb;
     const float3 directBlocked = directBlock.sample(samplr, vert.texCoord).rgb;
-    const float3 ambientWithoutBlock = ambient;
+    const float3 ambientWithoutBlock = illuminationOnVirtualWithoutBlock.sample(samplr, vert.texCoord).rgb;
     
     // numerator should be masked by normal object, denominator shoud not
     //
@@ -192,6 +192,48 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     
     // shadowAdd is intended for the object edge anti-alias, ahdowBlend is intended for transparent object with
     // virutal shadow as background. the dichotomy approach of choosing between them might have neglectable 
+    // artifact but there seems no way of "blending" them properly.
+    //
+    float shadowAdd = sourceColor.a + shadowFactor;
+    float shadowBlend = shadowAdd - sourceColor.a * shadowFactor;
+    
+    return (float4(color, (objectMask < 1e-9 ? shadowBlend : shadowAdd)));
+}
+
+
+
+
+fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
+                                   texture2d<float> source [[texture(0)]],
+                                   texture2d<float> illumination [[texture(1)]],
+                                   texture2d<float> illuminationOnVirtual [[texture(2)]],
+                                   texture2d<float> illuminationOnVirtualWithoutBlock,
+                                   texture2d<float> directLighting,
+                                   texture2d<float> directBlock,
+                                   texture2d<float> modelMask,
+                                   sampler samplr [[sampler(0)]])
+{
+    const float4 sourceColor = source.sample(samplr, vert.texCoord);
+    const float3 illuminateEffective = illumination.sample(samplr, vert.texCoord).rgb;
+    const float3 illumiOnVirtual = illuminationOnVirtual.sample(samplr, vert.texCoord).rgb;
+    
+    const float3 color = sourceColor.rgb + illuminateEffective;
+    
+    const float3 direct = directLighting.sample(samplr, vert.texCoord).rgb;
+    const float3 directBlocked = directBlock.sample(samplr, vert.texCoord).rgb;
+    const float3 ambientWithoutBlock = illuminationOnVirtualWithoutBlock.sample(samplr, vert.texCoord).rgb;
+    
+    // numerator should be masked by normal object, denominator shoud not
+    //
+    // all terms in the numerator have already been masked (because they are stored in "virtual-only" results), except
+    // the ambientWithoutBlock
+    //
+    const float objectMask = 1.0 - modelMask.sample(samplr, vert.texCoord).a;
+    const float shadowFactor = color_to_grayscale(safe_divide(directBlocked - illumiOnVirtual + ambientWithoutBlock * objectMask,
+                                                              direct + ambientWithoutBlock));
+    
+    // shadowAdd is intended for the object edge anti-alias, ahdowBlend is intended for transparent object with
+    // virutal shadow as background. the dichotomy approach of choosing between them might have neglectable
     // artifact but there seems no way of "blending" them properly.
     //
     float shadowAdd = sourceColor.a + shadowFactor;

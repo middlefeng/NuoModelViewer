@@ -27,7 +27,7 @@ struct ProjectedVertex
  *   or depth-only rendering (e.g. shadow-map)
  */
 
-vertex PositionSimple vertex_simple_textured(device Vertex *vertices [[buffer(0)]],
+vertex PositionSimple vertex_simple_textured(device const Vertex *vertices [[buffer(0)]],
                                              constant NuoUniforms &uniforms [[buffer(1)]],
                                              constant NuoMeshUniforms &meshUniforms [[buffer(2)]],
                                              uint vid [[vertex_id]])
@@ -39,7 +39,7 @@ vertex PositionSimple vertex_simple_textured(device Vertex *vertices [[buffer(0)
 #pragma mark -- SCreen Space Shaders --
 
 
-vertex VertexScreenSpace vertex_screen_space_textured(device Vertex *vertices [[buffer(0)]],
+vertex VertexScreenSpace vertex_screen_space_textured(device const Vertex *vertices [[buffer(0)]],
                                                       constant NuoUniforms &uniforms [[buffer(1)]],
                                                       constant NuoMeshUniforms &meshUniform [[buffer(3)]],
                                                       uint vid [[vertex_id]])
@@ -83,7 +83,7 @@ fragment FragementScreenSpace fragement_screen_space_textured(VertexScreenSpace 
 #pragma mark -- Phong Model Shaders --
 
 
-vertex ProjectedVertex vertex_project_textured(device Vertex *vertices [[buffer(0)]],
+vertex ProjectedVertex vertex_project_textured(device const Vertex *vertices [[buffer(0)]],
                                                constant NuoUniforms &uniforms [[buffer(1)]],
                                                constant NuoLightVertexUniforms &lightCast [[buffer(2)]],
                                                constant NuoMeshUniforms &meshUniforms [[buffer(3)]],

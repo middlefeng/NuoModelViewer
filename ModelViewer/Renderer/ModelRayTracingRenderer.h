@@ -11,15 +11,7 @@
 
 
 @class NuoLightSource;
-
-
-
-@interface ModelDirectLighting : NSObject
-
-@property (nonatomic, weak) id<MTLTexture> lighting;
-@property (nonatomic, weak) id<MTLTexture> blocked;
-
-@end
+@class NuoIlluminationTarget;
 
 
 
@@ -29,12 +21,12 @@
 @property (nonatomic, assign) NuoBounds sceneBounds;
 @property (nonatomic, assign) NuoRayTracingGlobalIlluminationParam globalIllum;
 
+@property (nonatomic, strong) NSArray<NuoLightSource*>* lightSources;
+
+@property (nonatomic, readonly) NuoIlluminationTarget* rayTracingResult;
+
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
-
-- (void)setLightSource:(NuoLightSource*)lightSource forIndex:(uint)index;
-- (id<MTLTexture>)shadowForLightSource:(uint)index withMask:(NuoSceneMask)mask;
-- (NSArray<ModelDirectLighting*>*)directLight;
 
 
 @end

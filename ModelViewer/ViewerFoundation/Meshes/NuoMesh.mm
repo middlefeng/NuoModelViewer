@@ -209,6 +209,14 @@
 
 
 
+- (void)setEnabled:(BOOL)enabled
+{
+    _enabled = enabled;
+    _globalBufferCachedTrans = NuoMatrixFloat44Identity;
+}
+
+
+
 - (void)smoothWithTolerance:(float)tolerance
 {
     _smoothTolerance = tolerance;
@@ -312,7 +320,15 @@
     
     [self cacheTransform:transform];
     
-    NuoGlobalBuffers buffer = _rawModel->GetGlobalBuffers();
+    std::shared_ptr<NuoModelBase> clonedModel = _rawModel;
+    
+    if (_smoothTolerance > 0.001)
+    {
+        clonedModel = _rawModel->Clone();
+        clonedModel->SmoothSurface(_smoothTolerance, _smoothConservative);
+    }
+    
+    NuoGlobalBuffers buffer = clonedModel->GetGlobalBuffers();
     buffer.TransformPosition(transformWorld);
     buffer.TransformVector(NuoMatrixExtractLinear(transformWorld));
     
@@ -529,19 +545,19 @@
 }
 
 
-- (std::vector<uint32_t>)maskBuffer
+- (std::vector<NuoRayMask>)maskBuffer
 {
     NuoRayMask mask = kNuoRayMask_Disabled;
     if (_enabled)
     {
         mask = self.hasTransparency ? kNuoRayMask_Translucent :
-                                      kNuoRayMask_Opaue;
+                                      kNuoRayMask_Opaque;
     }
     
     const size_t indicesNumber = _rawModel->GetIndicesNumber();
     const size_t bufferSize = indicesNumber / 3;
     
-    std::vector<uint32_t> oneBuffer;
+    std::vector<NuoRayMask> oneBuffer;
     oneBuffer.resize(bufferSize);
     std::fill(oneBuffer.begin(), oneBuffer.end(), mask);
     
@@ -549,7 +565,7 @@
     {
         NuoMaterial material = _rawModel->GetMaterial(i);
         if (material.id != -1 && material.illum == 0)
-            oneBuffer[i] |= kNuoRayMask_Illuminating;
+            oneBuffer[i] = kNuoRayMask_Illuminating;
     }
     
     return oneBuffer;

@@ -26,7 +26,7 @@ NuoRayIndex;
 
 typedef enum
 {
-    kNuoRayMask_Opaue           = 1,
+    kNuoRayMask_Opaque          = 1,
     kNuoRayMask_Translucent     = 2,
     kNuoRayMask_Illuminating    = 4,
     kNuoRayMask_Virtual         = 8,
@@ -107,6 +107,9 @@ typedef struct
 {
     vector2 uv;                    // two-dimension random
     float pathTermDeterminator;    // random to determine which term in reflection is used
+    
+    vector2 uvLightSource;
+    float lightSource;
 }
 NuoRayTracingRandomUnit;
 

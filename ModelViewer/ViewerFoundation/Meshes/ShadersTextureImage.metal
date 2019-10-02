@@ -25,7 +25,7 @@ struct ClearFragment
 };
 
 
-vertex PositionTextureSimple backdrop_project(device Vertex *vertices [[buffer(0)]],
+vertex PositionTextureSimple backdrop_project(device const Vertex *vertices [[buffer(0)]],
                                               constant NuoUniforms& uniforms [[buffer(3)]],
                                               uint vid [[vertex_id]])
 {
@@ -49,7 +49,7 @@ fragment float4 backdrop_texutre(PositionTextureSimple vert [[stage_in]],
 
 
 
-vertex PositionTextureSimple texture_project(device Vertex *vertices [[buffer(0)]],
+vertex PositionTextureSimple texture_project(device const Vertex *vertices [[buffer(0)]],
                                              uint vid [[vertex_id]])
 {
     PositionTextureSimple outVert;

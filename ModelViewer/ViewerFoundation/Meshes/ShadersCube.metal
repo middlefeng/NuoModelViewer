@@ -30,7 +30,7 @@ struct ProjectedVertex
 
 
 
-vertex ProjectedVertex vertex_cube(device CubeVertex *vertices        [[buffer(0)]],
+vertex ProjectedVertex vertex_cube(device const CubeVertex *vertices  [[buffer(0)]],
                                    constant NuoUniforms &uniforms     [[buffer(1)]],
                                    uint vid                           [[vertex_id]])
 {

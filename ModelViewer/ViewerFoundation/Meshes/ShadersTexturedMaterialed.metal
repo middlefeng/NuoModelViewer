@@ -40,7 +40,7 @@ struct ProjectedVertex
  *  or depth-only rendering (e.g. shadow-map)
  */
 
-vertex PositionSimple vertex_simple_tex_materialed(device Vertex *vertices [[buffer(0)]],
+vertex PositionSimple vertex_simple_tex_materialed(device const Vertex *vertices [[buffer(0)]],
                                                    constant NuoUniforms &uniforms [[buffer(1)]],
                                                    constant NuoMeshUniforms &meshUniforms [[buffer(2)]],
                                                    uint vid [[vertex_id]])
@@ -51,7 +51,7 @@ vertex PositionSimple vertex_simple_tex_materialed(device Vertex *vertices [[buf
 
 
 
-vertex ProjectedVertex vertex_project_tex_materialed(device Vertex *vertices [[buffer(0)]],
+vertex ProjectedVertex vertex_project_tex_materialed(device const Vertex *vertices [[buffer(0)]],
                                                      constant NuoUniforms &uniforms [[buffer(1)]],
                                                      constant NuoLightVertexUniforms &lightCast [[buffer(2)]],
                                                      constant NuoMeshUniforms &meshUniforms [[buffer(3)]],
@@ -136,7 +136,7 @@ VertexFragmentCharacters vertex_characters(ProjectedVertex vert)
 #pragma mark -- Screen Space Shaders --
 
 
-vertex VertexScreenSpace vertex_screen_space_tex_materialed(device Vertex *vertices [[buffer(0)]],
+vertex VertexScreenSpace vertex_screen_space_tex_materialed(device const Vertex *vertices [[buffer(0)]],
                                                             constant NuoUniforms &uniforms [[buffer(1)]],
                                                             constant NuoMeshUniforms &meshUniform [[buffer(3)]],
                                                             uint vid [[vertex_id]])

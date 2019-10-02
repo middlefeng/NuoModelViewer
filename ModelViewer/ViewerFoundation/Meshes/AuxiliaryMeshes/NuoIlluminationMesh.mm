@@ -10,41 +10,25 @@
 
 
 
+@implementation NuoIlluminationTarget
+
+@end
+
+
+
+
 @implementation NuoIlluminationMesh
-{
-    id<MTLBuffer> _paramBuffer;
-}
 
-
-- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
-{
-    self = [super initWithCommandQueue:commandQueue];
-    
-    if (self)
-    {
-        _paramBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoVectorFloat3::_vector)
-                                                        options:MTLResourceStorageModeManaged];
-    }
-    
-    return self;
-}
 
 
 - (void)makePipelineAndSampler:(MTLPixelFormat)pixelFormat
                  withBlendMode:(ScreenSpaceBlendMode)blendMode
+                    withHybrid:(BOOL)hybrid
 {
-    NSString* shaderName = @"illumination_blend";
+    NSString* shaderName = hybrid? @"illumination_blend_hybrid" : @"illumination_blend";
     
     [self makePipelineAndSampler:pixelFormat withFragementShader:shaderName
                    withBlendMode:blendMode];
-}
-
-
-
-- (void)setAmbient:(const NuoVectorFloat3&)ambient
-{
-    memcpy(_paramBuffer.contents, &ambient._vector, sizeof(NuoVectorFloat3::_vector));
-    [_paramBuffer didModifyRange:NSMakeRange(0, sizeof(NuoVectorFloat3::_vector))];
 }
 
 
@@ -53,12 +37,18 @@
 {
     [renderPass pushParameterState:@"Illumination"];
     
-    [renderPass setFragmentTexture:_illumination atIndex:1];
-    [renderPass setFragmentTexture:_illuminationOnVirtual atIndex:2];
-    [renderPass setFragmentTexture:_directLighting atIndex:3];
-    [renderPass setFragmentTexture:_directLightingWithShadow atIndex:4];
-    [renderPass setFragmentTexture:_translucentCoverMap atIndex:5];
-    [renderPass setFragmentBuffer:_paramBuffer offset:0 atIndex:0];
+    uint i = 1;
+    
+    [self setModelTexture:_illuminations.normal];
+    [renderPass setFragmentTexture:_illuminations.ambientNormal atIndex:i];
+    [renderPass setFragmentTexture:_illuminations.ambientVirtual atIndex:++i];
+    [renderPass setFragmentTexture:_illuminations.ambientVirtualWithoutBlock atIndex:++i];
+    [renderPass setFragmentTexture:_illuminations.directVirtual atIndex:++i];
+    [renderPass setFragmentTexture:_illuminations.directVirtualBlocked atIndex:++i];
+    
+    if (_translucentCoverMap)
+        [renderPass setFragmentTexture:_translucentCoverMap atIndex:++i];
+    
     [super drawMesh:renderPass];
     
     [renderPass popParameterState];

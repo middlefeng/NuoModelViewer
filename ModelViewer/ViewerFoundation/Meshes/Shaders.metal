@@ -23,10 +23,21 @@ struct ProjectedVertex
 };
 
 
-ProjectedVertex vertex_project_common(device Vertex *vertices,
+/**
+ *  3.0 is used to be used to determind how shadow maps are sampled. that crash shaders on macOS
+ *  10.15 and 10.14.6 due to unknown driver bugs. reduce the value to 2.0 but add a compensation
+ *  factor to maintain the same penumbera effect (yet of course higher level of noise due to the
+ *  fewer samples)
+ */
+constant static float kSampleCount = 2.0; // 3.0 before 10.14.6
+constant static float kSampleCountCompensate = ((3.0 /* previous sample count */ * 2) + 1) /
+                                               ((kSampleCount * 2) + 1);
+
+
+ProjectedVertex vertex_project_common(device const Vertex *vertices,
                                       constant NuoUniforms &uniforms,
                                       constant NuoMeshUniforms &meshUniform,
-                                      uint vid [[vertex_id]]);
+                                      uint vid);
 
 float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway);
 
@@ -37,7 +48,7 @@ float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway)
  *  or depth-only rendering (e.g. shadow-map)
  */
 
-vertex PositionSimple vertex_simple(device Vertex *vertices [[buffer(0)]],
+vertex PositionSimple vertex_simple(device const Vertex *vertices [[buffer(0)]],
                                     constant NuoUniforms &uniforms [[buffer(1)]],
                                     constant NuoMeshUniforms &meshUniform [[buffer(2)]],
                                     uint vid [[vertex_id]])
@@ -62,7 +73,7 @@ fragment float4 depth_simple(PositionSimple vert [[stage_in]])
  *  used for simple annotation.
  */
 
-vertex ProjectedVertex vertex_project(device Vertex *vertices [[buffer(0)]],
+vertex ProjectedVertex vertex_project(device const Vertex *vertices [[buffer(0)]],
                                       constant NuoUniforms &uniforms [[buffer(1)]],
                                       constant NuoMeshUniforms &meshUniform [[buffer(2)]],
                                       uint vid [[vertex_id]])
@@ -109,7 +120,7 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
 #pragma mark -- Screen Space Shaders --
 
 
-vertex VertexScreenSpace vertex_project_screen_space(device Vertex *vertices [[buffer(0)]],
+vertex VertexScreenSpace vertex_project_screen_space(device const Vertex *vertices [[buffer(0)]],
                                                      constant NuoUniforms &uniforms [[buffer(1)]],
                                                      constant NuoMeshUniforms &meshUniform [[buffer(3)]],
                                                      uint vid [[vertex_id]])
@@ -152,7 +163,7 @@ fragment FragementScreenSpace fragement_screen_space(VertexScreenSpace vert [[st
  *  shaders that generate phong result with shadow casting,
  */
 
-vertex ProjectedVertex vertex_project_shadow(device Vertex *vertices [[buffer(0)]],
+vertex ProjectedVertex vertex_project_shadow(device const Vertex *vertices [[buffer(0)]],
                                              constant NuoUniforms &uniforms [[buffer(1)]],
                                              constant NuoLightVertexUniforms &lightCast [[buffer(2)]],
                                              constant NuoMeshUniforms &meshUniform [[buffer(3)]],
@@ -193,7 +204,7 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
             float4 shadowPostionCurrent = kShadowRayTracing ? vert.positionNDC : shadowPosition[i];
             const NuoShadowParameterUniformField shadowParams = lightUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(shadowPostionCurrent, false,
-                                                   shadowParams, cosTheta, 3,
+                                                   shadowParams, cosTheta, kSampleCount,
                                                    shadowMaps[i], shadowMapsExt[i], samplr);
         }
         
@@ -287,7 +298,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
             
             const NuoShadowParameterUniformField shadowParams = lightingUniform.shadowParams[i];
             shadowPercent = shadow_coverage_common(shadowPositionCurrent, vert.opacity < 1.0,
-                                                   shadowParams, cosTheta, 3,
+                                                   shadowParams, cosTheta, kSampleCount,
                                                    shadowMaps[i], shadowMapsExt[i], samplr);
             
             if (kMeshMode == kMeshMode_ShadowOccluder || kMeshMode == kMeshMode_ShadowPenumbraFactor)
@@ -312,7 +323,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
 
 
 
-ProjectedVertex vertex_project_common(device Vertex *vertices,
+ProjectedVertex vertex_project_common(device const Vertex *vertices,
                                       constant NuoUniforms &uniforms,
                                       constant NuoMeshUniforms &meshUniform,
                                       uint vid [[vertex_id]])
@@ -462,7 +473,7 @@ float shadow_penumbra_factor(const float2 texelSize, float shadowMapSampleRadius
     int blockerSampleCount = 0;
     int blockerSampleSkipped = 0;
     
-    const float sampleEnlargeFactor = occluderRadius;
+    const float sampleEnlargeFactor = occluderRadius * kSampleCountCompensate;
     
     const float2 searchSampleSize = texelSize * sampleEnlargeFactor;
     const float2 searchRegion = shadowMapSampleRadius * 2 * searchSampleSize;
@@ -564,7 +575,7 @@ float3 shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translu
         // PCSS-based penumbra
         //
         if (kShadowPCSS)
-            sampleSize = kSampleSizeBase * 0.3 + sampleSize * (penumbraFactor * 5  * shadowParams.soften);
+            sampleSize = kSampleSizeBase * 0.3 + sampleSize * kSampleCountCompensate * (penumbraFactor * 5  * shadowParams.soften);
         
         const float2 shadowRegion = shadowMapSampleRadius * sampleSize;
         const float shadowDiameter = shadowMapSampleRadius * 2;
