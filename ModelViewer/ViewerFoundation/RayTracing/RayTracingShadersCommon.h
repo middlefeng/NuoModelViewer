@@ -54,8 +54,6 @@ struct RayBuffer
     // determine if the ambient calculation should terminate, which is independent from
     // whether boucing should terminate
     bool ambientIlluminated;
-    
-    bool specularReflection;
 };
 
 
@@ -348,6 +346,17 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
 
 uint light_source_select(constant NuoRayTracingUniforms& tracingUniforms,
                          float random, thread float* totalDensity);
+
+
+void ambient_with_no_block(uint2 tid,
+                           device RayStructureUniform& structUniform,
+                           constant NuoRayTracingUniforms& tracingUniforms,
+                           thread const RayBuffer& cameraRay,
+                           device Intersection& intersection,
+                           device NuoRayTracingRandomUnit& randomVars,
+                           metal::texture2d<float, metal::access::read_write> target,
+                           metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                           metal::sampler samplr);
 
 
 void sample_scatter_ray(float maxDistance,

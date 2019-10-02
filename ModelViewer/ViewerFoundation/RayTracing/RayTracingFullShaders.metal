@@ -66,13 +66,11 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
     device RayBuffer* shadowRay = shadowRayMain + rayIdx;
     const RayBuffer ray = structUniform.exitantRays[rayIdx];
     
-    constant NuoRayTracingGlobalIlluminationParam& globalIllum = tracingUniforms.globalIllum;
+    device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
     
     if (intersection.distance >= 0.0f)
     {
         // direct lighting on virtual surfaces as if no normal object present
-        
-        device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
             
         float totalDensity = 0;
         uint lightSourceIndex = light_source_select(tracingUniforms,
@@ -88,28 +86,14 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
         shadowRay->pathScatter *= totalDensity;
         
         targets.lightingVirtual.write(float4(shadowRay->pathScatter, 1.0), tid);
-        
-        // ambient lighting on virtual surfaces as if no normal object present
-        
-        device uint* index = structUniform.index;
-        device NuoRayTracingMaterial* materials = structUniform.materials;
-        const float maxDistance = tracingUniforms.bounds.span;
-        
-        NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
-                                                                   tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
-                                                                   index, intersection, samplr);
-        
-        RayBuffer incidentRay;
-        sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, incidentRay);
-        
-        float3 ambientColor = incidentRay.pathScatter * globalIllum.ambient;
-        targets.overlayForVirtualWithoutBlock.write(float4(ambientColor, 1.0), tid);
     }
     else if (ray.maxDistance > 0)
     {
         targets.lightingVirtual.write(float4(1.0), tid);
-        targets.overlayForVirtualWithoutBlock.write(float4(globalIllum.ambient, 1.0), tid);
     }
+    
+    ambient_with_no_block(tid, structUniform, tracingUniforms, ray, intersection, randomVars,
+                          targets.overlayForVirtualWithoutBlock, diffuseTex, samplr);
 }
 
 

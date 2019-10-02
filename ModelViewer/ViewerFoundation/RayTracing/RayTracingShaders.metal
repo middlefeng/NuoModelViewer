@@ -72,7 +72,6 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     ray.opacity = -1.0;
     ray.primaryHitMask = 0;
     ray.ambientIlluminated = false;
-    ray.specularReflection = false;
     
     ray.maxDistance = INFINITY;
 }
@@ -108,6 +107,41 @@ kernel void ray_set_mask_illuminating(uint2 tid [[thread_position_in_grid]],
     device RayBuffer& ray = rays[rayIdx];
     
     ray.mask = kNuoRayMask_Illuminating;
+}
+
+
+void ambient_with_no_block(uint2 tid,
+                           device RayStructureUniform& structUniform,
+                           constant NuoRayTracingUniforms& tracingUniforms,
+                           thread const RayBuffer& cameraRay,
+                           device Intersection& intersection,
+                           device NuoRayTracingRandomUnit& randomVars,
+                           texture2d<float, access::read_write> target,
+                           array<texture2d<float>, kTextureBindingsCap> diffuseTex,
+                           sampler samplr)
+{
+    constant NuoRayTracingGlobalIlluminationParam& globalIllum = tracingUniforms.globalIllum;
+    
+    if (intersection.distance >= 0.0f)
+    {
+        device uint* index = structUniform.index;
+        device NuoRayTracingMaterial* materials = structUniform.materials;
+        const float maxDistance = tracingUniforms.bounds.span;
+        
+        NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
+                                                                   tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
+                                                                   index, intersection, samplr);
+        
+        RayBuffer incidentRay;
+        sample_scatter_ray(maxDistance, randomVars, intersection, material, cameraRay, incidentRay);
+        
+        float3 ambientColor = incidentRay.pathScatter * globalIllum.ambient;
+        target.write(float4(ambientColor, 1.0), tid);
+    }
+    else
+    {
+        target.write(float4(globalIllum.ambient, 1.0), tid);
+    }
 }
 
 
@@ -184,6 +218,9 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         surfaceOpacity = (1.0 - surfaceOpacity) < 1e-6 ? 1.0 : surfaceOpacity;
         diffuseTerm *= surfaceOpacity;
         
+        // TODO: this is an extremly rough way of getting opacity. need a dedicated loop to calculate
+        //       the real visibility
+        //
         shadowRay->opacity = ray.opacity < 0.0 ? surfaceOpacity : ray.opacity;
         
         // the cosine factor is counted into the path scatter term, as the geometric coupling term,

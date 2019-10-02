@@ -62,7 +62,7 @@ kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
     RayBuffer cameraRay = structUniform.exitantRays[rayIdx];
     
     device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
-    device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16)].uv;
+    device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16)];
     
     // directional light sources in the scene definition are considered area lights with finite
     // subtending solid angles, in far distance
@@ -73,7 +73,7 @@ kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
         constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[i];
         
         shadow_ray_emit_infinite_area(cameraRay, intersection, structUniform, tracingUniforms,
-                                      lightSource, r, shadowRay, diffuseTex, samplr);
+                                      lightSource, randomVars.uv, shadowRay, diffuseTex, samplr);
         shadowRay->pathScatter *= lightSource.density;
     }
     
@@ -81,30 +81,8 @@ kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
     //
     if (cameraRay.mask == kNuoRayMask_Virtual)
     {
-        constant NuoRayTracingGlobalIlluminationParam& globalIllum = tracingUniforms.globalIllum;
-        
-        if (intersection.distance >= 0.0f)
-        {
-            device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * cameraRay.bounce];
-            
-            device uint* index = structUniform.index;
-            device NuoRayTracingMaterial* materials = structUniform.materials;
-            const float maxDistance = tracingUniforms.bounds.span;
-            
-            NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
-                                                                       tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
-                                                                       index, intersection, samplr);
-            
-            RayBuffer incidentRay;
-            sample_scatter_ray(maxDistance, randomVars, intersection, material, cameraRay, incidentRay);
-            
-            float3 ambientColor = incidentRay.pathScatter * globalIllum.ambient;
-            targets.overlayForVirtualWithoutBlock.write(float4(ambientColor, 1.0), tid);
-        }
-        else
-        {
-            targets.overlayForVirtualWithoutBlock.write(float4(globalIllum.ambient, 1.0), tid);
-        }
+        ambient_with_no_block(tid, structUniform, tracingUniforms, cameraRay, intersection, randomVars,
+                              targets.overlayForVirtualWithoutBlock, diffuseTex, samplr);
     }
 }
 
