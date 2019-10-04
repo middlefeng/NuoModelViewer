@@ -55,6 +55,7 @@ enum kModelRayTracingTargets
     NuoIlluminationTarget* _rayTracingResult;
     
     PNuoRayTracingRandom _rng;
+    CGSize _drawableSize;
 }
 
 
@@ -103,6 +104,9 @@ enum kModelRayTracingTargets
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
+    
+    if (CGSizeEqualToSize(_drawableSize, drawableSize))
+        return;
     
     _incidentRaysBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
     _incidentRaysBuffer.dimension = drawableSize;
