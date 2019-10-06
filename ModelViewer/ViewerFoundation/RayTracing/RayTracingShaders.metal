@@ -190,6 +190,9 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                                                    index, intersection, samplr);
         
         float3 normal = material.normal;
+        if (dot(normal, -(ray.direction)) < -1e-6)
+            normal = -normal;
+        
         float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
         shadowRay->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
         shadowRay->direction = shadowVec;
@@ -263,6 +266,7 @@ inline bool same_hemisphere(float3 w, float3 wp);
 
 
 static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
+                                 float3 intersectionPoint, float offset,
                                  float3 ray, bool rayTransThrough,
                                  float2 sampleUV, float Cdeterminator  /* randoms */ )
 {
@@ -295,6 +299,7 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
     if (Cdeterminator < Tr / probableTotal)
     {
         result.direction = -ray;
+        result.original = intersectionPoint + (-ray) * offset;
         result.pathScatterTerm = probableTotal;
         
         result.transmission = true;
@@ -303,13 +308,26 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
     else if (Cdeterminator < (Tr + CdiffSampleProbable) / probableTotal)
     {
         float3 wi = sample_cosine_weighted_hemisphere(sampleUV, 1);
+        if (dot(normal, ray) < -1e-6)
+        {
+            wi.y *= -1.0;
+            offset *= -1.0;
+        }
+        
         result.direction = align_hemisphere_normal(wi, normal);
+        result.original = intersectionPoint + normal * offset;
         result.pathScatterTerm = Cdiff * (probableTotal / CdiffSampleProbable);
     }
     else
     {
         float3 wo = relative_to_hemisphere_normal(ray, normal);
         float3 wh = sample_cosine_weighted_hemisphere(sampleUV, Mspec);
+        if (wo.y < -1e-6)
+        {
+            wh.y *= -1.0;
+            offset *= -1.0;
+        }
+        
         float3 wi = reflection_vector(wo, wh);
         
         if (!same_hemisphere(wo, wi))
@@ -339,6 +357,7 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
         
         result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdf * wi.y /* cosine factor of incident ray */;
         result.direction = align_hemisphere_normal(wi, normal);
+        result.original = intersectionPoint + normal * offset;
     }
     
     return result;
@@ -369,7 +388,8 @@ void sample_scatter_ray(float maxDistance,
     device float& Cdeterm = random.pathTermDeterminator;
     float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
 
-    PathSample sample = sample_scatter(material, -ray.direction, ray.transThrough, r, Cdeterm);
+    PathSample sample = sample_scatter(material, intersectionPoint, maxDistance / 20000.0,
+                                       -ray.direction, ray.transThrough, r, Cdeterm);
     
     incidentRay.bounce = ray.bounce + 1;
 
@@ -393,8 +413,7 @@ void sample_scatter_ray(float maxDistance,
         
         // different calculation for origin and ambient between transmission and reflection.
         //
-        float3 normal =  sample.transmission ? -normalize(material.normal) : normalize(material.normal);
-        incidentRay.origin = intersectionPoint + normal * (maxDistance / 20000.0);
+        incidentRay.origin = sample.original;
         incidentRay.ambientIlluminated = ray.ambientIlluminated || sample.transmission;
         
         // make the term of this reflection contribute to the path scatter
