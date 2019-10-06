@@ -89,6 +89,7 @@ struct RayStructureUniform
 struct PathSample
 {
     float3 direction;
+    float3 original;
     
     // the path scatter term contributed by the reflection where the current sample
     // plays as incident ray. it is
