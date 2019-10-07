@@ -148,7 +148,7 @@ inline NuoRayTracingMaterial interpolate_material(device NuoRayTracingMaterial *
     result.normal = metal::normalize(uvw.x * n0 + uvw.y * n1 + uvw.z * n2);
     result.specularColor = uvw.x * s0 + uvw.y * s1 + uvw.z * s2;
     result.shinessDisolveIllum.x = uvw.x * sp0 + uvw.y * sp1 + uvw.z * sp2;
-    result.shinessDisolveIllum.y = uvw.x * sd0 + uvw.y * sd1 + uvw.z * sd2;
+    result.shinessDisolveIllum.y = sd0;//uvw.x * sd0 + uvw.y * sd1 + uvw.z * sd2;
     
     return result;
 }
