@@ -23,9 +23,11 @@ static const float kFieldHeight = 20;
 
 @implementation BoardSettingsPanel
 {
+    NSTextField* _labelName;
     NSTextField* _labelWidth;
     NSTextField* _labelHeight;
     
+    NSTextField* _name;
     NSTextField* _width;
     NSTextField* _height;
 }
@@ -36,12 +38,17 @@ static const float kFieldHeight = 20;
 {
     [super initControls];
     
+    _labelName = [self createLabel:@"Name:"];
     _labelWidth = [self createLabel:@"Width:"];
     _labelHeight = [self createLabel:@"Height:"];
+    
+    _name = [self createField];
     _width = [self createField];
     _height = [self createField];
     
-    [self setFrame:CGRectMake(0, 0, 240, 160) display:YES];
+    [_name setStringValue:@"Virtual"];
+    
+    [self setFrame:CGRectMake(0, 0, 240, 180) display:YES];
 }
 
 
@@ -51,19 +58,40 @@ static const float kFieldHeight = 20;
     
     NSRect bounds = self.rootView.bounds;
     
+    CGFloat verticalPosShift = kLabelHeight + kVerticalSpacing;
+    CGFloat verticalPos = bounds.size.height - kMarginTop - kLabelHeight;
+    
+    NSRect labelNameFrame;
+    labelNameFrame.origin.x = kMarginLeft;
+    labelNameFrame.origin.y = verticalPos;
+    labelNameFrame.size = CGSizeMake(kLabelWidth, kLabelHeight);
+    
+    _labelName.frame = labelNameFrame;
+    
+    verticalPos -= verticalPosShift;
+    
     NSRect labelWidthFrame;
     labelWidthFrame.origin.x = kMarginLeft;
-    labelWidthFrame.origin.y = bounds.size.height - kMarginTop - kLabelHeight;
+    labelWidthFrame.origin.y = verticalPos;
     labelWidthFrame.size = CGSizeMake(kLabelWidth, kLabelHeight);
     
     _labelWidth.frame = labelWidthFrame;
     
+    verticalPos -= verticalPosShift;
+    
     NSRect labelHeightFrame;
     labelHeightFrame.origin.x = kMarginLeft;
-    labelHeightFrame.origin.y = bounds.size.height - kMarginTop - kLabelHeight * 2.0 - kVerticalSpacing;
+    labelHeightFrame.origin.y = verticalPos;
     labelHeightFrame.size = CGSizeMake(kLabelWidth, kLabelHeight);
     
     _labelHeight.frame = labelHeightFrame;
+    
+    NSRect nameFrame;
+    nameFrame.origin.x = labelNameFrame.origin.x + labelNameFrame.size.width + kHorizontalSpacing;
+    nameFrame.origin.y = labelNameFrame.origin.y;
+    nameFrame.size = CGSizeMake(kFieldWidth, kFieldHeight);
+    
+    _name.frame = nameFrame;
     
     NSRect widthFrame;
     widthFrame.origin.x = labelWidthFrame.origin.x + labelWidthFrame.size.width + kHorizontalSpacing;
@@ -119,6 +147,12 @@ static const float kFieldHeight = 20;
     result.height = [formatter numberFromString:height].floatValue;
     
     return result;
+}
+
+
+- (NSString*)boardName
+{
+    return _name.stringValue;
 }
 
 

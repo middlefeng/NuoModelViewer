@@ -114,7 +114,7 @@ class NuoLua;
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
            withProgress:(NuoProgressFunction)progress;
 
-- (NuoBoardMesh*)createBoard:(CGSize)size;
+- (NuoBoardMesh*)createBoard:(CGSize)size withName:(NSString*)name;
 - (void)resetViewTransform;
 - (void)removeSelectedMesh;
 - (void)selectMeshWithScreen:(CGPoint)point;

@@ -1375,7 +1375,7 @@ MouseDragMode;
              CGSize size = [panelWeak boardSize];
              if (size.width > 0 && size.height > 0)
              {
-                 [renderer createBoard:size];
+                 [renderer createBoard:size withName:panelWeak.boardName];
                  [self render];
                  
                  [menu setTarget:self];

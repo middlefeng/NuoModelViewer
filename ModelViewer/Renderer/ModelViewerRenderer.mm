@@ -383,10 +383,11 @@
 }
 
 
-- (NuoBoardMesh*)createBoard:(CGSize)size
+- (NuoBoardMesh*)createBoard:(CGSize)size withName:(NSString*)name
 {
     std::shared_ptr<NuoModelBoard> modelBoard(new NuoModelBoard(size.width, size.height, 0.001));
     modelBoard->CreateBuffer();
+    modelBoard->SetName(name.UTF8String);
     NuoBoardMesh* boardMesh = CreateBoardMesh(self.commandQueue, modelBoard, [_modelOptions basicMaterialized]);
     
     const NuoBounds bounds = boardMesh.boundsLocal.boundingBox;
@@ -530,6 +531,10 @@
                 }
                 exporter.EndTable();
                 exporter.EndEntry(true);
+                
+                exporter.StartEntry("name");
+                exporter.SetEntryValueString(boardMesh.modelName.UTF8String);
+                exporter.EndEntry(false);
                 
                 exporter.StartEntry("translationMatrix");
                 exporter.SetMatrix(boardMesh.transformTranslate);
@@ -784,7 +789,24 @@
                 lua->RemoveField();
             }
             
-            NuoBoardMesh* boardMesh = [self createBoard:CGSizeMake(width, height)];
+            NSString* nameStr = nil;
+            {
+                lua->GetField("name", -1);
+                
+                if (lua->IsNil(-1))
+                {
+                    nameStr = @"Virtual";
+                }
+                else
+                {
+                    std::string name = lua->GetFieldAsString("name", -2);
+                    nameStr = @(name.c_str());
+                }
+                
+                lua->RemoveField();
+            }
+            
+            NuoBoardMesh* boardMesh = [self createBoard:CGSizeMake(width, height) withName:nameStr];
             lua->GetField("rotationMatrix", -1);
             [boardMesh setTransformPoise:lua->GetMatrixFromTable(-1)];
             lua->RemoveField();

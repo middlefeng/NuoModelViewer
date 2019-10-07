@@ -11,5 +11,6 @@
 @interface BoardSettingsPanel : NuoSheetPanel
 
 - (CGSize)boardSize;
+- (NSString*)boardName;
 
 @end
