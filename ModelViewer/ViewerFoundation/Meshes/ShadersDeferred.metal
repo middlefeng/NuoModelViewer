@@ -234,7 +234,7 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
                                            direct + ambientWithoutBlock);
     
     // opacity + shadowFactor is equivelant to the "shadowBlend" in the hybrid mode, because shadowFactor has been
-    // scaled down by the passthrough ray's pathScatter
+    // scaled down by the passthrough ray's importance sampling
     //
     return float4(color, color_to_grayscale(opacity + shadowFactor));
 }
