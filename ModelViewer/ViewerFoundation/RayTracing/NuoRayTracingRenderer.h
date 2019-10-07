@@ -58,15 +58,10 @@
 /**
  *  protocol with "pipeline" shader:
  *  parameter buffers:
- *      0. ray volume uniform
- *      1. model index buffer
- *      2. model materials (per vertex)
- *      3. exitant rays (if null, parmiary/camera ray for the first sub-path)
- *      4. intersections
- *      5 .. m. "paramterBuffers" (e.g. shadow rays and/or random incidential rays)
- *      m+1. surface mask (when exiteant ray is nil only)
- *      m+1 .. (m+1+targetCount). target textures
- *      (m+1+targetCount)-... model material textures
+ *      0. ray struct uniform (common for all renderers)
+ *      1. targets (specific to each renderer)
+ *      2. extra parameter (sepcific to each renderer)
+ *      ... model material textures
  */
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
