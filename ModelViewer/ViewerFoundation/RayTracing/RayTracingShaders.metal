@@ -69,7 +69,7 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     ray.mask = kNuoRayMask_Opaque;
     
     ray.bounce = 0;
-    ray.opacity = -1.0;
+    ray.transThrough = true;
     ray.primaryHitMask = 0;
     ray.ambientIlluminated = false;
     
@@ -221,11 +221,6 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         surfaceOpacity = (1.0 - surfaceOpacity) < 1e-6 ? 1.0 : surfaceOpacity;
         diffuseTerm *= surfaceOpacity;
         
-        // TODO: this is an extremly rough way of getting opacity. need a dedicated loop to calculate
-        //       the real visibility
-        //
-        shadowRay->opacity = ray.opacity < 0.0 ? surfaceOpacity : ray.opacity;
-        
         // the cosine factor is counted into the path scatter term, as the geometric coupling term,
         // because samples are generated from an inifinit distant area light (uniform on a finit
         // contending solid angle)
@@ -272,45 +267,45 @@ inline bool same_hemisphere(float3 w, float3 wp);
 
 static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
                                  float3 intersectionPoint, float offset,
-                                 float3 ray, float rayOpacity,
+                                 float3 ray, bool rayTransThrough,
                                  float2 sampleUV, float Cdeterminator  /* randoms */ )
 {
     PathSample result;
     
-    const float3 Cdiff = material.diffuseColor;
+    float3 Cdiff = material.diffuseColor;
     const float3 Cspec = material.specularColor;
     const float Mspec = material.shinessDisolveIllum.x;
     const float3 normal = material.normal;
     
+    float Tr = 1.0 - material.shinessDisolveIllum.y;
+    Tr = Tr > 1e-6 ? Tr : 0.0;
+    
+    // to retain the parity with shadow_ray_emit_infinite_area, Cdiff is down-scaled
+    // by the opacity
+    Cdiff *= (1 - Tr);
+    
     float CdiffSampleProbable = max(Cdiff.x, max(Cdiff.y, Cdiff.z));
     float CspecSampleProbable = min(Cspec.x, min(Cspec.y, Cspec.z));
+    float probableTotal = CdiffSampleProbable + CspecSampleProbable + Tr;
     
-    float transmissionPercent = 1.0 - material.shinessDisolveIllum.y;
-    float Tr = transmissionPercent > 1e-6 ? transmissionPercent : 0.0;
-    float probableTotal = CdiffSampleProbable * (1.0 - Tr) + CspecSampleProbable + Tr;
-    
+    // assume the ray is deviated unless the code later runs into the trans-through case
+    //
     result.transmission = false;
-    result.opacity = rayOpacity < 0.0 ? (1 - Tr) : rayOpacity;
+    result.transThrough = false;
     
     // transmission (first branch) and two types of reflections
     //
-    // to retain the parity with shadow_ray_emit_infinite_area, Cdiff is down-scaled
-    // by the opacity
     
     if (Cdeterminator < Tr / probableTotal)
     {
         result.direction = -ray;
         result.original = intersectionPoint + (-ray) * offset;
         result.pathScatterTerm = probableTotal;
-        result.transmission = true;
         
-        // transmiting rays are sampled by the importance of translucency so their opacity is
-        // divided by Tr, reflected rays are sampled by the importance of surface
-        // reflection so the opacity is assigned to the rays directly
-        //
-        result.opacity = 1.0 / Tr;
+        result.transmission = true;
+        result.transThrough = rayTransThrough;
     }
-    else if (Cdeterminator < (Tr + CdiffSampleProbable * (1.0 - Tr)) / probableTotal)
+    else if (Cdeterminator < (Tr + CdiffSampleProbable) / probableTotal)
     {
         float3 wi = sample_cosine_weighted_hemisphere(sampleUV, 1);
         if (dot(normal, ray) < -1e-6)
@@ -394,7 +389,7 @@ void sample_scatter_ray(float maxDistance,
     float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
 
     PathSample sample = sample_scatter(material, intersectionPoint, maxDistance / 20000.0,
-                                       -ray.direction, ray.opacity, r, Cdeterm);
+                                       -ray.direction, ray.transThrough, r, Cdeterm);
     
     incidentRay.bounce = ray.bounce + 1;
 
@@ -412,9 +407,9 @@ void sample_scatter_ray(float maxDistance,
     {
         incidentRay.direction = sample.direction;
         incidentRay.maxDistance = maxDistance;
-        incidentRay.mask = kNuoRayMask_Opaque | kNuoRayMask_Virtual | kNuoRayMask_Illuminating;
+        incidentRay.mask = kNuoRayMask_Opaque | kNuoRayMask_Translucent | kNuoRayMask_Virtual | kNuoRayMask_Illuminating;
         incidentRay.primaryHitMask = ray.primaryHitMask;
-        incidentRay.opacity = sample.opacity;
+        incidentRay.transThrough = sample.transThrough;
         
         // different calculation for origin and ambient between transmission and reflection.
         //

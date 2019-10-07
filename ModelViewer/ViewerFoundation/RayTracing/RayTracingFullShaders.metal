@@ -47,6 +47,113 @@ static void lightingTrcacingWrite(uint2 tid, float4 value,
                                   texture2d<float, access::read_write> texture);
 
 
+#pragma mark -- Visibilities Test
+
+
+kernel void ray_visibility_init(uint2 tid [[thread_position_in_grid]],
+                                device RayStructureUniform& structUniform [[buffer(0)]],
+                                constant NuoRayTracingUniforms& tracingUniforms,
+                                device RayBuffer* spawnRays,
+                                device float3* visibilities)
+{
+    constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
+    
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device Intersection & intersection = structUniform.intersections[rayIdx];
+    device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
+    device RayBuffer& spawnRay = spawnRays[rayIdx];
+    
+    if ((intersection.distance >= 0.0) &&
+        (cameraRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
+    {
+        device uint* index = structUniform.index;
+        device NuoRayTracingMaterial* materials = structUniform.materials;
+        NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
+        
+        float opacity = material.shinessDisolveIllum.y;
+        float Tr = (1.0 - opacity) < 1e-6 ? 0.0 : 1.0 - opacity;
+        
+        const float maxDistance = tracingUniforms.bounds.span;
+        float3 intersectPoint = cameraRay.origin + intersection.distance * cameraRay.direction;
+        spawnRay = cameraRay;
+        spawnRay.mask &= (~kNuoRayMask_Virtual);
+        spawnRay.pathScatter *= Tr;
+        spawnRay.origin = intersectPoint + cameraRay.direction * (maxDistance / 20000.0);
+        
+        if (Tr == 0.0)
+            spawnRay.maxDistance = -1;
+        
+        // assume the visibility is zero. later if the ray goes through all translucent surfaces,
+        // the value will be overwritten. or the ray hit an opaque surface, or hit more surfaces
+        // than the upper test limit, the zero visibility will be the result
+        //
+        visibilities[rayIdx] = 0.0;
+    }
+    else
+    {
+        spawnRay.maxDistance = -1;
+        spawnRay.pathScatter = 1.0;
+    }
+}
+
+
+kernel void ray_visibility(uint2 tid [[thread_position_in_grid]],
+                           device RayStructureUniform& structUniform [[buffer(0)]],
+                           constant NuoRayTracingUniforms& tracingUniforms,
+                           device float3* visibilities)
+{
+    constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
+    
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device RayBuffer& spawnRay = structUniform.exitantRays[rayIdx];
+    device Intersection & intersection = structUniform.intersections[rayIdx];
+    if (spawnRay.maxDistance > 0)
+    {
+        if (intersection.distance >= 0)
+        {
+            device uint* index = structUniform.index;
+            device NuoRayTracingMaterial* materials = structUniform.materials;
+            NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
+            
+            float opacity = saturate(material.shinessDisolveIllum.y);
+            float Tr = (1.0 - opacity) < 1e-6 ? 0.0 : 1.0 - opacity;
+            spawnRay.pathScatter *= Tr;
+            
+            if (Tr == 0.0)
+            {
+                spawnRay.maxDistance = -1;
+            }
+            else
+            {
+                const float maxDistance = tracingUniforms.bounds.span;
+                float3 intersectPoint = spawnRay.origin + intersection.distance * spawnRay.direction;
+                spawnRay.origin = intersectPoint + spawnRay.direction * (maxDistance / 20000.0);
+                spawnRay.maxDistance = spawnRay.maxDistance - intersection.distance - (maxDistance / 20000.0);
+            }
+        }
+        else
+        {
+            spawnRay.maxDistance = -1;
+        }
+    }
+    
+    if (spawnRay.maxDistance  < 0.0)
+    {
+        visibilities[rayIdx] = spawnRay.pathScatter[0];
+    }
+}
+
+
+
+#pragma mark -- Path Tracing
+
+
 kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
                                 device RayStructureUniform& structUniform [[buffer(0)]],
                                 device RayTracingTargets& targets,
@@ -117,14 +224,6 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
     cameraRay.primaryHitMask = surface_mask(rayIdx, structUniform);
     
-    if ((cameraRay.primaryHitMask & (kNuoRayMask_Opaque | kNuoRayMask_Translucent)) &&
-        (cameraRay.primaryHitMask & (kNuoRayMask_Virtual)) == 0)
-    {
-        device Intersection& intersection = structUniform.intersections[rayIdx];
-        if (intersection.distance >= 0.0)
-            targets.modelMask.write(float(1.0), tid);
-    }
-    
     self_illumination(tid, structUniform, tracingUniforms,
                       shadowRayMain, incidentRaysBuffer,
                       random, targets, diffuseTex, samplr);
@@ -139,6 +238,7 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  device NuoRayTracingRandomUnit* random,
                                  device RayBuffer* shadowRayMain,
                                  device Intersection *intersections,
+                                 device float3* primaryVisibility,
                                  array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                  sampler samplr [[sampler(0)]])
 {
@@ -157,9 +257,9 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
         if ((shadowRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
         {
             if (shadowIntersection < 0.0f)
-                lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, shadowRay.opacity), targets.lightingTracing);
+                lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), targets.lightingTracing);
             else
-                lightingTrcacingWrite(tid, float4(float3(0.0), shadowRay.opacity), targets.lightingTracing);
+                lightingTrcacingWrite(tid, float4(float3(0.0), 1.0), targets.lightingTracing);
         }
         else if (shadowRay.bounce == 1)
         {
@@ -167,6 +267,8 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                 targets.lightingVirtualWithBlock.write(float4(shadowRay.pathScatter, 1.0), tid);
         }
     }
+    
+    targets.modelMask.write(float4(primaryVisibility[rayIdx], 1.0), tid);
     
     self_illumination(tid, structUniform, tracingUniforms,
                       shadowRayMain, structUniform.exitantRays /* incident rays are the
@@ -266,7 +368,7 @@ void self_illumination(uint2 tid,
             if (ray.bounce == 0)
                 color = saturate(color);
             
-            overlayWrite(ray.primaryHitMask, float4(color, ray.opacity), tid, targets);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
         }
         else
         {
@@ -296,16 +398,14 @@ void self_illumination(uint2 tid,
             // if the ray has transmitted through translucent objects and then lands on a virtual surface,
             //   1. treat it as a first-bounce primary ray, so the shadow ray so it could be rendered
             //      onto the virtual target
-            //   2. scale up the shadow ray's path-scatter as that's used for shadow result
-            //   3. turn back on the ambient
+            //   2. turn back on the ambient
             //
-            if (ray.opacity > 1.0)
+            if (ray.transThrough)
             {
                 uint surfaceMask = surface_mask(rayIdx, structUniform);
                 if (surfaceMask & kNuoRayMask_Virtual)
                 {
                     shadowRay.primaryHitMask = kNuoRayMask_Virtual;
-                    shadowRay.pathScatter *= ray.opacity;
                     shadowRay.bounce = 1;
                     
                     incidentRay.primaryHitMask = kNuoRayMask_Virtual;
@@ -319,7 +419,7 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientIlluminated && ambientFactor > 0)
         {
             color = ray.pathScatter * globalIllum.ambient * ambientFactor;
-            overlayWrite(ray.primaryHitMask, float4(color, ray.opacity), tid, targets);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
             incidentRay.ambientIlluminated = true;
         }
     }
@@ -328,7 +428,7 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientIlluminated)
         {
             float3 color = ray.pathScatter * globalIllum.ambient;
-            overlayWrite(ray.primaryHitMask, float4(color, ray.opacity), tid, targets);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
             incidentRay.ambientIlluminated = true;
         }
         else if (ray.bounce == 0)

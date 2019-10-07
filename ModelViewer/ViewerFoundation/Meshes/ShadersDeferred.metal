@@ -228,16 +228,13 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     // all terms in the numerator have already been masked (because they are stored in "virtual-only" results), except
     // the ambientWithoutBlock
     //
-    const float objectMask = 1.0 - modelMask.sample(samplr, vert.texCoord).a;
-    const float shadowFactor = color_to_grayscale(safe_divide(directBlocked - illumiOnVirtual + ambientWithoutBlock * objectMask,
-                                                              direct + ambientWithoutBlock));
+    const float3 visibilities = modelMask.sample(samplr, vert.texCoord).rgb;
+    const float3 opacity = 1.0 - visibilities;
+    const float3 shadowFactor = safe_divide(directBlocked - illumiOnVirtual + ambientWithoutBlock * visibilities,
+                                           direct + ambientWithoutBlock);
     
-    // shadowAdd is intended for the object edge anti-alias, ahdowBlend is intended for transparent object with
-    // virutal shadow as background. the dichotomy approach of choosing between them might have neglectable
-    // artifact but there seems no way of "blending" them properly.
+    // opacity + shadowFactor is equivelant to the "shadowBlend" in the hybrid mode, because shadowFactor has been
+    // scaled down by the passthrough ray's importance sampling
     //
-    float shadowAdd = sourceColor.a + shadowFactor;
-    float shadowBlend = shadowAdd - sourceColor.a * shadowFactor;
-    
-    return (float4(color, (objectMask < 1e-9 ? shadowBlend : shadowAdd)));
+    return float4(color, color_to_grayscale(opacity + shadowFactor));
 }

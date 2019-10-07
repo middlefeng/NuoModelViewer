@@ -353,9 +353,7 @@ static const uint32_t kRayBounce = 4;
         [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowPerLight[0].shadowRays[kNuoRayIndex_OnOpaque].buffer,
-                                   _shadowPerLight[1].shadowRays[kNuoRayIndex_OnOpaque].buffer]
-                  withExitantRay:nil
-                withIntersection:self.intersectionBuffer];
+                                   _shadowPerLight[1].shadowRays[kNuoRayIndex_OnOpaque].buffer]];
     }
     
     [self updatePrimaryRayMask:kNuoRayIndex_OnVirtual withCommandBuffer:commandBuffer];
@@ -367,9 +365,7 @@ static const uint32_t kRayBounce = 4;
         [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowPerLight[0].shadowRays[kNuoRayIndex_OnVirtual].buffer,
-                                   _shadowPerLight[1].shadowRays[kNuoRayIndex_OnVirtual].buffer]
-                  withExitantRay:nil
-                withIntersection:self.intersectionBuffer];
+                                   _shadowPerLight[1].shadowRays[kNuoRayIndex_OnVirtual].buffer]];
     }
     
     [self updatePrimaryRayMask:kNuoRayIndex_OnTranslucent withCommandBuffer:commandBuffer];
@@ -382,9 +378,7 @@ static const uint32_t kRayBounce = 4;
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowPerLight[0].shadowRays[kNuoRayIndex_OnTranslucent].buffer,
                                    _shadowPerLight[1].shadowRays[kNuoRayIndex_OnTranslucent].buffer,
-                                   _incidentRaysBuffer.buffer]
-                  withExitantRay:nil
-                withIntersection:self.intersectionBuffer];
+                                   _incidentRaysBuffer.buffer]];
         
         for (uint i = 0; i < kRayBounce; ++i)
         {
