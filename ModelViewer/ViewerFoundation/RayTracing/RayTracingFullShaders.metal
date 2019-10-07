@@ -86,7 +86,11 @@ kernel void ray_visibility_init(uint2 tid [[thread_position_in_grid]],
         if (Tr == 0.0)
             spawnRay.maxDistance = -1;
         
-        visibilities[rayIdx] = 1.0;
+        // assume the visibility is zero. later if the ray goes through all translucent surfaces,
+        // the value will be overwritten. or the ray hit an opaque surface, or hit more surfaces
+        // than the upper test limit, the zero visibility will be the result
+        //
+        visibilities[rayIdx] = 0.0;
     }
     else
     {
@@ -141,7 +145,7 @@ kernel void ray_visibility(uint2 tid [[thread_position_in_grid]],
     
     if (spawnRay.maxDistance  < 0.0)
     {
-        visibilities[rayIdx] = 1.0 - spawnRay.pathScatter[0];
+        visibilities[rayIdx] = spawnRay.pathScatter[0];
     }
 }
 
