@@ -66,7 +66,7 @@
     [_rayTracer runRayTraceCompute:_pipelineInit
                  withCommandBuffer:commandBuffer
                        withTargets:NO withParameter:@[_tracingUniform, _spawnRays.buffer, _visibilities]
-                    withExitantRay:nil withIntersection:_rayTracer.intersectionBuffer];
+                    withExitantRay:_paths.buffer withIntersection:_rayTracer.intersectionBuffer];
 }
 
 
