@@ -70,9 +70,26 @@
  */
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+               withTargets:(BOOL)withTargets
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
             withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection;
+
+
+- (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
+         withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+             withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
+            withExitantRay:(id<MTLBuffer>)exitantRay
+          withIntersection:(id<MTLBuffer>)intersection;
+
+- (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
+         withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+             withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
+          withIntersection:(id<MTLBuffer>)intersection;
+
+- (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
+         withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+             withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers;
 
 
 - (void)rayStructUpdated;

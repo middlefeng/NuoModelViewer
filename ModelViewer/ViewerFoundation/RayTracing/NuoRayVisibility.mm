@@ -55,7 +55,7 @@
     _spawnIntersectionBuffer = [_commandQueue.device newBufferWithLength:intersectionSize
                                                                  options:MTLResourceStorageModePrivate];
     
-    const size_t visibilitiesSize = drawableSize.width * drawableSize.height * sizeof(Float32);
+    const size_t visibilitiesSize = drawableSize.width * drawableSize.height * sizeof(vector_float3);
     _visibilities = [_commandQueue.device newBufferWithLength:visibilitiesSize
                                                       options:MTLResourceStorageModePrivate];
 }
@@ -65,9 +65,8 @@
 {
     [_rayTracer runRayTraceCompute:_pipelineInit
                  withCommandBuffer:commandBuffer
-                     withParameter:@[_tracingUniform, _spawnRays.buffer]
-                    withExitantRay:nil
-                  withIntersection:_rayTracer.intersectionBuffer];
+                       withTargets:NO withParameter:@[_tracingUniform, _spawnRays.buffer, _visibilities]
+                    withExitantRay:nil withIntersection:_rayTracer.intersectionBuffer];
 }
 
 
@@ -75,7 +74,7 @@
 {
     [_rayTracer runRayTraceCompute:_pipeline
                  withCommandBuffer:commandBuffer
-                     withParameter:@[_tracingUniform]
+                     withTargets:NO withParameter:@[_tracingUniform, _visibilities]
                     withExitantRay:_spawnRays.buffer
                   withIntersection:_spawnIntersectionBuffer];
 }

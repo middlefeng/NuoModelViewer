@@ -189,9 +189,7 @@ enum kModelRayTracingTargets
         //
         [self runRayTraceCompute:_pimraryVirtualLighting withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
-                                   _shadowRaysBuffer.buffer]
-                  withExitantRay:nil
-                withIntersection:self.intersectionBuffer];
+                                   _shadowRaysBuffer.buffer]];
     }
     
     [self updatePrimaryRayMask:kNuoRayIndex_OnTranslucent withCommandBuffer:commandBuffer];
@@ -205,9 +203,7 @@ enum kModelRayTracingTargets
         [self runRayTraceCompute:_primaryAndIncidentRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowRaysBuffer.buffer,
-                                   _incidentRaysBuffer.buffer]
-                  withExitantRay:nil
-                withIntersection:self.intersectionBuffer];
+                                   _incidentRaysBuffer.buffer]];
         
         [_primaryRayVisibility visibilityTestInit:commandBuffer];
         

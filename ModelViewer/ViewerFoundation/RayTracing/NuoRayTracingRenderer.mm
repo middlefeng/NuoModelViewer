@@ -217,6 +217,7 @@
 
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+               withTargets:(BOOL)withTargets
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
             withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection
@@ -232,9 +233,12 @@
                                               withIntersection:intersection];
     [computeEncoder setArgumentBuffer:argumentBuffer];
     
-    NuoArgumentBuffer* targetBuffer = [self targetsUniform:pipeline];
-    [computeEncoder setArgumentBuffer:targetBuffer];
-    ++i;
+    if (withTargets)
+    {
+        NuoArgumentBuffer* targetBuffer = [self targetsUniform:pipeline];
+        [computeEncoder setArgumentBuffer:targetBuffer];
+        ++i;
+    }
     
     if (paramterBuffers)
     {
@@ -252,6 +256,39 @@
     [computeEncoder setSamplerState:_sampleState atIndex:0];
     [computeEncoder setDataSize:_drawableSize];
     [computeEncoder dispatch];
+}
+
+
+
+- (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
+         withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+             withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
+            withExitantRay:(id<MTLBuffer>)exitantRay
+          withIntersection:(id<MTLBuffer>)intersection
+{
+    [self runRayTraceCompute:pipeline
+           withCommandBuffer:commandBuffer
+                 withTargets:YES withParameter:paramterBuffers
+              withExitantRay:exitantRay withIntersection:intersection];
+}
+
+
+- (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
+         withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+             withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
+          withIntersection:(id<MTLBuffer>)intersection
+{
+    [self runRayTraceCompute:pipeline withCommandBuffer:commandBuffer
+               withParameter:paramterBuffers withExitantRay:nil withIntersection:intersection];
+}
+
+
+- (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
+         withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+             withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
+{
+    [self runRayTraceCompute:pipeline withCommandBuffer:commandBuffer
+               withParameter:paramterBuffers withIntersection:self.intersectionBuffer];
 }
 
 
