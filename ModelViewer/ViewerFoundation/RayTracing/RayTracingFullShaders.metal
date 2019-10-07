@@ -47,6 +47,8 @@ static void lightingTrcacingWrite(uint2 tid, float4 value,
                                   texture2d<float, access::read_write> texture);
 
 
+#pragma mark -- Visibilities Test
+
 
 kernel void ray_visibility_init(uint2 tid [[thread_position_in_grid]],
                                 device RayStructureUniform& structUniform [[buffer(0)]],
@@ -143,6 +145,9 @@ kernel void ray_visibility(uint2 tid [[thread_position_in_grid]],
     }
 }
 
+
+
+#pragma mark -- Path Tracing
 
 
 kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
