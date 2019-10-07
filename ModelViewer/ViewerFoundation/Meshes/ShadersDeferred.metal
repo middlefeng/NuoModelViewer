@@ -233,5 +233,8 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     const float3 shadowFactor = safe_divide(directBlocked - illumiOnVirtual + ambientWithoutBlock * visibilities,
                                            direct + ambientWithoutBlock);
     
+    // opacity + shadowFactor is equivelant to the "shadowBlend" in the hybrid mode, because shadowFactor has been
+    // scaled down by the passthrough ray's pathScatter
+    //
     return float4(color, color_to_grayscale(opacity + shadowFactor));
 }

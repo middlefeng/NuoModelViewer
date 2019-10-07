@@ -398,8 +398,7 @@ void self_illumination(uint2 tid,
             // if the ray has transmitted through translucent objects and then lands on a virtual surface,
             //   1. treat it as a first-bounce primary ray, so the shadow ray so it could be rendered
             //      onto the virtual target
-            //   2. scale up the shadow ray's path-scatter as that's used for shadow result
-            //   3. turn back on the ambient
+            //   2. turn back on the ambient
             //
             if (ray.transThrough)
             {

@@ -154,7 +154,6 @@ static const uint32_t kRayBounce = 4;
                                  withIntersection:_shadowIntersection];
         
         [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
-                     withTargets:YES
                    withParameter:@[_shadeIndex[i]]
                   withExitantRay:_shadowRays[i].buffer
                 withIntersection:_shadowIntersection];
