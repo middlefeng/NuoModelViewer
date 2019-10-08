@@ -29,6 +29,13 @@
 }
 
 
+- (void)mouseDown:(NSEvent *)event
+{
+    // prevent the mouse-down event from being passed through
+    // to the view under
+}
+
+
 - (void)mouseUp:(NSEvent *)event
 {
     NSColorPanel* panel = [NSColorPanel sharedColorPanel];
@@ -50,12 +57,16 @@
     
     self.layer.backgroundColor = panel.color.CGColor;
     _color = panel.color;
+    
+    if (_colorChanged)
+        _colorChanged();
 }
 
 
 - (void)setColor:(NSColor*)color
 {
     _color = color;
+    self.layer.backgroundColor = color.CGColor;
 }
 
 

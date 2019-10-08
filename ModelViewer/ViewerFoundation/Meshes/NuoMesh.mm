@@ -145,6 +145,12 @@
 }
 
 
+- (void)invalidCachedTransform
+{
+    memset(&_globalBufferCachedTrans, 0, sizeof(NuoMatrixFloat44));
+}
+
+
 - (void)cacheTransform:(const NuoMatrixFloat44&)transform
 {
     const NuoMatrixFloat44 transformWorld = transform * self.meshTransform;

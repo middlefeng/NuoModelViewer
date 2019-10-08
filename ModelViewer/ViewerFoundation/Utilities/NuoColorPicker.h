@@ -14,6 +14,7 @@
 
 
 @property (nonatomic, strong) NSColor* color;
+@property (nonatomic, strong) void((^colorChanged)(void));
 
 
 @end

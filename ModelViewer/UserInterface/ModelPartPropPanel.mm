@@ -64,8 +64,13 @@
         [_smoothToleranceField setTarget:self];
         [_smoothToleranceField setAction:@selector(modelPartsChanged:)];
         
+        __weak ModelPartPropPanel* panel = self;
         _diffReflectanceLabel = [self createLabel:@"Diffuse Reflectance:" align:NSTextAlignmentRight editable:NO];
         _diffRelectance = [[NuoColorPicker alloc] init];
+        _diffRelectance.colorChanged = ^()
+        {
+            [panel modelColorChanged];
+        };
         [self addSubview:_diffRelectance];
     }
     
@@ -216,7 +221,7 @@
     NSString* smoothToleranceStr = @"0.0";
     CGFloat smoothTolerance = 0.0f;
     
-    bool virtualSurface = true;
+    bool virtualSurface = (meshes.count == 1);
     for (NuoMesh* mesh in meshes)
     {
         if (![mesh isKindOfClass:NuoBoardMesh.class])
@@ -256,7 +261,17 @@
         [_opacitySlider setFloatValue:meshes[0].unifiedOpacity];
     }
     
-    _diffReflectanceLabel.hidden = !virtualSurface;
+    if (virtualSurface)
+    {
+        _diffReflectanceLabel.hidden = NO;
+        _diffRelectance.hidden = NO;
+        _diffRelectance.color = [((NuoBoardMesh*)meshes[0]) diffuse];
+    }
+    else
+    {
+        _diffReflectanceLabel.hidden = YES;
+        _diffRelectance.hidden = YES;
+    }
 }
 
 
@@ -300,6 +315,22 @@
             [mesh smoothWithTolerance:smoothTolerance];
     }
 
+    [_optionUpdateDelegate modelOptionUpdate:0];
+}
+
+
+- (void)modelColorChanged
+{
+    for (NuoMesh* mesh in _selectedMeshes)
+    {
+        if (![mesh isKindOfClass:NuoBoardMesh.class])
+            continue;
+        
+        NuoBoardMesh* board = (NuoBoardMesh*)mesh;
+        [mesh invalidCachedTransform];
+        [board setDiffuse:_diffRelectance.color];
+    }
+    
     [_optionUpdateDelegate modelOptionUpdate:0];
 }
 
