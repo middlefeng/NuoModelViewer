@@ -451,6 +451,16 @@
 }
 
 
+- (NSArray<NuoMesh*>*)configurableMeshParts
+{
+    NSMutableArray* result = [NSMutableArray arrayWithArray:_mainModelMesh.meshes];
+    for (NuoMesh* mesh in _boardMeshes)
+         [result addObject:mesh];
+    
+    return result;
+}
+
+
 - (NuoMeshCompound*)mainModelMesh
 {
     return _mainModelMesh;

@@ -183,8 +183,12 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
                                       constant NuoModelCharacterUniforms &modelCharacterUniforms [[buffer(1)]],
                                       texture_array<2>::t shadowMaps    [[texture(0)]],
                                       texture_array<2>::t shadowMapsExt [[texture(2)]],
+                                      texture2d<float> depth            [[texture(4), function_constant(kDepthPrerenderred)]],
                                       sampler samplr [[sampler(0)]])
 {
+    if (kMeshMode == kMeshMode_Selection)
+        return diffuse_lighted_selection(vert.positionNDC, vert.normal, depth, samplr);
+    
     float3 normal = normalize(vert.normal);
     float3 colorForLights = 0.0;
     

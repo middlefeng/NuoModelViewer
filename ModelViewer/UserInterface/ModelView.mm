@@ -222,7 +222,7 @@ MouseDragMode;
 {
     // clear all table and data structures that depends on the mesh
     //
-    [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
+    [_modelComponentPanels setMesh:[_modelRender configurableMeshParts]];
     [_animations removeAllObjects];
     [_modelPanel setModelPartAnimations:_animations];
     
@@ -1084,7 +1084,7 @@ MouseDragMode;
     [_notationRenderer importScene:lua];
     [_lightPanel updateControls:_notationRenderer.selectedLightSource];
     
-    [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
+    [_modelComponentPanels setMesh:[_modelRender configurableMeshParts]];
     [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];
     [_modelPanel setAmbientParameters:[_modelRender ambientParameters]];
     [_modelPanel setAmbientDensity:_modelRender.ambientDensity];
