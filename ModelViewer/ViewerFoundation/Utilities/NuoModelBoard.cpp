@@ -13,8 +13,21 @@
 
 
 NuoModelBoard::NuoModelBoard(float width, float height, float thickness)
-    : NuoModelBoardBase<NuoItemSimple>(width, height, thickness)
+    : NuoModelBoardBase<NuoItemSimple>(width, height, thickness),
+      _diffuse(0.15, 0.15, 0.15), _specular(0, 0, 0)
 {
+}
+
+
+void NuoModelBoard::SetDiffuse(const NuoVectorFloat3& diffuse)
+{
+    _diffuse = diffuse;
+}
+
+
+const NuoVectorFloat3& NuoModelBoard::GetDiffuse()
+{
+    return _diffuse;
 }
 
 
@@ -43,14 +56,8 @@ NuoGlobalBuffers NuoModelBoard::GetGlobalBuffers() const
             material.texCoord = NuoVectorFloat3(0, 0, 0)._vector;
             material.diffuseTex = -1;
             
-            // diffuse factor is used in ray tracing. the direct lighting shadow is independent from
-            // the value, but indirect lighting will be affected
-            //
-            // set to 0.15 to simulate a dark plane. should be adjustable later. see more comments in
-            // the "illumination_blend()" fragment shader
-            //
-            material.diffuseColor = NuoVectorFloat3(0.15, 0.15, 0.15)._vector;
-            material.specularColor = NuoVectorFloat3(0, 0, 0)._vector;
+            material.diffuseColor = _diffuse._vector;
+            material.specularColor = _specular._vector;
             material.shinessDisolveIllum = NuoVectorFloat3(1, 1, 2)._vector;
             
             result._materials.push_back(material);

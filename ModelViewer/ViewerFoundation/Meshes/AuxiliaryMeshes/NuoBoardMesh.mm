@@ -136,6 +136,33 @@
 }
 
 
+- (NSColor*)diffuse
+{
+    NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
+    
+    assert(boardModel != nullptr);
+    
+    const NuoVectorFloat3& colorVec = boardModel->GetDiffuse();
+    NSColor* color = [NSColor colorWithRed:colorVec.x() green:colorVec.y() blue:colorVec.z() alpha:1.0];
+    
+    return color;
+}
+
+
+- (void)setDiffuse:(NSColor*)diffuse
+{
+    NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
+    
+    assert(boardModel != nullptr);
+    
+    NuoVectorFloat3 colorVec(diffuse.redComponent,
+                             diffuse.greenComponent,
+                             diffuse.blueComponent);
+    
+    boardModel->SetDiffuse(colorVec);
+}
+
+
 @end
 
 

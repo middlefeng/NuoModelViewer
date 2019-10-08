@@ -7,12 +7,14 @@
 //
 
 #import "NuoMesh.h"
+#import <AppKit/AppKit.h>
 
 
 @interface NuoBoardMesh : NuoMesh
 
 @property (assign, readonly) const NuoVectorFloat3& dimensions;
 @property (assign, nonatomic) BOOL shadowOverlayOnly;
+@property (strong, nonatomic) NSColor* diffuse;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 - (void)makePipelineShadowState;

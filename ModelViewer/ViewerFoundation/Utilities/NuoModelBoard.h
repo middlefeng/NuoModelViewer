@@ -47,9 +47,21 @@ class NuoModelBoard : virtual public NuoModelBoardBase<NuoItemSimple>,
                       virtual public NuoModelSimple
 {
     
+    // diffuse factor is used in ray tracing. the direct lighting shadow is independent from
+    // the value, but indirect lighting will be affected
+    //
+    // set to 0.15 by default to simulate a dark plane. see more comments in
+    // the "illumination_blend()" fragment shader
+    //
+    NuoVectorFloat3 _diffuse;
+    NuoVectorFloat3 _specular;
+    
 public:
     
     NuoModelBoard(float width, float height, float thickness);
+    
+    void SetDiffuse(const NuoVectorFloat3& diffuse);
+    const NuoVectorFloat3& GetDiffuse();
     
     virtual NuoGlobalBuffers GetGlobalBuffers() const override;
     

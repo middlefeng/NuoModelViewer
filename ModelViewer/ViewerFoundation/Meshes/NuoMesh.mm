@@ -302,6 +302,12 @@
 }
 
 
+- (PNuoModelBase)rawModel
+{
+    return _rawModel;
+}
+
+
 - (NSString*)modelName
 {
     if (_rawModel)

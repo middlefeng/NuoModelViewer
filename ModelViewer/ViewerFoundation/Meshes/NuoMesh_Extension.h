@@ -19,6 +19,8 @@
 - (void)setMeshMode:(NuoMeshModeShaderParameter)mode;
 - (NuoMeshModeShaderParameter)meshMode;
 
+- (PNuoModelBase)rawModel;
+
 //
 // pipeline construction facilities
 //
