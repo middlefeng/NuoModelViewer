@@ -9,6 +9,7 @@
 #import "ModelPartPropPanel.h"
 #import "NuoMesh.h"
 #import "NuoBoardMesh.h"
+#import "NuoColorPicker.h"
 
 #import "ModelPanelUpdate.h"
 #import "ModelOptionUpdate.h"
@@ -31,6 +32,9 @@
     NSTextField* _smoothToleranceField;
     
     NSArray<NuoMesh*>* _selectedMeshes;
+    
+    NSTextField* _diffReflectanceLabel;
+    NSButton* _diffRelectance;
 }
 
 
@@ -59,6 +63,10 @@
         _smoothToleranceField = [self createLabel:@"Smooth:" align:NSTextAlignmentRight editable:YES];
         [_smoothToleranceField setTarget:self];
         [_smoothToleranceField setAction:@selector(modelPartsChanged:)];
+        
+        _diffReflectanceLabel = [self createLabel:@"Diffuse Reflectance:" align:NSTextAlignmentRight editable:NO];
+        _diffRelectance = [[NuoColorPicker alloc] init];
+        [self addSubview:_diffRelectance];
     }
     
     return self;
@@ -121,18 +129,19 @@
     CGSize viewSize = [self bounds].size;
     
     float labelWidth = 60;
+    float wideLabelWidth = 135;
     float labelSpace = 2;
     float entryHeight = 18;
     float lineSpace = 6;
     
     CGRect labelFrame;
     labelFrame.size = CGSizeMake(labelWidth, entryHeight);
-    labelFrame.origin = CGPointMake(0, (entryHeight + lineSpace) * 4 + 15);
+    labelFrame.origin = CGPointMake(0, [self preferredHeight] - entryHeight - 12);
     [_nameLabel setFrame:labelFrame];
     
     CGRect fieldFrame;
     fieldFrame.size = CGSizeMake(viewSize.width - labelWidth - labelSpace * 2 - 10, entryHeight);
-    fieldFrame.origin = CGPointMake(labelWidth + labelSpace, (entryHeight + lineSpace) * 4 + 15);
+    fieldFrame.origin = CGPointMake(labelWidth + labelSpace, labelFrame.origin.y);
     [_nameField setFrame:fieldFrame];
     
     labelFrame.origin.y -= entryHeight + lineSpace;
@@ -161,6 +170,16 @@
     checkButtonFrame.origin.y -= entryHeight + lineSpace;
 
     [_modelCullOption setFrame:checkButtonFrame];
+    
+    labelFrame.origin.y = checkButtonFrame.origin.y - (entryHeight + lineSpace + 3.0);
+    labelFrame.size.width = wideLabelWidth;
+    [_diffReflectanceLabel setFrame:labelFrame];
+    
+    CGRect colorButtonFrame = labelFrame;
+    colorButtonFrame.origin.x += labelFrame.size.width + 15.0;
+    colorButtonFrame.size = CGSizeMake(18, 18);
+    colorButtonFrame.origin.y -= (colorButtonFrame.size.height - labelFrame.size.height) / 2.0;
+    [_diffRelectance setFrame:colorButtonFrame];
 }
 
 
@@ -169,6 +188,7 @@
 {
     _selectedMeshes = meshes;
     [self updateForSelectedMesh];
+    [self updateControlsLayout];
 }
 
 
@@ -196,8 +216,12 @@
     NSString* smoothToleranceStr = @"0.0";
     CGFloat smoothTolerance = 0.0f;
     
+    bool virtualSurface = true;
     for (NuoMesh* mesh in meshes)
     {
+        if (![mesh isKindOfClass:NuoBoardMesh.class])
+            virtualSurface = false;
+        
         if (names)
         {
             names = [names stringByAppendingString:@", "];
@@ -231,6 +255,8 @@
     {
         [_opacitySlider setFloatValue:meshes[0].unifiedOpacity];
     }
+    
+    _diffReflectanceLabel.hidden = !virtualSurface;
 }
 
 
@@ -298,7 +324,7 @@
     }
     
     if (virtualSurface)
-        return 200;
+        return 180;
     else
         return 140;
 }
