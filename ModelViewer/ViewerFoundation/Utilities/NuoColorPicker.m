@@ -17,22 +17,45 @@
     
     if (self)
     {
-        self.bezelStyle = NSBezelStyleRoundRect;
-        self.title = @"";
-        [self setTarget:self];
-        [self setAction:@selector(colorPicker:)];
+        [self setWantsLayer:YES];
+        
+        self.layer.masksToBounds = YES;
+        self.layer.cornerRadius = 5.0;
+        self.layer.borderColor = [NSColor colorWithDeviceWhite:0.8 alpha:0.8].CGColor;
+        self.layer.borderWidth = 1.0;
     }
     
     return self;
 }
 
 
-- (void)colorPicker:(id)sender
+- (void)mouseUp:(NSEvent *)event
 {
     NSColorPanel* panel = [NSColorPanel sharedColorPanel];
     
+    panel.color = _color;
+    
+    [panel setContinuous:YES];
+    [panel setTarget:self];
+    [panel setAction:@selector(colorChanged:)];
+    
     [panel display];
     [panel orderFrontRegardless];
+}
+
+
+- (void)colorChanged:(id)sender
+{
+    NSColorPanel* panel = sender;
+    
+    self.layer.backgroundColor = panel.color.CGColor;
+    _color = panel.color;
+}
+
+
+- (void)setColor:(NSColor*)color
+{
+    _color = color;
 }
 
 

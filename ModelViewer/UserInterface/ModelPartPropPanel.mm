@@ -34,7 +34,7 @@
     NSArray<NuoMesh*>* _selectedMeshes;
     
     NSTextField* _diffReflectanceLabel;
-    NSButton* _diffRelectance;
+    NuoColorPicker* _diffRelectance;
 }
 
 
