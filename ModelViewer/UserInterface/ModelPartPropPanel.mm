@@ -8,6 +8,7 @@
 
 #import "ModelPartPropPanel.h"
 #import "NuoMesh.h"
+#import "NuoBoardMesh.h"
 
 #import "ModelPanelUpdate.h"
 #import "ModelOptionUpdate.h"
@@ -281,6 +282,25 @@
 {
     if (_selectedMeshes)
         self.hidden = NO;
+}
+
+
+- (CGFloat)preferredHeight
+{
+    bool virtualSurface = true;
+    for (NuoMesh* mesh in _selectedMeshes)
+    {
+        if (![mesh isKindOfClass:NuoBoardMesh.class])
+        {
+            virtualSurface = false;
+            break;
+        }
+    }
+    
+    if (virtualSurface)
+        return 200;
+    else
+        return 140;
 }
 
 
