@@ -94,7 +94,7 @@
 - (void)makePipelineScreenSpaceState
 {
     MTLFunctionConstantValues* constants = [MTLFunctionConstantValues new];
-    BOOL shadowOverlay = self.shadowOverlayOnly;
+    BOOL shadowOverlay = NO;// self.shadowOverlayOnly;
     BOOL rayTracing = self.shadowOptionRayTracing;
     [constants setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
     [constants setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
@@ -128,8 +128,8 @@
     
     if (self.shadowOverlayOnly)
     {
-        for (NuoRayMask& item : oneBuffer)
-            item = kNuoRayMask_Virtual;
+        //for (uint32& item : oneBuffer)
+        //    item |= kNuoRayMask_Virtual;
     }
     
     return oneBuffer;
@@ -241,7 +241,7 @@ NuoBoardMesh* CreateBoardMesh(id<MTLCommandQueue> commandQueue, const std::share
     resultMesh.boundsLocal = bounds;
     
     [resultMesh setRawModel:model];
-    [resultMesh setShadowOverlayOnly:shadowCastOnly];
+    [resultMesh setShadowOverlayOnly:NO];//shadowCastOnly];
     [resultMesh makeGPUStates];
     
     return resultMesh;
