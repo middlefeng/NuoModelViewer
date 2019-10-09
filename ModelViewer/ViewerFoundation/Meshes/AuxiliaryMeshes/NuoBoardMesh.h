@@ -15,6 +15,7 @@
 @property (assign, readonly) const NuoVectorFloat3& dimensions;
 @property (assign, nonatomic) BOOL shadowOverlayOnly;
 @property (strong, nonatomic) NSColor* diffuse;
+@property (strong, nonatomic) NSColor* specular;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 - (void)makePipelineShadowState;

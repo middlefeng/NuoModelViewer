@@ -62,6 +62,8 @@ public:
     
     void SetDiffuse(const NuoVectorFloat3& diffuse);
     const NuoVectorFloat3& GetDiffuse();
+    void SetSpecular(const NuoVectorFloat3& specular);
+    const NuoVectorFloat3& GetSpecular();
     
     virtual NuoGlobalBuffers GetGlobalBuffers() const override;
     

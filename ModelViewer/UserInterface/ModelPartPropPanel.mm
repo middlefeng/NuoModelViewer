@@ -35,6 +35,8 @@
     
     NSTextField* _diffReflectanceLabel;
     NuoColorPicker* _diffRelectance;
+    NSTextField* _specReflectanceLabel;
+    NuoColorPicker* _specRelectance;
 }
 
 
@@ -69,9 +71,17 @@
         _diffRelectance = [[NuoColorPicker alloc] init];
         _diffRelectance.colorChanged = ^()
         {
-            [panel modelColorChanged];
+            [panel modelDiffuseChanged];
         };
         [self addSubview:_diffRelectance];
+        
+        _specReflectanceLabel = [self createLabel:@"Specular Reflectance:" align:NSTextAlignmentRight editable:NO];
+        _specRelectance = [[NuoColorPicker alloc] init];
+        _specRelectance.colorChanged = ^()
+        {
+            [panel modelSpecularChanged];
+        };
+        [self addSubview:_specRelectance];
     }
     
     return self;
@@ -134,7 +144,7 @@
     CGSize viewSize = [self bounds].size;
     
     float labelWidth = 60;
-    float wideLabelWidth = 135;
+    float wideLabelWidth = 150;
     float labelSpace = 2;
     float entryHeight = 18;
     float lineSpace = 6;
@@ -176,7 +186,7 @@
 
     [_modelCullOption setFrame:checkButtonFrame];
     
-    labelFrame.origin.y = checkButtonFrame.origin.y - (entryHeight + lineSpace + 3.0);
+    labelFrame.origin.y = checkButtonFrame.origin.y - (entryHeight + lineSpace + 6.0);
     labelFrame.size.width = wideLabelWidth;
     [_diffReflectanceLabel setFrame:labelFrame];
     
@@ -185,6 +195,13 @@
     colorButtonFrame.size = CGSizeMake(18, 18);
     colorButtonFrame.origin.y -= (colorButtonFrame.size.height - labelFrame.size.height) / 2.0;
     [_diffRelectance setFrame:colorButtonFrame];
+    
+    labelFrame.origin.y -= (entryHeight + lineSpace);
+    labelFrame.size.width = wideLabelWidth;
+    [_specReflectanceLabel setFrame:labelFrame];
+    
+    colorButtonFrame.origin.y = labelFrame.origin.y - (colorButtonFrame.size.height - labelFrame.size.height) / 2.0;
+    [_specRelectance setFrame:colorButtonFrame];
 }
 
 
@@ -265,7 +282,10 @@
     {
         _diffReflectanceLabel.hidden = NO;
         _diffRelectance.hidden = NO;
+        _specReflectanceLabel.hidden = NO;
+        _specRelectance.hidden = NO;
         _diffRelectance.color = [((NuoBoardMesh*)meshes[0]) diffuse];
+        _specRelectance.color = [((NuoBoardMesh*)meshes[0]) specular];
     }
     else
     {
@@ -319,7 +339,7 @@
 }
 
 
-- (void)modelColorChanged
+- (void)modelDiffuseChanged
 {
     for (NuoMesh* mesh in _selectedMeshes)
     {
@@ -329,6 +349,22 @@
         NuoBoardMesh* board = (NuoBoardMesh*)mesh;
         [mesh invalidCachedTransform];
         [board setDiffuse:_diffRelectance.color];
+    }
+    
+    [_optionUpdateDelegate modelOptionUpdate:0];
+}
+
+
+- (void)modelSpecularChanged
+{
+    for (NuoMesh* mesh in _selectedMeshes)
+    {
+        if (![mesh isKindOfClass:NuoBoardMesh.class])
+            continue;
+        
+        NuoBoardMesh* board = (NuoBoardMesh*)mesh;
+        [mesh invalidCachedTransform];
+        [board setSpecular:_specRelectance.color];
     }
     
     [_optionUpdateDelegate modelOptionUpdate:0];
@@ -355,7 +391,7 @@
     }
     
     if (virtualSurface)
-        return 180;
+        return 200;
     else
         return 140;
 }

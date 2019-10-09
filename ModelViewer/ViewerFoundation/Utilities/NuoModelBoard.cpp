@@ -31,6 +31,18 @@ const NuoVectorFloat3& NuoModelBoard::GetDiffuse()
 }
 
 
+void NuoModelBoard::SetSpecular(const NuoVectorFloat3& specular)
+{
+    _specular = specular;
+}
+
+
+const NuoVectorFloat3& NuoModelBoard::GetSpecular()
+{
+    return _specular;
+}
+
+
 NuoGlobalBuffers NuoModelBoard::GetGlobalBuffers() const
 {
     NuoGlobalBuffers result;

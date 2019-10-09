@@ -10,6 +10,11 @@
 
 
 @implementation NuoColorPicker
+{
+    NSColorPanel* _panel;
+}
+
+
 
 - (instancetype)init
 {
@@ -38,25 +43,22 @@
 
 - (void)mouseUp:(NSEvent *)event
 {
-    NSColorPanel* panel = [NSColorPanel sharedColorPanel];
+    _panel = [[NSColorPanel alloc] init];
     
-    panel.color = _color;
+    _panel.color = _color;
     
-    [panel setContinuous:YES];
-    [panel setTarget:self];
-    [panel setAction:@selector(colorChanged:)];
+    [_panel setContinuous:YES];
+    [_panel setTarget:self];
+    [_panel setAction:@selector(colorChanged:)];
     
-    [panel display];
-    [panel orderFrontRegardless];
+    [_panel display];
+    [_panel orderFrontRegardless];
 }
 
 
 - (void)colorChanged:(id)sender
 {
-    NSColorPanel* panel = sender;
-    
-    self.layer.backgroundColor = panel.color.CGColor;
-    _color = panel.color;
+    self.color = _panel.color;
     
     if (_colorChanged)
         _colorChanged();

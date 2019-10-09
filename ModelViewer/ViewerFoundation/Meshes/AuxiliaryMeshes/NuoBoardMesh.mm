@@ -136,6 +136,18 @@
 }
 
 
+- (void)setSampleCount:(NSUInteger)sampleCount
+{
+    [super setSampleCount:sampleCount];
+}
+
+
+- (void)appendWorldBuffers:(const NuoMatrixFloat44 &)transform toBuffers:(NuoGlobalBuffers *)buffers
+{
+    [super appendWorldBuffers:transform toBuffers:buffers];
+}
+
+
 - (NSColor*)diffuse
 {
     NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
@@ -146,18 +158,6 @@
     NSColor* color = [NSColor colorWithRed:colorVec.x() green:colorVec.y() blue:colorVec.z() alpha:1.0];
     
     return color;
-}
-
-
-- (void)setSampleCount:(NSUInteger)sampleCount
-{
-    [super setSampleCount:sampleCount];
-}
-
-
-- (void)appendWorldBuffers:(const NuoMatrixFloat44 &)transform toBuffers:(NuoGlobalBuffers *)buffers
-{
-    [super appendWorldBuffers:transform toBuffers:buffers];
 }
 
 
@@ -172,6 +172,33 @@
                              diffuse.blueComponent);
     
     boardModel->SetDiffuse(colorVec);
+}
+
+
+- (NSColor*)specular
+{
+    NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
+    
+    assert(boardModel != nullptr);
+    
+    const NuoVectorFloat3& colorVec = boardModel->GetSpecular();
+    NSColor* color = [NSColor colorWithRed:colorVec.x() green:colorVec.y() blue:colorVec.z() alpha:1.0];
+    
+    return color;
+}
+
+
+- (void)setSpecular:(NSColor*)specular
+{
+    NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
+    
+    assert(boardModel != nullptr);
+    
+    NuoVectorFloat3 colorVec(specular.redComponent,
+                             specular.greenComponent,
+                             specular.blueComponent);
+    
+    boardModel->SetSpecular(colorVec);
 }
 
 
