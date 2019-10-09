@@ -37,6 +37,9 @@
     NuoColorPicker* _diffRelectance;
     NSTextField* _specReflectanceLabel;
     NuoColorPicker* _specRelectance;
+    
+    NSTextField* _specularPower;
+    NSSlider* _specularPowerSlider;
 }
 
 
@@ -82,6 +85,11 @@
             [panel modelSpecularChanged];
         };
         [self addSubview:_specRelectance];
+        
+        _specularPower = [self createLabel:@"Specular Power:" align:NSTextAlignmentRight editable:NO];
+        _specularPowerSlider = [self createSliderMax:2000.0 min:0.0];
+        [_specularPowerSlider setTarget:self];
+        [_specularPowerSlider setAction:@selector(specularPowerChanged:)];
     }
     
     return self;
@@ -202,6 +210,14 @@
     
     colorButtonFrame.origin.y = labelFrame.origin.y - (colorButtonFrame.size.height - labelFrame.size.height) / 2.0;
     [_specRelectance setFrame:colorButtonFrame];
+    
+    labelFrame.origin.y -= (entryHeight + lineSpace);
+    labelFrame.size.width = 120;
+    fieldFrame.origin = CGPointMake(labelFrame.size.width + labelSpace, labelFrame.origin.y);
+    fieldFrame.size.width = viewSize.width - labelFrame.size.width - labelSpace * 2 - 10;
+    
+    [_specularPower setFrame:labelFrame];
+    [_specularPowerSlider setFrame:fieldFrame];
 }
 
 
@@ -371,6 +387,22 @@
 }
 
 
+- (void)specularPowerChanged:(id)sender
+{
+    for (NuoMesh* mesh in _selectedMeshes)
+    {
+        if (![mesh isKindOfClass:NuoBoardMesh.class])
+            continue;
+        
+        NuoBoardMesh* board = (NuoBoardMesh*)mesh;
+        [mesh invalidCachedTransform];
+        [board setSpecularPower:_specularPowerSlider.floatValue];
+    }
+    
+    [_optionUpdateDelegate modelOptionUpdate:0];
+}
+
+
 - (void)showIfSelected
 {
     if (_selectedMeshes)
@@ -391,7 +423,7 @@
     }
     
     if (virtualSurface)
-        return 200;
+        return 220;
     else
         return 140;
 }

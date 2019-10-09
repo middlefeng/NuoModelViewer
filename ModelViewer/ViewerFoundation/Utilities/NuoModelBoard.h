@@ -56,6 +56,8 @@ class NuoModelBoard : virtual public NuoModelBoardBase<NuoItemSimple>,
     NuoVectorFloat3 _diffuse;
     NuoVectorFloat3 _specular;
     
+    float _specularPower;
+    
 public:
     
     NuoModelBoard(float width, float height, float thickness);
@@ -64,6 +66,8 @@ public:
     const NuoVectorFloat3& GetDiffuse();
     void SetSpecular(const NuoVectorFloat3& specular);
     const NuoVectorFloat3& GetSpecular();
+    void SetSpecularPower(float power);
+    float GetSpecularPower();
     
     virtual NuoGlobalBuffers GetGlobalBuffers() const override;
     

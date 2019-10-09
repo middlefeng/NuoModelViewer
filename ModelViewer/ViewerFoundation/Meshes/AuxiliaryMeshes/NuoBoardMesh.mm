@@ -202,6 +202,24 @@
 }
 
 
+- (float)specularPower
+{
+    NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
+    
+    assert(boardModel != nullptr);
+    return boardModel->GetSpecularPower();
+}
+
+
+- (void)setSpecularPower:(float)specularPower
+{
+    NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
+    
+    assert(boardModel != nullptr);
+    boardModel->SetSpecularPower(specularPower);
+}
+
+
 @end
 
 

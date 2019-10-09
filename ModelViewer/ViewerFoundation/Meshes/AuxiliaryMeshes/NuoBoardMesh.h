@@ -16,6 +16,7 @@
 @property (assign, nonatomic) BOOL shadowOverlayOnly;
 @property (strong, nonatomic) NSColor* diffuse;
 @property (strong, nonatomic) NSColor* specular;
+@property (assign, nonatomic) float specularPower;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;
 - (void)makePipelineShadowState;

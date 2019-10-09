@@ -14,7 +14,8 @@
 
 NuoModelBoard::NuoModelBoard(float width, float height, float thickness)
     : NuoModelBoardBase<NuoItemSimple>(width, height, thickness),
-      _diffuse(0.15, 0.15, 0.15), _specular(0, 0, 0)
+      _diffuse(0.15, 0.15, 0.15), _specular(0, 0, 0),
+      _specularPower(1)
 {
 }
 
@@ -40,6 +41,18 @@ void NuoModelBoard::SetSpecular(const NuoVectorFloat3& specular)
 const NuoVectorFloat3& NuoModelBoard::GetSpecular()
 {
     return _specular;
+}
+
+
+void NuoModelBoard::SetSpecularPower(float power)
+{
+    _specularPower = power;
+}
+
+
+float NuoModelBoard::GetSpecularPower()
+{
+    return _specularPower;
 }
 
 
@@ -70,7 +83,7 @@ NuoGlobalBuffers NuoModelBoard::GetGlobalBuffers() const
             
             material.diffuseColor = _diffuse._vector;
             material.specularColor = _specular._vector;
-            material.shinessDisolveIllum = NuoVectorFloat3(1, 1, 2)._vector;
+            material.shinessDisolveIllum = NuoVectorFloat3(_specularPower, 1, 2)._vector;
             
             result._materials.push_back(material);
         }
