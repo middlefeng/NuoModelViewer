@@ -94,7 +94,7 @@
 - (void)makePipelineScreenSpaceState
 {
     MTLFunctionConstantValues* constants = [MTLFunctionConstantValues new];
-    BOOL shadowOverlay = NO;// self.shadowOverlayOnly;
+    BOOL shadowOverlay = self.shadowOverlayOnly;
     BOOL rayTracing = self.shadowOptionRayTracing;
     [constants setConstantValue:&shadowOverlay type:MTLDataTypeBool atIndex:3];
     [constants setConstantValue:&rayTracing type:MTLDataTypeBool atIndex:7];
@@ -128,8 +128,8 @@
     
     if (self.shadowOverlayOnly)
     {
-        //for (uint32& item : oneBuffer)
-        //    item |= kNuoRayMask_Virtual;
+        for (NuoRayMask& item : oneBuffer)
+            item = kNuoRayMask_Virtual;
     }
     
     return oneBuffer;
