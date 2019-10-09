@@ -241,7 +241,7 @@ NuoBoardMesh* CreateBoardMesh(id<MTLCommandQueue> commandQueue, const std::share
     resultMesh.boundsLocal = bounds;
     
     [resultMesh setRawModel:model];
-    [resultMesh setShadowOverlayOnly:NO];//shadowCastOnly];
+    [resultMesh setShadowOverlayOnly:shadowCastOnly];
     [resultMesh makeGPUStates];
     
     return resultMesh;
