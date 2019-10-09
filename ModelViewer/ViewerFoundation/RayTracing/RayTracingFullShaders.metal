@@ -28,6 +28,7 @@ struct RayTracingTargets
     texture2d<float, access::read_write> lightingTracing                [[id(3)]];
     texture2d<float, access::read_write> lightingVirtual;
     texture2d<float, access::read_write> lightingVirtualWithBlock;
+    texture2d<float, access::read_write> lightingVirtualIndirect;
     texture2d<float, access::read_write> modelMask;
 };
 
@@ -265,6 +266,11 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
         {
             if (shadowIntersection > 0.0f)
                 targets.lightingVirtualWithBlock.write(float4(shadowRay.pathScatter, 1.0), tid);
+        }
+        else
+        {
+            if (shadowIntersection < 0.0f)
+                lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), targets.lightingVirtualIndirect);
         }
     }
     

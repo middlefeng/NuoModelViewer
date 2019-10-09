@@ -25,6 +25,7 @@
 @property (strong, nonatomic) id<MTLTexture> ambientVirtualWithoutBlock;
 @property (strong, nonatomic) id<MTLTexture> directVirtual;
 @property (strong, nonatomic) id<MTLTexture> directVirtualBlocked;
+@property (strong, nonatomic) id<MTLTexture> indirectVirtual;
 @property (strong, nonatomic) id<MTLTexture> modelMask;
 
 @end

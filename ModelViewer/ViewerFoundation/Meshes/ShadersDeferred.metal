@@ -210,6 +210,7 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
                                    texture2d<float> illuminationOnVirtualWithoutBlock,
                                    texture2d<float> directLighting,
                                    texture2d<float> directBlock,
+                                   texture2d<float> indirect,
                                    texture2d<float> modelMask,
                                    sampler samplr [[sampler(0)]])
 {
@@ -221,6 +222,7 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     
     const float3 direct = directLighting.sample(samplr, vert.texCoord).rgb;
     const float3 directBlocked = directBlock.sample(samplr, vert.texCoord).rgb;
+    const float3 indirectColor = indirect.sample(samplr, vert.texCoord).rgb;
     const float3 ambientWithoutBlock = illuminationOnVirtualWithoutBlock.sample(samplr, vert.texCoord).rgb;
     
     // numerator should be masked by normal object, denominator shoud not
@@ -236,5 +238,5 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     // opacity + shadowFactor is equivelant to the "shadowBlend" in the hybrid mode, because shadowFactor has been
     // scaled down by the passthrough ray's importance sampling
     //
-    return float4(color, color_to_grayscale(opacity + shadowFactor));
+    return float4(indirectColor + color, color_to_grayscale(opacity + shadowFactor));
 }
