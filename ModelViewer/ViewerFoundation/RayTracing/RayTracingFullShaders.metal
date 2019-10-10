@@ -287,12 +287,18 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     
 /**
  *  write the result of illuminating surface and ambient
+ *
+ *  "directAmbient" means the ambient illumination conveyed by the first bounce, which is used for reduce the
+ *  background occlusion (if there is shadow). On the other hand, "indirect" ambient or local light source are
+ *  added to the final result.
  */
-static void overlayWrite(uint hitType, float4 value, uint2 tid,
+static void overlayWrite(uint hitType, float4 value, uint2 tid, bool directAmbient,
                          device RayTracingTargets& targets)
 {
-    texture2d<float, access::read_write> texture = (hitType & kNuoRayMask_Virtual)?
-                                                    targets.overlayForVirtual : targets.overlayResult;
+    bool isVirtual = (hitType & kNuoRayMask_Virtual);
+    texture2d<float, access::read_write> texture = (isVirtual && directAmbient) ?
+                                                    targets.overlayForVirtual   // direct ambient for reducing occlusion
+                                                  : targets.overlayResult;      // indirect ambient to be added to the result
     
     const float4 color = texture.read(tid);
     const float4 result = float4(color.rgb + value.rgb, 1.0);
@@ -343,6 +349,8 @@ void self_illumination(uint2 tid,
     incidentRay.maxDistance = -1;
     shadowRay.maxDistance = -1;
     
+    bool directAmbient = (ray.bounce == 1);
+    
     if (intersection.distance >= 0.0f)
     {
         const float maxDistance = tracingUniforms.bounds.span;
@@ -357,7 +365,7 @@ void self_illumination(uint2 tid,
         {
             color = color * ray.pathScatter * globalIllum.illuminationStrength * 10.0;
             
-            // old comment regarding the light source sampling vs. reflection sampling:
+            /* old comment regarding the light source sampling vs. reflection sampling:
             //   for bounced ray, multiplied with the integral base (2 PI, or the hemisphre)
             //   as there is no primary ray
             //
@@ -365,7 +373,7 @@ void self_illumination(uint2 tid,
             // parameter range compensation for the removal of 2.0 * M_PI
             //
             // if (ray.bounce > 0)
-            //     color = 2.0f * M_PI_F * color;
+            //     color = 2.0f * M_PI_F * color; */
             
             // clap the value or the anti-alias on object discontinuity will fail.
             // (the problem exists on bounced path as well, but monte carlo does not have a way
@@ -374,7 +382,9 @@ void self_illumination(uint2 tid,
             if (ray.bounce == 0)
                 color = saturate(color);
             
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid,
+                         false /* not ambient. local light source */ ,
+                         targets);
         }
         else
         {
@@ -425,7 +435,7 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientIlluminated && ambientFactor > 0)
         {
             color = ray.pathScatter * globalIllum.ambient * ambientFactor;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, directAmbient, targets);
             incidentRay.ambientIlluminated = true;
         }
     }
@@ -434,7 +444,7 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientIlluminated)
         {
             float3 color = ray.pathScatter * globalIllum.ambient;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
+            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, directAmbient, targets);
             incidentRay.ambientIlluminated = true;
         }
         else if (ray.bounce == 0)
