@@ -45,8 +45,9 @@
     [renderPass setFragmentTexture:_illuminations.ambientVirtualWithoutBlock atIndex:++i];
     [renderPass setFragmentTexture:_illuminations.directVirtual atIndex:++i];
     [renderPass setFragmentTexture:_illuminations.directVirtualBlocked atIndex:++i];
-    [renderPass setFragmentTexture:_illuminations.indirectVirtual atIndex:++i];
     
+    if (_illuminations.indirectVirtual)
+        [renderPass setFragmentTexture:_illuminations.indirectVirtual atIndex:++i];
     if (_translucentCoverMap)
         [renderPass setFragmentTexture:_translucentCoverMap atIndex:++i];
     
