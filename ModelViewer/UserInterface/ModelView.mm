@@ -1360,6 +1360,7 @@ MouseDragMode;
         [_removeObjectMenu setAction:nil];
     }
     
+    [self modelMeshInvalid];
     [self render];
 }
 
@@ -1381,6 +1382,7 @@ MouseDragMode;
              if (size.width > 0 && size.height > 0)
              {
                  [renderer createBoard:size withName:panelWeak.boardName];
+                 [self modelMeshInvalid];
                  [self render];
                  
                  [menu setTarget:self];
