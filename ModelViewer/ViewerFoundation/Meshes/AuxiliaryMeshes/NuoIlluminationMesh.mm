@@ -39,15 +39,13 @@
     
     uint i = 1;
     
-    [self setModelTexture:_illuminations.normal];
+    [self setModelTexture:_illuminations.regularLighting];
     [renderPass setFragmentTexture:_illuminations.ambientNormal atIndex:i];
     [renderPass setFragmentTexture:_illuminations.ambientVirtual atIndex:++i];
     [renderPass setFragmentTexture:_illuminations.ambientVirtualWithoutBlock atIndex:++i];
     [renderPass setFragmentTexture:_illuminations.directVirtual atIndex:++i];
     [renderPass setFragmentTexture:_illuminations.directVirtualBlocked atIndex:++i];
     
-    if (_illuminations.indirectVirtual)
-        [renderPass setFragmentTexture:_illuminations.indirectVirtual atIndex:++i];
     if (_translucentCoverMap)
         [renderPass setFragmentTexture:_translucentCoverMap atIndex:++i];
     

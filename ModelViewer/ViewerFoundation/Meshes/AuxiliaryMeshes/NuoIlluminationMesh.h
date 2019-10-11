@@ -19,13 +19,12 @@
 
 //  values in the textures are relative to "directLighting" therefore physically based
 
-@property (strong, nonatomic) id<MTLTexture> normal;
+@property (strong, nonatomic) id<MTLTexture> regularLighting;
 @property (strong, nonatomic) id<MTLTexture> ambientNormal;
 @property (strong, nonatomic) id<MTLTexture> ambientVirtual;
 @property (strong, nonatomic) id<MTLTexture> ambientVirtualWithoutBlock;
 @property (strong, nonatomic) id<MTLTexture> directVirtual;
 @property (strong, nonatomic) id<MTLTexture> directVirtualBlocked;
-@property (strong, nonatomic) id<MTLTexture> indirectVirtual;
 @property (strong, nonatomic) id<MTLTexture> modelMask;
 
 @end

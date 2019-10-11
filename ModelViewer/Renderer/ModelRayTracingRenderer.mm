@@ -33,10 +33,9 @@ enum kModelRayTracingTargets
     kModelRayTracingTargets_AmbientNormal = 0,
     kModelRayTracingTargets_AmbientVirtual,
     kModelRayTracingTargets_AmbientVirtualNB,
-    kModelRayTracingTargets_Direct,
+    kModelRayTracingTargets_RegularLighting,
     kModelRayTracingTargets_DirectVirtual,
     kModelRayTracingTargets_DirectVirtualBlocked,
-    kModelRayTracingTargets_IndirectVirtual,
     kModelRayTracingTargets_ModelMask,
 };
 
@@ -66,11 +65,10 @@ enum kModelRayTracingTargets
 {
     self = [super initWithCommandQueue:commandQueue
                        withPixelFormat:MTLPixelFormatRGBA32Float
-                       withTargetCount:8 /* 1 for ambient/local-illumination of normal
+                       withTargetCount:7 /* 1 for ambient/local-illumination of normal
                                           * 2 for ambient/local-illumination on virtual surfaces,
-                                          * 1 for direct lighting,
+                                          * 1 for regular lighting (including indirect on virtual),
                                           * 2 for direct lighting on virtual surface
-                                          * 1 for indirect lighting on virtual surface
                                           * 1 for opaque object mask */ ];
     
     if (self)
@@ -231,7 +229,7 @@ enum kModelRayTracingTargets
     NuoIlluminationTarget* targets = self.rayTracingResult;
         
     NuoInspectableMaster* inspect = [NuoInspectableMaster sharedMaster];
-    [inspect updateTexture:targets.normal forName:kInspectable_RayTracing];
+    [inspect updateTexture:targets.regularLighting forName:kInspectable_RayTracing];
     [inspect updateTexture:targets.directVirtualBlocked forName:kInspectable_RayTracingVirtualBlocked];
     [inspect updateTexture:targets.ambientNormal forName:kInspectable_Illuminate];
     [inspect updateTexture:targets.ambientVirtualWithoutBlock forName:kInspectable_AmbientVirtualWithoutBlock];
@@ -243,13 +241,12 @@ enum kModelRayTracingTargets
 {
     NSArray<id<MTLTexture>>* textures = self.targetTextures;
     
-    _rayTracingResult.normal = textures[kModelRayTracingTargets_Direct];
+    _rayTracingResult.regularLighting = textures[kModelRayTracingTargets_RegularLighting];
     _rayTracingResult.ambientNormal = textures[kModelRayTracingTargets_AmbientNormal];
     _rayTracingResult.ambientVirtual = textures[kModelRayTracingTargets_AmbientVirtual];
     _rayTracingResult.ambientVirtualWithoutBlock = textures[kModelRayTracingTargets_AmbientVirtualNB];
     _rayTracingResult.directVirtual = textures[kModelRayTracingTargets_DirectVirtual];
     _rayTracingResult.directVirtualBlocked = textures[kModelRayTracingTargets_DirectVirtualBlocked];
-    _rayTracingResult.indirectVirtual = textures[kModelRayTracingTargets_IndirectVirtual];
     _rayTracingResult.modelMask = textures[kModelRayTracingTargets_ModelMask];
     
     return _rayTracingResult;
