@@ -425,32 +425,37 @@ void self_illumination(uint2 tid,
                     shadowRay.bounce = 1;
                     
                     incidentRay.primaryHitMask = kNuoRayMask_Virtual;
-                    incidentRay.ambientIlluminated = false;
+                    incidentRay.ambientOccluded = false;
                 }
             }
         }
         
-        float ambientFactor = ambient_distance_factor(ambientRadius / 20.0, ambientRadius,
-                                                      intersection.distance, 1.0);
-        if (ray.bounce > 0 && !ray.ambientIlluminated && ambientFactor > 0)
+        if (ray.bounce > 0)
         {
-            color = ray.pathScatter * globalIllum.ambient * ambientFactor;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, directAmbient, targets);
-            incidentRay.ambientIlluminated = true;
+            float ambientFactor = ambient_distance_factor(ambientRadius / 20.0, ambientRadius,
+                                                          intersection.distance, 1.0);
+            
+            if (!ray.ambientOccluded && ambientFactor > 0)
+            {
+                color = ray.pathScatter * globalIllum.ambient * ambientFactor;
+                overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, directAmbient, targets);
+            }
+            else
+            {
+                incidentRay.ambientOccluded = true;
+            }
         }
     }
     else if (ray.maxDistance > 0)
     {
-        if (ray.bounce > 0 && !ray.ambientIlluminated)
+        if (ray.bounce > 0 && !ray.ambientOccluded)
         {
             float3 color = ray.pathScatter * globalIllum.ambient;
             overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, directAmbient, targets);
-            incidentRay.ambientIlluminated = true;
         }
         else if (ray.bounce == 0)
         {
             targets.overlayForVirtual.write(float4(globalIllum.ambient, 1.0), tid);
-            incidentRay.ambientIlluminated = true;
         }
     }
 }

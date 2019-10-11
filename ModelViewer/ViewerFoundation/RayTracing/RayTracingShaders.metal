@@ -71,7 +71,7 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     ray.bounce = 0;
     ray.transThrough = true;
     ray.primaryHitMask = 0;
-    ray.ambientIlluminated = false;
+    ray.ambientOccluded = false;
     
     ray.maxDistance = INFINITY;
 }
@@ -425,7 +425,7 @@ void sample_scatter_ray(float maxDistance,
         // different calculation for origin and ambient between transmission and reflection.
         //
         incidentRay.origin = sample.original;
-        incidentRay.ambientIlluminated = ray.ambientIlluminated || sample.transmission;
+        incidentRay.ambientOccluded = ray.ambientOccluded || sample.transmission;
         
         // make the term of this reflection contribute to the path scatter
         //

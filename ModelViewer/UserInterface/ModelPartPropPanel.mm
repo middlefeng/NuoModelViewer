@@ -87,7 +87,7 @@
         [self addSubview:_specRelectance];
         
         _specularPower = [self createLabel:@"Specular Power:" align:NSTextAlignmentRight editable:NO];
-        _specularPowerSlider = [self createSliderMax:20000.0 min:0.0];
+        _specularPowerSlider = [self createSliderMax:2.0e5 min:0.0];
         [_specularPowerSlider setTarget:self];
         [_specularPowerSlider setAction:@selector(specularPowerChanged:)];
     }

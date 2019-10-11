@@ -47,7 +47,7 @@ struct RayBuffer
     
     // determine if the ambient calculation should terminate, which is independent from
     // whether boucing should terminate
-    bool ambientIlluminated;
+    bool ambientOccluded;
 };
 
 
@@ -219,6 +219,9 @@ inline NuoRayTracingMaterial interpolate_full_material(device NuoRayTracingMater
 //
 inline float3 sample_cosine_weighted_hemisphere(float2 u, int m)
 {
+    if (m > 1.999e5)
+        return float3(0, 1, 0);
+    
     float phi = 2.0f * M_PI_F * u.x;
     
     float cos_phi;
