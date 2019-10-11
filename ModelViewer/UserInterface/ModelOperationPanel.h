@@ -25,6 +25,7 @@
 
 @property (nonatomic, readonly) BOOL showModelParts;
 @property (nonatomic, readonly) BOOL showFrameRate;
+@property (nonatomic, readonly) float backgroundColor;
 @property (nonatomic, strong) NSArray<NSString*>* deviceNames;
 
 

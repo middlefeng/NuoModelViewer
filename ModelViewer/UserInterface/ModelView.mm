@@ -109,7 +109,7 @@ MouseDragMode;
 - (NSRect)operationPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize panelSize = NSMakeSize(225, 372);
+    NSSize panelSize = NSMakeSize(225, 420);
     NSSize panelMargin = NSMakeSize(15, 25);
     NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
                                       viewRect.size.height - panelMargin.height - panelSize.height);
@@ -279,6 +279,10 @@ MouseDragMode;
     {
         [self handleDraggingQuality];
     }
+    
+    NuoRenderPassTarget* target = _modelRender.renderTarget;
+    float color = _modelPanel.backgroundColor;
+    target.clearColor = MTLClearColorMake(color, color, color, 1);
     
     [self showHideFrameRate:_modelPanel.showFrameRate];
     [_modelRender setAmbientParameters:_modelPanel.ambientParameters];
@@ -591,7 +595,8 @@ MouseDragMode;
     NuoRenderPassTarget* modelRenderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
                                                                                withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                                withSampleCount:1];
-    modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+    float grayScale = _modelPanel.backgroundColor;
+    modelRenderTarget.clearColor = MTLClearColorMake(grayScale, grayScale, grayScale, 1);
     modelRenderTarget.manageTargetTexture = YES;
     modelRenderTarget.name = @"Model";
     

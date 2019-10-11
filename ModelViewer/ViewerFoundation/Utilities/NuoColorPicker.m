@@ -28,9 +28,23 @@
         self.layer.cornerRadius = 5.0;
         self.layer.borderColor = [NSColor colorWithDeviceWhite:0.8 alpha:0.8].CGColor;
         self.layer.borderWidth = 1.0;
+        
+        _panel = nil;
     }
     
     return self;
+}
+
+
+- (void)setHidden:(BOOL)hidden
+{
+    [super setHidden:hidden];
+    
+    if (hidden)
+    {
+        [_panel close];
+        _panel = nil;
+    }
 }
 
 
@@ -43,7 +57,8 @@
 
 - (void)mouseUp:(NSEvent *)event
 {
-    _panel = [[NSColorPanel alloc] init];
+    if (!_panel)
+        _panel = [[NSColorPanel alloc] init];
     
     _panel.color = _color;
     

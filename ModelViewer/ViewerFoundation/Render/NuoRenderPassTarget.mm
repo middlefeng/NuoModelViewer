@@ -80,6 +80,12 @@
 {
     _clearColor = clearColor;
     [_clearMesh setClearColor:_clearColor];
+    
+    for (size_t i = 0; i < _colorAttachments.count; ++i)
+    {
+        NuoRenderPassAttachment* colorAttachment = _colorAttachments[i];
+        colorAttachment.clearColor = _clearColor;
+    }
 }
 
 
@@ -126,6 +132,8 @@
         [_clearMesh makePipelineStateWithPixelFormat:_targetPixelFormat];
     }
     
+    [self setClearColor:_clearColor];
+    
     for (size_t i = 0; i < _colorAttachments.count; ++i)
     {
         NuoRenderPassAttachment* colorAttachment = _colorAttachments[i];
@@ -133,7 +141,6 @@
         colorAttachment.manageTexture = self.manageTargetTexture;
         colorAttachment.sharedTexture = self.sharedTargetTexture;
         colorAttachment.needResolve = YES;
-        colorAttachment.clearColor = _clearColor;
         colorAttachment.sampleCount = _sampleCount;
         colorAttachment.name = _name;
         
