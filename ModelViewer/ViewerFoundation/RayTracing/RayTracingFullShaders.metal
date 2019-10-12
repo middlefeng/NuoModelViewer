@@ -22,10 +22,9 @@ using namespace metal;
 
 struct RayTracingTargets
 {
-    texture2d<float, access::read_write> overlayResult                  [[id(0)]];
-    texture2d<float, access::read_write> overlayForVirtual              [[id(1)]];
-    texture2d<float, access::read_write> overlayForVirtualWithoutBlock  [[id(2)]];
-    texture2d<float, access::read_write> lightingTracing                [[id(3)]];
+    texture2d<float, access::read_write> overlayForVirtual              [[id(0)]];
+    texture2d<float, access::read_write> overlayForVirtualWithoutBlock  [[id(1)]];
+    texture2d<float, access::read_write> lightingTracing                [[id(2)]];
     texture2d<float, access::read_write> lightingVirtual;
     texture2d<float, access::read_write> lightingVirtualBlocked;
     texture2d<float, access::read_write> modelMask;
@@ -287,7 +286,7 @@ static void overlayWrite(uint hitType, float4 value, uint2 tid, bool directAmbie
     bool isVirtual = (hitType & kNuoRayMask_Virtual);
     texture2d<float, access::read_write> texture = (isVirtual && directAmbient) ?
                                                     targets.overlayForVirtual   // direct ambient for reducing occlusion
-                                                  : targets.overlayResult;      // indirect ambient to be added to the result
+                                                  : targets.lightingTracing;    // indirect ambient to be added to the result
     
     const float4 color = texture.read(tid);
     const float4 result = float4(color.rgb + value.rgb, 1.0);

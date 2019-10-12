@@ -30,8 +30,7 @@ static const uint32_t kRayBounce = 4;
 
 enum kModelRayTracingTargets
 {
-    kModelRayTracingTargets_AmbientNormal = 0,
-    kModelRayTracingTargets_AmbientVirtual,
+    kModelRayTracingTargets_AmbientVirtual = 0,
     kModelRayTracingTargets_AmbientVirtualNB,
     kModelRayTracingTargets_RegularLighting,
     kModelRayTracingTargets_DirectVirtual,
@@ -65,8 +64,7 @@ enum kModelRayTracingTargets
 {
     self = [super initWithCommandQueue:commandQueue
                        withPixelFormat:MTLPixelFormatRGBA32Float
-                       withTargetCount:7 /* 1 for ambient/local-illumination of normal
-                                          * 2 for ambient/local-illumination on virtual surfaces,
+                       withTargetCount:6 /* 2 for ambient/local-illumination on virtual surfaces,
                                           * 1 for regular lighting (including indirect on virtual),
                                           * 2 for direct lighting on virtual surface
                                           * 1 for opaque object mask */ ];
@@ -231,7 +229,6 @@ enum kModelRayTracingTargets
     NuoInspectableMaster* inspect = [NuoInspectableMaster sharedMaster];
     [inspect updateTexture:targets.regularLighting forName:kInspectable_RayTracing];
     [inspect updateTexture:targets.directVirtualBlocked forName:kInspectable_RayTracingVirtualBlocked];
-    [inspect updateTexture:targets.ambientNormal forName:kInspectable_Illuminate];
     [inspect updateTexture:targets.ambientVirtualWithoutBlock forName:kInspectable_AmbientVirtualWithoutBlock];
 }
 
@@ -241,8 +238,11 @@ enum kModelRayTracingTargets
 {
     NSArray<id<MTLTexture>>* textures = self.targetTextures;
     
+    // ambient has been part of regularLighting in ray tracing
+    //
+    assert(_rayTracingResult.ambientNormal == nil);
+    
     _rayTracingResult.regularLighting = textures[kModelRayTracingTargets_RegularLighting];
-    _rayTracingResult.ambientNormal = textures[kModelRayTracingTargets_AmbientNormal];
     _rayTracingResult.ambientVirtual = textures[kModelRayTracingTargets_AmbientVirtual];
     _rayTracingResult.ambientVirtualWithoutBlock = textures[kModelRayTracingTargets_AmbientVirtualNB];
     _rayTracingResult.directVirtual = textures[kModelRayTracingTargets_DirectVirtual];

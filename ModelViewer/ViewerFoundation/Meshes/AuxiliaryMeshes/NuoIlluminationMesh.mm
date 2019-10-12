@@ -37,10 +37,15 @@
 {
     [renderPass pushParameterState:@"Illumination"];
     
-    uint i = 1;
+    uint i = 0;
     
     [self setModelTexture:_illuminations.regularLighting];
-    [renderPass setFragmentTexture:_illuminations.ambientNormal atIndex:i];
+    
+    // hybrid needs a separated target for ambient and illuminating surfaces
+    //
+    if (_illuminations.ambientNormal)
+        [renderPass setFragmentTexture:_illuminations.ambientNormal atIndex:++i];;
+    
     [renderPass setFragmentTexture:_illuminations.ambientVirtual atIndex:++i];
     [renderPass setFragmentTexture:_illuminations.ambientVirtualWithoutBlock atIndex:++i];
     [renderPass setFragmentTexture:_illuminations.directVirtual atIndex:++i];
