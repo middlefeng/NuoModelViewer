@@ -12,6 +12,12 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Full ray tracing.
+
+<p align="left">
+  <img width="800" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F-35-ray-tracing-ground.jpg"/>
+</p>
+
 * Hybrid rendering with ray tracing.
   * Direct lighting soft shadow.
   * Indirect lighting (ambient) with physically-based occlusion.
