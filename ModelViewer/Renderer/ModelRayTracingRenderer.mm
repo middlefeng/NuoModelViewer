@@ -30,9 +30,9 @@ static const uint32_t kRayBounce = 4;
 
 enum kModelRayTracingTargets
 {
-    kModelRayTracingTargets_AmbientVirtual = 0,
+    kModelRayTracingTargets_RegularLighting = 0,
+    kModelRayTracingTargets_AmbientVirtual,
     kModelRayTracingTargets_AmbientVirtualNB,
-    kModelRayTracingTargets_RegularLighting,
     kModelRayTracingTargets_DirectVirtual,
     kModelRayTracingTargets_DirectVirtualBlocked,
     kModelRayTracingTargets_ModelMask,

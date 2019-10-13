@@ -1255,16 +1255,17 @@ MouseDragMode;
                                _modelRender.renderTarget.drawableSize.width);
     
     NSArray* renders = [self exportRenders];
+    NSColor* clearColor = [NSColor colorWithRed:_modelPanel.backgroundColor
+                                          green:_modelPanel.backgroundColor
+                                           blue:_modelPanel.backgroundColor
+                                          alpha:1.0];
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
              if (result == NSModalResponseOK)
              {
                  NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:commandQueue.device withTarget:previewSize
-                                                                              withClearColor:[NSColor colorWithRed:0.0
-                                                                                                             green:0.0
-                                                                                                              blue:0.0
-                                                                                                             alpha:0.0]
+                                                                         withClearColor:clearColor
                                                                               withScene:renders];
                  NSString* path = savePanel.URL.path;
                  
