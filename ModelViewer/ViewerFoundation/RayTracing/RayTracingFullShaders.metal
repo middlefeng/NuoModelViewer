@@ -42,7 +42,7 @@ static void self_illumination(uint2 tid,
                               array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                               sampler samplr);
 
-static void lightingTrcacingWrite(uint2 tid, float4 value,
+static void lightingTrcacingWrite(uint2 tid, float3 value,
                                   texture2d<float, access::read_write> texture);
 
 
@@ -256,7 +256,7 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
         bool isOcclusion = (shadowRay.primaryHitMask & kNuoRayMask_Virtual) && shadowRay.bounce == 1;
         
         if (!isOcclusion && (shadowIntersection < 0.0f))
-            lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), targets.lightingTracing);
+            lightingTrcacingWrite(tid, shadowRay.pathScatter, targets.lightingTracing);
         
         if (isOcclusion && (shadowIntersection > 0.0f))
             targets.lightingVirtualBlocked.write(float4(shadowRay.pathScatter, 1.0), tid);
@@ -280,7 +280,7 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
  *  background occlusion (if there is shadow). On the other hand, "indirect" ambient or local light source are
  *  added to the final result.
  */
-static void overlayWrite(uint hitType, float4 value, uint2 tid, bool directAmbient,
+static void overlayWrite(uint hitType, float3 value, uint2 tid, bool directAmbient,
                          device RayTracingTargets& targets)
 {
     bool isVirtual = (hitType & kNuoRayMask_Virtual);
@@ -294,11 +294,11 @@ static void overlayWrite(uint hitType, float4 value, uint2 tid, bool directAmbie
 }
 
 
-static void lightingTrcacingWrite(uint2 tid, float4 value,
+static void lightingTrcacingWrite(uint2 tid, float3 value,
                                   texture2d<float, access::read_write> texture)
 {
     const float4 color = texture.read(tid);
-    const float4 result = float4(color.rgb + value.rgb, value.a);
+    const float4 result = float4(color.rgb + value, 1.0);
     texture.write(result, tid);
 }
 
@@ -370,7 +370,7 @@ void self_illumination(uint2 tid,
             if (ray.bounce == 0)
                 color = saturate(color);
             
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid,
+            overlayWrite(ray.primaryHitMask, color, tid,
                          false /* not ambient. local light source */ ,
                          targets);
         }
@@ -426,7 +426,7 @@ void self_illumination(uint2 tid,
             if (!ray.ambientOccluded && ambientFactor > 0)
             {
                 color = ray.pathScatter * globalIllum.ambient * ambientFactor;
-                overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, directAmbient, targets);
+                overlayWrite(ray.primaryHitMask, color, tid, directAmbient, targets);
             }
             else
             {
@@ -439,7 +439,7 @@ void self_illumination(uint2 tid,
         if (ray.bounce > 0 && !ray.ambientOccluded)
         {
             float3 color = ray.pathScatter * globalIllum.ambient;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, directAmbient, targets);
+            overlayWrite(ray.primaryHitMask, color, tid, directAmbient, targets);
         }
         else if (ray.bounce == 0)
         {

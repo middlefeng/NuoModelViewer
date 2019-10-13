@@ -136,18 +136,6 @@
 }
 
 
-- (void)setSampleCount:(NSUInteger)sampleCount
-{
-    [super setSampleCount:sampleCount];
-}
-
-
-- (void)appendWorldBuffers:(const NuoMatrixFloat44 &)transform toBuffers:(NuoGlobalBuffers *)buffers
-{
-    [super appendWorldBuffers:transform toBuffers:buffers];
-}
-
-
 - (NSColor*)diffuse
 {
     NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());

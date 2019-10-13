@@ -206,7 +206,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         float3 halfway = normalize(shadowVec + eyeDirection);
         
         float3 diffuseTerm = material.diffuseColor;
-        float3 specularTerm = specularPower > 200 ? 0 /* ignore the direct lighting as the lobe is very narrow */ :
+        float3 specularTerm = specularPower > 200 ? 0 /* ignore the lighting source importance sampling as the lobe is very narrow */ :
                               specular_common_physically(material.specularColor, specularPower,
                                                          shadowVec, normal, halfway);
         
