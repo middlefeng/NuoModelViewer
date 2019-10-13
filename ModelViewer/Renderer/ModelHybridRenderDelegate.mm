@@ -260,7 +260,7 @@
     if (_rayTracingRecordStatus != kRecord_Stop)
     {
         NuoIlluminationTarget* illuminations = _rayTracingRenderer.rayTracingResult;
-        illuminations.normal = _immediateTarget.targetTexture;
+        illuminations.regularLighting = _immediateTarget.targetTexture;
         
         [inspectMaster updateTexture:illuminations.ambientNormal forName:kInspectable_Illuminate];
         [inspectMaster updateTexture:illuminations.ambientVirtualWithoutBlock forName:kInspectable_AmbientVirtualWithoutBlock];

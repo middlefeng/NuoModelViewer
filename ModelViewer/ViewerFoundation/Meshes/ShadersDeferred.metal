@@ -204,25 +204,19 @@ fragment float4 illumination_blend_hybrid(PositionTextureSimple vert [[stage_in]
 
 
 fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
-                                   texture2d<float> source [[texture(0)]],
-                                   texture2d<float> illumination [[texture(1)]],
-                                   texture2d<float> illuminationOnVirtual [[texture(2)]],
+                                   texture2d<float> regularLighting [[texture(0)]],
+                                   texture2d<float> illuminationOnVirtual,
                                    texture2d<float> illuminationOnVirtualWithoutBlock,
-                                   texture2d<float> directLighting,
-                                   texture2d<float> directBlock,
-                                   texture2d<float> indirect,
+                                   texture2d<float> directLightingVirtual,
+                                   texture2d<float> directLightingVirtualBlocked,
                                    texture2d<float> modelMask,
                                    sampler samplr [[sampler(0)]])
 {
-    const float4 sourceColor = source.sample(samplr, vert.texCoord);
-    const float3 illuminateEffective = illumination.sample(samplr, vert.texCoord).rgb;
+    const float3 sourceColor = regularLighting.sample(samplr, vert.texCoord).rgb;
     const float3 illumiOnVirtual = illuminationOnVirtual.sample(samplr, vert.texCoord).rgb;
     
-    const float3 color = sourceColor.rgb + illuminateEffective;
-    
-    const float3 direct = directLighting.sample(samplr, vert.texCoord).rgb;
-    const float3 directBlocked = directBlock.sample(samplr, vert.texCoord).rgb;
-    const float3 indirectColor = indirect.sample(samplr, vert.texCoord).rgb;
+    const float3 direct = directLightingVirtual.sample(samplr, vert.texCoord).rgb;
+    const float3 directBlocked = directLightingVirtualBlocked.sample(samplr, vert.texCoord).rgb;
     const float3 ambientWithoutBlock = illuminationOnVirtualWithoutBlock.sample(samplr, vert.texCoord).rgb;
     
     // numerator should be masked by normal object, denominator shoud not
@@ -238,5 +232,5 @@ fragment float4 illumination_blend(PositionTextureSimple vert [[stage_in]],
     // opacity + shadowFactor is equivelant to the "shadowBlend" in the hybrid mode, because shadowFactor has been
     // scaled down by the passthrough ray's importance sampling
     //
-    return float4(indirectColor + color, color_to_grayscale(opacity + shadowFactor));
+    return float4(sourceColor, color_to_grayscale(opacity + shadowFactor));
 }

@@ -22,13 +22,11 @@ using namespace metal;
 
 struct RayTracingTargets
 {
-    texture2d<float, access::read_write> overlayResult                  [[id(0)]];
-    texture2d<float, access::read_write> overlayForVirtual              [[id(1)]];
-    texture2d<float, access::read_write> overlayForVirtualWithoutBlock  [[id(2)]];
-    texture2d<float, access::read_write> lightingTracing                [[id(3)]];
+    texture2d<float, access::read_write> lightingTracing [[id(0)]];
+    texture2d<float, access::read_write> overlayForVirtual;
+    texture2d<float, access::read_write> overlayForVirtualWithoutBlock;
     texture2d<float, access::read_write> lightingVirtual;
-    texture2d<float, access::read_write> lightingVirtualWithBlock;
-    texture2d<float, access::read_write> lightingVirtualIndirect;
+    texture2d<float, access::read_write> lightingVirtualBlocked;
     texture2d<float, access::read_write> modelMask;
 };
 
@@ -255,23 +253,13 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     
     if (shadowRay.maxDistance > 0.0f)
     {
-        if ((shadowRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
-        {
-            if (shadowIntersection < 0.0f)
-                lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), targets.lightingTracing);
-            else
-                lightingTrcacingWrite(tid, float4(float3(0.0), 1.0), targets.lightingTracing);
-        }
-        else if (shadowRay.bounce == 1)
-        {
-            if (shadowIntersection > 0.0f)
-                targets.lightingVirtualWithBlock.write(float4(shadowRay.pathScatter, 1.0), tid);
-        }
-        else
-        {
-            if (shadowIntersection < 0.0f)
-                lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), targets.lightingVirtualIndirect);
-        }
+        bool isOcclusion = (shadowRay.primaryHitMask & kNuoRayMask_Virtual) && shadowRay.bounce == 1;
+        
+        if (!isOcclusion && (shadowIntersection < 0.0f))
+            lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), targets.lightingTracing);
+        
+        if (isOcclusion && (shadowIntersection > 0.0f))
+            targets.lightingVirtualBlocked.write(float4(shadowRay.pathScatter, 1.0), tid);
     }
     
     targets.modelMask.write(float4(primaryVisibility[rayIdx], 1.0), tid);
@@ -298,7 +286,7 @@ static void overlayWrite(uint hitType, float4 value, uint2 tid, bool directAmbie
     bool isVirtual = (hitType & kNuoRayMask_Virtual);
     texture2d<float, access::read_write> texture = (isVirtual && directAmbient) ?
                                                     targets.overlayForVirtual   // direct ambient for reducing occlusion
-                                                  : targets.overlayResult;      // indirect ambient to be added to the result
+                                                  : targets.lightingTracing;    // indirect ambient to be added to the result
     
     const float4 color = texture.read(tid);
     const float4 result = float4(color.rgb + value.rgb, 1.0);
