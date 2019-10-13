@@ -8,6 +8,8 @@
 
 #import "ModelPartPropPanel.h"
 #import "NuoMesh.h"
+#import "NuoBoardMesh.h"
+#import "NuoColorPicker.h"
 
 #import "ModelPanelUpdate.h"
 #import "ModelOptionUpdate.h"
@@ -30,6 +32,14 @@
     NSTextField* _smoothToleranceField;
     
     NSArray<NuoMesh*>* _selectedMeshes;
+    
+    NSTextField* _diffReflectanceLabel;
+    NuoColorPicker* _diffRelectance;
+    NSTextField* _specReflectanceLabel;
+    NuoColorPicker* _specRelectance;
+    
+    NSTextField* _specularPower;
+    NSSlider* _specularPowerSlider;
 }
 
 
@@ -58,6 +68,28 @@
         _smoothToleranceField = [self createLabel:@"Smooth:" align:NSTextAlignmentRight editable:YES];
         [_smoothToleranceField setTarget:self];
         [_smoothToleranceField setAction:@selector(modelPartsChanged:)];
+        
+        __weak ModelPartPropPanel* panel = self;
+        _diffReflectanceLabel = [self createLabel:@"Diffuse Reflectance:" align:NSTextAlignmentRight editable:NO];
+        _diffRelectance = [[NuoColorPicker alloc] init];
+        _diffRelectance.colorChanged = ^()
+        {
+            [panel modelDiffuseChanged];
+        };
+        [self addSubview:_diffRelectance];
+        
+        _specReflectanceLabel = [self createLabel:@"Specular Reflectance:" align:NSTextAlignmentRight editable:NO];
+        _specRelectance = [[NuoColorPicker alloc] init];
+        _specRelectance.colorChanged = ^()
+        {
+            [panel modelSpecularChanged];
+        };
+        [self addSubview:_specRelectance];
+        
+        _specularPower = [self createLabel:@"Specular Power:" align:NSTextAlignmentRight editable:NO];
+        _specularPowerSlider = [self createSliderMax:2.0e5 min:0.0];
+        [_specularPowerSlider setTarget:self];
+        [_specularPowerSlider setAction:@selector(specularPowerChanged:)];
     }
     
     return self;
@@ -120,18 +152,19 @@
     CGSize viewSize = [self bounds].size;
     
     float labelWidth = 60;
+    float wideLabelWidth = 150;
     float labelSpace = 2;
     float entryHeight = 18;
     float lineSpace = 6;
     
     CGRect labelFrame;
     labelFrame.size = CGSizeMake(labelWidth, entryHeight);
-    labelFrame.origin = CGPointMake(0, (entryHeight + lineSpace) * 4 + 15);
+    labelFrame.origin = CGPointMake(0, [self preferredHeight] - entryHeight - 12);
     [_nameLabel setFrame:labelFrame];
     
     CGRect fieldFrame;
     fieldFrame.size = CGSizeMake(viewSize.width - labelWidth - labelSpace * 2 - 10, entryHeight);
-    fieldFrame.origin = CGPointMake(labelWidth + labelSpace, (entryHeight + lineSpace) * 4 + 15);
+    fieldFrame.origin = CGPointMake(labelWidth + labelSpace, labelFrame.origin.y);
     [_nameField setFrame:fieldFrame];
     
     labelFrame.origin.y -= entryHeight + lineSpace;
@@ -160,6 +193,31 @@
     checkButtonFrame.origin.y -= entryHeight + lineSpace;
 
     [_modelCullOption setFrame:checkButtonFrame];
+    
+    labelFrame.origin.y = checkButtonFrame.origin.y - (entryHeight + lineSpace + 6.0);
+    labelFrame.size.width = wideLabelWidth;
+    [_diffReflectanceLabel setFrame:labelFrame];
+    
+    CGRect colorButtonFrame = labelFrame;
+    colorButtonFrame.origin.x += labelFrame.size.width + 15.0;
+    colorButtonFrame.size = CGSizeMake(18, 18);
+    colorButtonFrame.origin.y -= (colorButtonFrame.size.height - labelFrame.size.height) / 2.0;
+    [_diffRelectance setFrame:colorButtonFrame];
+    
+    labelFrame.origin.y -= (entryHeight + lineSpace);
+    labelFrame.size.width = wideLabelWidth;
+    [_specReflectanceLabel setFrame:labelFrame];
+    
+    colorButtonFrame.origin.y = labelFrame.origin.y - (colorButtonFrame.size.height - labelFrame.size.height) / 2.0;
+    [_specRelectance setFrame:colorButtonFrame];
+    
+    labelFrame.origin.y -= (entryHeight + lineSpace);
+    labelFrame.size.width = 120;
+    fieldFrame.origin = CGPointMake(labelFrame.size.width + labelSpace, labelFrame.origin.y);
+    fieldFrame.size.width = viewSize.width - labelFrame.size.width - labelSpace * 2 - 10;
+    
+    [_specularPower setFrame:labelFrame];
+    [_specularPowerSlider setFrame:fieldFrame];
 }
 
 
@@ -168,6 +226,7 @@
 {
     _selectedMeshes = meshes;
     [self updateForSelectedMesh];
+    [self updateControlsLayout];
 }
 
 
@@ -195,8 +254,12 @@
     NSString* smoothToleranceStr = @"0.0";
     CGFloat smoothTolerance = 0.0f;
     
+    bool virtualSurface = (meshes.count == 1);
     for (NuoMesh* mesh in meshes)
     {
+        if (![mesh isKindOfClass:NuoBoardMesh.class])
+            virtualSurface = false;
+        
         if (names)
         {
             names = [names stringByAppendingString:@", "];
@@ -229,6 +292,21 @@
     if (meshes[0].hasUnifiedMaterial)
     {
         [_opacitySlider setFloatValue:meshes[0].unifiedOpacity];
+    }
+    
+    if (virtualSurface)
+    {
+        _diffReflectanceLabel.hidden = NO;
+        _diffRelectance.hidden = NO;
+        _specReflectanceLabel.hidden = NO;
+        _specRelectance.hidden = NO;
+        _diffRelectance.color = [((NuoBoardMesh*)meshes[0]) diffuse];
+        _specRelectance.color = [((NuoBoardMesh*)meshes[0]) specular];
+    }
+    else
+    {
+        _diffReflectanceLabel.hidden = YES;
+        _diffRelectance.hidden = YES;
     }
 }
 
@@ -277,10 +355,77 @@
 }
 
 
+- (void)modelDiffuseChanged
+{
+    for (NuoMesh* mesh in _selectedMeshes)
+    {
+        if (![mesh isKindOfClass:NuoBoardMesh.class])
+            continue;
+        
+        NuoBoardMesh* board = (NuoBoardMesh*)mesh;
+        [mesh invalidCachedTransform];
+        [board setDiffuse:_diffRelectance.color];
+    }
+    
+    [_optionUpdateDelegate modelOptionUpdate:0];
+}
+
+
+- (void)modelSpecularChanged
+{
+    for (NuoMesh* mesh in _selectedMeshes)
+    {
+        if (![mesh isKindOfClass:NuoBoardMesh.class])
+            continue;
+        
+        NuoBoardMesh* board = (NuoBoardMesh*)mesh;
+        [mesh invalidCachedTransform];
+        [board setSpecular:_specRelectance.color];
+    }
+    
+    [_optionUpdateDelegate modelOptionUpdate:0];
+}
+
+
+- (void)specularPowerChanged:(id)sender
+{
+    for (NuoMesh* mesh in _selectedMeshes)
+    {
+        if (![mesh isKindOfClass:NuoBoardMesh.class])
+            continue;
+        
+        NuoBoardMesh* board = (NuoBoardMesh*)mesh;
+        [mesh invalidCachedTransform];
+        [board setSpecularPower:_specularPowerSlider.floatValue];
+    }
+    
+    [_optionUpdateDelegate modelOptionUpdate:0];
+}
+
+
 - (void)showIfSelected
 {
     if (_selectedMeshes)
         self.hidden = NO;
+}
+
+
+- (CGFloat)preferredHeight
+{
+    bool virtualSurface = true;
+    for (NuoMesh* mesh in _selectedMeshes)
+    {
+        if (![mesh isKindOfClass:NuoBoardMesh.class])
+        {
+            virtualSurface = false;
+            break;
+        }
+    }
+    
+    if (virtualSurface)
+        return 220;
+    else
+        return 140;
 }
 
 

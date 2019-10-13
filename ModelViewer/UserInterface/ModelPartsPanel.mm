@@ -36,7 +36,7 @@
 
 @property (nonatomic, weak) id<ModelOptionUpdate> updateDelegate;
 @property (nonatomic, weak) id<ModelPanelUpdate> panelUpdateDelegate;
-@property (nonatomic, weak) NSArray<NuoMesh*>* mesh;
+@property (nonatomic, strong) NSArray<NuoMesh*>* mesh;
 
 @property (nonatomic, assign, setter=setRowsBeingUpdated:) BOOL rowsBeingUpdated;
 

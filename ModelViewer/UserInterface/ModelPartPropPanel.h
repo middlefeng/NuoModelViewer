@@ -43,5 +43,7 @@
  */
 - (void)showIfSelected;
 
+- (CGFloat)preferredHeight;
+
 
 @end

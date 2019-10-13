@@ -22,12 +22,11 @@ using namespace metal;
 
 struct RayTracingTargets
 {
-    texture2d<float, access::read_write> overlayResult                  [[id(0)]];
-    texture2d<float, access::read_write> overlayForVirtual              [[id(1)]];
-    texture2d<float, access::read_write> overlayForVirtualWithoutBlock  [[id(2)]];
-    texture2d<float, access::read_write> lightingTracing                [[id(3)]];
+    texture2d<float, access::read_write> lightingTracing [[id(0)]];
+    texture2d<float, access::read_write> overlayForVirtual;
+    texture2d<float, access::read_write> overlayForVirtualWithoutBlock;
     texture2d<float, access::read_write> lightingVirtual;
-    texture2d<float, access::read_write> lightingVirtualWithBlock;
+    texture2d<float, access::read_write> lightingVirtualBlocked;
     texture2d<float, access::read_write> modelMask;
 };
 
@@ -43,7 +42,7 @@ static void self_illumination(uint2 tid,
                               array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                               sampler samplr);
 
-static void lightingTrcacingWrite(uint2 tid, float4 value,
+static void lightingTrcacingWrite(uint2 tid, float3 value,
                                   texture2d<float, access::read_write> texture);
 
 
@@ -254,18 +253,13 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     
     if (shadowRay.maxDistance > 0.0f)
     {
-        if ((shadowRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
-        {
-            if (shadowIntersection < 0.0f)
-                lightingTrcacingWrite(tid, float4(shadowRay.pathScatter, 1.0), targets.lightingTracing);
-            else
-                lightingTrcacingWrite(tid, float4(float3(0.0), 1.0), targets.lightingTracing);
-        }
-        else if (shadowRay.bounce == 1)
-        {
-            if (shadowIntersection > 0.0f)
-                targets.lightingVirtualWithBlock.write(float4(shadowRay.pathScatter, 1.0), tid);
-        }
+        bool isOcclusion = (shadowRay.primaryHitMask & kNuoRayMask_Virtual) && shadowRay.bounce == 1;
+        
+        if (!isOcclusion && (shadowIntersection < 0.0f))
+            lightingTrcacingWrite(tid, shadowRay.pathScatter, targets.lightingTracing);
+        
+        if (isOcclusion && (shadowIntersection > 0.0f))
+            targets.lightingVirtualBlocked.write(float4(shadowRay.pathScatter, 1.0), tid);
     }
     
     targets.modelMask.write(float4(primaryVisibility[rayIdx], 1.0), tid);
@@ -281,12 +275,18 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     
 /**
  *  write the result of illuminating surface and ambient
+ *
+ *  "directAmbient" means the ambient illumination conveyed by the first bounce, which is used for reduce the
+ *  background occlusion (if there is shadow). On the other hand, "indirect" ambient or local light source are
+ *  added to the final result.
  */
-static void overlayWrite(uint hitType, float4 value, uint2 tid,
+static void overlayWrite(uint hitType, float3 value, uint2 tid, bool directAmbient,
                          device RayTracingTargets& targets)
 {
-    texture2d<float, access::read_write> texture = (hitType & kNuoRayMask_Virtual)?
-                                                    targets.overlayForVirtual : targets.overlayResult;
+    bool isVirtual = (hitType & kNuoRayMask_Virtual);
+    texture2d<float, access::read_write> texture = (isVirtual && directAmbient) ?
+                                                    targets.overlayForVirtual   // direct ambient for reducing occlusion
+                                                  : targets.lightingTracing;    // indirect ambient to be added to the result
     
     const float4 color = texture.read(tid);
     const float4 result = float4(color.rgb + value.rgb, 1.0);
@@ -294,11 +294,11 @@ static void overlayWrite(uint hitType, float4 value, uint2 tid,
 }
 
 
-static void lightingTrcacingWrite(uint2 tid, float4 value,
+static void lightingTrcacingWrite(uint2 tid, float3 value,
                                   texture2d<float, access::read_write> texture)
 {
     const float4 color = texture.read(tid);
-    const float4 result = float4(color.rgb + value.rgb, value.a);
+    const float4 result = float4(color.rgb + value, 1.0);
     texture.write(result, tid);
 }
 
@@ -337,6 +337,8 @@ void self_illumination(uint2 tid,
     incidentRay.maxDistance = -1;
     shadowRay.maxDistance = -1;
     
+    bool directAmbient = (ray.bounce == 1);
+    
     if (intersection.distance >= 0.0f)
     {
         const float maxDistance = tracingUniforms.bounds.span;
@@ -351,7 +353,7 @@ void self_illumination(uint2 tid,
         {
             color = color * ray.pathScatter * globalIllum.illuminationStrength * 10.0;
             
-            // old comment regarding the light source sampling vs. reflection sampling:
+            /* old comment regarding the light source sampling vs. reflection sampling:
             //   for bounced ray, multiplied with the integral base (2 PI, or the hemisphre)
             //   as there is no primary ray
             //
@@ -359,7 +361,7 @@ void self_illumination(uint2 tid,
             // parameter range compensation for the removal of 2.0 * M_PI
             //
             // if (ray.bounce > 0)
-            //     color = 2.0f * M_PI_F * color;
+            //     color = 2.0f * M_PI_F * color; */
             
             // clap the value or the anti-alias on object discontinuity will fail.
             // (the problem exists on bounced path as well, but monte carlo does not have a way
@@ -368,7 +370,9 @@ void self_illumination(uint2 tid,
             if (ray.bounce == 0)
                 color = saturate(color);
             
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
+            overlayWrite(ray.primaryHitMask, color, tid,
+                         false /* not ambient. local light source */ ,
+                         targets);
         }
         else
         {
@@ -409,32 +413,37 @@ void self_illumination(uint2 tid,
                     shadowRay.bounce = 1;
                     
                     incidentRay.primaryHitMask = kNuoRayMask_Virtual;
-                    incidentRay.ambientIlluminated = false;
+                    incidentRay.ambientOccluded = false;
                 }
             }
         }
         
-        float ambientFactor = ambient_distance_factor(ambientRadius / 20.0, ambientRadius,
-                                                      intersection.distance, 1.0);
-        if (ray.bounce > 0 && !ray.ambientIlluminated && ambientFactor > 0)
+        if (ray.bounce > 0)
         {
-            color = ray.pathScatter * globalIllum.ambient * ambientFactor;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
-            incidentRay.ambientIlluminated = true;
+            float ambientFactor = ambient_distance_factor(ambientRadius / 20.0, ambientRadius,
+                                                          intersection.distance, 1.0);
+            
+            if (!ray.ambientOccluded && ambientFactor > 0)
+            {
+                color = ray.pathScatter * globalIllum.ambient * ambientFactor;
+                overlayWrite(ray.primaryHitMask, color, tid, directAmbient, targets);
+            }
+            else
+            {
+                incidentRay.ambientOccluded = true;
+            }
         }
     }
     else if (ray.maxDistance > 0)
     {
-        if (ray.bounce > 0 && !ray.ambientIlluminated)
+        if (ray.bounce > 0 && !ray.ambientOccluded)
         {
             float3 color = ray.pathScatter * globalIllum.ambient;
-            overlayWrite(ray.primaryHitMask, float4(color, 1.0), tid, targets);
-            incidentRay.ambientIlluminated = true;
+            overlayWrite(ray.primaryHitMask, color, tid, directAmbient, targets);
         }
         else if (ray.bounce == 0)
         {
             targets.overlayForVirtual.write(float4(globalIllum.ambient, 1.0), tid);
-            incidentRay.ambientIlluminated = true;
         }
     }
 }

@@ -136,6 +136,78 @@
 }
 
 
+- (NSColor*)diffuse
+{
+    NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
+    
+    assert(boardModel != nullptr);
+    
+    const NuoVectorFloat3& colorVec = boardModel->GetDiffuse();
+    NSColor* color = [NSColor colorWithRed:colorVec.x() green:colorVec.y() blue:colorVec.z() alpha:1.0];
+    
+    return color;
+}
+
+
+- (void)setDiffuse:(NSColor*)diffuse
+{
+    NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
+    
+    assert(boardModel != nullptr);
+    
+    NuoVectorFloat3 colorVec(diffuse.redComponent,
+                             diffuse.greenComponent,
+                             diffuse.blueComponent);
+    
+    boardModel->SetDiffuse(colorVec);
+}
+
+
+- (NSColor*)specular
+{
+    NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
+    
+    assert(boardModel != nullptr);
+    
+    const NuoVectorFloat3& colorVec = boardModel->GetSpecular();
+    NSColor* color = [NSColor colorWithRed:colorVec.x() green:colorVec.y() blue:colorVec.z() alpha:1.0];
+    
+    return color;
+}
+
+
+- (void)setSpecular:(NSColor*)specular
+{
+    NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
+    
+    assert(boardModel != nullptr);
+    
+    NuoVectorFloat3 colorVec(specular.redComponent,
+                             specular.greenComponent,
+                             specular.blueComponent);
+    
+    boardModel->SetSpecular(colorVec);
+}
+
+
+- (float)specularPower
+{
+    NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
+    
+    assert(boardModel != nullptr);
+    return boardModel->GetSpecularPower();
+}
+
+
+- (void)setSpecularPower:(float)specularPower
+{
+    NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
+    
+    assert(boardModel != nullptr);
+    boardModel->SetSpecularPower(specularPower);
+}
+
+
 @end
 
 

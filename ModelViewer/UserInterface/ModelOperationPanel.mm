@@ -20,6 +20,7 @@
 
 @property (nonatomic, strong) NSButton* checkModelParts;
 @property (nonatomic, strong) NSButton* checkFrameRate;
+@property (nonatomic, strong) NSSlider* backgroundColorSlider;
 
 @property (nonatomic, strong) NSButton* checkMaterial;
 @property (nonatomic, strong) NSButton* checkTexture;
@@ -68,6 +69,8 @@
     
     if (self)
     {
+        _backgroundColor = 0.95f;
+        
         _meshOptions = [NuoMeshOption new];
         _meshOptions.combineShapes = YES;
         _meshOptions.texturedBump = YES;
@@ -172,6 +175,28 @@
                                                     withSelector:@selector(showModelFrameRateChanged:)];
     [scrollDocumentView addSubview:checkFrameRate];
     _checkFrameRate = checkFrameRate;
+    
+    rowCoord += 1.2;
+    
+    NSTextField* labelBackgroundColor = [NSTextField new];
+    [labelBackgroundColor setEditable:NO];
+    [labelBackgroundColor setSelectable:NO];
+    [labelBackgroundColor setBordered:NO];
+    [labelBackgroundColor setStringValue:@"Background Grayscale:"];
+    [labelBackgroundColor setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
+    [scrollDocumentView addSubview:labelBackgroundColor];
+    
+    rowCoord += 0.9;
+    
+    NSSlider* backgroundColor = [NSSlider new];
+    [backgroundColor setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6 inView:scrollDocumentView]];
+    [backgroundColor setMaxValue:1.0];
+    [backgroundColor setMinValue:0.0];
+    [backgroundColor setFloatValue:_backgroundColor];
+    [backgroundColor setTarget:self];
+    [backgroundColor setAction:@selector(backgroundColorChanged:)];
+    [scrollDocumentView addSubview:backgroundColor];
+    _backgroundColorSlider = backgroundColor;
     
     rowCoord += 1.2;
     
@@ -642,6 +667,14 @@
     _meshOptions.combineShapes = [_combine state] == NSControlStateValueOn;
     
     [_optionUpdateDelegate modelUpdate:_meshOptions];
+}
+
+
+- (void)backgroundColorChanged:(id)sender
+{
+    _backgroundColor = _backgroundColorSlider.floatValue;
+    
+    [_optionUpdateDelegate modelOptionUpdate:0];
 }
 
 

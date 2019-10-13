@@ -109,7 +109,7 @@ MouseDragMode;
 - (NSRect)operationPanelLocation
 {
     NSRect viewRect = [self frame];
-    NSSize panelSize = NSMakeSize(225, 372);
+    NSSize panelSize = NSMakeSize(225, 420);
     NSSize panelMargin = NSMakeSize(15, 25);
     NSPoint panelOrigin = NSMakePoint(viewRect.size.width - panelMargin.width - panelSize.width,
                                       viewRect.size.height - panelMargin.height - panelSize.height);
@@ -222,7 +222,7 @@ MouseDragMode;
 {
     // clear all table and data structures that depends on the mesh
     //
-    [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
+    [_modelComponentPanels setMesh:[_modelRender configurableMeshParts]];
     [_animations removeAllObjects];
     [_modelPanel setModelPartAnimations:_animations];
     
@@ -279,6 +279,10 @@ MouseDragMode;
     {
         [self handleDraggingQuality];
     }
+    
+    NuoRenderPassTarget* target = _modelRender.renderTarget;
+    float color = _modelPanel.backgroundColor;
+    target.clearColor = MTLClearColorMake(color, color, color, 1);
     
     [self showHideFrameRate:_modelPanel.showFrameRate];
     [_modelRender setAmbientParameters:_modelPanel.ambientParameters];
@@ -591,7 +595,8 @@ MouseDragMode;
     NuoRenderPassTarget* modelRenderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
                                                                                withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                                withSampleCount:1];
-    modelRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
+    float grayScale = _modelPanel.backgroundColor;
+    modelRenderTarget.clearColor = MTLClearColorMake(grayScale, grayScale, grayScale, 1);
     modelRenderTarget.manageTargetTexture = YES;
     modelRenderTarget.name = @"Model";
     
@@ -1084,7 +1089,7 @@ MouseDragMode;
     [_notationRenderer importScene:lua];
     [_lightPanel updateControls:_notationRenderer.selectedLightSource];
     
-    [_modelComponentPanels setMesh:_modelRender.mainModelMesh.meshes];
+    [_modelComponentPanels setMesh:[_modelRender configurableMeshParts]];
     [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];
     [_modelPanel setAmbientParameters:[_modelRender ambientParameters]];
     [_modelPanel setAmbientDensity:_modelRender.ambientDensity];
@@ -1250,16 +1255,17 @@ MouseDragMode;
                                _modelRender.renderTarget.drawableSize.width);
     
     NSArray* renders = [self exportRenders];
+    NSColor* clearColor = [NSColor colorWithRed:_modelPanel.backgroundColor
+                                          green:_modelPanel.backgroundColor
+                                           blue:_modelPanel.backgroundColor
+                                          alpha:1.0];
     
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
              if (result == NSModalResponseOK)
              {
                  NuoOffscreenView* offscreen = [[NuoOffscreenView alloc] initWithDevice:commandQueue.device withTarget:previewSize
-                                                                              withClearColor:[NSColor colorWithRed:0.0
-                                                                                                             green:0.0
-                                                                                                              blue:0.0
-                                                                                                             alpha:0.0]
+                                                                         withClearColor:clearColor
                                                                               withScene:renders];
                  NSString* path = savePanel.URL.path;
                  
@@ -1355,6 +1361,7 @@ MouseDragMode;
         [_removeObjectMenu setAction:nil];
     }
     
+    [self modelMeshInvalid];
     [self render];
 }
 
@@ -1375,7 +1382,8 @@ MouseDragMode;
              CGSize size = [panelWeak boardSize];
              if (size.width > 0 && size.height > 0)
              {
-                 [renderer createBoard:size];
+                 [renderer createBoard:size withName:panelWeak.boardName];
+                 [self modelMeshInvalid];
                  [self render];
                  
                  [menu setTarget:self];

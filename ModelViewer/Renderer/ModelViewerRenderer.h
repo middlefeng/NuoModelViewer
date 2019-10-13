@@ -9,6 +9,7 @@
 
 
 @class NuoMeshOption;
+@class NuoMesh;
 @class NuoMeshCompound;
 @class NuoMeshSceneRoot;
 @class NuoBoardMesh;
@@ -105,6 +106,7 @@ class NuoLua;
 - (BOOL)loadPackage:(NSString*)path withProgress:(NuoProgressFunction)progress;
 - (BOOL)isValidPack:(NSString*)path;
 
+- (NSArray<NuoMesh*>*)configurableMeshParts;
 - (NuoMeshCompound*)mainModelMesh;
 - (void)setAdvancedShaowEnabled:(BOOL)enabled;
 
@@ -114,7 +116,7 @@ class NuoLua;
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
            withProgress:(NuoProgressFunction)progress;
 
-- (NuoBoardMesh*)createBoard:(CGSize)size;
+- (NuoBoardMesh*)createBoard:(CGSize)size withName:(NSString*)name;
 - (void)resetViewTransform;
 - (void)removeSelectedMesh;
 - (void)selectMeshWithScreen:(CGPoint)point;

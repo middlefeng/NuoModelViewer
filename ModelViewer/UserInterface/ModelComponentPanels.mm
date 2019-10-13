@@ -62,7 +62,7 @@
 - (NSRect)modelPartPropPanelLocation
 {
     NSRect viewRect = [self modelPartsPanelLocation];
-    viewRect.size.height = 140;
+    viewRect.size.height = [_modelPartPropPanel preferredHeight];
     viewRect.origin.y -= viewRect.size.height;
     viewRect.origin.y -= 20;
     
@@ -78,6 +78,13 @@
     viewRect.origin.y -= 20;
     
     return viewRect;
+}
+
+
+- (void)relayoutViews
+{
+    [_modelPartPropPanel setFrame:[self modelPartPropPanelLocation]];
+    [_modelPartDimensionPanel setFrame:[self modelPartDimensionPanelLocation]];
 }
 
 
@@ -107,7 +114,6 @@
     
     [_containerView addSubview:_modelPartPropPanel];
     [_modelPartPropPanel setHidden:YES];
-    [_modelPartPropPanel setFrame:[self modelPartPropPanelLocation]];
     [_modelPartPropPanel setOptionUpdateDelegate:_modelOptionDelegate];
     
     _modelPartDimensionPanel = [[ModelPartDimensionPanel alloc] init];
@@ -116,7 +122,8 @@
     
     [_containerView addSubview:_modelPartDimensionPanel];
     [_modelPartDimensionPanel setHidden:YES];
-    [_modelPartDimensionPanel setFrame:[self modelPartDimensionPanelLocation]];
+    
+    [self relayoutViews];
 }
 
 
@@ -176,6 +183,8 @@
         [_modelPartPropPanel updateForMesh:selection];
         [_modelPartDimensionPanel updateForMesh:selection];
     }
+    
+    [self relayoutViews];
 }
 
 

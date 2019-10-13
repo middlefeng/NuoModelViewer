@@ -71,7 +71,7 @@ kernel void primary_ray_emit(uint2 tid [[thread_position_in_grid]],
     ray.bounce = 0;
     ray.transThrough = true;
     ray.primaryHitMask = 0;
-    ray.ambientIlluminated = false;
+    ray.ambientOccluded = false;
     
     ray.maxDistance = INFINITY;
 }
@@ -205,12 +205,9 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         float3 eyeDirection = -ray.direction;
         float3 halfway = normalize(shadowVec + eyeDirection);
         
-        // for now, the diffuse term is not reduced by the translucent factor as it is in the
-        // scattering-path-construction. this results in closer result to the rasterization/hybrid,
-        // whose reason is yet to be analyzed
-        //
         float3 diffuseTerm = material.diffuseColor;
-        float3 specularTerm = specular_common_physically(material.specularColor, specularPower,
+        float3 specularTerm = specularPower > 200 ? 0 /* ignore the lighting source importance sampling as the lobe is very narrow */ :
+                              specular_common_physically(material.specularColor, specularPower,
                                                          shadowVec, normal, halfway);
         
         // whether or not to adjust the reflection factor is arbitrary depending on how material
@@ -336,26 +333,40 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
             return result;
         }
         
-        // all the following factor omit a 1/pi factor, which would have been cancelled
-        // in the calculation of cosinedPdfScale anyway
-        //
-        // hwPdf  -   PDF of the half vector in terms of theta_h, which is a cosine-weighed
-        //            distribution based on micro-facet (and simplified by the Blinn-Phong).
-        //            see comments in cosine_pow_pdf()
-        //
-        // f      -   BRDF specular term. note the normalization factor is (m + 8) / (8 * pi) because
-        //            it is related to theta rather than theta_h.
-        //            for the details of how the above normalization term is deduced, see http://www.farbrausch.de/%7Efg/stuff/phong.pdf
-        //
-        // pdf    -   PDF of the reflection vector. note this is not a analytical form in terms of theta,
-        //            rather it is a value in terms of wo and the half-vector
-        //            see p813, pbr-book
-        //
-        float hwPdf = (Mspec + 2.0) / 2.0;
-        float pdf = hwPdf / (4.0 * dot(wo, wh));
-        float3 f = specular_refectance_normalized(Cspec, Mspec, wo, wh);
         
-        result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdf * wi.y /* cosine factor of incident ray */;
+        if (Mspec < 200)
+        {
+            // all the following factor omit a 1/pi factor, which would have been cancelled
+            // in the calculation of cosinedPdfScale anyway
+            //
+            // hwPdf  -   PDF of the half vector in terms of theta_h, which is a cosine-weighed
+            //            distribution based on micro-facet (and simplified by the Blinn-Phong).
+            //            see comments in cosine_pow_pdf()
+            //
+            // f      -   BRDF specular term. note the normalization factor is (m + 8) / (8 * pi) because
+            //            it is related to theta rather than theta_h.
+            //            for the details of how the above normalization term is deduced, see http://www.farbrausch.de/%7Efg/stuff/phong.pdf
+            //
+            // pdf    -   PDF of the reflection vector. note this is not a analytical form in terms of theta,
+            //            rather it is a value in terms of wo and the half-vector
+            //            see p813, pbr-book
+            //
+            float hwPdf = (Mspec + 2.0) / 2.0;
+            float pdf = hwPdf / (4.0 * dot(wo, wh));
+            float3 f = specular_refectance_normalized(Cspec, Mspec, wo, wh);
+            
+            // normalized phong model
+            //
+            result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdf * wi.y /* cosine factor of incident ray */;
+        }
+        else
+        {
+            // fresnel blending model
+            //
+            float3 f = fresnel_schlick(Cspec, wo, wh);
+            result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / metal::max(abs(wo.y), abs(wi.y)) * wi.y;
+        }
+        
         result.direction = align_hemisphere_normal(wi, normal);
         result.original = intersectionPoint + normal * offset;
     }
@@ -414,7 +425,7 @@ void sample_scatter_ray(float maxDistance,
         // different calculation for origin and ambient between transmission and reflection.
         //
         incidentRay.origin = sample.original;
-        incidentRay.ambientIlluminated = ray.ambientIlluminated || sample.transmission;
+        incidentRay.ambientOccluded = ray.ambientOccluded || sample.transmission;
         
         // make the term of this reflection contribute to the path scatter
         //

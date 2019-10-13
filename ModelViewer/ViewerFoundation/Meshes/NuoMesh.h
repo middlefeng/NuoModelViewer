@@ -121,6 +121,7 @@
 //
 - (void)appendWorldBuffers:(const NuoMatrixFloat44&)transform toBuffers:(NuoGlobalBuffers*)buffers;
 - (BOOL)isCachedTransformValid:(const NuoMatrixFloat44&)transform;
+- (void)invalidCachedTransform;
 
 - (void)updateUniform:(id<NuoRenderInFlight>)inFlight withTransform:(const NuoMatrixFloat44&)transform;
 - (void)drawMesh:(NuoRenderPassEncoder*)renderPass;
