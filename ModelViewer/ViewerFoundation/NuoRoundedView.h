@@ -14,6 +14,9 @@
 @interface NuoRoundedView : NSView
 
 
+@property (nonatomic, strong) NSColor* panelBackground;
+
+
 - (instancetype)init;
 
 
