@@ -33,6 +33,20 @@
 }
 
 
+- (void)layout
+{
+    [super layout];
+    [self.layer setBackgroundColor:_panelBackground.CGColor];
+}
+
+
+- (void)setPanelBackground:(NSColor*)panelBackground
+{
+    _panelBackground = panelBackground;
+    [self.layer setBackgroundColor:_panelBackground.CGColor];
+}
+
+
 - (CALayer*)makeBackingLayer
 {
     return [CALayer new];
