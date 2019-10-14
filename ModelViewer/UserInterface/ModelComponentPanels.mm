@@ -103,13 +103,15 @@
     CGColorRelease(background);
     CGColorRelease(border);
     
+    NSColor* panelBackground = [NSColor colorNamed:@"Panel_Background"];
+    
     [_containerView addSubview:_modelPartsPanel];
     [_modelPartsPanel setFrame:listRect];
     [_modelPartsPanel setOptionUpdateDelegate:_modelOptionDelegate];
     [_modelPartsPanel setPanelUpdateDelegate:self];
     
     _modelPartPropPanel =  [[ModelPartPropPanel alloc] init];
-    _modelPartPropPanel.panelBackground = [NSColor colorNamed:@"Panel_Background"];
+    _modelPartPropPanel.panelBackground = panelBackground;
     _modelPartPropPanel.layer.opacity = 0.8f;
     
     [_containerView addSubview:_modelPartPropPanel];
@@ -117,8 +119,8 @@
     [_modelPartPropPanel setOptionUpdateDelegate:_modelOptionDelegate];
     
     _modelPartDimensionPanel = [[ModelPartDimensionPanel alloc] init];
+    _modelPartDimensionPanel.panelBackground = panelBackground;
     _modelPartDimensionPanel.layer.opacity = 0.8f;
-    _modelPartDimensionPanel.panelBackground = [NSColor colorNamed:@"Panel_Background"];
     
     [_containerView addSubview:_modelPartDimensionPanel];
     [_modelPartDimensionPanel setHidden:YES];
