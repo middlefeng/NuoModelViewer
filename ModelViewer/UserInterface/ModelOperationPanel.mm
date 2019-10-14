@@ -131,6 +131,20 @@
 }
 
 
+- (NSTextField*)createLabel:(NSString*)label withAligment:(NSTextAlignment)alignment
+{
+    NSTextField* labelControl = [NSTextField new];
+    [labelControl setBackgroundColor:NSColor.clearColor];
+    [labelControl setEditable:NO];
+    [labelControl setSelectable:NO];
+    [labelControl setBordered:NO];
+    [labelControl setAlignment:alignment];
+    [labelControl setStringValue:label];
+    
+    return labelControl;
+}
+
+
 - (void)addSubviews
 {
     // scroll view and its document view initialization
@@ -178,11 +192,8 @@
     
     rowCoord += 1.2;
     
-    NSTextField* labelBackgroundColor = [NSTextField new];
-    [labelBackgroundColor setEditable:NO];
-    [labelBackgroundColor setSelectable:NO];
-    [labelBackgroundColor setBordered:NO];
-    [labelBackgroundColor setStringValue:@"Background Grayscale:"];
+    NSTextField* labelBackgroundColor = [self createLabel:@"Background Grayscale:"
+                                             withAligment:NSTextAlignmentLeft];
     [labelBackgroundColor setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelBackgroundColor];
     
@@ -245,11 +256,8 @@
     
     rowCoord += 1.2;
     
-    NSTextField* labelFOV = [NSTextField new];
-    [labelFOV setEditable:NO];
-    [labelFOV setSelectable:NO];
-    [labelFOV setBordered:NO];
-    [labelFOV setStringValue:@"Field of View:"];
+    NSTextField* labelFOV = [self createLabel:@"Field of View:"
+                                 withAligment:NSTextAlignmentLeft];
     [labelFOV setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelFOV];
     
@@ -266,11 +274,8 @@
     
     rowCoord += 0.8;
     
-    NSTextField* labelambientDensity = [NSTextField new];
-    [labelambientDensity setEditable:NO];
-    [labelambientDensity setSelectable:NO];
-    [labelambientDensity setBordered:NO];
-    [labelambientDensity setStringValue:@"Ambient Density:"];
+    NSTextField* labelambientDensity = [self createLabel:@"Ambient Density:"
+                                            withAligment:NSTextAlignmentLeft];
     [labelambientDensity setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelambientDensity];
     
@@ -326,12 +331,8 @@
     dissectModelLabelFrame.origin.y += 2;
     
     NSPopUpButton* dissectMode = [NSPopUpButton new];
-    NSTextField* dissectModelLabel = [NSTextField new];
-    [dissectModelLabel setEditable:NO];
-    [dissectModelLabel setSelectable:NO];
-    [dissectModelLabel setBordered:NO];
-    [dissectModelLabel setAlignment:NSTextAlignmentRight];
-    [dissectModelLabel setStringValue:@"Render Mode:"];
+    NSTextField* dissectModelLabel = [self createLabel:@"Render Mode:"
+                                          withAligment:NSTextAlignmentRight];
     [dissectModelLabel setFrame:dissectModelLabelFrame];
     [scrollDocumentView addSubview:dissectModelLabel];
     
@@ -358,12 +359,8 @@
     transferModelLabelFrame.origin.y += 2;
     
     NSPopUpButton* transMode = [NSPopUpButton new];
-    NSTextField* transferModeLabel = [NSTextField new];
-    [transferModeLabel setEditable:NO];
-    [transferModeLabel setSelectable:NO];
-    [transferModeLabel setBordered:NO];
-    [transferModeLabel setAlignment:NSTextAlignmentRight];
-    [transferModeLabel setStringValue:@"Transfer Mode:"];
+    NSTextField* transferModeLabel = [self createLabel:@"Transfer Mode:"
+                                          withAligment:NSTextAlignmentRight];
     [transferModeLabel setFrame:transferModelLabelFrame];
     [scrollDocumentView addSubview:transferModeLabel];
     
@@ -395,11 +392,7 @@
     // animation list/slider
     //
     
-    NSTextField* labelAnimation = [NSTextField new];
-    [labelAnimation setEditable:NO];
-    [labelAnimation setSelectable:NO];
-    [labelAnimation setBordered:NO];
-    [labelAnimation setStringValue:@"Animations:"];
+    NSTextField* labelAnimation = [self createLabel:@"Animations:" withAligment:NSTextAlignmentLeft];
     [labelAnimation setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelAnimation];
     
@@ -461,11 +454,7 @@
     
     // motion blur recording
     
-    NSTextField* labelMotionBlurLabel = [NSTextField new];
-    [labelMotionBlurLabel setEditable:NO];
-    [labelMotionBlurLabel setSelectable:NO];
-    [labelMotionBlurLabel setBordered:NO];
-    [labelMotionBlurLabel setStringValue:@"Motion Blur:"];
+    NSTextField* labelMotionBlurLabel = [self createLabel:@"Motion Blur:" withAligment:NSTextAlignmentLeft];
     [labelMotionBlurLabel setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelMotionBlurLabel];
     
@@ -496,11 +485,7 @@
     
     rowCoord += 1.0;
     
-    NSTextField* labelRayTracingLabel = [NSTextField new];
-    [labelRayTracingLabel setEditable:NO];
-    [labelRayTracingLabel setSelectable:NO];
-    [labelRayTracingLabel setBordered:NO];
-    [labelRayTracingLabel setStringValue:@"Ray Tracing:"];
+    NSTextField* labelRayTracingLabel = [self createLabel:@"Ray Tracing:" withAligment:NSTextAlignmentLeft];
     [labelRayTracingLabel setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelRayTracingLabel];
     
@@ -543,11 +528,7 @@
     
     rowCoord += 1.2;
     
-    NSTextField* illumStregthLabel = [NSTextField new];
-    [illumStregthLabel setEditable:NO];
-    [illumStregthLabel setSelectable:NO];
-    [illumStregthLabel setBordered:NO];
-    [illumStregthLabel setStringValue:@"Illumination:"];
+    NSTextField* illumStregthLabel = [self createLabel:@"Illumination:" withAligment:NSTextAlignmentLeft];
     [illumStregthLabel setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:illumStregthLabel];
     
@@ -568,13 +549,10 @@
     
     rowCoord += 1.5;
     
-    NSTextField* labelDevices = [NSTextField new];
     NSRect labelDevicesRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
     
-    [labelDevices setEditable:NO];
-    [labelDevices setSelectable:NO];
-    [labelDevices setBordered:NO];
-    [labelDevices setStringValue:@"Devices (Need Restart):"];
+    NSTextField* labelDevices = [self createLabel:@"Devices (Need Restart):"
+                                     withAligment:NSTextAlignmentLeft];
     [labelDevices setFrame:labelDevicesRect];
     [scrollDocumentView addSubview:labelDevices];
     

@@ -109,8 +109,8 @@
     [_modelPartsPanel setPanelUpdateDelegate:self];
     
     _modelPartPropPanel =  [[ModelPartPropPanel alloc] init];
+    _modelPartPropPanel.panelBackground = [NSColor colorNamed:@"Panel_Background"];
     _modelPartPropPanel.layer.opacity = 0.8f;
-    _modelPartPropPanel.layer.backgroundColor = [NSColor colorWithWhite:1.0 alpha:1.0].CGColor;
     
     [_containerView addSubview:_modelPartPropPanel];
     [_modelPartPropPanel setHidden:YES];
@@ -118,7 +118,7 @@
     
     _modelPartDimensionPanel = [[ModelPartDimensionPanel alloc] init];
     _modelPartDimensionPanel.layer.opacity = 0.8f;
-    _modelPartDimensionPanel.layer.backgroundColor = [NSColor colorWithWhite:1.0 alpha:1.0].CGColor;
+    _modelPartDimensionPanel.panelBackground = [NSColor colorNamed:@"Panel_Background"];
     
     [_containerView addSubview:_modelPartDimensionPanel];
     [_modelPartDimensionPanel setHidden:YES];
