@@ -63,10 +63,22 @@
 
 - (void)visibilityTestInit:(NuoCommandBuffer*)commandBuffer
 {
+    id<MTLBuffer> intersectBuffer = nil;
+    
+    if (_paths)
+    {
+        [_rayTracer rayIntersect:commandBuffer withRays:_paths withIntersection:_spawnIntersectionBuffer];
+        intersectBuffer = _spawnIntersectionBuffer;
+    }
+    else
+    {
+        intersectBuffer = _rayTracer.intersectionBuffer;
+    }
+    
     [_rayTracer runRayTraceCompute:_pipelineInit
                  withCommandBuffer:commandBuffer
                        withTargets:NO withParameter:@[_tracingUniform, _spawnRays.buffer, _visibilities]
-                    withExitantRay:_paths.buffer withIntersection:_rayTracer.intersectionBuffer];
+                    withExitantRay:_paths.buffer withIntersection:intersectBuffer];
 }
 
 

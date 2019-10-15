@@ -62,11 +62,12 @@ kernel void ray_visibility_init(uint2 tid [[thread_position_in_grid]],
     
     unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device Intersection & intersection = structUniform.intersections[rayIdx];
-    device RayBuffer& cameraRay = structUniform.exitantRays[rayIdx];
+    device RayBuffer& startRay = structUniform.exitantRays[rayIdx];
     device RayBuffer& spawnRay = spawnRays[rayIdx];
     
-    if ((intersection.distance >= 0.0) &&
-        (cameraRay.primaryHitMask & kNuoRayMask_Virtual) == 0)
+    uint mask = surface_mask(rayIdx, structUniform);
+    
+    if ((intersection.distance >= 0.0) && (mask & kNuoRayMask_Virtual) == 0)
     {
         device uint* index = structUniform.index;
         device NuoRayTracingMaterial* materials = structUniform.materials;
@@ -76,11 +77,12 @@ kernel void ray_visibility_init(uint2 tid [[thread_position_in_grid]],
         float Tr = (1.0 - opacity) < 1e-6 ? 0.0 : 1.0 - opacity;
         
         const float maxDistance = tracingUniforms.bounds.span;
-        float3 intersectPoint = cameraRay.origin + intersection.distance * cameraRay.direction;
-        spawnRay = cameraRay;
+        float3 intersectPoint = startRay.origin + intersection.distance * startRay.direction;
+        spawnRay = startRay;
         spawnRay.mask &= (~kNuoRayMask_Virtual);
         spawnRay.pathScatter *= Tr;
-        spawnRay.origin = intersectPoint + cameraRay.direction * (maxDistance / 20000.0);
+        spawnRay.origin = intersectPoint + startRay.direction * (maxDistance / 20000.0);
+        spawnRay.maxDistance = spawnRay.maxDistance - intersection.distance - (maxDistance / 20000.0);
         
         if (Tr == 0.0)
             spawnRay.maxDistance = -1;
