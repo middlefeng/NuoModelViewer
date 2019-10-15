@@ -413,6 +413,7 @@ void self_illumination(uint2 tid,
                     shadowRay.bounce = 1;
                     
                     incidentRay.primaryHitMask = kNuoRayMask_Virtual;
+                    incidentRay.bounce = 1;
                     incidentRay.ambientOccluded = false;
                 }
             }
@@ -428,7 +429,9 @@ void self_illumination(uint2 tid,
                 color = ray.pathScatter * globalIllum.ambient * ambientFactor;
                 overlayWrite(ray.primaryHitMask, color, tid, directAmbient, targets);
             }
-            else
+            else if (incidentRay.bounce > 1 /* do not set occlusion for the first bounce (either
+                                             * the object is too close to the camera, or a trans-through
+                                             * ray hits a virtual surface */)
             {
                 incidentRay.ambientOccluded = true;
             }
