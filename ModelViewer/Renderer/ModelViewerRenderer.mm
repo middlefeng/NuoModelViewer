@@ -544,7 +544,42 @@
                 
                 exporter.StartEntry("name");
                 exporter.SetEntryValueString(boardMesh.modelName.UTF8String);
-                exporter.EndEntry(false);
+                exporter.EndEntry(true);
+                
+                exporter.StartEntry("diffuse");
+                {
+                    exporter.StartTable();
+                    exporter.StartEntry("r");
+                    exporter.SetEntryValueFloat(boardMesh.diffuse.redComponent);
+                    exporter.EndEntry(false);
+                    exporter.StartEntry("g");
+                    exporter.SetEntryValueFloat(boardMesh.diffuse.greenComponent);
+                    exporter.EndEntry(false);
+                    exporter.StartEntry("b");
+                    exporter.SetEntryValueFloat(boardMesh.diffuse.blueComponent);
+                    exporter.EndEntry(false);
+                    exporter.EndTable();
+                }
+                exporter.EndEntry(true);
+                
+                exporter.StartEntry("specular");
+                {
+                    exporter.StartTable();
+                    exporter.StartEntry("r");
+                    exporter.SetEntryValueFloat(boardMesh.specular.redComponent);
+                    exporter.EndEntry(false);
+                    exporter.StartEntry("g");
+                    exporter.SetEntryValueFloat(boardMesh.specular.greenComponent);
+                    exporter.EndEntry(false);
+                    exporter.StartEntry("b");
+                    exporter.SetEntryValueFloat(boardMesh.specular.blueComponent);
+                    exporter.EndEntry(false);
+                    exporter.StartEntry("power");
+                    exporter.SetEntryValueFloat(boardMesh.specularPower);
+                    exporter.EndEntry(false);
+                    exporter.EndTable();
+                }
+                exporter.EndEntry(true);
                 
                 exporter.StartEntry("translationMatrix");
                 exporter.SetMatrix(boardMesh.transformTranslate);
@@ -644,7 +679,7 @@
                 exporter.SetEntryValueFloat(light.lightingDensity);
                 exporter.EndEntry(false);
                 
-                exporter.StartEntry("spacular");
+                exporter.StartEntry("specular");
                 exporter.SetEntryValueFloat(light.lightingSpecular);
                 exporter.EndEntry(false);
                 
@@ -823,6 +858,27 @@
             
             lua->GetField("translationMatrix", -1);
             [boardMesh setTransformTranslate:lua->GetMatrixFromTable(-1)];
+            lua->RemoveField();
+            
+            lua->GetField("diffuse", -1);
+            if (!lua->IsNil(-1))
+            {
+                float r = lua->GetFieldAsNumber("r", -1);
+                float g = lua->GetFieldAsNumber("g", -1);
+                float b = lua->GetFieldAsNumber("b", -1);
+                [boardMesh setDiffuse:[NSColor colorWithRed:r green:g blue:b alpha:1.0]];
+            }
+            lua->RemoveField();
+            
+            lua->GetField("specular", -1);
+            if (!lua->IsNil(-1))
+            {
+                float r = lua->GetFieldAsNumber("r", -1);
+                float g = lua->GetFieldAsNumber("g", -1);
+                float b = lua->GetFieldAsNumber("b", -1);
+                [boardMesh setSpecular:[NSColor colorWithRed:r green:g blue:b alpha:1.0]];
+                [boardMesh setSpecularPower:lua->GetFieldAsNumber("power", -1)];
+            }
             lua->RemoveField();
             
             lua->RemoveField();

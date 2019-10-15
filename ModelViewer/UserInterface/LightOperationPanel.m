@@ -49,7 +49,7 @@
         _lightDensityLabel = [self createLabel:@"Density:"];
         _lightDensitySlider = [self createSliderMax:3.0 min:0.0];
         
-        _lightSpecularLabel = [self createLabel:@"Spacular:"];
+        _lightSpecularLabel = [self createLabel:@"Specular:"];
         _lightSpecularSlider = [self createSliderMax:3.0 min:0.0];
 
         _shadowSoftenLabel = [self createLabel:@"Penumbra:"];
@@ -171,9 +171,9 @@
 }
 
 
-- (void)setLightSpecular:(float)lightSpacular
+- (void)setLightSpecular:(float)lightSpecular
 {
-    [_lightSpecularSlider setFloatValue:lightSpacular];
+    [_lightSpecularSlider setFloatValue:lightSpecular];
 }
 
 - (void)setShadowEnabled:(BOOL)shadowEnabled

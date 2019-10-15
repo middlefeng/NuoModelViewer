@@ -172,7 +172,7 @@
         _lightSources[lightIndex].lightingRotationX = lua->GetFieldAsNumber("rotateX", -1);
         _lightSources[lightIndex].lightingRotationY = lua->GetFieldAsNumber("rotateY", -1);
         _lightSources[lightIndex].lightingDensity = lua->GetFieldAsNumber("density", -1);
-        _lightSources[lightIndex].lightingSpecular = lua->GetFieldAsNumber("spacular", -1);
+        _lightSources[lightIndex].lightingSpecular = lua->GetFieldAsNumber("specular", -1);
         _lightSources[lightIndex].enableShadow = lua->GetFieldAsBool("enableShadow", -1);
         
         if (_lightSources[lightIndex].enableShadow)
