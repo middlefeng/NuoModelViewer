@@ -170,7 +170,7 @@ MouseDragMode;
     _frameRateView = [FrameRateView new];
     _frameRateView.frame = panelRect;
     _frameRateView.layer.opacity = 0.8f;
-    _frameRateView.layer.backgroundColor = [NSColor colorWithWhite:1.0 alpha:1.0].CGColor;
+    _frameRateView.panelBackground = [NSColor colorNamed:@"Panel_Background"];
     _frameRateView.hidden = YES;
     
     [self addSubview:_frameRateView];

@@ -26,6 +26,7 @@
         [_frameRateField setBordered:NO];
         [_frameRateField setStringValue:@"Field of View:"];
         [_frameRateField setFrame:CGRectMake(10, 5, 65, 18)];
+        [_frameRateField setBackgroundColor:[NSColor clearColor]];
         [self addSubview:_frameRateField];
     }
     
