@@ -20,9 +20,6 @@
 
 
 @property (nonatomic, weak) NuoRayBuffer* paths;
-@property (nonatomic, readonly) NuoRayBuffer* spawnRays;
-@property (nonatomic, readonly) id<MTLBuffer> spawnIntersection;
-
 @property (nonatomic, weak) id<MTLBuffer> tracingUniform;
 @property (nonatomic, weak) NuoRayTracingRenderer* rayTracer;
 
