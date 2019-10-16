@@ -209,8 +209,6 @@ enum kModelRayTracingTargets
         {
             [self rayIntersect:commandBuffer withRays:_shadowRaysBuffer withIntersection:_shadowIntersectionBuffer];
             [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.intersectionBuffer];
-            [self rayIntersect:commandBuffer withRays:_primaryRayVisibility.spawnRays
-                                     withIntersection:_primaryRayVisibility.spawnIntersection];
             
             [_primaryRayVisibility visibilityTest:commandBuffer];
             
