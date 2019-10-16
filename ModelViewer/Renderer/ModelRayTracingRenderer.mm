@@ -213,6 +213,13 @@ enum kModelRayTracingTargets
         
         for (uint i = 0; i < kRayBounce; ++i)
         {
+            _shadowRayVisibility.paths = _shadowRaysBuffer;
+            _shadowRayVisibility.tracingUniform = rayTraceUniform;
+            
+            [_shadowRayVisibility visibilityTestInit:commandBuffer];
+            for (uint i = 0; i < kRayBounce; ++i)
+                 [_shadowRayVisibility visibilityTestInit:commandBuffer];
+            
             [self rayIntersect:commandBuffer withRays:_shadowRaysBuffer withIntersection:_shadowIntersectionBuffer];
             [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.intersectionBuffer];
             [self rayIntersect:commandBuffer withRays:_primaryRayVisibility.spawnRays
