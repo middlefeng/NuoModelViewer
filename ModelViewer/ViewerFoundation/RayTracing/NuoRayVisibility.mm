@@ -84,6 +84,8 @@
 
 - (void)visibilityTest:(NuoCommandBuffer*)commandBuffer
 {
+    [_rayTracer rayIntersect:commandBuffer withRays:_spawnRays withIntersection:_spawnIntersectionBuffer];
+    
     [_rayTracer runRayTraceCompute:_pipeline
                  withCommandBuffer:commandBuffer
                      withTargets:NO withParameter:@[_tracingUniform, _visibilities]
