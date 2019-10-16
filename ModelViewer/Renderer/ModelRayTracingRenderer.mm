@@ -54,6 +54,7 @@ enum kModelRayTracingTargets
     
     NuoIlluminationTarget* _rayTracingResult;
     NuoRayVisibility* _primaryRayVisibility;
+    NuoRayVisibility* _shadowRayVisibility;
     
     PNuoRayTracingRandom _rng;
     CGSize _drawableSize;
@@ -99,6 +100,10 @@ enum kModelRayTracingTargets
         _primaryRayVisibility = [[NuoRayVisibility alloc] initWithCommandQueue:commandQueue];
         _primaryRayVisibility.rayStride = kRayBufferStride;
         _primaryRayVisibility.rayTracer = self;
+        
+        _shadowRayVisibility = [[NuoRayVisibility alloc] initWithCommandQueue:commandQueue];
+        _shadowRayVisibility.rayStride = kRayBufferStride;
+        _shadowRayVisibility.rayTracer = self;
     }
     
     return self;
@@ -123,6 +128,7 @@ enum kModelRayTracingTargets
                                                                       options:MTLResourceStorageModePrivate];
     
     [_primaryRayVisibility setDrawableSize:drawableSize];
+    [_shadowRayVisibility setDrawableSize:drawableSize];
 }
 
 
@@ -218,7 +224,8 @@ enum kModelRayTracingTargets
                        withParameter:@[rayTraceUniform, randomBuffer,
                                        _shadowRaysBuffer.buffer,
                                        _shadowIntersectionBuffer,
-                                       _primaryRayVisibility.visibilities]
+                                       _primaryRayVisibility.visibilities,
+                                       _shadowRayVisibility.visibilities]
                       withExitantRay:_incidentRaysBuffer.buffer
                     withIntersection:self.intersectionBuffer];
         }
