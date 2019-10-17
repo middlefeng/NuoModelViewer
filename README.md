@@ -159,7 +159,10 @@ A simple Wavefront OBJ viewer.
   * <del>Ground reflection.</del>
   * <del>Specular term in direct lighting shadow, and in global illumniation.</del>
   * <del>Light source surface sampling.</del>
-  * Shadow ray visibility.
+  * <del>Shadow ray visibility.</del>
+  * Normal map.
+  * Specular map.
+  * Translucent map.
 * <del>BRDF mode.</del>
 * <del>Ambient occlusion.</del>
 * Model visualization
