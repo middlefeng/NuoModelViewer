@@ -245,8 +245,8 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  constant NuoRayTracingUniforms& tracingUniforms,
                                  device NuoRayTracingRandomUnit* random,
                                  device RayBuffer* shadowRayMain,
-                                 device Intersection *intersections,
                                  device float3* primaryVisibility,
+                                 device float3* shadowVisibility,
                                  array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                  sampler samplr [[sampler(0)]])
 {
@@ -256,19 +256,24 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
         return;
     
     const unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
-    device Intersection & shadowIntersectionInfo = intersections[rayIdx];
     device RayBuffer& shadowRay = shadowRayMain[rayIdx];
-    float shadowIntersection = shadowIntersectionInfo.distance;
+    float3 shadowRayVisibility = shadowVisibility[rayIdx];
     
     if (shadowRay.maxDistance > 0.0f)
     {
         bool isOcclusion = (shadowRay.primaryHitMask & kNuoRayMask_Virtual) && shadowRay.bounce == 1;
         
-        if (!isOcclusion && (shadowIntersection < 0.0f))
-            lightingTrcacingWrite(tid, shadowRay.pathScatter, targets.lightingTracing);
+        if (!isOcclusion)
+        {
+            float3 color = shadowRay.pathScatter * shadowRayVisibility;
+            lightingTrcacingWrite(tid, color, targets.lightingTracing);
+        }
         
-        if (isOcclusion && (shadowIntersection > 0.0f))
-            targets.lightingVirtualBlocked.write(float4(shadowRay.pathScatter, 1.0), tid);
+        if (isOcclusion)
+        {
+            float3 occlusion = shadowRay.pathScatter * (1.0 - shadowRayVisibility);
+            targets.lightingVirtualBlocked.write(float4(occlusion, 1.0), tid);
+        }
     }
     
     targets.modelMask.write(float4(primaryVisibility[rayIdx], 1.0), tid);
@@ -397,6 +402,7 @@ void self_illumination(uint2 tid,
                                           lightSource, randomVars.uvLightSource, &shadowRay,
                                           diffuseTex, samplr);
             
+            shadowRay.mask |= kNuoRayMask_Translucent;
             shadowRay.pathScatter *= ray.pathScatter;
             shadowRay.pathScatter *= totalDensity;
             

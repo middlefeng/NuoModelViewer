@@ -50,10 +50,10 @@ enum kModelRayTracingTargets
     
     NuoRayBuffer* _incidentRaysBuffer;
     NuoRayBuffer* _shadowRaysBuffer;
-    id<MTLBuffer> _shadowIntersectionBuffer;
     
     NuoIlluminationTarget* _rayTracingResult;
     NuoRayVisibility* _primaryRayVisibility;
+    NuoRayVisibility* _shadowRayVisibility;
     
     PNuoRayTracingRandom _rng;
     CGSize _drawableSize;
@@ -99,6 +99,10 @@ enum kModelRayTracingTargets
         _primaryRayVisibility = [[NuoRayVisibility alloc] initWithCommandQueue:commandQueue];
         _primaryRayVisibility.rayStride = kRayBufferStride;
         _primaryRayVisibility.rayTracer = self;
+        
+        _shadowRayVisibility = [[NuoRayVisibility alloc] initWithCommandQueue:commandQueue];
+        _shadowRayVisibility.rayStride = kRayBufferStride;
+        _shadowRayVisibility.rayTracer = self;
     }
     
     return self;
@@ -118,11 +122,8 @@ enum kModelRayTracingTargets
     _shadowRaysBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
     _shadowRaysBuffer.dimension = drawableSize;
     
-    const size_t intersectionSize = drawableSize.width * drawableSize.height * kRayIntersectionStride;
-    _shadowIntersectionBuffer = [self.commandQueue.device newBufferWithLength:intersectionSize
-                                                                      options:MTLResourceStorageModePrivate];
-    
     [_primaryRayVisibility setDrawableSize:drawableSize];
+    [_shadowRayVisibility setDrawableSize:drawableSize];
 }
 
 
@@ -207,16 +208,22 @@ enum kModelRayTracingTargets
         
         for (uint i = 0; i < kRayBounce; ++i)
         {
-            [self rayIntersect:commandBuffer withRays:_shadowRaysBuffer withIntersection:_shadowIntersectionBuffer];
+            _shadowRayVisibility.paths = _shadowRaysBuffer;
+            _shadowRayVisibility.tracingUniform = rayTraceUniform;
+            
             [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.intersectionBuffer];
+            
+            [_shadowRayVisibility visibilityTestInit:commandBuffer];
+            for (uint i = 0; i < kRayBounce; ++i)
+                 [_shadowRayVisibility visibilityTest:commandBuffer];
             
             [_primaryRayVisibility visibilityTest:commandBuffer];
             
             [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
                        withParameter:@[rayTraceUniform, randomBuffer,
                                        _shadowRaysBuffer.buffer,
-                                       _shadowIntersectionBuffer,
-                                       _primaryRayVisibility.visibilities]
+                                       _primaryRayVisibility.visibilities,
+                                       _shadowRayVisibility.visibilities]
                       withExitantRay:_incidentRaysBuffer.buffer
                     withIntersection:self.intersectionBuffer];
         }
