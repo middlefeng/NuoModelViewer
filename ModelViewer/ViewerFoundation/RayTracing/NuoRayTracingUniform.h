@@ -99,7 +99,7 @@ typedef struct
 NuoRayVolumeUniform;
 
 
-#define kTextureBindingsCap 15
+#define kTextureBindingsCap 18
 
 
 
