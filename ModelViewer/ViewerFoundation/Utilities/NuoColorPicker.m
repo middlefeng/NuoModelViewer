@@ -36,18 +36,6 @@
 }
 
 
-- (void)setHidden:(BOOL)hidden
-{
-    [super setHidden:hidden];
-    
-    if (hidden)
-    {
-        [_panel close];
-        _panel = nil;
-    }
-}
-
-
 - (void)mouseDown:(NSEvent *)event
 {
     // prevent the mouse-down event from being passed through
@@ -61,6 +49,9 @@
         _panel = [[NSColorPanel alloc] init];
     
     _panel.color = _color;
+    
+    if (_panelName)
+        [_panel setTitle:_panelName];
     
     [_panel setContinuous:YES];
     [_panel setTarget:self];

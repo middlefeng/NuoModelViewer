@@ -13,6 +13,7 @@
 @interface NuoColorPicker : NSView
 
 
+@property (nonatomic, strong) NSString* panelName;
 @property (nonatomic, strong) NSColor* color;
 @property (nonatomic, strong) void((^colorChanged)(void));
 
