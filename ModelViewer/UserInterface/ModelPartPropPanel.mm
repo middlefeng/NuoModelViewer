@@ -372,7 +372,7 @@
         [board setDiffuse:_diffRelectance.color];
     }
     
-    [_optionUpdateDelegate modelOptionUpdate:0];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
 
 
@@ -388,7 +388,7 @@
         [board setSpecular:_specRelectance.color];
     }
     
-    [_optionUpdateDelegate modelOptionUpdate:0];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
 
 
@@ -404,7 +404,7 @@
         [board setSpecularPower:_specularPowerSlider.floatValue];
     }
     
-    [_optionUpdateDelegate modelOptionUpdate:0];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
 
 
