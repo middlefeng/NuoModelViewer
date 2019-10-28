@@ -55,7 +55,7 @@
         _nameLabel = [self createLabel:@"Name:" align:NSTextAlignmentRight editable:NO];
         _nameField = [self createLabel:@"" align:NSTextAlignmentLeft editable:NO];
         
-        _modelSmoothOption = [self createCheckButton:@"Smooth conservative"];
+        _modelSmoothOption = [self createCheckButton:@"Smooth Conservative"];
         [_modelSmoothOption setAction:@selector(modelPartsChanged:)];
         _modelCullOption = [self createCheckButton:@"Reverse Cull Mode"];
         [_modelCullOption setAction:@selector(modelPartsChanged:)];
@@ -307,7 +307,12 @@
     {
         _diffReflectanceLabel.hidden = YES;
         _diffRelectance.hidden = YES;
+        _specReflectanceLabel.hidden = YES;
+        _specRelectance.hidden = YES;
     }
+    
+    _diffRelectance.panelName = [NSString stringWithFormat:@"Diffuse - %@", meshes[0].modelName];
+    _specRelectance.panelName = [NSString stringWithFormat:@"Specular - %@", meshes[0].modelName];
 }
 
 
@@ -367,7 +372,7 @@
         [board setDiffuse:_diffRelectance.color];
     }
     
-    [_optionUpdateDelegate modelOptionUpdate:0];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
 
 
@@ -383,7 +388,7 @@
         [board setSpecular:_specRelectance.color];
     }
     
-    [_optionUpdateDelegate modelOptionUpdate:0];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
 
 
@@ -399,7 +404,7 @@
         [board setSpecularPower:_specularPowerSlider.floatValue];
     }
     
-    [_optionUpdateDelegate modelOptionUpdate:0];
+    [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
 }
 
 
