@@ -97,8 +97,6 @@ class NuoLua;
 
 @property (nonatomic, assign) BOOL showCheckerboard;
 
-@property (nonatomic, strong, readonly) NuoMeshOption* modelOptions;
-
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
@@ -116,7 +114,7 @@ class NuoLua;
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
            withProgress:(NuoProgressFunction)progress;
 
-- (NuoBoardMesh*)createBoard:(CGSize)size withName:(NSString*)name;
+- (void)createBoard:(CGSize)size withName:(NSString*)name;
 - (void)resetViewTransform;
 - (void)removeSelectedMesh;
 - (void)selectMeshWithScreen:(CGPoint)point;
