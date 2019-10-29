@@ -7,7 +7,7 @@
 //
 
 #import "ModelSelectionRenderer.h"
-#import "NuoMesh.h"
+#import "ModelState.h"
 #import "NuoTextureMesh.h"
 
 
@@ -77,7 +77,7 @@
             [self setSceneBuffersTo:renderPass];
             [self setDepthMapTo:renderPass];
             
-            for (NuoMesh* selectedMesh in _selectedMeshParts)
+            for (NuoMesh* selectedMesh in _modelState.selectedIndicators)
                 [selectedMesh drawMesh:renderPass];
         }
         

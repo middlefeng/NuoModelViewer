@@ -31,6 +31,7 @@ class NuoLua;
 
 @property (nonatomic, strong) NuoMeshSceneRoot* sceneRoot;
 @property (nonatomic, readonly) NuoMeshCompound* mainModelMesh;
+@property (nonatomic, strong) NSArray<NuoMesh*>* selectedParts;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
@@ -63,7 +64,9 @@ class NuoLua;
 - (void)selectedMeshTranslateX:(float)x Y:(float)y Z:(float)z;
 - (void)selectedMeshRotationX:(float)x Y:(float)y;
 
-- (NSArray<NuoMesh*>*)selectedIndicators:(NSArray<NuoMesh*>*)selected;
+- (void)setSelectedParts:(NSArray<NuoMesh*>*)selected;
+- (void)resetSelectionIndicators;
+- (NSArray<NuoMesh*>*)selectedIndicators;
 - (NuoMeshSceneRoot*)cloneSceneFor:(NuoMeshModeShaderParameter)mode;
 
 

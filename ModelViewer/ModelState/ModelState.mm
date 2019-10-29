@@ -251,10 +251,25 @@
 }
 
 
-- (NSArray<NuoMesh*>*)selectedIndicators:(NSArray<NuoMesh*>*)selected
+- (void)setSelectedParts:(NSArray<NuoMesh*>*)selected
 {
+    _selectedParts = selected;
+}
+
+
+- (void)resetSelectionIndicators
+{
+    _selectedIndicator = nil;
+}
+
+
+- (NSArray<NuoMesh*>*)selectedIndicators
+{
+    if (_selectedIndicator)
+        return _selectedIndicator;
+    
     NSMutableArray<NuoMesh*>* selectedIndicate = [NSMutableArray new];
-    for (NuoMesh* mesh in selected)
+    for (NuoMesh* mesh in _selectedParts)
         [selectedIndicate addObject:[mesh cloneForMode:kMeshMode_Selection]];
     
     _selectedIndicator = selectedIndicate;

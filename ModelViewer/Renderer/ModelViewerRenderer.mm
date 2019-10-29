@@ -42,9 +42,6 @@
 
 @interface ModelRenderer ()
 
-
-@property (strong) ModelState* modelState;
-
 // transform data. "viewRotation" is relative to the scene's center
 //
 @property (assign) NuoMatrixFloat44 viewRotation;
@@ -367,6 +364,13 @@
 - (NSArray<NuoMesh*>*)configurableMeshParts
 {
     return [_modelState configurableMeshParts];
+}
+
+
+- (void)setSelectedMeshParts:(NSArray<NuoMesh*>*)selected
+{
+    [_modelState setSelectedParts:selected];
+    [_modelState resetSelectionIndicators];
 }
 
 

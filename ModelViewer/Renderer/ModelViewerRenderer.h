@@ -8,6 +8,7 @@
 #import "ModelRenderDelegate.h"
 
 
+@class ModelState;
 @class NuoMeshOption;
 @class NuoMesh;
 @class NuoMeshCompound;
@@ -63,6 +64,8 @@ class NuoLua;
 @interface ModelRenderer : NuoRenderPipelinePass
 
 
+@property (readonly) ModelState* modelState;
+
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lights;
 @property (nonatomic, strong) NuoCubeMesh* cubeMesh;
 @property (nonatomic, strong) NuoBackdropMesh* backdropMesh;
@@ -105,6 +108,7 @@ class NuoLua;
 - (BOOL)isValidPack:(NSString*)path;
 
 - (NSArray<NuoMesh*>*)configurableMeshParts;
+- (void)setSelectedMeshParts:(NSArray<NuoMesh*>*)selected;
 - (NuoMeshCompound*)mainModelMesh;
 - (void)setAdvancedShaowEnabled:(BOOL)enabled;
 

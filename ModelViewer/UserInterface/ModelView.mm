@@ -343,6 +343,7 @@ MouseDragMode;
         _modelSelectionRenderer = [[ModelSelectionRenderer alloc] initWithCommandQueue:self.commandQueue
                                                                        withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                        withSampleCount:kSampleCount];
+        _modelSelectionRenderer.modelState = _modelRender.modelState;
         _modelSelectionRenderer.paramsProvider = _modelRender.sceneParameters;
         [self setupPipelineSettings];
     }
@@ -357,11 +358,7 @@ MouseDragMode;
     }
     else
     {
-        NSMutableArray<NuoMesh*>* selectedIndicate = [NSMutableArray new];
-        for (NuoMesh* mesh in selected)
-            [selectedIndicate addObject:[mesh cloneForMode:kMeshMode_Selection]];
-        
-        [_modelSelectionRenderer setSelectedMeshParts:selectedIndicate];
+        [_modelRender setSelectedMeshParts:selected];
         [self render];
     }
 }

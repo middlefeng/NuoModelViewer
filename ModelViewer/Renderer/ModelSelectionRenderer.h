@@ -9,11 +9,12 @@
 #import "NuoMeshSceneRenderPass.h"
 
 @class NuoMesh;
+@class ModelState;
 
 
 @interface ModelSelectionRenderer : NuoMeshSceneRenderPass
 
 @property (nonatomic, assign) BOOL enabled;
-@property (nonatomic, strong) NSArray<NuoMesh*>* selectedMeshParts;
+@property (nonatomic, weak) ModelState* modelState;
 
 @end
