@@ -46,8 +46,6 @@ class NuoLua;
 - (void)removeSelectedMesh;
 - (void)removeAllBoards;
 
-- (NSArray<NuoMesh*>*)configurableMeshParts;
-
 - (void)exportMainModel:(NuoTableExporter*)exporter;
 - (void)exportBoardModels:(NuoTableExporter*)exporter;
 - (void)exportModelConfiguration:(NuoTableExporter*)exporter;
@@ -64,6 +62,8 @@ class NuoLua;
 - (void)selectedMeshTranslateX:(float)x Y:(float)y Z:(float)z;
 - (void)selectedMeshRotationX:(float)x Y:(float)y;
 
+- (size_t)configurableMeshPartsNumber;
+- (NSArray<NuoMesh*>*)configurableMeshParts;
 - (void)setSelectedParts:(NSArray<NuoMesh*>*)selected;
 - (void)resetSelectionIndicators;
 - (NSArray<NuoMesh*>*)selectedIndicators;

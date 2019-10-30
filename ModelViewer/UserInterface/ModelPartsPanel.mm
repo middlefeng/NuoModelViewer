@@ -158,8 +158,8 @@
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
-    NSArray* meshes = [_modelState configurableMeshParts];
-    return meshes.count;
+    NSInteger count = [_modelState configurableMeshPartsNumber];
+    return count;
 }
 
 

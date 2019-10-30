@@ -163,6 +163,12 @@
 }
 
 
+- (size_t)configurableMeshPartsNumber
+{
+    return _mainModelMesh.meshes.count + _boardMeshes.count;
+}
+
+
 - (NSArray<NuoMesh*>*)configurableMeshParts
 {
     NSMutableArray* result = [NSMutableArray arrayWithArray:_mainModelMesh.meshes];
