@@ -11,7 +11,7 @@
 
 
 @protocol ModelOptionUpdate;
-@class NuoMesh;
+@class ModelState;
 
 
 
@@ -25,9 +25,10 @@
 
 - (void)containerViewResized;
 
-- (void)setMesh:(NSArray<NuoMesh*>*)mesh;
+- (void)setModelState:(ModelState*)modelState;
 - (void)setHidden:(BOOL)hidden;
 - (void)updatePanels;
+- (void)reloadPanels;
 
 - (void)addPanels;
 

@@ -530,6 +530,9 @@
     }
     
     lua->RemoveField();
+    
+    [self resetSelectionIndicators];
+    [self setSceneRootForMode:nil];
 }
 
 

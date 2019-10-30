@@ -108,7 +108,6 @@ class NuoLua;
 - (BOOL)isValidPack:(NSString*)path;
 
 - (NSArray<NuoMesh*>*)configurableMeshParts;
-- (void)setSelectedMeshParts:(NSArray<NuoMesh*>*)selected;
 - (NuoMeshCompound*)mainModelMesh;
 - (void)setAdvancedShaowEnabled:(BOOL)enabled;
 

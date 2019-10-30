@@ -367,13 +367,6 @@
 }
 
 
-- (void)setSelectedMeshParts:(NSArray<NuoMesh*>*)selected
-{
-    [_modelState setSelectedParts:selected];
-    [_modelState resetSelectionIndicators];
-}
-
-
 - (NuoMeshCompound*)mainModelMesh
 {
     return _modelState.mainModelMesh;

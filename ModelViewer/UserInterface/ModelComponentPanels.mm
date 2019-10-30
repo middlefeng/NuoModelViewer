@@ -8,7 +8,7 @@
 
 #import "ModelComponentPanels.h"
 #import "ModelOptionUpdate.h"
-#import "NuoMesh.h"
+#import "ModelState.h"
 #import "ModelPanelUpdate.h"
 
 #import "ModelPartsPanel.h"
@@ -130,15 +130,10 @@
 
 
 
-- (void)setMesh:(NSArray<NuoMesh*>*)mesh
+- (void)setModelState:(ModelState*)modelState
 {
-    [_modelPartsPanel setMesh:mesh];
-    [_modelPartPropPanel setHidden:YES];
-    
-    [_modelPartDimensionPanel updateForMesh:nil];
-    [_modelPartDimensionPanel setHidden:YES];
+    [_modelPartsPanel setModelState:modelState];
 }
-
 
 
 - (void)setHidden:(BOOL)hidden
@@ -158,10 +153,15 @@
 }
 
 
+- (void)reloadPanels
+{
+    [_modelPartsPanel updatePartsPanelWithReload:YES];
+}
+
 
 - (void)updatePanels
 {
-    [_modelPartsPanel updateParsPanelWithReload:NO];
+    [_modelPartsPanel updatePartsPanelWithReload:NO];
     [_modelPartPropPanel updateForSelectedMesh];
     [_modelPartDimensionPanel updateForSelectedMesh];
 }
@@ -169,8 +169,11 @@
 
 
 
-- (void)modelPartSelectionChanged:(NSArray<NuoMesh*>*)selection
+- (void)modelPartSelectionChanged
 {
+    ModelState* modelState = _modelPartsPanel.modelState;
+    NSArray* selection = [modelState selectedParts];
+    
     if (selection.count == 0)
     {
         [_modelPartPropPanel setHidden:YES];

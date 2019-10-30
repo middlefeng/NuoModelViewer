@@ -27,7 +27,7 @@ enum UpdateOptions
 - (void)modelOptionUpdate:(uint32_t)options;
 - (void)animationLoad;
 
-- (void)modelPartsSelectionChanged:(NSArray<NuoMesh*>*)selected;
+- (void)modelPartsSelectionChanged;
 
 @end
 
