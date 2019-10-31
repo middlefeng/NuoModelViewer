@@ -8,6 +8,7 @@
 
 #import "ModelPartsPanel.h"
 #import "NuoMesh.h"
+#import "ModelState.h"
 #import "ModelOptionUpdate.h"
 #import "ModelPanelUpdate.h"
 
@@ -36,7 +37,7 @@
 
 @property (nonatomic, weak) id<ModelOptionUpdate> updateDelegate;
 @property (nonatomic, weak) id<ModelPanelUpdate> panelUpdateDelegate;
-@property (nonatomic, strong) NSArray<NuoMesh*>* mesh;
+@property (nonatomic, weak) ModelState* modelState;
 
 @property (nonatomic, assign, setter=setRowsBeingUpdated:) BOOL rowsBeingUpdated;
 
@@ -157,7 +158,8 @@
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView
 {
-    return _mesh.count;
+    NSInteger count = [_modelState configurableMeshPartsNumber];
+    return count;
 }
 
 
@@ -165,18 +167,19 @@
                   row:(NSInteger)row
 {
     NSView* result = [self makeViewWithIdentifier:tableColumn.identifier owner:self];
+    NSArray<NuoMesh*>* meshes = [_modelState configurableMeshParts];
     
     if ([tableColumn.identifier isEqualToString:@"enabled"])
     {
         ModelBoolView* boolView = (ModelBoolView*)result;
-        boolView.objectValue = @(_mesh[row].enabled);
+        boolView.objectValue = @(meshes[row].enabled);
         boolView.target = self;
     }
     else if ([tableColumn.identifier isEqualToString:@"name"])
     {
         NSTableCellView* cell = (NSTableCellView*)result;
         NSTextField* textField = cell.textField;
-        textField.stringValue = _mesh[row].modelName;
+        textField.stringValue = meshes[row].modelName;
     }
     else
     {
@@ -190,7 +193,7 @@
         textField.formatter = numberFormatter;
         textField.delegate = textField;
         textField.target = self;
-        textField.stringValue = [NSString stringWithFormat:@"%0.4f", _mesh[row].smoothTolerance];
+        textField.stringValue = [NSString stringWithFormat:@"%0.4f", meshes[row].smoothTolerance];
     }
     
     return result;
@@ -200,16 +203,20 @@
 - (NSIndexSet *)tableView:(NSTableView *)tableView selectionIndexesForProposedSelection:(NSIndexSet *)proposedSelectionIndexes
 {
     NSMutableArray<NuoMesh*>* result = [[NSMutableArray alloc] init];
+    NSArray* meshes = [_modelState configurableMeshParts];
     
     NSUInteger selected = [proposedSelectionIndexes firstIndex];
     while (selected != NSNotFound)
     {
-        [result addObject:_mesh[selected]];
+        [result addObject:meshes[selected]];
         selected = [proposedSelectionIndexes indexGreaterThanIndex:selected];
     }
     
-    [_panelUpdateDelegate modelPartSelectionChanged:result];
-    [_updateDelegate modelPartsSelectionChanged:result];
+    [_modelState setSelectedParts:result];
+    [_modelState resetSelectionIndicators];
+    
+    [_panelUpdateDelegate modelPartSelectionChanged];
+    [_updateDelegate modelPartsSelectionChanged];
     
     return proposedSelectionIndexes;
 }
@@ -217,9 +224,11 @@
 
 - (void)cellEnablingChanged:(id)sender
 {
+    NSArray<NuoMesh*>* meshes = [_modelState configurableMeshParts];
+    
     NSInteger row = [self rowForView:sender];
     ModelBoolView* enableButton = (ModelBoolView*)sender;
-    _mesh[row].enabled = enableButton.state == NSControlStateValueOn;
+    meshes[row].enabled = enableButton.state == NSControlStateValueOn;
     
     [_updateDelegate modelOptionUpdate:0];
 }
@@ -235,9 +244,11 @@
     NSScanner* scanner = [[NSScanner alloc] initWithString:valueStr];
     [scanner scanFloat:&value];
     
+    NSArray<NuoMesh*>* meshes = [_modelState configurableMeshParts];
+    
     if ([scanner isAtEnd])
     {
-        [_mesh[row] smoothWithTolerance:value];
+        [meshes[row] smoothWithTolerance:value];
         [_updateDelegate modelOptionUpdate:0];
     }
 }
@@ -255,6 +266,9 @@
     IBOutlet ModelPartsListTable* _partsTable;
     IBOutlet NSScrollView* _partsList;
 }
+
+
+@dynamic modelState;
 
 
 - (CALayer*)makeBackingLayer
@@ -296,14 +310,19 @@
 
 
 
-- (void)setMesh:(NSArray<NuoMesh*>*)mesh
+- (void)setModelState:(ModelState*)modelState
 {
-    [_partsTable setMesh:mesh];
-    [_partsTable reloadData];
+    [_partsTable setModelState:modelState];
 }
 
 
-- (void)updateParsPanelWithReload:(BOOL)reload
+- (ModelState*)modelState
+{
+    return [_partsTable modelState];
+}
+
+
+- (void)updatePartsPanelWithReload:(BOOL)reload
 {
     [_partsTable updateWithReload:reload];
 }

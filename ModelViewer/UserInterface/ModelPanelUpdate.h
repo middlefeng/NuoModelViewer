@@ -15,7 +15,7 @@
 
 @protocol ModelPanelUpdate
 
-- (void)modelPartSelectionChanged:(NSArray<NuoMesh*>*)selection;
+- (void)modelPartSelectionChanged;
 
 @end
 

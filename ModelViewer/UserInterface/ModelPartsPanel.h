@@ -9,7 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 
-@class NuoMesh;
+@class ModelState;
 @protocol ModelOptionUpdate;
 @protocol ModelPanelUpdate;
 
@@ -29,8 +29,10 @@
  */
 @property (nonatomic, weak) id<ModelPanelUpdate> panelUpdateDelegate;
 
-- (void)setMesh:(NSArray<NuoMesh*>*)mesh;
-- (void)updateParsPanelWithReload:(BOOL)reload;
+@property (nonatomic, weak) ModelState* modelState;
+
+
+- (void)updatePartsPanelWithReload:(BOOL)reload;
 
 
 @end

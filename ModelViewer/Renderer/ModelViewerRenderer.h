@@ -8,6 +8,7 @@
 #import "ModelRenderDelegate.h"
 
 
+@class ModelState;
 @class NuoMeshOption;
 @class NuoMesh;
 @class NuoMeshCompound;
@@ -63,6 +64,8 @@ class NuoLua;
 @interface ModelRenderer : NuoRenderPipelinePass
 
 
+@property (readonly) ModelState* modelState;
+
 @property (nonatomic, strong) NSArray<NuoLightSource*>* lights;
 @property (nonatomic, strong) NuoCubeMesh* cubeMesh;
 @property (nonatomic, strong) NuoBackdropMesh* backdropMesh;
@@ -97,8 +100,6 @@ class NuoLua;
 
 @property (nonatomic, assign) BOOL showCheckerboard;
 
-@property (nonatomic, strong, readonly) NuoMeshOption* modelOptions;
-
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
@@ -116,7 +117,7 @@ class NuoLua;
 - (void)setModelOptions:(NuoMeshOption*)modelOptions
            withProgress:(NuoProgressFunction)progress;
 
-- (NuoBoardMesh*)createBoard:(CGSize)size withName:(NSString*)name;
+- (void)createBoard:(CGSize)size withName:(NSString*)name;
 - (void)resetViewTransform;
 - (void)removeSelectedMesh;
 - (void)selectMeshWithScreen:(CGPoint)point;

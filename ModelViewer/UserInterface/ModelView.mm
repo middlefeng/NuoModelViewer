@@ -25,6 +25,8 @@
 #import "NotationRenderer.h"
 #import "MotionBlurRenderer.h"
 
+#import "ModelState.h"
+
 #import "NuoLua.h"
 #import "NuoDirectoryUtils.h"
 #import "NuoMeshOptions.h"
@@ -222,9 +224,9 @@ MouseDragMode;
 {
     // clear all table and data structures that depends on the mesh
     //
-    [_modelComponentPanels setMesh:[_modelRender configurableMeshParts]];
     [_animations removeAllObjects];
     [_modelPanel setModelPartAnimations:_animations];
+    [_modelComponentPanels reloadPanels];
     
     if (_modelPanel.meshMode == kMeshMode_Normal)
     {
@@ -336,13 +338,17 @@ MouseDragMode;
 
 
 
-- (void)modelPartsSelectionChanged:(NSArray<NuoMesh*>*)selected
+- (void)modelPartsSelectionChanged
 {
+    ModelState* modelState = _modelRender.modelState;
+    NSArray* selected = modelState.selectedParts;
+    
     if (selected && selected.count && !_modelSelectionRenderer)
     {
         _modelSelectionRenderer = [[ModelSelectionRenderer alloc] initWithCommandQueue:self.commandQueue
                                                                        withPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                        withSampleCount:kSampleCount];
+        _modelSelectionRenderer.modelState = _modelRender.modelState;
         _modelSelectionRenderer.paramsProvider = _modelRender.sceneParameters;
         [self setupPipelineSettings];
     }
@@ -357,11 +363,6 @@ MouseDragMode;
     }
     else
     {
-        NSMutableArray<NuoMesh*>* selectedIndicate = [NSMutableArray new];
-        for (NuoMesh* mesh in selected)
-            [selectedIndicate addObject:[mesh cloneForMode:kMeshMode_Selection]];
-        
-        [_modelSelectionRenderer setSelectedMeshParts:selectedIndicate];
         [self render];
     }
 }
@@ -546,6 +547,8 @@ MouseDragMode;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
+    
+    [_modelComponentPanels setModelState:_modelRender.modelState];
     
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
@@ -1089,7 +1092,7 @@ MouseDragMode;
     [_notationRenderer importScene:lua];
     [_lightPanel updateControls:_notationRenderer.selectedLightSource];
     
-    [_modelComponentPanels setMesh:[_modelRender configurableMeshParts]];
+    [_modelComponentPanels reloadPanels];
     [_modelPanel setFieldOfViewRadian:_modelRender.fieldOfView];
     [_modelPanel setAmbientParameters:[_modelRender ambientParameters]];
     [_modelPanel setAmbientDensity:_modelRender.ambientDensity];
