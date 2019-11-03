@@ -216,8 +216,8 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         float3 eyeDirection = -ray.direction;
         float3 halfway = normalize(shadowVec + eyeDirection);
         
-        // all terms are scaled up by PI. as this is the last section of the path to a light source, this is
-        // treated as defining the light source strength as upscaled by PI, as it is in the rasterization
+        // all terms omit a facotr of 1/pi. as this is the last section of the path to a light source, this is
+        // treated as implying the factor into the light source strength, as it is in the rasterization
         // renderer.
         //
         float3 diffuseTerm = material.diffuseColor;
