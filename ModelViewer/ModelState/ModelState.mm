@@ -57,8 +57,11 @@
         _sceneRoot = [[NuoMeshSceneRoot alloc] init];
         _boardMeshes = [NSMutableArray new];
         
-        _modelOptions._combineByMaterials = YES;
+        _modelOptions._basicMaterialized = YES;
+        _modelOptions._textured = YES;
+        _modelOptions._combineByMaterials = NO;
         _modelOptions._texturedBump = YES;
+        _modelOptions._physicallyReflection = YES;
     }
     
     return self;

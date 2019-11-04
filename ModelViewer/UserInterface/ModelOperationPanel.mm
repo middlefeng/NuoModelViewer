@@ -77,8 +77,6 @@
         _ambientParameters.sampleRadius = 0.8;
         _ambientParameters.scale = 1.0;
 
-        _cullEnabled = YES;
-        
         _fieldOfViewRadian = (2 * M_PI) / 8;
         _showLightSettings = NO;
         _ambientDensity = 0.28;
@@ -803,6 +801,7 @@
     [_fieldOfView setFloatValue:_fieldOfViewRadian];
     [_ambientDensitySlider setFloatValue:_ambientDensity];
     [_illuminationSlider setFloatValue:_illumination];
+    [_checkBrdfMode setState:_modelState.modelOptions._physicallyReflection ? NSControlStateValueOn : NSControlStateValueOff];
     
     if ([_motionBlurRecord state] == NSControlStateValueOn)
     {
