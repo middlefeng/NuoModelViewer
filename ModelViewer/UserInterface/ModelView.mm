@@ -242,27 +242,23 @@ MouseDragMode;
 }
 
 
-- (void)modelUpdate:(NuoMeshOption *)meshOptions
+- (void)modelUpdate
 {
-    if (meshOptions)
-    {
-        __weak ModelView* selfWeak = self;
-        __weak ModelRenderer* render = _modelRender;
-        
-        NuoProgressSheetPanel* progressPanel = [NuoProgressSheetPanel new];
-        
-        [progressPanel performInBackground:^(NuoProgressFunction progress)
-                                    {
-                                        [render setModelOptions:meshOptions
-                                                   withProgress:progress];
-                                    }
-                                withWindow:self.window
-                            withCompletion:^()
-                                    {
-                                        [selfWeak modelMeshInvalid];
-                                        [selfWeak render];
-                                    }];
-    }
+    __weak ModelView* selfWeak = self;
+    __weak ModelRenderer* render = _modelRender;
+    
+    NuoProgressSheetPanel* progressPanel = [NuoProgressSheetPanel new];
+    
+    [progressPanel performInBackground:^(NuoProgressFunction progress)
+                                {
+                                    [render updateModelOptionsWithProgress:progress];
+                                }
+                            withWindow:self.window
+                        withCompletion:^()
+                                {
+                                    [selfWeak modelMeshInvalid];
+                                    [selfWeak render];
+                                }];
 }
 
 
@@ -324,7 +320,7 @@ MouseDragMode;
     
     if (!_lightPanel.hidden)
     {
-        _notationRenderer.physicallySpecular = _modelPanel.meshOptions.physicallyReflection;
+        _notationRenderer.physicallySpecular = _modelRender.modelState.modelOptions._physicallyReflection;
         
         _notationRenderer.density = _lightPanel.lightDensity;
         _notationRenderer.specular = _lightPanel.lightSpecular;
@@ -549,13 +545,15 @@ MouseDragMode;
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
     
     [_modelComponentPanels setModelState:_modelRender.modelState];
+    [_modelPanel setModelState:_modelRender.modelState];
+    [_modelPanel updateControls];
     
     _notationRenderer.notationWidthCap = [self operationPanelLocation].size.width + 30;
     
     // sync the model renderer with the initial settings in the model panel
     //
     [self modelOptionUpdate:kUpdateOption_RebuildPipeline];
-    [self modelUpdate:_modelPanel.meshOptions];
+    [self modelUpdate];
     
     // sync the light panel with the current initial light vector in the
     // notation renderer

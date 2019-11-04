@@ -9,7 +9,6 @@
 
 
 @class ModelState;
-@class NuoMeshOption;
 @class NuoMesh;
 @class NuoMeshCompound;
 @class NuoMeshSceneRoot;
@@ -20,6 +19,8 @@
 @class NuoRayAccelerateStructure;
 
 @class ModelSceneParameters;
+
+class NuoMeshOption;
 
 /**
  TERMS:
@@ -114,8 +115,7 @@ class NuoLua;
 - (NSString*)exportSceneAsString:(CGSize)canvasSize;
 - (void)importScene:(NuoLua*)lua;
 
-- (void)setModelOptions:(NuoMeshOption*)modelOptions
-           withProgress:(NuoProgressFunction)progress;
+- (void)updateModelOptionsWithProgress:(NuoProgressFunction)progress;
 
 - (void)createBoard:(CGSize)size withName:(NSString*)name;
 - (void)resetViewTransform;

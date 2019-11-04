@@ -20,6 +20,7 @@ typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
 typedef std::function<void(float)> NuoModelLoaderProgress;
 
 
+class NuoMeshOptions;
 class NuoModelLoader_Internal;
 
 
@@ -37,8 +38,7 @@ public:
      *  Create a renderable GPU mesh. A GPU mesh consists of the continuous buffer where the vertex data
      *  is stored, the associated textures, and the associated pipeline state used for rendering.
      */
-    std::vector<PNuoModelBase> CreateMeshWithOptions(const NuoModelOption& options, bool combineMaterial,
-                                                     NuoModelLoaderProgress progressFunc);
+    std::vector<PNuoModelBase> CreateMeshWithOptions(const NuoMeshOptions& options, NuoModelLoaderProgress progressFunc);
     
     
 private:

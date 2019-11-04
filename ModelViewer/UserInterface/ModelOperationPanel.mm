@@ -7,6 +7,7 @@
 //
 
 #import "ModelOperationPanel.h"
+#import "ModelState.h"
 #import "NuoMeshOptions.h"
 #import "NuoMeshAnimation.h"
 
@@ -70,10 +71,6 @@
     if (self)
     {
         _backgroundColor = 0.95f;
-        
-        _meshOptions = [NuoMeshOption new];
-        _meshOptions.combineShapes = YES;
-        _meshOptions.texturedBump = YES;
         
         _ambientParameters.bias = 0.4;
         _ambientParameters.intensity = 3.0;
@@ -590,8 +587,6 @@
     [scrollDocumentView addSubview:deviceList];
     
     _deviceList = deviceList;
-    
-    [self updateControls];
 }
 
 
@@ -616,19 +611,19 @@
 
 - (void)basicMaterializedChanged:(id)sender
 {
-    _meshOptions.basicMaterialized = [_checkMaterial state] == NSControlStateValueOn;
+    _modelState.modelOptions._basicMaterialized = [_checkMaterial state] == NSControlStateValueOn;
     [self updateControls];
     
-    [_optionUpdateDelegate modelUpdate:_meshOptions];
+    [_optionUpdateDelegate modelUpdate];
 }
 
 
 - (void)texturedChanged:(id)sender
 {
-    _meshOptions.textured = [_checkTexture state] == NSControlStateValueOn;
+    _modelState.modelOptions._textured = [_checkTexture state] == NSControlStateValueOn;
     [self updateControls];
     
-    [_optionUpdateDelegate modelUpdate:_meshOptions];
+    [_optionUpdateDelegate modelUpdate];
 }
 
 
@@ -642,9 +637,9 @@
 
 - (void)combineChanged:(id)sender
 {
-    _meshOptions.combineShapes = [_combine state] == NSControlStateValueOn;
+    _modelState.modelOptions._combineByMaterials = [_combine state] == NSControlStateValueOn;
     
-    [_optionUpdateDelegate modelUpdate:_meshOptions];
+    [_optionUpdateDelegate modelUpdate];
 }
 
 
@@ -681,9 +676,9 @@
 
 - (void)brdfModeChanged:(id)sender
 {
-    _meshOptions.physicallyReflection = [_checkBrdfMode state] == NSControlStateValueOn;
+    _modelState.modelOptions._physicallyReflection = [_checkBrdfMode state] == NSControlStateValueOn;
     
-    [_optionUpdateDelegate modelUpdate:_meshOptions];
+    [_optionUpdateDelegate modelUpdate];
 }
 
 
@@ -801,10 +796,10 @@
 {
     [_checkTexturePopover setEnabled:[_checkTexture state]];
     
-    [_checkMaterial setState:_meshOptions.basicMaterialized ? NSControlStateValueOn : NSControlStateValueOff];
-    [_checkTexture setState:_meshOptions.textured ? NSControlStateValueOn : NSControlStateValueOff];
+    [_checkMaterial setState:_modelState.modelOptions._basicMaterialized ? NSControlStateValueOn : NSControlStateValueOff];
+    [_checkTexture setState:_modelState.modelOptions._textured ? NSControlStateValueOn : NSControlStateValueOff];
     [_cull setState:_cullEnabled ? NSControlStateValueOn : NSControlStateValueOff];
-    [_combine setState:_meshOptions.combineShapes ? NSControlStateValueOn : NSControlStateValueOff];
+    [_combine setState:_modelState.modelOptions._combineByMaterials ? NSControlStateValueOn : NSControlStateValueOff];
     [_fieldOfView setFloatValue:_fieldOfViewRadian];
     [_ambientDensitySlider setFloatValue:_ambientDensity];
     [_illuminationSlider setFloatValue:_illumination];
@@ -904,7 +899,7 @@
     if (sheet == _checkTexturePopover)
     {
         ModelOperationTexturePopover* popover = [[ModelOperationTexturePopover alloc] initWithPopover:sheet.popover
-                                                                                      withSourcePanel:self
+                                                                                       withModelState:_modelState
                                                                                          withDelegate:_optionUpdateDelegate];
         return popover;
     }

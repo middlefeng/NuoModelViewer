@@ -17,6 +17,7 @@
 #import "NuoMeshBounds.h"
 
 #include "NuoUniforms.h"
+#include "NuoTypes.h"
 #include "NuoMathVector.h"
 
 

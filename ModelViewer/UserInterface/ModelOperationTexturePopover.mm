@@ -8,6 +8,7 @@
 
 #import "ModelOperationTexturePopover.h"
 #import "ModelOperationPanel.h"
+#import "ModelState.h"
 #import "NuoMeshOptions.h"
 #import "ModelOptionUpdate.h"
 
@@ -17,7 +18,7 @@
 
 @property (nonatomic, weak) id<ModelOptionUpdate> updateDelegate;
 @property (nonatomic, weak) NSPopover* popover;
-@property (nonatomic, weak) ModelOperationPanel* sourcePanel;
+@property (nonatomic, weak) ModelState* modelState;
 
 @end
 
@@ -30,14 +31,14 @@
 
 
 - (instancetype)initWithPopover:(NSPopover*)popover
-                withSourcePanel:(ModelOperationPanel*)sourcePanel
+                withModelState:(ModelState*)modelState
                    withDelegate:(id<ModelOptionUpdate>)delegate
 {
     self = [super init];
     if (self)
     {
         _popover = popover;
-        _sourcePanel = sourcePanel;
+        _modelState = modelState;
         _updateDelegate = delegate;
     }
     return self;
@@ -74,9 +75,9 @@
     [checkTextureBump setAction:@selector(textureBumpChanged:)];
     [self.view addSubview:checkTextureBump];
 
-    if (_sourcePanel.meshOptions.textureEmbeddingMaterialTransparency)
+    if (_modelState.modelOptions._textureEmbedMaterialTransparency)
         checkTextureEmbedTrans.state = NSControlStateValueOn;
-    if (_sourcePanel.meshOptions.texturedBump)
+    if (_modelState.modelOptions._texturedBump)
         checkTextureBump.state = NSControlStateValueOn;
 }
 
@@ -84,18 +85,18 @@
 - (void)textureEmbedTransChanged:(id)sender
 {
     NSButton* btn = (NSButton*)sender;
-    _sourcePanel.meshOptions.textureEmbeddingMaterialTransparency = ([btn state] == NSControlStateValueOn);
+    _modelState.modelOptions._textureEmbedMaterialTransparency = ([btn state] == NSControlStateValueOn);
     
-    [_updateDelegate modelUpdate:_sourcePanel.meshOptions];
+    [_updateDelegate modelUpdate];
 }
 
 
 - (void)textureBumpChanged:(id)sender
 {
     NSButton* btn = (NSButton*)sender;
-    _sourcePanel.meshOptions.texturedBump = ([btn state] == NSControlStateValueOn);
+    _modelState.modelOptions._texturedBump = ([btn state] == NSControlStateValueOn);
     
-    [_updateDelegate modelUpdate:_sourcePanel.meshOptions];
+    [_updateDelegate modelUpdate];
 }
 
 

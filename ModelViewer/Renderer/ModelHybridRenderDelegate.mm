@@ -16,6 +16,7 @@
 #import "ModelHybridBlendRenderer.h"
 #import "NuoInspectableMaster.h"
 
+#include "NuoTypes.h"
 #include "NuoMeshSceneRoot.h"
 
 

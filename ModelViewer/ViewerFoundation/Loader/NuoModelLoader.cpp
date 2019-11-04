@@ -217,12 +217,13 @@ void NuoModelLoader::LoadModel(const std::string& path)
 
 
 
-std::vector<PNuoModelBase> NuoModelLoader::CreateMeshWithOptions(const NuoModelOption& options, bool combineMaterial,
+std::vector<PNuoModelBase> NuoModelLoader::CreateMeshWithOptions(const NuoMeshOptions& options,
                                                                  NuoModelLoaderProgress progressFunc)
 {
     typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
     
-    PShapeMapByMaterial shapeMap = GetShapeVectorByMaterial(_internal->_shapes, _internal->_materials, combineMaterial);
+    PShapeMapByMaterial shapeMap = GetShapeVectorByMaterial(_internal->_shapes, _internal->_materials,
+                                                            options._combineByMaterials);
     
     std::vector<PNuoModelBase> models;
     std::vector<uint32_t> indices;

@@ -28,7 +28,7 @@
 
 @property (strong) NuoModelLoaderGPU* modelLoader;
 @property (weak) id<MTLCommandQueue> commandQueue;
-@property (nonatomic, strong) NuoMeshOption* modelOptions;
+@property (nonatomic, assign) NuoMeshOptions modelOptions;
 
 
 @end
@@ -53,10 +53,12 @@
     if (self)
     {
         _commandQueue = commandQueue;
-        
-        _modelOptions = [NuoMeshOption new];
+
         _sceneRoot = [[NuoMeshSceneRoot alloc] init];
         _boardMeshes = [NSMutableArray new];
+        
+        _modelOptions._combineByMaterials = YES;
+        _modelOptions._texturedBump = YES;
     }
     
     return self;
@@ -105,7 +107,7 @@
     std::shared_ptr<NuoModelBoard> modelBoard(new NuoModelBoard(size.width, size.height, 0.001));
     modelBoard->CreateBuffer();
     modelBoard->SetName(name.UTF8String);
-    NuoBoardMesh* boardMesh = CreateBoardMesh(self.commandQueue, modelBoard, [_modelOptions basicMaterialized]);
+    NuoBoardMesh* boardMesh = CreateBoardMesh(self.commandQueue, modelBoard, _modelOptions._basicMaterialized);
     
     const NuoBounds bounds = boardMesh.boundsLocal.boundingBox;
     const float radius = bounds.MaxDimension();
@@ -180,11 +182,8 @@
 
 
 
-- (void)setModelOptions:(NuoMeshOption*)modelOptions
-           withProgress:(NuoProgressFunction)progress
+- (void)updateModelOptionsWithProgress:(NuoProgressFunction)progress
 {
-    _modelOptions = modelOptions;
-    
     if (_modelLoader)
     {
         const NuoMatrixFloat44 originalPoise = _mainModelMesh.transformPoise;
@@ -198,9 +197,15 @@
     
     for (NuoBoardMesh* board in _boardMeshes)
     {
-        board.shadowOverlayOnly = [modelOptions basicMaterialized];
+        board.shadowOverlayOnly = _modelOptions._basicMaterialized;
         [board makePipelineState];
     }
+}
+
+
+- (NuoMeshOptions&)modelOptions
+{
+    return _modelOptions;
 }
 
 

@@ -11,6 +11,8 @@
 #import "NuoMeshSceneRoot.h"
 #import "NuoRenderPassEncoder.h"
 
+#include "NuoTypes.h"
+
 
 @implementation NuoScreenSpaceRenderer
 

@@ -8,7 +8,6 @@
 
 #import "ModelOperationAmbientPopover.h"
 #import "ModelOperationPanel.h"
-#import "NuoMeshOptions.h"
 
 
 

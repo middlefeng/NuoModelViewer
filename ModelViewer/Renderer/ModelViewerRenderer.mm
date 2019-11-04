@@ -580,10 +580,9 @@
 }
 
 
-- (void)setModelOptions:(NuoMeshOption *)modelOptions
-           withProgress:(NuoProgressFunction)progress
+- (void)updateModelOptionsWithProgress:(NuoProgressFunction)progress
 {
-    [_modelState setModelOptions:modelOptions withProgress:progress];
+    [_modelState updateModelOptionsWithProgress:progress];
 }
 
 

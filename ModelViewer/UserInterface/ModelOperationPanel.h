@@ -7,14 +7,12 @@
 //
 
 #import "NuoRoundedView.h"
-#import "NuoTypes.h"
-
 #import "ModelOptionUpdate.h"
 #import "ModelViewerRenderer.h"
 
 
 
-@class NuoMeshOption;
+@class ModelState;
 @class NuoMeshAnimation;
 
 
@@ -34,7 +32,7 @@
  */
 @property (nonatomic, strong) NSString* deviceSelected;
 @property (nonatomic, assign) TransformMode transformMode;
-@property (nonatomic, strong) NuoMeshOption* meshOptions;
+@property (nonatomic, weak) ModelState* modelState;
 @property (nonatomic, assign) NuoAmbientUniformField ambientParameters;
 @property (nonatomic, assign) BOOL cullEnabled;
 @property (nonatomic, assign) float fieldOfViewRadian;
