@@ -149,6 +149,7 @@ inline NuoRayTracingMaterial interpolate_material(device NuoRayTracingMaterial *
     result.specularColor = uvw.x * s0 + uvw.y * s1 + uvw.z * s2;
     result.shinessDisolveIllum.x = uvw.x * sp0 + uvw.y * sp1 + uvw.z * sp2;
     result.shinessDisolveIllum.y = uvw.x * sd0 + uvw.y * sd1 + uvw.z * sd2;
+    result.shinessDisolveIllum.z = material0.shinessDisolveIllum.z;
     
     return result;
 }

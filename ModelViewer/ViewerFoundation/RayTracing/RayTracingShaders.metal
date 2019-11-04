@@ -200,6 +200,8 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                                                    tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
                                                                    index, intersection, samplr);
         
+        bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
+        
         float3 normal = material.normal;
         if (dot(normal, -(ray.direction)) < -1e-6)
             normal = -normal;
@@ -221,9 +223,11 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         // renderer.
         //
         float3 diffuseTerm = material.diffuseColor;
-        float3 specularTerm = specularPower > 200 ?
-                              specular_fresnel_blend(material.specularColor, specularPower,
-                                                     shadowVec, eyeDirection, normal) :
+        float3 specularTerm = reflection ?
+                              0 /* still turn off the shadow ray transport
+                                 *
+                                   specular_fresnel_blend(material.specularColor, specularPower,
+                                                          shadowVec, eyeDirection, normal) */ :
                               specular_common_physically(material.specularColor, specularPower,
                                                          shadowVec, normal, halfway);
         
@@ -291,6 +295,8 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
     const float Mspec = material.shinessDisolveIllum.x;
     const float3 normal = material.normal;
     
+    bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
+    
     float Tr = 1.0 - material.shinessDisolveIllum.y;
     Tr = Tr > 1e-6 ? Tr : 0.0;
     
@@ -351,7 +357,7 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
         }
         
         
-        if (Mspec < 200)
+        if (!reflection)
         {
             // all the following factor omit a 1/pi factor, which would have been cancelled
             // in the calculation of cosinedPdfScale anyway
