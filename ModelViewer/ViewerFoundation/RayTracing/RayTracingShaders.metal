@@ -145,8 +145,8 @@ void ambient_with_no_block(uint2 tid,
 }
 
 
-static float3 specular_fresnel_blend(float3 materialSpecularColor, float materialSpecularPower,
-                                     float3 lightDirection, float3 exitent, float3 normal)
+float3 specular_fresnel_blend(float3 materialSpecularColor, float materialSpecularPower,
+                              float3 lightDirection, float3 exitent, float3 normal)
 {
     float3 wo = relative_to_hemisphere_normal(exitent, normal);
     float3 wi = relative_to_hemisphere_normal(lightDirection, normal);
@@ -200,8 +200,6 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                                                    tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
                                                                    index, intersection, samplr);
         
-        bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
-        
         float3 normal = material.normal;
         if (dot(normal, -(ray.direction)) < -1e-6)
             normal = -normal;
@@ -222,6 +220,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         // treated as implying the factor into the light source strength, as it is in the rasterization
         // renderer.
         //
+        const bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
         float3 diffuseTerm = material.diffuseColor;
         float3 specularTerm = reflection ?
                               0 /* still turn off the shadow ray transport
@@ -295,8 +294,6 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
     const float Mspec = material.shinessDisolveIllum.x;
     const float3 normal = material.normal;
     
-    bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
-    
     float Tr = 1.0 - material.shinessDisolveIllum.y;
     Tr = Tr > 1e-6 ? Tr : 0.0;
     
@@ -356,6 +353,7 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
             return result;
         }
         
+        const bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
         
         if (!reflection)
         {
