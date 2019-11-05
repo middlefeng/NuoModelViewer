@@ -16,6 +16,7 @@
 #import "NuoRayAccelerateStructure.h"
 #import "NuoIlluminationMesh.h"
 
+#include "NuoTypes.h"
 #include "NuoRayTracingRandom.h"
 #include "NuoComputeEncoder.h"
 #include "NuoRenderPassAttachment.h"

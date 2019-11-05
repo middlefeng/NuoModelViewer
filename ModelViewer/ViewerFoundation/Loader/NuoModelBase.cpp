@@ -20,7 +20,7 @@ bool ItemTexCoordEequal<NuoItemSimple>(const NuoItemSimple& i1, const NuoItemSim
 }
 
 
-std::shared_ptr<NuoModelBase> CreateModel(const NuoModelOption& options, const NuoMaterial& material,
+std::shared_ptr<NuoModelBase> CreateModel(const NuoMeshOptions& options, const NuoMaterial& material,
                                           const std::string& modelItemName)
 {
     bool textured = options._textured && material.HasTextureDiffuse();

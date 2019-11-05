@@ -19,8 +19,8 @@
 @class NuoMeshCompound;
 @class NuoMesh;
 @class NuoBoardMesh;
-@class NuoMeshOption;
 
+class NuoMeshOptions;
 class NuoTableExporter;
 class NuoLua;
 
@@ -54,8 +54,8 @@ class NuoLua;
 - (void)importBoardModels:(NuoLua*)lua;
 - (void)importModelConfiguration:(NuoLua*)lua;
 
-- (void)setModelOptions:(NuoMeshOption*)modelOptions
-           withProgress:(NuoProgressFunction)progress;
+- (void)updateModelOptionsWithProgress:(NuoProgressFunction)progress;
+- (NuoMeshOptions&)modelOptions;
 
 - (void)selectMesh:(NuoMesh*)mesh;
 - (NuoBounds)selectedMeshBounds:(const NuoMatrixFloat44&)viewMatrix;

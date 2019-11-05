@@ -23,6 +23,8 @@
 #import "NuoCommandBuffer.h"
 #import "NuoBufferSwapChain.h"
 
+#include "NuoTypes.h"
+
 
 @interface NotationRenderer()
 
