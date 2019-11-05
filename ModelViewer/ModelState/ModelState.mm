@@ -28,7 +28,6 @@
 
 @property (strong) NuoModelLoaderGPU* modelLoader;
 @property (weak) id<MTLCommandQueue> commandQueue;
-@property (nonatomic, assign) NuoMeshOptions modelOptions;
 
 
 @end
@@ -39,6 +38,7 @@
 @implementation ModelState
 {
     __weak NuoMeshCompound* _mainModelMesh;
+    NuoMeshOptions _modelOptions;
 }
 
 
@@ -59,8 +59,8 @@
         
         _modelOptions._basicMaterialized = YES;
         _modelOptions._textured = YES;
-        _modelOptions._combineByMaterials = NO;
         _modelOptions._texturedBump = YES;
+        _modelOptions._combineByMaterials = NO;
         _modelOptions._physicallyReflection = YES;
     }
     
