@@ -344,6 +344,8 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr);
 
+float light_source_scatter_sample(constant NuoRayTracingUniforms& tracingUniforms,
+                                  float3 direction);
 uint light_source_select(constant NuoRayTracingUniforms& tracingUniforms,
                          float random, thread float* totalDensity);
 

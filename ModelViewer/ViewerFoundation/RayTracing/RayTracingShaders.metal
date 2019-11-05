@@ -250,6 +250,22 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
 }
 
 
+float light_source_scatter_sample(constant NuoRayTracingUniforms& tracingUniforms,
+                                  float3 direction)
+{
+    float density = 0.0;
+    
+    for (uint i = 0; i < 2; ++i)
+    {
+        constant const NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[i];
+        
+        if (dot(lightSource.direction, direction) > lightSource.coneAngleCosine)
+            density += lightSource.density;
+    }
+    
+    return density;
+}
+
 
 uint light_source_select(constant NuoRayTracingUniforms& tracingUniforms,
                          float random, thread float* totalDensity)
