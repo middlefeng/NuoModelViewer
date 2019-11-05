@@ -46,7 +46,7 @@ NuoBoundsUniform;
 
 typedef struct
 {
-    matrix44 direction;
+    vector3 direction;
     float density;
     float coneAngleCosine;
 }

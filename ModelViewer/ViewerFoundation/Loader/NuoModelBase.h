@@ -16,6 +16,7 @@
 
 #include "NuoGlobalBuffers.h"
 #include "NuoBounds.h"
+#include "NuoMeshOptions.h"
 
 
 
@@ -24,26 +25,11 @@ class NuoMaterial;
 
 
 
-
-class NuoModelOption
-{
-public:
-    bool _textured;
-    bool _textureEmbedMaterialTransparency;
-    bool _texturedBump;
-    
-    bool _basicMaterialized;
-    
-    bool _physicallyReflection;
-};
-
-
-
 typedef std::shared_ptr<NuoModelBase> PNuoModelBase;
 
 
 
-PNuoModelBase CreateModel(const NuoModelOption& options, const NuoMaterial& material,
+PNuoModelBase CreateModel(const NuoMeshOptions& options, const NuoMaterial& material,
                           const std::string& modelItemName);
 
 template <class ItemBase>

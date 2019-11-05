@@ -30,26 +30,19 @@
 
 
 
-- (NuoMeshCompound*)createMeshsWithOptions:(NuoMeshOption*)loadOption
+- (NuoMeshCompound*)createMeshsWithOptions:(const NuoMeshOptions&)loadOption
                           withCommandQueue:(id<MTLCommandQueue>)commandQueue
                               withProgress:(NuoProgressFunction)progress
 {
-    const float loadingPortionModelBuffer = loadOption.textured ? 0.70 : 0.85;
+    const float loadingPortionModelBuffer = loadOption._textured ? 0.70 : 0.85;
     const float loadingPortionModelGPU = (1 - loadingPortionModelBuffer);
-    
-    NuoModelOption options;
-    options._textured = loadOption.textured;
-    options._textureEmbedMaterialTransparency = loadOption.textureEmbeddingMaterialTransparency;
-    options._texturedBump = loadOption.texturedBump;
-    options._basicMaterialized = loadOption.basicMaterialized;
-    options._physicallyReflection = loadOption.physicallyReflection;
     
     auto progressFunc = [loadingPortionModelBuffer, progress](float progressValue)
     {
         progress(loadingPortionModelBuffer * progressValue);
     };
     
-    std::vector<PNuoModelBase> models = _loader->CreateMeshWithOptions(options, loadOption.combineShapes,
+    std::vector<PNuoModelBase> models = _loader->CreateMeshWithOptions(loadOption,
                                                                        progressFunc);
     
     NSMutableArray<NuoMesh*>* result = [[NSMutableArray<NuoMesh*> alloc] init];
@@ -57,7 +50,7 @@
     size_t index = 0;
     for (auto& model : models)
     {
-        NuoMesh* mesh = CreateMesh(options, commandQueue, model);
+        NuoMesh* mesh = CreateMesh(loadOption, commandQueue, model);
         
         NuoMeshBounds bounds;
         bounds.boundingBox = model->GetBoundingBox();

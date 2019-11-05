@@ -8,7 +8,6 @@
 
 
 @class NuoMesh;
-@class NuoMeshOption;
 @class LightOperationPanel;
 
 
@@ -23,7 +22,7 @@ enum UpdateOptions
 
 @protocol ModelOptionUpdate
 
-- (void)modelUpdate:(NuoMeshOption*)meshOptions;
+- (void)modelUpdate;
 - (void)modelOptionUpdate:(uint32_t)options;
 - (void)animationLoad;
 

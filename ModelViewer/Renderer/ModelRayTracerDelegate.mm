@@ -15,6 +15,7 @@
 #import "ModelRayTracingBlendRenderer.h"
 #import "NuoInspectableMaster.h"
 
+#include "NuoTypes.h"
 #include "NuoMeshSceneRoot.h"
 
 

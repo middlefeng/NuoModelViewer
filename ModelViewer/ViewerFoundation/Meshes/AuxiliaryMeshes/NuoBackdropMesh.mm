@@ -11,6 +11,8 @@
 #import "NuoTextureBase.h"
 #import "NuoBufferSwapChain.h"
 
+#include "NuoTypes.h"
+
 
 
 

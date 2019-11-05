@@ -699,7 +699,7 @@
 
 
 
-NuoMesh* CreateMesh(const NuoModelOption& options,
+NuoMesh* CreateMesh(const NuoMeshOptions& options,
                     id<MTLCommandQueue> commandQueue,
                     const std::shared_ptr<NuoModelBase> model)
 {

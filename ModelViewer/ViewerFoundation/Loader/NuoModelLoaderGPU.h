@@ -15,7 +15,7 @@
 #include "NuoModelLoader.h"
 
 
-@class NuoMeshOption;
+class NuoMeshOptions;
 @class NuoMeshCompound;
 
 
@@ -29,7 +29,7 @@
 
 - (instancetype)initWithLoader:(std::shared_ptr<NuoModelLoader>)loader;
 
-- (NuoMeshCompound*)createMeshsWithOptions:(NuoMeshOption*)loadOption
+- (NuoMeshCompound*)createMeshsWithOptions:(const NuoMeshOptions&)loadOption
                           withCommandQueue:(id<MTLCommandQueue>)commandQueue
                               withProgress:(NuoProgressFunction)progress;
 
