@@ -169,11 +169,8 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
     
     if (intersection.distance >= 0.0f)
     {
-        float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
-        lightVec = normalize(lightSource.direction * lightVec);
-        
         float3 shadowVec = sample_cone_uniform(random, lightSource.coneAngleCosine);
-        shadowVec = align_hemisphere_normal(shadowVec, lightVec.xyz);
+        shadowVec = align_hemisphere_normal(shadowVec, lightSource.direction);
         
         shadowRay->maxDistance = maxDistance;
         
@@ -496,8 +493,7 @@ kernel void light_direction_visualize(uint2 tid [[thread_position_in_grid]],
     
     if (intersection.distance >= 0.0f)
     {
-        float4 lightVec = float4(0.0, 0.0, 1.0, 0.0);
-        lightVec = tracingUniforms.lightSources[0].direction * lightVec;
+        thread const float3& lightVec = tracingUniforms.lightSources[0].direction;
         dstTex.write(float4(lightVec.x, lightVec.y, 0.0, 1.0f), tid);
     }
 }

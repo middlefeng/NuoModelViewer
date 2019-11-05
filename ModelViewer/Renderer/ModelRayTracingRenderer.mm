@@ -138,8 +138,9 @@ enum kModelRayTracingTargets
         const NuoMatrixFloat44 matrix = NuoMatrixRotation(lightSource.lightingRotationX, lightSource.lightingRotationY);
         
         NuoRayTracingLightSource* lightSourceRayTracing = &(uniforms.lightSources[i]);
+        NuoVectorFloat4 lightVec = NuoVectorFloat4(0.0, 0.0, 1.0, 0.0);
         
-        lightSourceRayTracing->direction = matrix._m;
+        lightSourceRayTracing->direction = (matrix * lightVec)._vector.xyz;
         lightSourceRayTracing->density = lightSource.lightingDensity;
         
         // the code used to pass lightSource.shadowSoften into the shader, which the shader had used as the diameter of
