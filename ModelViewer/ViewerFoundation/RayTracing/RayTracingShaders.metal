@@ -222,6 +222,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         // specular and diffuse is normalized and scale as half-half
         //
         shadowRay->pathScatter = (diffuseTerm + specularTerm) * dot(normal, shadowVec);
+        shadowRay->pathScatter *= ray.pathScatter;
     }
     else
     {

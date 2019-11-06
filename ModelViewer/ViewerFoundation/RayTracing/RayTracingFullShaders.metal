@@ -196,8 +196,6 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
         shadow_ray_emit_infinite_area(ray, intersection, structUniform, tracingUniforms,
                                       lightSource, randomVars.uvLightSource, shadowRay,
                                       diffuseTex, samplr);
-        
-        shadowRay->pathScatter *= ray.pathScatter;
         shadowRay->pathScatter *= totalDensity;
         
         targets.lightingVirtual.write(float4(shadowRay->pathScatter, 1.0), tid);
@@ -403,7 +401,6 @@ void self_illumination(uint2 tid,
                                           diffuseTex, samplr);
             
             shadowRay.mask |= kNuoRayMask_Translucent;
-            shadowRay.pathScatter *= ray.pathScatter;
             shadowRay.pathScatter *= totalDensity;
             
             NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
