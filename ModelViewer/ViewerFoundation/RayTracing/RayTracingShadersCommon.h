@@ -344,7 +344,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                    metal::sampler samplr);
 
 uint light_source_select(constant NuoRayTracingUniforms& tracingUniforms,
-                         float random, thread float* totalDensity);
+                         float random, thread float* totalIrradiance);
 
 
 void ambient_with_no_block(uint2 tid,

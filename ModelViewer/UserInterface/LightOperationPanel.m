@@ -23,8 +23,8 @@
 
 @implementation LightOperationPanel
 {
-    NSTextField* _lightDensityLabel;
-    NSSlider* _lightDensitySlider;
+    NSTextField* _lightIrradianceLabel;
+    NSSlider* _lightIrradianceSlider;
     
     NSTextField* _lightSpecularLabel;
     NSSlider* _lightSpecularSlider;
@@ -46,8 +46,8 @@
     {
         [self setWantsLayer:YES];
         
-        _lightDensityLabel = [self createLabel:@"Density:"];
-        _lightDensitySlider = [self createSliderMax:3.0 min:0.0];
+        _lightIrradianceLabel = [self createLabel:@"Irradiance:"];
+        _lightIrradianceSlider = [self createSliderMax:3.0 min:0.0];
         
         _lightSpecularLabel = [self createLabel:@"Specular:"];
         _lightSpecularSlider = [self createSliderMax:3.0 min:0.0];
@@ -117,12 +117,12 @@
     labelFrame.size = CGSizeMake(labelWidth, entryHeight);
     labelFrame.origin = CGPointMake(0, (entryHeight + lineSpace) * 3 + 5);
     
-    [_lightDensityLabel setFrame:labelFrame];
+    [_lightIrradianceLabel setFrame:labelFrame];
     
     CGRect sliderFrame;
     sliderFrame.size = CGSizeMake(viewSize.width - labelWidth - labelSpace, entryHeight);
     sliderFrame.origin = CGPointMake(labelWidth + labelSpace, (entryHeight + lineSpace) * 3 + 5);
-    [_lightDensitySlider setFrame:sliderFrame];
+    [_lightIrradianceSlider setFrame:sliderFrame];
     
     labelFrame.origin.y -= entryHeight + lineSpace;
     sliderFrame.origin.y -= entryHeight + lineSpace;
@@ -153,15 +153,15 @@
 
 
 
-- (float)lightDensity
+- (float)lightIrradiance
 {
-    return [_lightDensitySlider floatValue];
+    return [_lightIrradianceSlider floatValue];
 }
 
 
-- (void)setLightDensity:(float)lightDensity
+- (void)setLightIrradiance:(float)lightIrradiance
 {
-    [_lightDensitySlider setFloatValue:lightDensity];
+    [_lightIrradianceSlider setFloatValue:lightIrradiance];
 }
 
 
@@ -224,7 +224,7 @@
 
 - (void)updateControls:(NuoLightSource*)lightSource
 {
-    [self setLightDensity:lightSource.lightingDensity];
+    [self setLightIrradiance:lightSource.lightingIrradiance];
     [self setLightSpecular:lightSource.lightingSpecular];
     [self setShadowEnabled:lightSource.enableShadow];
     

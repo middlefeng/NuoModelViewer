@@ -322,7 +322,7 @@ MouseDragMode;
     {
         _notationRenderer.physicallySpecular = _modelRender.modelState.modelOptions._physicallyReflection;
         
-        _notationRenderer.density = _lightPanel.lightDensity;
+        _notationRenderer.irradiance = _lightPanel.lightIrradiance;
         _notationRenderer.specular = _lightPanel.lightSpecular;
         _notationRenderer.shadowSoften = _lightPanel.shadowSoften;
         _notationRenderer.shadowOccluderRadius = _lightPanel.shadowOccluderRadius;

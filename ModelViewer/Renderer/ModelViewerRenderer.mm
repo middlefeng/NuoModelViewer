@@ -445,8 +445,8 @@
                 exporter.SetEntryValueFloat(light.lightingRotationY);
                 exporter.EndEntry(false);
                 
-                exporter.StartEntry("density");
-                exporter.SetEntryValueFloat(light.lightingDensity);
+                exporter.StartEntry("irradiance");
+                exporter.SetEntryValueFloat(light.lightingIrradiance);
                 exporter.EndEntry(false);
                 
                 exporter.StartEntry("specular");

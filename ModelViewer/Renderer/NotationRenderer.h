@@ -41,7 +41,7 @@ class NuoLua;
 
 - (void)setRotateX:(float)rotateX;
 - (void)setRotateY:(float)rotateY;
-- (void)setDensity:(float)density;
+- (void)setIrradiance:(float)irradiance;
 - (void)setSpecular:(float)specular;
 - (void)setShadowSoften:(float)shadowSoften;
 - (void)setShadowOccluderRadius:(float)shadowOccluderRadius;

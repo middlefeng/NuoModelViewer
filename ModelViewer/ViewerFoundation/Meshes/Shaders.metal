@@ -97,7 +97,7 @@ fragment float4 fragment_light(ProjectedVertex vert [[stage_in]],
         const NuoLightParameterUniformField lightParams = lightUniform.lightParams[i];
         
         float cosTheta = saturate(dot(normal, normalize(lightParams.direction.xyz)));
-        float3 diffuseTerm = material.diffuseColor * opacity * cosTheta * lightParams.density;
+        float3 diffuseTerm = material.diffuseColor * opacity * cosTheta * lightParams.irradiance;
         
         float3 specularTerm(0);
         if (cosTheta > 0)
@@ -217,12 +217,12 @@ fragment float4 fragment_light_shadow(ProjectedVertex vert [[stage_in]],
         
         if (kShadowOverlay)
         {
-            shadowOverlay += lightUniform.lightParams[i].density * cosTheta * shadowPercent;
-            surfaceBrightness += lightUniform.lightParams[i].density * cosTheta;
+            shadowOverlay += lightUniform.lightParams[i].irradiance * cosTheta * shadowPercent;
+            surfaceBrightness += lightUniform.lightParams[i].irradiance * cosTheta;
         }
         else
         {
-            float3 diffuseTerm = material.diffuseColor * cosTheta * lightParams.density;
+            float3 diffuseTerm = material.diffuseColor * cosTheta * lightParams.irradiance;
             
             float3 specularTerm(0);
             if (cosTheta > 0)
@@ -292,7 +292,7 @@ float4 fragment_light_tex_materialed_common(VertexFragmentCharacters vert,
         
         float3 lightVector = normalize(lightParams.direction.xyz);
         float cosTheta = saturate(dot(vert.normal, lightVector));
-        float3 diffuseTerm = vert.diffuseColor * vert.opacity * cosTheta * lightParams.density;
+        float3 diffuseTerm = vert.diffuseColor * vert.opacity * cosTheta * lightParams.irradiance;
         
         float3 shadowPercent = float3(0.0);
         if (i < 2)
@@ -457,12 +457,12 @@ float3 specular_common(float3 materialSpecularColor, float materialSpecularPower
     {
         return specular_common_physically(adjustedCsepcular, materialSpecularPower,
                                           lightParams.direction.xyz, normal, halfway)
-                * cosTheta * lightParams.density;
+                * cosTheta * lightParams.irradiance;
     }
     else
     {
         float cosNHPower = pow(saturate(dot(normal, halfway)), materialSpecularPower);
-        return adjustedCsepcular * cosNHPower * cosTheta * lightParams.density;
+        return adjustedCsepcular * cosNHPower * cosTheta * lightParams.irradiance;
     }
 }
 

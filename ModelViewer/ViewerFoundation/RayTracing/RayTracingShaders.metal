@@ -233,17 +233,17 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
 
 
 uint light_source_select(constant NuoRayTracingUniforms& tracingUniforms,
-                         float random, thread float* totalDensity)
+                         float random, thread float* totalIrradiance)
 {
     float2 lightRandomRegion = float2(0);
-    *totalDensity = 0;
+    *totalIrradiance = 0;
     
     for (uint i = 0; i < 2; ++i)
-        *totalDensity += tracingUniforms.lightSources[i].density;
+        *totalIrradiance += tracingUniforms.lightSources[i].irradiance;
 
     for (uint i = 0; i < 2; ++i)
     {
-        float randomRegionSize = tracingUniforms.lightSources[i].density / (*totalDensity);
+        float randomRegionSize = tracingUniforms.lightSources[i].irradiance / (*totalIrradiance);
         lightRandomRegion.y = lightRandomRegion.x + randomRegionSize;
         
         if (random >= lightRandomRegion.x && random < lightRandomRegion.y)

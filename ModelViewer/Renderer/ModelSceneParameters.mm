@@ -96,7 +96,7 @@
         
         const NuoVectorFloat4 lightVector(rotationMatrix * NuoVectorFloat4(0, 0, 1, 0));
         lighting.lightParams[i].direction = lightVector._vector;
-        lighting.lightParams[i].density = _lights[i].lightingDensity;
+        lighting.lightParams[i].irradiance = _lights[i].lightingIrradiance;
         lighting.lightParams[i].specular = _lights[i].lightingSpecular;
         
         if (i < 2)

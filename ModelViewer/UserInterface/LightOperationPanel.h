@@ -19,7 +19,7 @@
 @interface LightOperationPanel : NSView
 
 
-@property (nonatomic) float lightDensity;
+@property (nonatomic) float lightIrradiance;
 @property (nonatomic) float lightSpecular;
 
 @property (nonatomic) BOOL shadowEnabled;

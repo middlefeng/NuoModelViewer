@@ -187,16 +187,16 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
     {
         // direct lighting on virtual surfaces as if no normal object present
             
-        float totalDensity = 0;
+        float totalIrradiance = 0;
         uint lightSourceIndex = light_source_select(tracingUniforms,
-                                                    randomVars.lightSource, &totalDensity);
+                                                    randomVars.lightSource, &totalIrradiance);
         
         constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[lightSourceIndex];
         
         shadow_ray_emit_infinite_area(ray, intersection, structUniform, tracingUniforms,
                                       lightSource, randomVars.uvLightSource, shadowRay,
                                       diffuseTex, samplr);
-        shadowRay->pathScatter *= totalDensity;
+        shadowRay->pathScatter *= totalIrradiance;
         
         targets.lightingVirtual.write(float4(shadowRay->pathScatter, 1.0), tid);
     }
@@ -390,9 +390,9 @@ void self_illumination(uint2 tid,
         {
             device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
             
-            float totalDensity = 0;
+            float totalIrradiance = 0;
             uint lightSourceIndex = light_source_select(tracingUniforms,
-                                                        randomVars.lightSource, &totalDensity);
+                                                        randomVars.lightSource, &totalIrradiance);
             
             constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[lightSourceIndex];
             
@@ -401,7 +401,7 @@ void self_illumination(uint2 tid,
                                           diffuseTex, samplr);
             
             shadowRay.mask |= kNuoRayMask_Translucent;
-            shadowRay.pathScatter *= totalDensity;
+            shadowRay.pathScatter *= totalIrradiance;
             
             NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
                                                                        tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,

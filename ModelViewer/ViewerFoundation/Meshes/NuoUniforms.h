@@ -49,8 +49,14 @@ NuoLightVertexUniforms;
 typedef struct
 {
     vector4 direction __attribute__ ((aligned (16)));
-    float density;
     float specular;
+    
+    /**
+     *  for directional light source in real time rendering, the radiance to a point
+     *  on a lit surface is of delta distribution and the rendering equation integral
+     *  results in multiplied by an irradiance on a single direction
+     */
+    float irradiance;
 }
 NuoLightParameterUniformField;
 

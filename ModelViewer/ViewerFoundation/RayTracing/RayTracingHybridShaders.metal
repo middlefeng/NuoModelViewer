@@ -74,7 +74,7 @@ kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
         
         shadow_ray_emit_infinite_area(cameraRay, intersection, structUniform, tracingUniforms,
                                       lightSource, randomVars.uv, shadowRay, diffuseTex, samplr);
-        shadowRay->pathScatter *= lightSource.density;
+        shadowRay->pathScatter *= lightSource.irradiance /* (radiance / pdf) for a cone */;
     }
     
     // ambient lighting on virtual surfaces as if no normal object present
@@ -121,7 +121,7 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
         
         shadow_ray_emit_infinite_area(cameraRay, intersection, structUniform, tracingUniforms,
                                       lightSource, r, &shadowRays[i][rayIdx], diffuseTex, samplr);
-        shadowRay->pathScatter *= lightSource.density;
+        shadowRay->pathScatter *= lightSource.irradiance /* (radiance / pdf) for a cone */;
     }
     
     self_illumination(tid, structUniform, targets,
