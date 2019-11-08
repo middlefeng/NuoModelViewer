@@ -73,7 +73,7 @@ kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
         constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[i];
         
         shadow_ray_emit_infinite_area(cameraRay, intersection, structUniform, tracingUniforms,
-                                      lightSource, randomVars.uv, shadowRay, diffuseTex, samplr);
+                                      lightSource, randomVars, shadowRay, diffuseTex, samplr);
         shadowRay->pathScatter *= lightSource.irradiance /* (radiance / pdf) for a cone */;
     }
     
@@ -108,7 +108,7 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
     RayBuffer cameraRay = structUniform.exitantRays[rayIdx];
     
     device RayBuffer* shadowRays[] = { shadowRays0, shadowRays1 };
-    device float2& r = random[(tid.y % 16) * 16 + (tid.x % 16)].uv;
+    device NuoRayTracingRandomUnit& r = random[(tid.y % 16) * 16 + (tid.x % 16)];
     
     // directional light sources in the scene definition are considered area lights with finite
     // subtending solid angles, in far distance

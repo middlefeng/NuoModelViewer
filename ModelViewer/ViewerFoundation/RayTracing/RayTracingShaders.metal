@@ -150,7 +150,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                    device RayStructureUniform& structUniform,
                                    constant NuoRayTracingUniforms& tracingUniforms,
                                    constant NuoRayTracingLightSource& lightSource,
-                                   float2 random,
+                                   device NuoRayTracingRandomUnit& random,
                                    device RayBuffer* shadowRay,
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr)
@@ -169,7 +169,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
     
     if (intersection.distance >= 0.0f)
     {
-        float3 shadowVec = sample_cone_uniform(random, lightSource.coneAngleCosine);
+        float3 shadowVec = sample_cone_uniform(random.uvLightSource, lightSource.coneAngleCosine);
         shadowVec = align_hemisphere_normal(shadowVec, lightSource.direction);
         
         shadowRay->maxDistance = maxDistance;

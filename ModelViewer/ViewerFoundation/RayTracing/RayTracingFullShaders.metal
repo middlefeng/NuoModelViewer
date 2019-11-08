@@ -194,7 +194,7 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
         constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[lightSourceIndex];
         
         shadow_ray_emit_infinite_area(ray, intersection, structUniform, tracingUniforms,
-                                      lightSource, randomVars.uvLightSource, shadowRay,
+                                      lightSource, randomVars, shadowRay,
                                       diffuseTex, samplr);
         shadowRay->pathScatter *= totalIrradiance;
         
@@ -397,7 +397,7 @@ void self_illumination(uint2 tid,
             constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[lightSourceIndex];
             
             shadow_ray_emit_infinite_area(ray, intersection, structUniform, tracingUniforms,
-                                          lightSource, randomVars.uvLightSource, &shadowRay,
+                                          lightSource, randomVars, &shadowRay,
                                           diffuseTex, samplr);
             
             shadowRay.mask |= kNuoRayMask_Translucent;

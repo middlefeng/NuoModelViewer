@@ -338,7 +338,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                    device RayStructureUniform& structUniform,
                                    constant NuoRayTracingUniforms& tracingUniforms,
                                    constant NuoRayTracingLightSource& lightSource,
-                                   metal::float2 random,
+                                   device NuoRayTracingRandomUnit& random,
                                    device RayBuffer* shadowRays,
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr);
