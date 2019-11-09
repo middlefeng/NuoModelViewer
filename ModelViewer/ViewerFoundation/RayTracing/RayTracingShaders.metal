@@ -19,6 +19,12 @@ using namespace metal;
 
 
 
+static uint light_source_select(constant NuoRayTracingLightSource* lightSources,
+                                uint lightSourceNum, uint lightSourceStart, uint lightSourceEnd,
+                                float random, thread float* totalIrradiance);
+
+
+
 static RayBuffer primary_ray(matrix44 viewTrans, float3 endPoint)
 {
     RayBuffer ray;
@@ -160,8 +166,8 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                    device Intersection& intersection,
                                    device RayStructureUniform& structUniform,
                                    constant NuoRayTracingUniforms& tracingUniforms,
-                                   constant NuoRayTracingLightSource& lightSource,
-                                   device NuoRayTracingRandomUnit& random,
+                                   uint lightSourceStart, uint lightSourceEnd,
+                                   device NuoRayTracingRandomUnit& randoms,
                                    device RayBuffer* shadowRay,
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr)
@@ -170,6 +176,13 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
     device uint* index = structUniform.index;
     
     const float maxDistance = tracingUniforms.bounds.span;
+    
+    float irradiance = 0.0;
+    const uint lightSourceIndex = light_source_select(tracingUniforms.lightSources, 2,
+                                                      lightSourceStart, lightSourceEnd,
+                                                      randoms.lightSource, &irradiance);
+    
+    constant const NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[lightSourceIndex];
     
     // initialize the buffer's path scatter fields
     // (took 2 days to figure this out after spot the problem in debugger 8/21/2018)
@@ -180,7 +193,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
     
     if (intersection.distance >= 0.0f)
     {
-        float3 shadowVec = sample_cone_uniform(random.uvLightSource, lightSource.coneAngleCosine);
+        float3 shadowVec = sample_cone_uniform(randoms.uvLightSource, lightSource.coneAngleCosine);
         shadowVec = align_hemisphere_normal(shadowVec, lightSource.direction);
         
         shadowRay->maxDistance = maxDistance;
@@ -242,6 +255,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         // specular and diffuse is normalized and scale as half-half
         //
         shadowRay->pathScatter = (diffuseTerm + specularTerm) * dot(normal, shadowVec);
+        shadowRay->pathScatter *= (ray.pathScatter * irradiance /* (radiance / pdf) = irradiance for cones */);
     }
     else
     {
@@ -253,32 +267,33 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
 float light_source_scatter_sample(constant NuoRayTracingUniforms& tracingUniforms,
                                   float3 direction)
 {
-    float density = 0.0;
+    float irradiance = 0.0;
     
     for (uint i = 0; i < 2; ++i)
     {
         constant const NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[i];
         
         if (dot(lightSource.direction, direction) > lightSource.coneAngleCosine)
-            density += lightSource.density;
+            irradiance += lightSource.irradiance;
     }
     
-    return density;
+    return irradiance;
 }
 
 
-uint light_source_select(constant NuoRayTracingUniforms& tracingUniforms,
-                         float random, thread float* totalDensity)
+uint light_source_select(constant NuoRayTracingLightSource* lightSources,
+                         uint lightSourceNum, uint lightSourceStart, uint lightSourceEnd,
+                         float random, thread float* totalIrradiance)
 {
     float2 lightRandomRegion = float2(0);
-    *totalDensity = 0;
+    *totalIrradiance = 0;
     
-    for (uint i = 0; i < 2; ++i)
-        *totalDensity += tracingUniforms.lightSources[i].density;
+    for (uint i = lightSourceStart; i < lightSourceEnd; ++i)
+        *totalIrradiance += lightSources[i].irradiance;
 
-    for (uint i = 0; i < 2; ++i)
+    for (uint i = lightSourceStart; i < lightSourceEnd; ++i)
     {
-        float randomRegionSize = tracingUniforms.lightSources[i].density / (*totalDensity);
+        float randomRegionSize = lightSources[i].irradiance / (*totalIrradiance);
         lightRandomRegion.y = lightRandomRegion.x + randomRegionSize;
         
         if (random >= lightRandomRegion.x && random < lightRandomRegion.y)

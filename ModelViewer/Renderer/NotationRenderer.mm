@@ -73,7 +73,7 @@
         _currentLightVector = lightVectors[0];
         _currentLightVector.selected = YES;
         
-        lightSourcesDesc[0].lightingDensity = 1.0f;
+        lightSourcesDesc[0].lightingIrradiance = 1.0f;
         lightSourcesDesc[0].lightingSpecular = 0.4f;
         lightSourcesDesc[0].shadowOccluderRadius = 5.0f;
         
@@ -84,7 +84,7 @@
         lightUniform.lightParams[0].direction.x = 0.13;
         lightUniform.lightParams[0].direction.y = 0.72;
         lightUniform.lightParams[0].direction.z = 0.68;
-        lightUniform.lightParams[0].density = 1.0f;
+        lightUniform.lightParams[0].irradiance = 1.0f;
         lightUniform.lightParams[0].specular = 0.6f;
         
         _lightBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoLightUniforms)
@@ -173,7 +173,7 @@
         
         _lightSources[lightIndex].lightingRotationX = lua->GetFieldAsNumber("rotateX", -1);
         _lightSources[lightIndex].lightingRotationY = lua->GetFieldAsNumber("rotateY", -1);
-        _lightSources[lightIndex].lightingDensity = lua->GetFieldAsNumber("density", -1);
+        _lightSources[lightIndex].lightingIrradiance = lua->GetFieldAsNumber("irradiance", -1);
         _lightSources[lightIndex].lightingSpecular = lua->GetFieldAsNumber("specular", -1);
         _lightSources[lightIndex].enableShadow = lua->GetFieldAsBool("enableShadow", -1);
         
@@ -201,9 +201,9 @@
 }
 
 
-- (void)setDensity:(float)density
+- (void)setIrradiance:(float)irradiance
 {
-    _currentLightVector.lightSourceDesc.lightingDensity = density;
+    _currentLightVector.lightSourceDesc.lightingIrradiance = irradiance;
 }
 
 

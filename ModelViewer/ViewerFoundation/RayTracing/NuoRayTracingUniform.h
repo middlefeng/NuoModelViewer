@@ -47,8 +47,24 @@ NuoBoundsUniform;
 typedef struct
 {
     vector3 direction;
-    float density;
     float coneAngleCosine;
+    
+    /**
+     *  a light source is considered a far-away partial shpere that covers a solid angle.
+     *  as it is far way, the effective light emission is not diffused, but perfectly
+     *  directional along a cone.
+     *
+     *  the radiance emitted from the entire light source and received by a point on a
+     *  surface is then the irradiance on that point, which is considered a character
+     *  of the light source. for a given irradiance, the radiance of a direction within
+     *  the cone is reversely in proportion to the solid angle.
+     *
+     *  in light source sampling of a monte carlo process, the (radiance / pdf-light)
+     *  will be equal to radiance * solid-angle, hence the irradiance
+     *
+     *  in a scatter sampling, the radiance is (irradiance / 2 * (1 - coneAngleCosine))
+     */
+    float irradiance;
 }
 NuoRayTracingLightSource;
 

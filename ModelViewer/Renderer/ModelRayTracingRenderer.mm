@@ -141,7 +141,7 @@ enum kModelRayTracingTargets
         NuoVectorFloat4 lightVec = NuoVectorFloat4(0.0, 0.0, 1.0, 0.0);
         
         lightSourceRayTracing->direction = (matrix * lightVec)._vector.xyz;
-        lightSourceRayTracing->density = lightSource.lightingDensity;
+        lightSourceRayTracing->irradiance = lightSource.lightingIrradiance;
         
         // the code used to pass lightSource.shadowSoften into the shader, which the shader had used as the diameter of
         // a disk which was distant from the lighted surface by the scene's dimension (i.e. maxDistance). in this

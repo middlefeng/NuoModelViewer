@@ -187,18 +187,10 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
     {
         // direct lighting on virtual surfaces as if no normal object present
             
-        float totalDensity = 0;
-        uint lightSourceIndex = light_source_select(tracingUniforms,
-                                                    randomVars.lightSource, &totalDensity);
-        
-        constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[lightSourceIndex];
-        
         shadow_ray_emit_infinite_area(ray, intersection, structUniform, tracingUniforms,
-                                      lightSource, randomVars, shadowRay,
+                                      0, 2, /* sample among all light sources */
+                                      randomVars, shadowRay,
                                       diffuseTex, samplr);
-        
-        shadowRay->pathScatter *= ray.pathScatter;
-        shadowRay->pathScatter *= totalDensity;
         
         targets.lightingVirtual.write(float4(shadowRay->pathScatter, 1.0), tid);
     }
@@ -392,23 +384,16 @@ void self_illumination(uint2 tid,
         {
             device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
             
-            float totalDensity = 0;
-            uint lightSourceIndex = light_source_select(tracingUniforms,
-                                                        randomVars.lightSource, &totalDensity);
-            
-            constant NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[lightSourceIndex];
-            
             shadow_ray_emit_infinite_area(ray, intersection, structUniform, tracingUniforms,
-                                          lightSource, randomVars, &shadowRay,
+                                          0, 2, /* sample among all light sources */
+                                          randomVars, &shadowRay,
                                           diffuseTex, samplr);
             
             shadowRay.mask |= kNuoRayMask_Translucent;
-            shadowRay.pathScatter *= ray.pathScatter;
-            shadowRay.pathScatter *= totalDensity;
             
-            NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
-            material.diffuseColor = color;
-            material.specularColor *= (tracingUniforms.globalIllum.specularMaterialAdjust / 3.0);
+            NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
+                                                                       tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
+                                                                       index, intersection, samplr);
             
             RayBuffer currentIncident;
             sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, currentIncident);
