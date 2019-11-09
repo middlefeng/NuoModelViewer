@@ -126,6 +126,7 @@ A simple Wavefront OBJ viewer.
 
 * <del>Order-independent transparency.</del>
 * Bump (displacement) texture.
+* Support PBRT format.
 * <del>Normal texture.</del>
 * <del>Direction of lgiht source.</del>
 * <del>Intensity of light source.</del>
@@ -160,6 +161,7 @@ A simple Wavefront OBJ viewer.
   * <del>Specular term in direct lighting shadow, and in global illumniation.</del>
   * <del>Light source surface sampling.</del>
   * <del>Shadow ray visibility.</del>
+  * Multiple importance sampling. Unified reflection model.
   * Normal map.
   * Specular map.
   * Translucent map.
