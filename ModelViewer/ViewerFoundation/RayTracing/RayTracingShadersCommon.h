@@ -337,15 +337,11 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                    device Intersection& intersection,
                                    device RayStructureUniform& structUniform,
                                    constant NuoRayTracingUniforms& tracingUniforms,
-                                   constant NuoRayTracingLightSource& lightSource,
-                                   metal::float2 random,
+                                   uint lightSourceStart, uint lightSourceEnd,
+                                   device NuoRayTracingRandomUnit& randoms,
                                    device RayBuffer* shadowRays,
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr);
-
-uint light_source_select(constant NuoRayTracingUniforms& tracingUniforms,
-                         float random, thread float* totalIrradiance);
-
 
 void ambient_with_no_block(uint2 tid,
                            device RayStructureUniform& structUniform,
