@@ -162,8 +162,16 @@ metal::float3 specular_common(metal::float3 materialSpecularColor, float materia
 metal::float3 fresnel_schlick(float3 specularColor, float3 lightVector, float3 halfway);
 metal::float3 specular_refectance_normalized(float3 specularReflectance, float materialSpecularPower,
                                              float3 lightDirection, float3 halfway);
+
+// normalized Phong specular BRDF
+//
 metal::float3 specular_common_physically(float3 specularReflectance, float materialSpecularPower,
                                          float3 lightDirection, float3 normal, float3 halfway);
+
+// frensel incident model, with power-cosine half-vector PDF
+//
+metal::float3 specular_fresnel_incident(float3 specularReflectance, float materialSpecularPower,
+                                        float3 lightDirection, float3 exitent);
 
 
 metal::float3 shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,

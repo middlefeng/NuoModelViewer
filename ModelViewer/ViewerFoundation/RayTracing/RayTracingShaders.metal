@@ -151,6 +151,17 @@ void ambient_with_no_block(uint2 tid,
 }
 
 
+float3 specular_fresnel_blend(float3 materialSpecularColor, float materialSpecularPower,
+                              float3 lightDirection, float3 exitent, float3 normal)
+{
+    float3 wo = relative_to_hemisphere_normal(exitent, normal);
+    float3 wi = relative_to_hemisphere_normal(lightDirection, normal);
+    
+    return specular_fresnel_incident(materialSpecularColor, materialSpecularPower, wo, wi);
+}
+
+
+
 void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                    device Intersection& intersection,
                                    device RayStructureUniform& structUniform,
@@ -215,8 +226,17 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         float3 eyeDirection = -ray.direction;
         float3 halfway = normalize(shadowVec + eyeDirection);
         
+        // all terms omit a facotr of 1/pi. as this is the last section of the path to a light source, this is
+        // treated as implying the factor into the light source strength, as it is in the rasterization
+        // renderer.
+        //
+        const bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
         float3 diffuseTerm = material.diffuseColor;
-        float3 specularTerm = specularPower > 200 ? 0 /* ignore the lighting source importance sampling as the lobe is very narrow */ :
+        float3 specularTerm = reflection ?
+                              0 /* still turn off the shadow ray transport
+                                 *
+                                   specular_fresnel_blend(material.specularColor, specularPower,
+                                                          shadowVec, eyeDirection, normal) */ :
                               specular_common_physically(material.specularColor, specularPower,
                                                          shadowVec, normal, halfway);
         
@@ -243,6 +263,22 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
     }
 }
 
+
+float light_source_scatter_sample(constant NuoRayTracingUniforms& tracingUniforms,
+                                  float3 direction)
+{
+    float irradiance = 0.0;
+    
+    for (uint i = 0; i < 2; ++i)
+    {
+        constant const NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[i];
+        
+        if (dot(lightSource.direction, direction) > lightSource.coneAngleCosine)
+            irradiance += lightSource.irradiance;
+    }
+    
+    return irradiance;
+}
 
 
 uint light_source_select(constant NuoRayTracingLightSource* lightSources,
@@ -345,8 +381,9 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
             return result;
         }
         
+        const bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
         
-        if (Mspec < 200)
+        if (!reflection)
         {
             // all the following factor omit a 1/pi factor, which would have been cancelled
             // in the calculation of cosinedPdfScale anyway
@@ -363,7 +400,7 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
             //            rather it is a value in terms of wo and the half-vector
             //            see p813, pbr-book
             //
-            float hwPdf = (Mspec + 2.0) / 2.0;
+            float hwPdf = (Mspec + 1.0) / 2.0;
             float pdf = hwPdf / (4.0 * dot(wo, wh));
             float3 f = specular_refectance_normalized(Cspec, Mspec, wo, wh);
             

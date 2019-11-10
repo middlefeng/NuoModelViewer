@@ -438,6 +438,21 @@ float3 specular_common_physically(float3 specularReflectance, float materialSpec
 }
 
 
+// D(wh) = (m + 1.0) / (2.0 * pi)) * power(cos(theta), m)
+// f = fresnel_schlick * D(wh) / (4 * dot(wi, wh) * max(dot(wi, n), dot(wo, n))
+// http://www.pbr-book.org/3ed-2018/Reflection_Models/Fresnel_Incidence_Effects.html
+//
+float3 specular_fresnel_incident(float3 specularReflectance, float materialSpecularPower,
+                                 float3 lightDirection, float3 exitent)
+{
+    float3 wh = normalize(lightDirection + exitent);
+    float cosNHPower = pow(saturate(abs(wh.y)), materialSpecularPower);
+    return fresnel_schlick(specularReflectance, lightDirection, wh) *
+           ((materialSpecularPower + 1.0) / 2.0) * cosNHPower /
+           (4 * dot(lightDirection, wh) * metal::max(abs(lightDirection.y), abs(exitent.y)));
+}
+
+
 // specular_common() returns (radiance * pi), because that saves some calculation and the 1/pi factor
 // in radiance is usually cancelled by the outside integral
 //
