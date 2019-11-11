@@ -264,20 +264,24 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
 }
 
 
-float light_source_scatter_sample(constant NuoRayTracingUniforms& tracingUniforms,
-                                  float3 direction)
+static float light_source_scatter_sample(constant NuoRayTracingLightSource* lightSources,
+                                         float3 direction)
 {
-    float irradiance = 0.0;
+    float radiance = 0.0;
     
     for (uint i = 0; i < 2; ++i)
     {
-        constant const NuoRayTracingLightSource& lightSource = tracingUniforms.lightSources[i];
+        constant NuoRayTracingLightSource& lightSource = lightSources[i];
         
         if (dot(lightSource.direction, direction) > lightSource.coneAngleCosine)
-            irradiance += lightSource.irradiance;
+        {
+            float lightRaddiance = lightSource.coneAngleCosine == 1.0 ? 0.0 :
+                                   lightSource.irradiance / (2.0 * (1.0 - lightSource.coneAngleCosine));
+            radiance += lightRaddiance;
+        }
     }
     
-    return irradiance;
+    return radiance;
 }
 
 
@@ -381,7 +385,7 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
             return result;
         }
         
-        const bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
+        const bool reflection = true;// (((int)(material.shinessDisolveIllum.z)) == 3);
         
         if (!reflection)
         {
@@ -433,6 +437,54 @@ inline static float3 reflection_vector(float3 wo, float3 normal)
 inline bool same_hemisphere(float3 w, float3 wp)
 {
     return w.y * wp.y > 0;
+}
+
+
+
+void sample_light_by_scatter(float maxDistance,
+                             constant NuoRayTracingLightSource* lightSources,
+                             device NuoRayTracingRandomUnit& random,
+                             device Intersection& intersection,
+                             thread const NuoRayTracingMaterial& material,
+                             thread const RayBuffer& ray,
+                             device RayBuffer& shadowRay)
+{
+    float2 r = random.uv;                                  // TODO: separated random
+    device float& Cdeterm = random.pathTermDeterminator;    // TODO:
+    float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
+    
+    PathSample sample = sample_scatter(material, intersectionPoint, maxDistance / 20000.0,
+                                       -ray.direction, ray.transThrough, r, Cdeterm);
+    
+    shadowRay.bounce = ray.bounce + 1;
+    // terminate further tracing if the term is zero. this happens when the vector is out of
+    // the hemisphere in the specular sampling
+    //
+    if (sample.pathScatterTerm.x == 0 &&
+        sample.pathScatterTerm.y == 0 &&
+        sample.pathScatterTerm.z == 0)
+    {
+        shadowRay.maxDistance = -1;
+        shadowRay.pathScatter = 0.0;
+    }
+    else
+    {
+        shadowRay.direction = sample.direction;
+        shadowRay.maxDistance = maxDistance;
+        shadowRay.mask = kNuoRayMask_Opaque | kNuoRayMask_Translucent | kNuoRayMask_Virtual | kNuoRayMask_Illuminating;
+        shadowRay.primaryHitMask = ray.primaryHitMask;
+        shadowRay.transThrough = sample.transThrough;
+        
+        // different calculation for origin and ambient between transmission and reflection.
+        //
+        shadowRay.origin = sample.original;
+        shadowRay.ambientOccluded = ray.ambientOccluded || sample.transmission;
+        
+        // make the term of this reflection contribute to the path scatter
+        //
+        shadowRay.pathScatter = sample.pathScatterTerm * ray.pathScatter *
+                                light_source_scatter_sample(lightSources, shadowRay.direction);
+    }
 }
 
 
