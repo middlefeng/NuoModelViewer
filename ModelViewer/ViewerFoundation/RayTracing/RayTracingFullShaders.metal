@@ -36,6 +36,7 @@ static void self_illumination(uint2 tid,
                               device RayStructureUniform& structUniform,
                               constant NuoRayTracingUniforms& tracingUniforms,
                               device RayBuffer* shadowRay,
+                              device RayBuffer* lightByScatter,
                               device RayBuffer* incidentRays,
                               device NuoRayTracingRandomUnit* random,
                               device RayTracingTargets& targets,
@@ -211,6 +212,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 constant NuoRayTracingUniforms& tracingUniforms,
                                 device NuoRayTracingRandomUnit* random,
                                 device RayBuffer* shadowRayMain,
+                                device RayBuffer* lightByScatter,
                                 device RayBuffer* incidentRaysBuffer,
                                 array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                 sampler samplr [[sampler(0)]])
@@ -225,7 +227,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
     cameraRay.primaryHitMask = surface_mask(rayIdx, structUniform);
     
     self_illumination(tid, structUniform, tracingUniforms,
-                      shadowRayMain, incidentRaysBuffer,
+                      shadowRayMain, lightByScatter, incidentRaysBuffer,
                       random, targets, diffuseTex, samplr);
 }
 
@@ -237,8 +239,10 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  constant NuoRayTracingUniforms& tracingUniforms,
                                  device NuoRayTracingRandomUnit* random,
                                  device RayBuffer* shadowRayMain,
+                                 device RayBuffer* lightByScatter,
                                  device float3* primaryVisibility,
                                  device float3* shadowVisibility,
+                                 device float3* lightByScatterVisibility,
                                  array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                                  sampler samplr [[sampler(0)]])
 {
@@ -249,7 +253,9 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     
     const unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
     device RayBuffer& shadowRay = shadowRayMain[rayIdx];
+    device RayBuffer& lightByScatterRay = lightByScatter[rayIdx];
     float3 shadowRayVisibility = shadowVisibility[rayIdx];
+    float3 lightByScatterRayVisibility = lightByScatterVisibility[rayIdx];
     
     if (shadowRay.maxDistance > 0.0f)
     {
@@ -258,12 +264,13 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
         if (!isOcclusion)
         {
             float3 color = shadowRay.pathScatter * shadowRayVisibility;
+            float3 colorByScatter = lightByScatterRay.pathScatter * lightByScatterRayVisibility;
             lightingTrcacingWrite(tid, color, targets.lightingTracing);
         }
         
         if (isOcclusion)
         {
-            float3 occlusion = shadowRay.pathScatter * (1.0 - shadowRayVisibility);
+            float3 occlusion = lightByScatterRay.pathScatter * (1.0 - lightByScatterRayVisibility);
             targets.lightingVirtualBlocked.write(float4(occlusion, 1.0), tid);
         }
     }
@@ -271,8 +278,9 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     targets.modelMask.write(float4(primaryVisibility[rayIdx], 1.0), tid);
     
     self_illumination(tid, structUniform, tracingUniforms,
-                      shadowRayMain, structUniform.exitantRays /* incident rays are the
-                                                                  exitant rays of the next path */,
+                      shadowRayMain, lightByScatter,
+                      structUniform.exitantRays /* incident rays are the
+                                                   exitant rays of the next path */,
                       random, targets, diffuseTex, samplr);
 }
 
@@ -313,6 +321,7 @@ void self_illumination(uint2 tid,
                        device RayStructureUniform& structUniform,
                        constant NuoRayTracingUniforms& tracingUniforms,
                        device RayBuffer* shadowRays,
+                       device RayBuffer* lightByScatter,
                        device RayBuffer* incidentRays,
                        device NuoRayTracingRandomUnit* random,
                        device RayTracingTargets& targets,
@@ -327,6 +336,7 @@ void self_illumination(uint2 tid,
     device uint* index = structUniform.index;
     device RayBuffer& incidentRay = incidentRays[rayIdx];
     device RayBuffer& shadowRay = shadowRays[rayIdx];
+    device RayBuffer& lightByScatterRay = lightByScatter[rayIdx];
     
     // make a copy from the exitant rays buffer as the same buffer might be used as
     // incident rays buffer
@@ -342,6 +352,7 @@ void self_illumination(uint2 tid,
     //
     incidentRay.maxDistance = -1;
     shadowRay.maxDistance = -1;
+    lightByScatterRay.maxDistance = -1;
     
     bool directAmbient = (ray.bounce == 1);
     
@@ -384,16 +395,19 @@ void self_illumination(uint2 tid,
         {
             device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
             
+            NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
+                                                                       tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
+                                                                       index, intersection, samplr);
+            
+            sample_light_by_scatter(maxDistance, tracingUniforms.lightSources,
+                                    randomVars, intersection, material, ray, lightByScatterRay);
+            
             shadow_ray_emit_infinite_area(ray, intersection, structUniform, tracingUniforms,
                                           0, 2, /* sample among all light sources */
                                           randomVars, &shadowRay,
                                           diffuseTex, samplr);
             
             shadowRay.mask |= kNuoRayMask_Translucent;
-            
-            NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
-                                                                       tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
-                                                                       index, intersection, samplr);
             
             RayBuffer currentIncident;
             sample_scatter_ray(maxDistance, randomVars, intersection, material, ray, currentIncident);
@@ -411,6 +425,8 @@ void self_illumination(uint2 tid,
                 {
                     shadowRay.primaryHitMask = kNuoRayMask_Virtual;
                     shadowRay.bounce = 1;
+                    lightByScatterRay.primaryHitMask = kNuoRayMask_Virtual;
+                    lightByScatterRay.bounce = 1;
                     
                     incidentRay.primaryHitMask = kNuoRayMask_Virtual;
                     incidentRay.bounce = 1;

@@ -385,7 +385,7 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
             return result;
         }
         
-        const bool reflection = true;// (((int)(material.shinessDisolveIllum.z)) == 3);
+        const bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
         
         if (!reflection)
         {
