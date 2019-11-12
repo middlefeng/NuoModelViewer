@@ -128,6 +128,9 @@ typedef struct
     
     vector2 uvLightSource;
     float lightSource;
+    
+    vector2 uvLightSourceByScatter;
+    float pathTermForLightSourceByScatter;
 }
 NuoRayTracingRandomUnit;
 

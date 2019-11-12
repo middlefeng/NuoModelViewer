@@ -449,8 +449,8 @@ void sample_light_by_scatter(float maxDistance,
                              thread const RayBuffer& ray,
                              device RayBuffer& shadowRay)
 {
-    float2 r = random.uv;                                  // TODO: separated random
-    device float& Cdeterm = random.pathTermDeterminator;    // TODO:
+    float2 r = random.uvLightSourceByScatter;
+    device float& Cdeterm = random.pathTermForLightSourceByScatter;
     float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
     
     PathSample sample = sample_scatter(material, intersectionPoint, maxDistance / 20000.0,
