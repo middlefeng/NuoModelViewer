@@ -20,7 +20,7 @@ using namespace metal;
 
 
 static uint light_source_select(constant NuoRayTracingLightSource* lightSources,
-                                uint lightSourceNum, uint lightSourceStart, uint lightSourceEnd,
+                                uint lightSourceStart, uint lightSourceEnd,
                                 float random, thread float* totalIrradiance);
 
 
@@ -178,7 +178,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
     const float maxDistance = tracingUniforms.bounds.span;
     
     float irradiance = 0.0;
-    const uint lightSourceIndex = light_source_select(tracingUniforms.lightSources, 2,
+    const uint lightSourceIndex = light_source_select(tracingUniforms.lightSources,
                                                       lightSourceStart, lightSourceEnd,
                                                       randoms.lightSource, &irradiance);
     
@@ -282,7 +282,7 @@ float light_source_scatter_sample(constant NuoRayTracingUniforms& tracingUniform
 
 
 uint light_source_select(constant NuoRayTracingLightSource* lightSources,
-                         uint lightSourceNum, uint lightSourceStart, uint lightSourceEnd,
+                         uint lightSourceStart, uint lightSourceEnd,
                          float random, thread float* totalIrradiance)
 {
     float2 lightRandomRegion = float2(0);
