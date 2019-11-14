@@ -48,6 +48,11 @@ struct RayBuffer
     // determine if the ambient calculation should terminate, which is independent from
     // whether boucing should terminate
     bool ambientOccluded;
+    
+    // probability of the sample of the current sampling approach, and an alternative
+    // sampling approach in the multiple importance sampling
+    float pdf;
+    float pdfAlternative;
 };
 
 
