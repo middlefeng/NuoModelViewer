@@ -102,6 +102,8 @@ struct PathSample
     bool specularReflection;
     bool transmission;
     bool transThrough;
+    
+    float pdf;
 };
 
 

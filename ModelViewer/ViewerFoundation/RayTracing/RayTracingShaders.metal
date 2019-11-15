@@ -23,6 +23,11 @@ static uint light_source_select(constant NuoRayTracingLightSource* lightSources,
                                 uint lightSourceNum, uint lightSourceStart, uint lightSourceEnd,
                                 float random, thread float* totalIrradiance);
 
+static float pdf_material(thread NuoRayTracingMaterial& material, float3 wiWorld, float3 woWorld);
+
+static float pdf_light_source(constant NuoRayTracingLightSource* lightSources,
+                              uint lightSourceStart, uint lightSourceEnd, float3 wi);
+
 
 
 static RayBuffer primary_ray(matrix44 viewTrans, float3 endPoint)
@@ -233,10 +238,8 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         const bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
         float3 diffuseTerm = material.diffuseColor;
         float3 specularTerm = reflection ?
-                              0 /* still turn off the shadow ray transport
-                                 *
-                                   specular_fresnel_blend(material.specularColor, specularPower,
-                                                          shadowVec, eyeDirection, normal) */ :
+                              specular_fresnel_blend(material.specularColor, specularPower,
+                                                     shadowVec, eyeDirection, normal) :
                               specular_common_physically(material.specularColor, specularPower,
                                                          shadowVec, normal, halfway);
         
@@ -256,6 +259,9 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         //
         shadowRay->pathScatter = (diffuseTerm + specularTerm) * dot(normal, shadowVec);
         shadowRay->pathScatter *= (ray.pathScatter * irradiance /* (radiance / pdf) = irradiance for cones */);
+        
+        shadowRay->pdf = 1.0 / (2.0 * (1.0 - lightSource.coneAngleCosine)) * (lightSource.irradiance / irradiance);
+        shadowRay->pdfAlternative = pdf_material(material, shadowRay->direction, eyeDirection);
     }
     else
     {
@@ -353,6 +359,8 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
         
         result.transmission = true;
         result.transThrough = rayTransThrough;
+        
+        result.pdf = Tr / probableTotal * M_PI_F;
     }
     else if (Cdeterminator < (Tr + CdiffSampleProbable) / probableTotal)
     {
@@ -366,6 +374,8 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
         result.direction = align_hemisphere_normal(wi, normal);
         result.original = intersectionPoint + normal * offset;
         result.pathScatterTerm = Cdiff * (probableTotal / CdiffSampleProbable);
+        
+        result.pdf = abs(wi.y) * (CdiffSampleProbable / probableTotal);
     }
     else
     {
@@ -379,9 +389,28 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
         
         float3 wi = reflection_vector(wo, wh);
         
+        // all the following factor omit a 1/pi factor, which would have been cancelled
+        // in the calculation of cosinedPdfScale anyway
+        //
+        // hwPdf  -   PDF of the half vector in terms of theta_h, which is a cosine-weighed
+        //            distribution based on micro-facet (and simplified by the Blinn-Phong).
+        //            see comments in cosine_pow_pdf()
+        //
+        // f      -   BRDF specular term. note the normalization factor is (m + 8) / (8 * pi) because
+        //            it is related to theta rather than theta_h.
+        //            for the details of how the above normalization term is deduced, see http://www.farbrausch.de/%7Efg/stuff/phong.pdf
+        //
+        // pdf    -   PDF of the reflection vector. note this is not a analytical form in terms of theta,
+        //            rather it is a value in terms of wo and the half-vector
+        //            see p813, pbr-book
+        //
+        float hwPdfCoeff = (Mspec + 1.0) / 2.0;
+        float pdfCoeff = hwPdfCoeff / (4.0 * dot(wo, wh));
+        
         if (!same_hemisphere(wo, wi))
         {
             result.pathScatterTerm = 0.0;
+            result.pdf = 0;
             return result;
         }
         
@@ -389,28 +418,11 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
         
         if (!reflection)
         {
-            // all the following factor omit a 1/pi factor, which would have been cancelled
-            // in the calculation of cosinedPdfScale anyway
-            //
-            // hwPdf  -   PDF of the half vector in terms of theta_h, which is a cosine-weighed
-            //            distribution based on micro-facet (and simplified by the Blinn-Phong).
-            //            see comments in cosine_pow_pdf()
-            //
-            // f      -   BRDF specular term. note the normalization factor is (m + 8) / (8 * pi) because
-            //            it is related to theta rather than theta_h.
-            //            for the details of how the above normalization term is deduced, see http://www.farbrausch.de/%7Efg/stuff/phong.pdf
-            //
-            // pdf    -   PDF of the reflection vector. note this is not a analytical form in terms of theta,
-            //            rather it is a value in terms of wo and the half-vector
-            //            see p813, pbr-book
-            //
-            float hwPdf = (Mspec + 1.0) / 2.0;
-            float pdf = hwPdf / (4.0 * dot(wo, wh));
             float3 f = specular_refectance_normalized(Cspec, Mspec, wo, wh);
             
             // normalized phong model
             //
-            result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdf * wi.y /* cosine factor of incident ray */;
+            result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdfCoeff * wi.y /* cosine factor of incident ray */;
         }
         else
         {
@@ -420,6 +432,8 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
             result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / metal::max(abs(wo.y), abs(wi.y)) * wi.y;
         }
         
+        float cosNHPower = pow(saturate(abs(wh.y)), Mspec);
+        result.pdf = pdfCoeff * cosNHPower * (CspecSampleProbable / probableTotal);
         result.direction = align_hemisphere_normal(wi, normal);
         result.original = intersectionPoint + normal * offset;
     }
@@ -437,6 +451,59 @@ inline static float3 reflection_vector(float3 wo, float3 normal)
 inline bool same_hemisphere(float3 w, float3 wp)
 {
     return w.y * wp.y > 0;
+}
+
+
+static float pdf_material(thread NuoRayTracingMaterial& material, float3 wiWorld, float3 woWorld)
+{
+    float3 wi = relative_to_hemisphere_normal(wiWorld, material.normal);
+    float3 wo = relative_to_hemisphere_normal(woWorld, material.normal);
+    
+    const float3 Cdiff = material.diffuseColor;
+    const float3 Cspec = material.specularColor;
+    float Tr = 1.0 - material.shinessDisolveIllum.y;
+    Tr = Tr > 1e-6 ? Tr : 0.0;
+    
+    if (!same_hemisphere(wi, wo))
+        return 0.0;
+    
+    float CdiffSampleProbable = max(Cdiff.x, max(Cdiff.y, Cdiff.z));
+    float CspecSampleProbable = min(Cspec.x, min(Cspec.y, Cspec.z));
+    float probableTotal = CdiffSampleProbable + CspecSampleProbable + Tr;
+    
+    const float Mspec = material.shinessDisolveIllum.x;
+    const float3 wh = normalize(wi + wo);
+    
+    float Pdiff = abs(wi.y);
+
+    float cosNHPower = pow(saturate(abs(wh.y)), Mspec);
+    float hwPdf = (Mspec + 1.0) / 2.0 * cosNHPower;
+    float Pspec = hwPdf / (4.0 * dot(wo, wh));
+    
+    return (Pdiff * CdiffSampleProbable + Pspec * CspecSampleProbable) / probableTotal;
+}
+
+
+static float pdf_light_source(constant NuoRayTracingLightSource* lightSources,
+                              uint lightSourceStart, uint lightSourceEnd, float3 wi)
+{
+    float pdf = 0.0;
+    float totalIrradiance = 0.0;
+    
+    for (uint i = lightSourceStart; i < lightSourceEnd; ++i)
+        totalIrradiance += lightSources[i].irradiance;
+    
+    for (uint i = lightSourceStart; i < lightSourceEnd; ++i)
+    {
+        constant NuoRayTracingLightSource& lightSource = lightSources[i];
+        if (dot(lightSource.direction, wi) > lightSource.coneAngleCosine)
+        {
+            pdf += 1.0 / (2.0 * (1.0 - lightSource.coneAngleCosine)) *
+                    (lightSource.irradiance / totalIrradiance);
+        }
+    }
+    
+    return pdf;
 }
 
 
@@ -480,10 +547,14 @@ void sample_light_by_scatter(float maxDistance,
         shadowRay.origin = sample.original;
         shadowRay.ambientOccluded = ray.ambientOccluded || sample.transmission;
         
+        shadowRay.pdf = sample.pdf;
+        shadowRay.pdfAlternative = sample.transmission ? 0 : pdf_light_source(lightSources, 0, 2, shadowRay.direction);
+        
         // make the term of this reflection contribute to the path scatter
         //
-        shadowRay.pathScatter = sample.pathScatterTerm * ray.pathScatter *
-                                light_source_scatter_sample(lightSources, shadowRay.direction);
+        shadowRay.pathScatter = sample.transmission ? 0 :
+                                    sample.pathScatterTerm * ray.pathScatter *
+                                    light_source_scatter_sample(lightSources, shadowRay.direction);
     }
 }
 

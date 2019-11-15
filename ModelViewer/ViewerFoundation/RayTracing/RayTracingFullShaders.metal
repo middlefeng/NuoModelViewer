@@ -261,17 +261,32 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     {
         bool isOcclusion = (shadowRay.primaryHitMask & kNuoRayMask_Virtual) && shadowRay.bounce == 1;
         
+        float shadowRayWeight = 0.0;
+        float scatterRayWeight = 0.0;
+        
+        if ((shadowRay.pdf + shadowRay.pdfAlternative) > 1e-3)
+            shadowRayWeight = shadowRay.pdf / (shadowRay.pdf + shadowRay.pdfAlternative);
+        if ((lightByScatterRay.pdf + lightByScatterRay.pdfAlternative) > 1e-3)
+            scatterRayWeight = lightByScatterRay.pdf / (lightByScatterRay.pdf + lightByScatterRay.pdfAlternative);
+        
         if (!isOcclusion)
         {
-            float3 color = shadowRay.pathScatter * shadowRayVisibility;
-            float3 colorByScatter = lightByScatterRay.pathScatter * lightByScatterRayVisibility;
-            lightingTrcacingWrite(tid, color, targets.lightingTracing);
+            float3 colorByLight = shadowRay.pathScatter * shadowRayVisibility * shadowRayWeight;
+            float3 colorByScatter = lightByScatterRay.pathScatter * lightByScatterRayVisibility * scatterRayWeight;
+            
+            lightingTrcacingWrite(tid, colorByLight + colorByScatter, targets.lightingTracing);
+            //lightingTrcacingWrite(tid, shadowRay.pathScatter * shadowRayVisibility, targets.lightingTracing);
+            //lightingTrcacingWrite(tid, lightByScatterRay.pathScatter * lightByScatterRayVisibility, targets.lightingTracing);
         }
         
         if (isOcclusion)
         {
-            float3 occlusion = lightByScatterRay.pathScatter * (1.0 - lightByScatterRayVisibility);
-            targets.lightingVirtualBlocked.write(float4(occlusion, 1.0), tid);
+            float3 occlusionByLight = shadowRay.pathScatter * (1.0 - shadowRayVisibility) * shadowRayWeight;
+            float3 occlusionByScatter = lightByScatterRay.pathScatter * (1.0 - lightByScatterRayVisibility) * scatterRayWeight;
+            
+            targets.lightingVirtualBlocked.write(float4(occlusionByLight + occlusionByScatter, 1.0), tid);
+            //targets.lightingVirtualBlocked.write(float4(shadowRay.pathScatter * (1.0 - shadowRayVisibility), 1.0), tid);
+            //targets.lightingVirtualBlocked.write(float4(lightByScatterRay.pathScatter * (1.0 - lightByScatterRayVisibility), 1.0), tid);
         }
     }
     
