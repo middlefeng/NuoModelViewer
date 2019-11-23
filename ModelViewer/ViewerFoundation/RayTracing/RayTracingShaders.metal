@@ -215,7 +215,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
             normal = -normal;
         
         float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
-        shadowRay->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
+        shadowRay->origin = intersectionPoint + normalize(normal) * (maxDistance / 80000.0);
         shadowRay->direction = shadowVec;
         shadowRay->primaryHitMask = ray.primaryHitMask;
         
@@ -249,12 +249,13 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         diffuseTerm *= surfaceOpacity;
         
         // the cosine factor is counted into the path scatter term, as the geometric coupling term,
-        // because samples are generated from an inifinit distant area light (uniform on a finit
-        // contending solid angle)
+        // because samples are generated from an inifinitly distant light source with a finite universal
+        // diffuse (uniform distribution on a finitely contending solid angle)
         //
-        // specular and diffuse is normalized and scale as half-half
+        // the saturate() capping is needed because, although the shadow ray is tested through
+        // visibility, there existing the little offset on normals and translucent objects
         //
-        shadowRay->pathScatter = (diffuseTerm + specularTerm) * dot(normal, shadowVec);
+        shadowRay->pathScatter = (diffuseTerm + specularTerm) * saturate(dot(normal, shadowVec));
         shadowRay->pathScatter *= (ray.pathScatter * irradiance /* (radiance / pdf) = irradiance for cones */);
     }
     else
@@ -383,6 +384,9 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
         
         const bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
         
+        const float woTheta = abs(wo.y);
+        const float wiTheta = abs(wi.y);
+        
         if (!reflection)
         {
             // all the following factor omit a 1/pi factor, which would have been cancelled
@@ -406,14 +410,14 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
             
             // normalized phong model
             //
-            result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdf * wi.y /* cosine factor of incident ray */;
+            result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdf * wiTheta /* cosine factor of incident ray */;
         }
         else
         {
             // fresnel blending model
             //
             float3 f = fresnel_schlick(Cspec, wo, wh);
-            result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / metal::max(abs(wo.y), abs(wi.y)) * wi.y;
+            result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / metal::max(woTheta, wiTheta) * wiTheta;
         }
         
         result.direction = align_hemisphere_normal(wi, normal);
@@ -448,7 +452,7 @@ void sample_scatter_ray(float maxDistance,
     device float& Cdeterm = random.pathTermDeterminator;
     float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
 
-    PathSample sample = sample_scatter(material, intersectionPoint, maxDistance / 20000.0,
+    PathSample sample = sample_scatter(material, intersectionPoint, maxDistance / 80000.0,
                                        -ray.direction, ray.transThrough, r, Cdeterm);
     
     incidentRay.bounce = ray.bounce + 1;

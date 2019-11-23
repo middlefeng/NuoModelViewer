@@ -294,9 +294,11 @@ inline NuoHemisphereCoordinate hemi_sphere_basis(float3 normal)
     
     // Find an arbitrary direction perpendicular to the normal. This will become the
     // "right" vector.
-    result.right = simd::normalize(simd::cross(normal, float3 { 0.0072f, 1.0f, 0.0034f }));
+    result.right = simd::cross(normal, float3 { 0.0072f, 1.0f, 0.0034f });
     if (metal::length(result.right) < 1e-3)
         result.right = simd::normalize(metal::cross(normal, float3 { 0.0072f, 0.0034f, 1.0f }));
+    else
+        result.right = simd::normalize(result.right);
     
     // Find a third vector perpendicular to the previous two. This will be the
     // "forward" vector.
