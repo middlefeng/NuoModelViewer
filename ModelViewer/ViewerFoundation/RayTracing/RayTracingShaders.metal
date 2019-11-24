@@ -28,6 +28,9 @@ static float pdf_material(thread NuoRayTracingMaterial& material, float3 wiWorld
 static float pdf_light_source(constant NuoRayTracingLightSource* lightSources,
                               uint lightSourceStart, uint lightSourceEnd, float3 wi);
 
+inline static float3 reflection_vector(float3 wo, float3 normal);
+inline bool same_hemisphere(float3 w, float3 wp);
+
 
 
 static RayBuffer primary_ray(matrix44 viewTrans, float3 endPoint)
@@ -161,6 +164,9 @@ float3 specular_fresnel_blend(float3 materialSpecularColor, float materialSpecul
 {
     float3 wo = relative_to_hemisphere_normal(exitent, normal);
     float3 wi = relative_to_hemisphere_normal(lightDirection, normal);
+    
+    if (!same_hemisphere(wo, wi))
+        return 0;
     
     return specular_fresnel_incident(materialSpecularColor, materialSpecularPower, wo, wi);
 }
@@ -315,10 +321,6 @@ uint light_source_select(constant NuoRayTracingLightSource* lightSources,
     
     return 0;
 }
-
-
-inline static float3 reflection_vector(float3 wo, float3 normal);
-inline bool same_hemisphere(float3 w, float3 wp);
 
 
 static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
@@ -552,7 +554,13 @@ void sample_light_by_scatter(float maxDistance,
         shadowRay.ambientOccluded = ray.ambientOccluded || sample.transmission;
         
         shadowRay.pdf = sample.pdf;
-        shadowRay.pdfAlternative = sample.transmission ? 0 : pdf_light_source(lightSources, 0, 2, shadowRay.direction);
+        
+        if (sample.transmission)
+            shadowRay.pdfAlternative = 0;
+        else if (sample.pdf == 0)
+            shadowRay.pdfAlternative = 1.0;
+        else
+            shadowRay.pdfAlternative = pdf_light_source(lightSources, 0, 2, shadowRay.direction);
         
         // make the term of this reflection contribute to the path scatter
         //
