@@ -20,7 +20,7 @@ using namespace metal;
 
 
 static uint light_source_select(constant NuoRayTracingLightSource* lightSources,
-                                uint lightSourceNum, uint lightSourceStart, uint lightSourceEnd,
+                                uint lightSourceStart, uint lightSourceEnd,
                                 float random, thread float* totalIrradiance);
 
 static float pdf_material(thread NuoRayTracingMaterial& material, float3 wiWorld, float3 woWorld);
@@ -183,7 +183,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
     const float maxDistance = tracingUniforms.bounds.span;
     
     float irradiance = 0.0;
-    const uint lightSourceIndex = light_source_select(tracingUniforms.lightSources, 2,
+    const uint lightSourceIndex = light_source_select(tracingUniforms.lightSources,
                                                       lightSourceStart, lightSourceEnd,
                                                       randoms.lightSource, &irradiance);
     
@@ -220,7 +220,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
             normal = -normal;
         
         float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
-        shadowRay->origin = intersectionPoint + normalize(normal) * (maxDistance / 20000.0);
+        shadowRay->origin = intersectionPoint + normalize(normal) * (maxDistance / 80000.0);
         shadowRay->direction = shadowVec;
         shadowRay->primaryHitMask = ray.primaryHitMask;
         
@@ -252,12 +252,13 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         diffuseTerm *= surfaceOpacity;
         
         // the cosine factor is counted into the path scatter term, as the geometric coupling term,
-        // because samples are generated from an inifinit distant area light (uniform on a finit
-        // contending solid angle)
+        // because samples are generated from an inifinitly distant light source with a finite universal
+        // diffuse (uniform distribution on a finitely contending solid angle)
         //
-        // specular and diffuse is normalized and scale as half-half
+        // the saturate() capping is needed because, although the shadow ray is tested through
+        // visibility, there existing the little offset on normals and translucent objects
         //
-        shadowRay->pathScatter = (diffuseTerm + specularTerm) * dot(normal, shadowVec);
+        shadowRay->pathScatter = (diffuseTerm + specularTerm) * saturate(dot(normal, shadowVec));
         shadowRay->pathScatter *= (ray.pathScatter * irradiance /* (radiance / pdf) = irradiance for cones */);
         
         shadowRay->pdf = 1.0 / (2.0 * (1.0 - lightSource.coneAngleCosine)) * (lightSource.irradiance / irradiance);
@@ -292,7 +293,7 @@ static float light_source_scatter_sample(constant NuoRayTracingLightSource* ligh
 
 
 uint light_source_select(constant NuoRayTracingLightSource* lightSources,
-                         uint lightSourceNum, uint lightSourceStart, uint lightSourceEnd,
+                         uint lightSourceStart, uint lightSourceEnd,
                          float random, thread float* totalIrradiance)
 {
     float2 lightRandomRegion = float2(0);
@@ -416,20 +417,23 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
         
         const bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
         
+        const float woTheta = abs(wo.y);
+        const float wiTheta = abs(wi.y);
+        
         if (!reflection)
         {
             float3 f = specular_refectance_normalized(Cspec, Mspec, wo, wh);
             
             // normalized phong model
             //
-            result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdfCoeff * wi.y /* cosine factor of incident ray */;
+            result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / pdfCoeff * wiTheta /* cosine factor of incident ray */;
         }
         else
         {
             // fresnel blending model
             //
             float3 f = fresnel_schlick(Cspec, wo, wh);
-            result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / metal::max(abs(wo.y), abs(wi.y)) * wi.y;
+            result.pathScatterTerm = f * (probableTotal / CspecSampleProbable) / metal::max(woTheta, wiTheta) * wiTheta;
         }
         
         float cosNHPower = pow(saturate(abs(wh.y)), Mspec);
@@ -571,7 +575,7 @@ void sample_scatter_ray(float maxDistance,
     device float& Cdeterm = random.pathTermDeterminator;
     float3 intersectionPoint = ray.origin + ray.direction * intersection.distance;
 
-    PathSample sample = sample_scatter(material, intersectionPoint, maxDistance / 20000.0,
+    PathSample sample = sample_scatter(material, intersectionPoint, maxDistance / 80000.0,
                                        -ray.direction, ray.transThrough, r, Cdeterm);
     
     incidentRay.bounce = ray.bounce + 1;
