@@ -172,6 +172,15 @@ float3 specular_fresnel_blend(float3 materialSpecularColor, float materialSpecul
 }
 
 
+float3 diffuse_fresnel_blend(float3 materialDiffuseColor, float3 materialSpecularColor,
+                             float3 lightDirection, float3 exitent, float3 normal)
+{
+    float woTheta = saturate(dot(exitent, normal));
+    float wiTheta = saturate(dot(lightDirection, normal));
+    
+    return diffuse_fresnel_incident(materialDiffuseColor, materialSpecularColor, wiTheta, woTheta);
+}
+
 
 void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                    device Intersection& intersection,
@@ -242,12 +251,21 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         // renderer.
         //
         const bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
-        float3 diffuseTerm = material.diffuseColor;
-        float3 specularTerm = reflection ?
-                              specular_fresnel_blend(material.specularColor, specularPower,
-                                                     shadowVec, eyeDirection, normal) :
-                              specular_common_physically(material.specularColor, specularPower,
-                                                         shadowVec, normal, halfway);
+        float3 diffuseTerm, specularTerm;
+        
+        if (reflection)
+        {
+            diffuseTerm = diffuse_fresnel_blend(material.diffuseColor, material.specularColor,
+                                                shadowVec, eyeDirection, normal);
+            specularTerm = specular_fresnel_blend(material.specularColor, specularPower,
+                                                  shadowVec, eyeDirection, normal);
+        }
+        else
+        {
+            diffuseTerm = material.diffuseColor;
+            specularTerm = specular_common_physically(material.specularColor, specularPower,
+                                                      shadowVec, normal, halfway);
+        }
         
         // whether or not to adjust the reflection factor is arbitrary depending on how material
         // is defined. most OBJ models define it in a way that Cdiff need to be down-scaled. the scatter
@@ -367,8 +385,9 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
     }
     else if (Cdeterminator < (Tr + CdiffSampleProbable) / probableTotal)
     {
+        float3 wo = relative_to_hemisphere_normal(ray, normal);
         float3 wi = sample_cosine_weighted_hemisphere(sampleUV, 1);
-        if (dot(normal, ray) < -1e-6)
+        if (wo.y < -1e-6)
         {
             wi.y *= -1.0;
             offset *= -1.0;
@@ -376,7 +395,10 @@ static PathSample sample_scatter(thread const NuoRayTracingMaterial& material,
         
         result.direction = align_hemisphere_normal(wi, normal);
         result.original = intersectionPoint + normal * offset;
-        result.pathScatterTerm = Cdiff * (probableTotal / CdiffSampleProbable);
+        
+        const bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
+        result.pathScatterTerm = reflection ? diffuse_fresnel_incident(Cdiff, Cspec, abs(wi.y), abs(wo.y)) : Cdiff;
+        result.pathScatterTerm *= (probableTotal / CdiffSampleProbable);
         
         result.pdf = abs(wi.y) * (CdiffSampleProbable / probableTotal);
     }
