@@ -15,6 +15,7 @@
 #import "BoardSettingsPanel.h"
 
 #import "FrameRateView.h"
+#import "AppPreferences.h"
 
 // pipeline stages
 //
@@ -93,6 +94,8 @@ MouseDragMode;
     
     IBOutlet NSMenuItem* _sceneResetMenu;
     IBOutlet NSMenuItem* _removeObjectMenu;
+    
+    __weak AppPreferences* _preferences;
     
     NSString* _documentName;
     
@@ -1115,7 +1118,10 @@ MouseDragMode;
 
 - (IBAction)preferencesDialog:(id)sender
 {
+    AppPreferences* preferences = [AppPreferences new];
     
+    [preferences makeKeyAndOrderFront:nil];
+    [preferences locateRelativeTo:self.window];
 }
 
 
