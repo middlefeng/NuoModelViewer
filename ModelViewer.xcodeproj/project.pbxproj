@@ -67,6 +67,7 @@
 		2C78DE4A22F6290900F14BF8 /* ModelHybridBlendRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C78DE4722F6290800F14BF8 /* ModelHybridBlendRenderer.mm */; };
 		2C78DE4B22F6290900F14BF8 /* ModelHybridRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C78DE4922F6290900F14BF8 /* ModelHybridRenderer.mm */; };
 		2C78DE4D22F63F6000F14BF8 /* RayTracingFullShaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 2C78DE4C22F63F6000F14BF8 /* RayTracingFullShaders.metal */; };
+		2C7F58B8238E157500A68CE1 /* AppPreferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2C7F58B7238E157500A68CE1 /* AppPreferences.xib */; };
 		2C82E1091F874B2500D2C85C /* ModelOperationAmbientPopover.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C82E1081F874B2500D2C85C /* ModelOperationAmbientPopover.mm */; };
 		2C840D0E1D7001C2000D2956 /* NuoMetalView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C840D0D1D7001C2000D2956 /* NuoMetalView.m */; };
 		2C8B80ED1E2D6654001746FE /* NuoShadowMapTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C8B80EB1E2D6654001746FE /* NuoShadowMapTarget.m */; };
@@ -313,6 +314,7 @@
 		2C78DE4822F6290900F14BF8 /* ModelHybridRenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelHybridRenderer.h; sourceTree = "<group>"; };
 		2C78DE4922F6290900F14BF8 /* ModelHybridRenderer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ModelHybridRenderer.mm; sourceTree = "<group>"; };
 		2C78DE4C22F63F6000F14BF8 /* RayTracingFullShaders.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = RayTracingFullShaders.metal; sourceTree = "<group>"; };
+		2C7F58B7238E157500A68CE1 /* AppPreferences.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AppPreferences.xib; sourceTree = "<group>"; };
 		2C82E1071F874B2500D2C85C /* ModelOperationAmbientPopover.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelOperationAmbientPopover.h; sourceTree = "<group>"; };
 		2C82E1081F874B2500D2C85C /* ModelOperationAmbientPopover.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ModelOperationAmbientPopover.mm; sourceTree = "<group>"; };
 		2C840D0C1D7001C2000D2956 /* NuoMetalView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoMetalView.h; sourceTree = "<group>"; };
@@ -605,6 +607,7 @@
 				2C2ACEBF1FA1B1AE0055D52D /* FrameRateView.m */,
 				2CB053CE2043A24700EF8279 /* ModelViewConfiguration.h */,
 				2CB053CF2043A24700EF8279 /* ModelViewConfiguration.mm */,
+				2C7F58B7238E157500A68CE1 /* AppPreferences.xib */,
 			);
 			name = Interface;
 			path = UserInterface;
@@ -1004,6 +1007,7 @@
 				2C9D9AAF1D658F0800283E46 /* Assets.xcassets in Resources */,
 				2C5B92B41D7157A600722936 /* MainMenu.xib in Resources */,
 				2C723AB01E44355300484992 /* ModelPartsAnimations.xib in Resources */,
+				2C7F58B8238E157500A68CE1 /* AppPreferences.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
