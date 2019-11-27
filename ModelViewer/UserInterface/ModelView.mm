@@ -1113,6 +1113,12 @@ MouseDragMode;
 
 
 
+- (IBAction)preferencesDialog:(id)sender
+{
+    
+}
+
+
 - (IBAction)openFile:(id)sender
 {
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
