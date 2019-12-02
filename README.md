@@ -6,10 +6,10 @@ A simple Wavefront OBJ viewer.
 
 * Intel HD serious GPUs are **not** supported. (Built-in integrated GPU in most models of Mac.)
 * AMD Radeon Pro 560, and built-in descrete GPUs in almost all MacBook Pro later than 2017, are barely suppored. Their performance would be poor for the ray tracing rendering.
-* AMD Radeon RX 580 or above is recommended.
-* AMD Radeon RX Vega 56 is recommended.
-* AMD Radeon RX Vega 64 should be working, but untested.
-* AMD Radeon VII is highly recommended.
+* AMD Radeon RX 580 or above is recommended, in particular but not limited to:
+  * AMD Radeon RX Vega 56 is recommended.
+  * AMD Radeon RX Vega 64, RX 5700, and so on, should be working, but untested.
+  * AMD Radeon VII is highly recommended.
 
 ## Latest Update
 
