@@ -116,6 +116,21 @@
     
     const std::string deviceName = lua.GetFieldAsString("device", -1);
     _deviceName = @(deviceName.c_str());
+    
+    lua.GetField("renderSchecule", -1);
+    
+    if (lua.IsNil(-1))
+    {
+        _renderSchedule._renderDuration = 3.0;
+        _renderSchedule._idleDuration = 0.2;
+    }
+    else
+    {
+        _renderSchedule._renderDuration = lua.GetFieldAsNumber("duration", -1);
+        _renderSchedule._idleDuration = lua.GetFieldAsNumber("idle", -1);
+    }
+    
+    lua.RemoveField();
 }
 
 
@@ -151,6 +166,22 @@
     
     exporter.StartEntry("device");
     exporter.SetEntryValueString(_deviceName.UTF8String);
+    exporter.EndEntry(true);
+    
+    exporter.StartEntry("renderSchecule");
+    exporter.StartTable();
+    
+    {
+        exporter.StartEntry("duration");
+        exporter.SetEntryValueFloat(_renderSchedule._renderDuration);
+        exporter.EndEntry(false);
+        
+        exporter.StartEntry("idle");
+        exporter.SetEntryValueFloat(_renderSchedule._idleDuration);
+        exporter.EndEntry(false);
+    }
+    
+    exporter.EndTable();
     exporter.EndEntry(true);
     
     exporter.EndTable();
