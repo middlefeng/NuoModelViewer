@@ -101,6 +101,7 @@
 		2CC88F2D20CB461C00E8010D /* MetalPerformanceShaders.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2CC88F2820CB461C00E8010D /* MetalPerformanceShaders.framework */; };
 		2CCA166D234CCA9600695093 /* NuoColorPicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CCA166C234CCA9500695093 /* NuoColorPicker.m */; };
 		2CCD521B20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CCD521A20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm */; };
+		2CCF5B712397123500E5E777 /* NuoScheduler.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CCF5B702397123500E5E777 /* NuoScheduler.mm */; };
 		2CCF9C771E5B4F77006EF8C4 /* NuoOffscreenView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2CCF9C761E5B4F77006EF8C4 /* NuoOffscreenView.m */; };
 		2CCF9C801E5B7A43006EF8C4 /* NuoRenderPipeline.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CCF9C7F1E5B7A43006EF8C4 /* NuoRenderPipeline.mm */; };
 		2CD183792102544A00980510 /* NuoRayBuffer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2CD183782102544A00980510 /* NuoRayBuffer.mm */; };
@@ -380,6 +381,8 @@
 		2CCA166C234CCA9500695093 /* NuoColorPicker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoColorPicker.m; sourceTree = "<group>"; };
 		2CCD521920B8C0F100F6CEFE /* NuoRenderPassAttachment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoRenderPassAttachment.h; sourceTree = "<group>"; };
 		2CCD521A20B8C0F100F6CEFE /* NuoRenderPassAttachment.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoRenderPassAttachment.mm; sourceTree = "<group>"; };
+		2CCF5B6F2397123500E5E777 /* NuoScheduler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoScheduler.h; sourceTree = "<group>"; };
+		2CCF5B702397123500E5E777 /* NuoScheduler.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoScheduler.mm; sourceTree = "<group>"; };
 		2CCF9C751E5B4F77006EF8C4 /* NuoOffscreenView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoOffscreenView.h; sourceTree = "<group>"; };
 		2CCF9C761E5B4F77006EF8C4 /* NuoOffscreenView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NuoOffscreenView.m; sourceTree = "<group>"; };
 		2CCF9C7E1E5B7A43006EF8C4 /* NuoRenderPipeline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoRenderPipeline.h; sourceTree = "<group>"; };
@@ -711,6 +714,8 @@
 				2C7359212142C9EC000B8BD0 /* NuoWindow.m */,
 				2CCA166B234CCA9500695093 /* NuoColorPicker.h */,
 				2CCA166C234CCA9500695093 /* NuoColorPicker.m */,
+				2CCF5B6F2397123500E5E777 /* NuoScheduler.h */,
+				2CCF5B702397123500E5E777 /* NuoScheduler.mm */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -1021,6 +1026,7 @@
 			files = (
 				2C3167B2227CD7AE0079F5E3 /* NuoCommandBuffer.m in Sources */,
 				988B676D1E43F2BD00EA1453 /* NuoMeshAnimation.mm in Sources */,
+				2CCF5B712397123500E5E777 /* NuoScheduler.mm in Sources */,
 				2CE2CA221D804EC5005509EE /* NuoMeshTextured.mm in Sources */,
 				2CFB8D962054305F009B5D41 /* NuoClearMesh.mm in Sources */,
 				2C2873071E3E77790098092C /* ModelComponentPanels.mm in Sources */,
