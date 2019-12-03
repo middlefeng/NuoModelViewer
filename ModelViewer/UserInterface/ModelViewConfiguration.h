@@ -9,14 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import <Metal/Metal.h>
-
-
-
-struct ModelRenderSchedule
-{
-    float _renderDuration;
-    float _idleDuration;
-};
+#import "NuoScheduler.h"
 
 
 
@@ -24,7 +17,7 @@ struct ModelRenderSchedule
 
 @property (nonatomic, assign) CGRect windowFrame;
 @property (nonatomic, strong) NSString* deviceName;
-@property (nonatomic, assign) ModelRenderSchedule renderSchedule;
+@property (nonatomic, assign) NuoSchedule renderSchedule;
 
 - (instancetype)initWithFile:(NSString*)path;
 - (void)save;

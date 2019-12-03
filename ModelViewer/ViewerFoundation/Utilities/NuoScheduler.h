@@ -9,8 +9,19 @@
 #import <Foundation/Foundation.h>
 
 
+struct NuoSchedule
+{
+    float _duration;
+    float _idle;
+};
+
 
 @interface NuoScheduler : NSObject
+
+@property (nonatomic, assign) NuoSchedule schedule;
+
+- (void)scheduleWithInterval:(float)interval task:(void(^)())task;
+- (void)invalidate;
 
 @end
 

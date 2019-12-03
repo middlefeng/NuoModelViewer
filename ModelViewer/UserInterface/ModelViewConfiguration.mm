@@ -121,13 +121,13 @@
     
     if (lua.IsNil(-1))
     {
-        _renderSchedule._renderDuration = 3.0;
-        _renderSchedule._idleDuration = 0.2;
+        _renderSchedule._duration = 3.0;
+        _renderSchedule._idle = 0.2;
     }
     else
     {
-        _renderSchedule._renderDuration = lua.GetFieldAsNumber("duration", -1);
-        _renderSchedule._idleDuration = lua.GetFieldAsNumber("idle", -1);
+        _renderSchedule._duration = lua.GetFieldAsNumber("duration", -1);
+        _renderSchedule._idle = lua.GetFieldAsNumber("idle", -1);
     }
     
     lua.RemoveField();
@@ -173,11 +173,11 @@
     
     {
         exporter.StartEntry("duration");
-        exporter.SetEntryValueFloat(_renderSchedule._renderDuration);
+        exporter.SetEntryValueFloat(_renderSchedule._duration);
         exporter.EndEntry(false);
         
         exporter.StartEntry("idle");
-        exporter.SetEntryValueFloat(_renderSchedule._idleDuration);
+        exporter.SetEntryValueFloat(_renderSchedule._idle);
         exporter.EndEntry(false);
     }
     
