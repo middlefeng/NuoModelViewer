@@ -17,19 +17,20 @@
     
     NSTimer* _timer;
     NSTimer* _idleTimer;
+    NSDate* _scheduleDate;
 }
 
 
 - (void)scheduleWithInterval:(float)interval task:(void(^)())task;
 {
-    NSDate* scheduleDate = [NSDate date];
-    
-    __block struct NuoSchedule schedule = _schedule;
     __weak auto scheduler = self;
     
     _idleTask = ^()
             {
+                NSDate* scheduleDate = [NSDate date];
+                
                 NuoScheduler* localScheduler = scheduler;
+                localScheduler->_scheduleDate = scheduleDate;
                 localScheduler->_idleTimer = nil;
                 localScheduler->_timer = [NSTimer scheduledTimerWithTimeInterval:interval
                                                                          repeats:YES block:localScheduler->_task];
@@ -37,10 +38,12 @@
     
     _task = ^(NSTimer* timer)
             {
-                NSTimeInterval duration = [scheduleDate timeIntervalSinceNow];
-                float durationInMin = duration / 60.0;
+                NuoScheduler* localScheduler = scheduler;
+                
+                NSTimeInterval duration = [localScheduler->_scheduleDate timeIntervalSinceNow];
+                float durationInMin = -duration / 60.0;
             
-                if (durationInMin < schedule._duration)
+                if (durationInMin < localScheduler.schedule._duration)
                 {
                     task();
                 }
@@ -48,7 +51,6 @@
                 {
                     [timer invalidate];
                      
-                    NuoScheduler* localScheduler = scheduler;
                     localScheduler->_timer = nil;
                     localScheduler->_idleTimer = [NSTimer scheduledTimerWithTimeInterval:localScheduler.schedule._idle * 60.0
                                                                                  repeats:NO block:^(NSTimer* timer)

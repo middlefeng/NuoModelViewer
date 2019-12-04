@@ -26,6 +26,9 @@
     
     if (self)
     {
+        _renderSchedule._duration = 3.0;
+        _renderSchedule._idle = 0.2;
+        
         _path = path;
         [self load];
         
@@ -119,12 +122,7 @@
     
     lua.GetField("renderSchecule", -1);
     
-    if (lua.IsNil(-1))
-    {
-        _renderSchedule._duration = 3.0;
-        _renderSchedule._idle = 0.2;
-    }
-    else
+    if (!lua.IsNil(-1))
     {
         _renderSchedule._duration = lua.GetFieldAsNumber("duration", -1);
         _renderSchedule._idle = lua.GetFieldAsNumber("idle", -1);

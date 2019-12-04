@@ -9,9 +9,12 @@
 #import <AppKit/AppKit.h>
 
 #import "NuoWindow.h"
+#import "ModelViewConfiguration.h"
 
 
 @interface AppPreferences : NuoWindow
+
+@property (nonatomic, weak) ModelViewConfiguration* configuration;
 
 - (void)locateRelativeTo:(NSWindow*)window;
 

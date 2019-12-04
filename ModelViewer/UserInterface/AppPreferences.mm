@@ -70,6 +70,8 @@
     
     _fieldRenderTime = [self createField];
     _fieldRenderTime.frame = fieldFrame;
+    [_fieldRenderTime setAction:@selector(configureChanged:)];
+    [_fieldRenderTime setTarget:self];
     
     frame.origin.y -= lineSpace;
     fieldFrame.origin.y -= lineSpace;
@@ -79,6 +81,16 @@
     
     _fieldPauseTime = [self createField];
     _fieldPauseTime.frame = fieldFrame;
+    [_fieldPauseTime setAction:@selector(configureChanged:)];
+    [_fieldPauseTime setTarget:self];
+}
+
+
+- (void)setConfiguration:(ModelViewConfiguration*)configuration
+{
+    _configuration = configuration;
+    _fieldRenderTime.stringValue = [NSString stringWithFormat:@"%0.2f", _configuration.renderSchedule._duration];
+    _fieldPauseTime.stringValue = [NSString stringWithFormat:@"%0.2f", _configuration.renderSchedule._idle];
 }
 
 
@@ -107,6 +119,19 @@
     [field setBezelStyle:NSTextFieldSquareBezel];
     [self.contentView addSubview:field];
     return field;
+}
+
+
+- (void)configureChanged:(id)sender
+{
+    NuoSchedule schedule;
+    NSNumberFormatter* formatter = [[NSNumberFormatter alloc] init];
+    
+    schedule._duration = [formatter numberFromString:_fieldRenderTime.stringValue].floatValue;
+    schedule._idle = [formatter numberFromString:_fieldPauseTime.stringValue].floatValue;
+    _configuration.renderSchedule = schedule;
+    
+    [_configuration save];
 }
 
 
