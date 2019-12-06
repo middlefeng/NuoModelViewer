@@ -409,7 +409,7 @@ MouseDragMode;
             _frameScheduler = [NuoScheduler new];
             _frameScheduler.schedule = _configuration.renderSchedule;
             
-           [_frameScheduler scheduleWithInterval:1 / 60.0 task:^()
+            [_frameScheduler scheduleWithInterval:1 / 60.0 task:^()
                                         {
                                             [weakSelf render];
                                         }];
@@ -1122,11 +1122,18 @@ MouseDragMode;
 
 - (IBAction)preferencesDialog:(id)sender
 {
-    AppPreferences* preferences = [AppPreferences new];
+    AppPreferences* preferences = _preferences;
+    
+    if (!preferences)
+    {
+        preferences = [AppPreferences new];
+        _preferences = preferences;
+        
+        [preferences locateRelativeTo:self.window];
+    }
     
     [preferences setConfiguration:_configuration];
     [preferences makeKeyAndOrderFront:nil];
-    [preferences locateRelativeTo:self.window];
 }
 
 
