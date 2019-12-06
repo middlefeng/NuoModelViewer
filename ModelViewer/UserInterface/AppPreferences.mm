@@ -57,12 +57,12 @@
     CGFloat space = 6.0;
     CGFloat lineSpace = 30.0;
     
-    CGRect frame = CGRectMake(20, 20, 160, 20);
+    CGRect frame = CGRectMake(15, 20, 160, 20);
     frame.origin.y = self.contentView.frame.size.height - frame.size.height - 30;
     
     CGRect fieldFrame = frame;
     fieldFrame.origin.x = frame.origin.x + frame.size.width + space;
-    fieldFrame.size.width = 30;
+    fieldFrame.size.width = 50;
     fieldFrame.origin.y += 2;
     
     _labelRenderTime = [self createLabel:@"Rendering continously for:"];
