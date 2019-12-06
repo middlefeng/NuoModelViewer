@@ -12,11 +12,10 @@
 
 @implementation NuoScheduler
 {
-    void (^_task)(NSTimer* timer);
+    void (^_task)();
     void (^_idleTask)();
     
-    NSTimer* _timer;
-    NSTimer* _idleTimer;
+    bool _valid;
     NSDate* _scheduleDate;
 }
 
@@ -25,20 +24,28 @@
 {
     __weak auto scheduler = self;
     
+    _valid = true;
+    
     _idleTask = ^()
             {
-                NSDate* scheduleDate = [NSDate date];
-                
                 NuoScheduler* localScheduler = scheduler;
+                
+                if (!localScheduler || !localScheduler->_valid)
+                    return;
+                
+                NSDate* scheduleDate = [NSDate date];
                 localScheduler->_scheduleDate = scheduleDate;
-                localScheduler->_idleTimer = nil;
-                localScheduler->_timer = [NSTimer scheduledTimerWithTimeInterval:interval
-                                                                         repeats:YES block:localScheduler->_task];
+                
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)),
+                               dispatch_get_main_queue(), localScheduler->_task);
             };
     
-    _task = ^(NSTimer* timer)
+    _task = ^()
             {
                 NuoScheduler* localScheduler = scheduler;
+                
+                if (!localScheduler || !localScheduler->_valid)
+                    return;
                 
                 NSTimeInterval duration = [localScheduler->_scheduleDate timeIntervalSinceNow];
                 float durationInMin = -duration / 60.0;
@@ -46,17 +53,16 @@
                 if (durationInMin < localScheduler.schedule._duration)
                 {
                     task();
+                    
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(interval * NSEC_PER_SEC)),
+                                   dispatch_get_main_queue(), localScheduler->_task);
                 }
                 else
                 {
-                    [timer invalidate];
-                     
-                    localScheduler->_timer = nil;
-                    localScheduler->_idleTimer = [NSTimer scheduledTimerWithTimeInterval:localScheduler.schedule._idle * 60.0
-                                                                                 repeats:NO block:^(NSTimer* timer)
-                                                                                    {
-                                                                                        localScheduler->_idleTask();
-                                                                                    }];
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
+                                                 (int64_t)(localScheduler.schedule._duration *
+                                                           60.0 * NSEC_PER_SEC)),
+                                   dispatch_get_main_queue(), localScheduler->_idleTask);
                 }
             };
     
@@ -68,11 +74,7 @@
 
 - (void)invalidate
 {
-    [_idleTimer invalidate];
-    [_timer invalidate];
-    
-    _idleTimer = nil;
-    _timer = nil;
+    _valid = false;
     
     _task = nil;
     _idleTask = nil;
