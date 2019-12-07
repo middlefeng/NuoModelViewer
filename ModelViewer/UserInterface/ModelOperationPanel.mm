@@ -792,7 +792,7 @@
 
 - (void)updateControls
 {
-    [_checkTexturePopover setEnabled:[_checkTexture state]];
+    [_checkTexturePopover setEnabled:_modelState.modelOptions._textured];
     
     [_checkMaterial setState:_modelState.modelOptions._basicMaterialized ? NSControlStateValueOn : NSControlStateValueOff];
     [_checkTexture setState:_modelState.modelOptions._textured ? NSControlStateValueOn : NSControlStateValueOff];
