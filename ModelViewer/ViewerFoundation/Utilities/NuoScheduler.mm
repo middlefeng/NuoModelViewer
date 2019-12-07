@@ -36,8 +36,7 @@
                 NSDate* scheduleDate = [NSDate date];
                 localScheduler->_scheduleDate = scheduleDate;
                 
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)),
-                               dispatch_get_main_queue(), localScheduler->_task);
+                localScheduler->_task();
             };
     
     _task = ^()
@@ -60,7 +59,7 @@
                 else
                 {
                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                                                 (int64_t)(localScheduler.schedule._duration *
+                                                 (int64_t)(localScheduler.schedule._idle *
                                                            60.0 * NSEC_PER_SEC)),
                                    dispatch_get_main_queue(), localScheduler->_idleTask);
                 }
