@@ -26,6 +26,9 @@
     
     if (self)
     {
+        _renderSchedule._duration = 3.0;
+        _renderSchedule._idle = 0.2;
+        
         _path = path;
         [self load];
         
@@ -116,6 +119,16 @@
     
     const std::string deviceName = lua.GetFieldAsString("device", -1);
     _deviceName = @(deviceName.c_str());
+    
+    lua.GetField("renderSchecule", -1);
+    
+    if (!lua.IsNil(-1))
+    {
+        _renderSchedule._duration = lua.GetFieldAsNumber("duration", -1);
+        _renderSchedule._idle = lua.GetFieldAsNumber("idle", -1);
+    }
+    
+    lua.RemoveField();
 }
 
 
@@ -151,6 +164,22 @@
     
     exporter.StartEntry("device");
     exporter.SetEntryValueString(_deviceName.UTF8String);
+    exporter.EndEntry(true);
+    
+    exporter.StartEntry("renderSchecule");
+    exporter.StartTable();
+    
+    {
+        exporter.StartEntry("duration");
+        exporter.SetEntryValueFloat(_renderSchedule._duration);
+        exporter.EndEntry(false);
+        
+        exporter.StartEntry("idle");
+        exporter.SetEntryValueFloat(_renderSchedule._idle);
+        exporter.EndEntry(false);
+    }
+    
+    exporter.EndTable();
     exporter.EndEntry(true);
     
     exporter.EndTable();

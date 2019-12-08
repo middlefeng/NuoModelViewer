@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import <Metal/Metal.h>
+#import "NuoScheduler.h"
 
 
 
@@ -16,6 +17,7 @@
 
 @property (nonatomic, assign) CGRect windowFrame;
 @property (nonatomic, strong) NSString* deviceName;
+@property (nonatomic, assign) NuoSchedule renderSchedule;
 
 - (instancetype)initWithFile:(NSString*)path;
 - (void)save;

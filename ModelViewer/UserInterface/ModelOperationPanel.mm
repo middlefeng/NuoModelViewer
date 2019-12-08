@@ -384,69 +384,6 @@
     
     rowCoord += 1.4;
     
-    // animation list/slider
-    //
-    
-    NSTextField* labelAnimation = [self createLabel:@"Animations:" withAligment:NSTextAlignmentLeft];
-    [labelAnimation setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
-    [scrollDocumentView addSubview:labelAnimation];
-    
-    NSRect animationLoadRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
-    animationLoadRect.origin.x += 131;
-    animationLoadRect.origin.y -= 4;
-    animationLoadRect.size.width -= 131;
-    animationLoadRect.size.height = 27;
-    NSButton* animationLoad = [[NSButton alloc] init];
-    [animationLoad setTitle:@"Load ..."];
-    [animationLoad setFrame:animationLoadRect];
-    [animationLoad setBezelStyle:NSBezelStyleRounded];
-    [animationLoad setControlSize:NSControlSizeSmall];
-    [animationLoad setTarget:self];
-    [animationLoad setAction:@selector(loadAnimation:)];
-    [scrollDocumentView addSubview:animationLoad];
-    
-    [[NSBundle mainBundle] loadNibNamed:@"ModelPartsAnimations" owner:self topLevelObjects:nil];
-    
-    rowCoord += 1.2;
-    
-    CGColorRef border = CGColorCreateGenericGray(0.6, 0.5);
-    
-    NSRect animationRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
-    animationRect.size.height = 90;
-    animationRect.origin.y -= 70;
-    NSView* animationRoot = [[NSView alloc] init];
-    [animationRoot setWantsLayer:YES];
-    animationRoot.layer = [CALayer new];
-    animationRoot.frame = animationRect;
-    animationRoot.layer.borderWidth = 1.0;
-    animationRoot.layer.borderColor = border;
-    [_animationScroll setFrame:animationRoot.bounds];
-    [_animationTable setDataSource:self];
-    [_animationTable setDelegate:self];
-    [animationRoot addSubview:_animationScroll];
-    [scrollDocumentView addSubview:animationRoot];
-    
-    CGColorRelease(border);
-    
-    [self addSubview:rootScroll];
-    [rootScroll.contentView scrollToPoint:CGPointMake(0, docViewFrame.size.height)];
-    
-    NSSlider* animationProgressSlider = [[NSSlider alloc] init];
-    [animationProgressSlider setMaxValue:1.0];
-    [animationProgressSlider setMinValue:0.0];
-    [animationProgressSlider setDoubleValue:0.0];
-    [animationProgressSlider setTarget:self];
-    [animationProgressSlider setAction:@selector(animationUpdate:)];
-    
-    NSRect animationProgressRect = animationRect;
-    animationProgressRect.size.height = 18;
-    animationProgressRect.origin.y -= 10.0 + animationProgressRect.size.height;
-    [animationProgressSlider setFrame:animationProgressRect];
-    [scrollDocumentView addSubview:animationProgressSlider];
-    _animationSlider = animationProgressSlider;
-    
-    rowCoord += 5.4;
-    
     // motion blur recording
     
     NSTextField* labelMotionBlurLabel = [self createLabel:@"Motion Blur:" withAligment:NSTextAlignmentLeft];
@@ -521,7 +458,7 @@
     
     // ray tracing illumination stregth
     
-    rowCoord += 1.2;
+    rowCoord += 1.1;
     
     NSTextField* illumStregthLabel = [self createLabel:@"Illumination:" withAligment:NSTextAlignmentLeft];
     [illumStregthLabel setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
@@ -540,9 +477,72 @@
     [scrollDocumentView addSubview:illumination];
     _illuminationSlider = illumination;
     
-    // device select
+    // animation list/slider
+    //
     
     rowCoord += 1.5;
+    
+    NSTextField* labelAnimation = [self createLabel:@"Animations:" withAligment:NSTextAlignmentLeft];
+    [labelAnimation setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
+    [scrollDocumentView addSubview:labelAnimation];
+    
+    NSRect animationLoadRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    animationLoadRect.origin.x += 131;
+    animationLoadRect.origin.y -= 4;
+    animationLoadRect.size.width -= 131;
+    animationLoadRect.size.height = 27;
+    NSButton* animationLoad = [[NSButton alloc] init];
+    [animationLoad setTitle:@"Load ..."];
+    [animationLoad setFrame:animationLoadRect];
+    [animationLoad setBezelStyle:NSBezelStyleRounded];
+    [animationLoad setControlSize:NSControlSizeSmall];
+    [animationLoad setTarget:self];
+    [animationLoad setAction:@selector(loadAnimation:)];
+    [scrollDocumentView addSubview:animationLoad];
+    
+    [[NSBundle mainBundle] loadNibNamed:@"ModelPartsAnimations" owner:self topLevelObjects:nil];
+    
+    rowCoord += 1.1;
+    
+    CGColorRef border = CGColorCreateGenericGray(0.6, 0.5);
+    
+    NSRect animationRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    animationRect.size.height = 90;
+    animationRect.origin.y -= 70;
+    NSView* animationRoot = [[NSView alloc] init];
+    [animationRoot setWantsLayer:YES];
+    animationRoot.layer = [CALayer new];
+    animationRoot.frame = animationRect;
+    animationRoot.layer.borderWidth = 1.0;
+    animationRoot.layer.borderColor = border;
+    [_animationScroll setFrame:animationRoot.bounds];
+    [_animationTable setDataSource:self];
+    [_animationTable setDelegate:self];
+    [animationRoot addSubview:_animationScroll];
+    [scrollDocumentView addSubview:animationRoot];
+    
+    CGColorRelease(border);
+    
+    [self addSubview:rootScroll];
+    [rootScroll.contentView scrollToPoint:CGPointMake(0, docViewFrame.size.height)];
+    
+    NSSlider* animationProgressSlider = [[NSSlider alloc] init];
+    [animationProgressSlider setMaxValue:1.0];
+    [animationProgressSlider setMinValue:0.0];
+    [animationProgressSlider setDoubleValue:0.0];
+    [animationProgressSlider setTarget:self];
+    [animationProgressSlider setAction:@selector(animationUpdate:)];
+    
+    NSRect animationProgressRect = animationRect;
+    animationProgressRect.size.height = 18;
+    animationProgressRect.origin.y -= 9.0 + animationProgressRect.size.height;
+    [animationProgressSlider setFrame:animationProgressRect];
+    [scrollDocumentView addSubview:animationProgressSlider];
+    _animationSlider = animationProgressSlider;
+    
+    rowCoord += 5.4;
+    
+    // device select
     
     NSRect labelDevicesRect = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
     
@@ -792,7 +792,7 @@
 
 - (void)updateControls
 {
-    [_checkTexturePopover setEnabled:[_checkTexture state]];
+    [_checkTexturePopover setEnabled:_modelState.modelOptions._textured];
     
     [_checkMaterial setState:_modelState.modelOptions._basicMaterialized ? NSControlStateValueOn : NSControlStateValueOff];
     [_checkTexture setState:_modelState.modelOptions._textured ? NSControlStateValueOn : NSControlStateValueOff];

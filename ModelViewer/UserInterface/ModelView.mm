@@ -15,6 +15,7 @@
 #import "BoardSettingsPanel.h"
 
 #import "FrameRateView.h"
+#import "AppPreferences.h"
 
 // pipeline stages
 //
@@ -42,6 +43,7 @@
 #import "NuoTextureBase.h"
 #import "NuoRayAccelerateStructure.h"
 #import "NuoRenderPassAttachment.h"
+#import "NuoScheduler.h"
 
 #import "NuoOffscreenView.h"
 
@@ -94,9 +96,11 @@ MouseDragMode;
     IBOutlet NSMenuItem* _sceneResetMenu;
     IBOutlet NSMenuItem* _removeObjectMenu;
     
+    __weak AppPreferences* _preferences;
+    
     NSString* _documentName;
     
-    NSTimer* _frameRateMeasuringTimer;
+    NuoScheduler* _frameScheduler;
     NSTimer* _frameRateDisplayTimer;
 }
 
@@ -398,11 +402,14 @@ MouseDragMode;
 {
     if (record)
     {
-        if (!_frameRateMeasuringTimer)
+        if (!_frameScheduler)
         {
             __weak ModelView* weakSelf = self;
             
-            _frameRateMeasuringTimer = [NSTimer scheduledTimerWithTimeInterval:1 / 60.0 repeats:YES block:^(NSTimer* timer)
+            _frameScheduler = [NuoScheduler new];
+            _frameScheduler.schedule = _configuration.renderSchedule;
+            
+            [_frameScheduler scheduleWithInterval:1 / 60.0 task:^()
                                         {
                                             [weakSelf render];
                                         }];
@@ -410,8 +417,8 @@ MouseDragMode;
     }
     else
     {
-        [_frameRateMeasuringTimer invalidate];
-        _frameRateMeasuringTimer = nil;
+        [_frameScheduler invalidate];
+        _frameScheduler = nil;
     }
 }
 
@@ -1111,6 +1118,23 @@ MouseDragMode;
     [_modelRender setBackdropMesh:backdrop];
 }
 
+
+
+- (IBAction)preferencesDialog:(id)sender
+{
+    AppPreferences* preferences = _preferences;
+    
+    if (!preferences)
+    {
+        preferences = [AppPreferences new];
+        _preferences = preferences;
+        
+        [preferences locateRelativeTo:self.window];
+    }
+    
+    [preferences setConfiguration:_configuration];
+    [preferences makeKeyAndOrderFront:nil];
+}
 
 
 - (IBAction)openFile:(id)sender
