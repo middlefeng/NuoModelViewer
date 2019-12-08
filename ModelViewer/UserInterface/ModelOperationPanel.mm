@@ -49,6 +49,7 @@
 @property (nonatomic, strong) NSButton* rayTracingRecord;
 @property (nonatomic, strong) NSButton* rayTracingPause;
 @property (nonatomic, strong) NSButton* rayTracingHybridMode;
+@property (nonatomic, strong) NuoPopoverSheet* rayTracingPopover;
 
 @property (nonatomic, strong) NSPopUpButton* deviceList;
 
@@ -446,7 +447,7 @@
     
     // ray tracing hybrid with rasterization
     
-    rowCoord += 1.0;
+    rowCoord += 1.2;
     
     NSRect rayHybridFrame = [self buttonLoactionAtRow:rowCoord
                                           withLeading:0 inView:scrollDocumentView];
@@ -455,6 +456,17 @@
                                                       withSelector:@selector(rayTracingModeUpdate:)];
     [scrollDocumentView addSubview:rayTracingHybrid];
     _rayTracingHybridMode = rayTracingHybrid;
+    
+    // ray tracing options
+    
+    rayHybridFrame.origin.x += rayTracingHybrid.frame.size.width - 80.0;
+    rayHybridFrame.origin.y -= ((popoverFrame.size.height - rayTracingHybrid.frame.size.height) / 2.0);
+    rayHybridFrame.size = popoverButtonSize;
+    
+    NuoPopoverSheet* rayTracingOptionsPopover = [[NuoPopoverSheet alloc] initWithParent:scrollDocumentView];
+    [rayTracingOptionsPopover setFrame:rayHybridFrame];
+    rayTracingOptionsPopover.sheetDelegate = self;
+    _rayTracingPopover = rayTracingOptionsPopover;
     
     // ray tracing illumination stregth
     
@@ -902,12 +914,16 @@
                                                                                          withDelegate:_optionUpdateDelegate];
         return popover;
     }
-    else
+    else if (sheet == _ambientPopover)
     {
         ModelOperationAmbientPopover* popover = [[ModelOperationAmbientPopover alloc] initWithPopover:sheet.popover
                                                                                       withSourcePanel:self
                                                                                          withDelegate:_optionUpdateDelegate];
         return popover;
+    }
+    else
+    {
+        return nil;
     }
 }
 
