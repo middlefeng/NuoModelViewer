@@ -79,6 +79,7 @@
 		2C97774B1F7E07B80031F188 /* NuoScreenSpaceTarget.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C97774A1F7E07B80031F188 /* NuoScreenSpaceTarget.mm */; };
 		2C9777521F7E1AB60031F188 /* NuoScreenSpaceRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C9777511F7E1AB60031F188 /* NuoScreenSpaceRenderer.mm */; };
 		2C97775A1F7EC8B60031F188 /* NuoMeshSceneRenderPass.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C9777591F7EC8B60031F188 /* NuoMeshSceneRenderPass.mm */; };
+		2C99556A239D482F006470CA /* RayTracingOptionsPopover.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C995569239D482F006470CA /* RayTracingOptionsPopover.mm */; };
 		2C99908F1F5F350400AEF181 /* ModelDissectRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C99908E1F5F350300AEF181 /* ModelDissectRenderer.mm */; };
 		2C9D9AAA1D658F0800283E46 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AA91D658F0800283E46 /* AppDelegate.m */; };
 		2C9D9AAD1D658F0800283E46 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C9D9AAC1D658F0800283E46 /* main.m */; };
@@ -339,6 +340,8 @@
 		2C9777511F7E1AB60031F188 /* NuoScreenSpaceRenderer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoScreenSpaceRenderer.mm; sourceTree = "<group>"; };
 		2C9777581F7EC8B60031F188 /* NuoMeshSceneRenderPass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoMeshSceneRenderPass.h; sourceTree = "<group>"; };
 		2C9777591F7EC8B60031F188 /* NuoMeshSceneRenderPass.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoMeshSceneRenderPass.mm; sourceTree = "<group>"; };
+		2C995568239D482F006470CA /* RayTracingOptionsPopover.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RayTracingOptionsPopover.h; sourceTree = "<group>"; };
+		2C995569239D482F006470CA /* RayTracingOptionsPopover.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RayTracingOptionsPopover.mm; sourceTree = "<group>"; };
 		2C9990891F5F350300AEF181 /* ModelDissectRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelDissectRenderer.h; sourceTree = "<group>"; };
 		2C99908E1F5F350300AEF181 /* ModelDissectRenderer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ModelDissectRenderer.mm; sourceTree = "<group>"; };
 		2C9D9AA51D658F0800283E46 /* ModelViewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ModelViewer.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -590,6 +593,8 @@
 				983C2E191F86D60200D8E689 /* ModelOperationTexturePopover.mm */,
 				2C82E1071F874B2500D2C85C /* ModelOperationAmbientPopover.h */,
 				2C82E1081F874B2500D2C85C /* ModelOperationAmbientPopover.mm */,
+				2C995568239D482F006470CA /* RayTracingOptionsPopover.h */,
+				2C995569239D482F006470CA /* RayTracingOptionsPopover.mm */,
 				2C723AAF1E44355300484992 /* ModelPartsAnimations.xib */,
 				2C44344E1E1EAAF800C861AF /* LightOperationPanel.h */,
 				2C44344F1E1EAAF800C861AF /* LightOperationPanel.m */,
@@ -1039,6 +1044,7 @@
 				2C2873101E3ED5A40098092C /* ModelPartPropPanel.mm in Sources */,
 				2CC5EDEE1D8A62B100419168 /* NuoRoundedView.m in Sources */,
 				2CA75EB2201A75CB000E9A05 /* NuoBounds.cpp in Sources */,
+				2C99556A239D482F006470CA /* RayTracingOptionsPopover.mm in Sources */,
 				2C4434501E1EAAF800C861AF /* LightOperationPanel.m in Sources */,
 				2C9777521F7E1AB60031F188 /* NuoScreenSpaceRenderer.mm in Sources */,
 				98E05A621E6A188F00D4068F /* ShadersCube.metal in Sources */,
