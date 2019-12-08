@@ -14,6 +14,7 @@
 #import "NuoPopoverSheet.h"
 #import "ModelOperationTexturePopover.h"
 #import "ModelOperationAmbientPopover.h"
+#import "RayTracingOptionsPopover.h"
 
 
 @interface ModelOperationPanel() < NSTableViewDataSource, NSTableViewDelegate, NuoPopoverSheetDelegate >
@@ -901,8 +902,10 @@
 {
     if (sheet == _checkTexturePopover)
         return CGSizeMake(250, 60);
-    else
+    else if (sheet == _ambientPopover)
         return CGSizeMake(250, 125);
+    else
+        return CGSizeMake(220, 60);
 }
 
 - (NSViewController *)popoverSheetcontentViewController:(NuoPopoverSheet *)sheet
@@ -923,7 +926,11 @@
     }
     else
     {
-        return nil;
+        RayTracingOptionsPopover* popover = [[RayTracingOptionsPopover alloc] initWithPopover:sheet.popover
+                                                                               withModelState:_modelState
+                                                                                 withDelegate:_optionUpdateDelegate];
+        
+        return popover;
     }
 }
 

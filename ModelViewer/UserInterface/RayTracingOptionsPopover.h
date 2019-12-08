@@ -10,7 +10,18 @@
 
 
 
+@class ModelState;
+@protocol ModelOptionUpdate;
+
+
+
 @interface RayTracingOptionsPopover : NSViewController
+
+
+- (instancetype)initWithPopover:(NSPopover*)popover
+                 withModelState:(ModelState*)modelState
+                   withDelegate:(id<ModelOptionUpdate>)delegate;
+
 
 @end
 
