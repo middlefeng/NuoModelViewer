@@ -29,6 +29,7 @@
 
 - (NuoComputeEncoder*)encoderWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 - (id<MTLArgumentEncoder>)argumentEncoder:(NSUInteger)index;
+- (void)setFunctionConstantBool:(BOOL)value at:(NSUInteger)index;
 
 
 @end

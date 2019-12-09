@@ -28,6 +28,10 @@
 {
     id<MTLComputePipelineState> _pipeline;
     id<MTLFunction> _function;
+    __weak id<MTLDevice> _device;
+    
+    NSString* _functionName;
+    MTLFunctionConstantValues* _functionConstants;
 }
 
 
@@ -37,31 +41,61 @@
     
     if (self)
     {
-        id<MTLLibrary> library = [NuoShaderLibrary defaultLibraryWithDevice:device].library;
-        
-        MTLFunctionConstantValues* values = [MTLFunctionConstantValues new];
-        MTLComputePipelineDescriptor *descriptor = [MTLComputePipelineDescriptor new];
-        descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
-        
-        NSError* error;
-        _function = [library newFunctionWithName:function constantValues:values error:&error];
-        assert(error == nil);
-        
-        descriptor.computeFunction = _function;
-        _pipeline = [device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
-        assert(error == nil);
+        _device = device;
+        _functionName = function;
+        _functionConstants = [MTLFunctionConstantValues new];
     }
     
     return self;
 }
 
 
+- (void)setFunctionConstantBool:(BOOL)value at:(NSUInteger)index
+{
+    // invalidate a cached pipeline state
+    //
+    _pipeline = nil;
+    _function = nil;
+    
+    [_functionConstants setConstantValue:&value type:MTLDataTypeBool atIndex:index];
+}
+
+
 - (NuoComputeEncoder*)encoderWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
 {
+    if (!_pipeline)
+    {
+        NSError* error = nil;
+        id<MTLFunction> function = [self pipelineFunction];
+        
+        MTLComputePipelineDescriptor* descriptor = [MTLComputePipelineDescriptor new];
+        descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
+        descriptor.computeFunction = function;
+        _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
+        assert(error == nil);
+    }
+    
     NuoComputeEncoder* encoder = [commandBuffer computeEncoderWithName:_name];
     [encoder setComputePipelineState:_pipeline];
     
     return encoder;
+}
+
+
+
+- (id<MTLFunction>)pipelineFunction
+{
+    if (!_function)
+    {
+        id<MTLLibrary> library = [NuoShaderLibrary defaultLibraryWithDevice:_device].library;
+        
+        NSError* error = nil;
+        _function = [library newFunctionWithName:_functionName
+                                  constantValues:_functionConstants error:&error];
+        assert(error == nil);
+    }
+    
+    return _function;
 }
 
 
