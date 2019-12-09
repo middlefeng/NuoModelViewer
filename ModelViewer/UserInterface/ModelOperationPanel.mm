@@ -790,6 +790,7 @@
 {
     _rayTracingHybrid = _rayTracingHybridMode.state == NSControlStateValueOn;
     
+    [self updateControls];
     [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
 }
 
@@ -806,6 +807,7 @@
 - (void)updateControls
 {
     [_checkTexturePopover setEnabled:_modelState.modelOptions._textured];
+    [_rayTracingPopover setEnabled:!_rayTracingHybrid];
     
     [_checkMaterial setState:_modelState.modelOptions._basicMaterialized ? NSControlStateValueOn : NSControlStateValueOff];
     [_checkTexture setState:_modelState.modelOptions._textured ? NSControlStateValueOn : NSControlStateValueOff];
