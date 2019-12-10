@@ -29,6 +29,10 @@ class NuoLua;
 @interface ModelState : NSObject
 
 
+@property (nonatomic, assign) bool rayTracingMultipleImportance;
+@property (nonatomic, assign) bool rayTracingIndirectSpecular;
+
+
 @property (nonatomic, strong) NuoMeshSceneRoot* sceneRoot;
 @property (nonatomic, readonly) NuoMeshCompound* mainModelMesh;
 @property (nonatomic, strong) NSArray<NuoMesh*>* selectedParts;

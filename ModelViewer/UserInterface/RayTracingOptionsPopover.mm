@@ -18,6 +18,9 @@
 @property (nonatomic, weak) NSPopover* popover;
 @property (nonatomic, weak) ModelState* modelState;
 
+@property (nonatomic, weak) NSButton* mipSampling;
+@property (nonatomic, weak) NSButton* indirectSpecular;
+
 @end
 
 
@@ -57,8 +60,10 @@
     [mipSampling setTitle:@"Multiple Importance Sampling"];
     [mipSampling setFrame:labelFrame];
     [mipSampling setTarget:self];
-    [mipSampling setAction:@selector(textureEmbedTransChanged:)];
+    [mipSampling setAction:@selector(rayTracingOptionsChanged:)];
     [self.view addSubview:mipSampling];
+    
+    _mipSampling = mipSampling;
 
     labelFrame.origin.y -= rowHeight;
 
@@ -67,13 +72,25 @@
     [indirectSpecular setTitle:@"Indirect Specular"];
     [indirectSpecular setFrame:labelFrame];
     [indirectSpecular setTarget:self];
-    [indirectSpecular setAction:@selector(textureBumpChanged:)];
+    [indirectSpecular setAction:@selector(rayTracingOptionsChanged:)];
     [self.view addSubview:indirectSpecular];
+    
+    _indirectSpecular = indirectSpecular;
 
-    /*if (_modelState.modelOptions._textureEmbedMaterialTransparency)
-        checkTextureEmbedTrans.state = NSControlStateValueOn;
-    if (_modelState.modelOptions._texturedBump)
-        checkTextureBump.state = NSControlStateValueOn;*/
+    if (_modelState.rayTracingMultipleImportance)
+        mipSampling.state = NSControlStateValueOn;
+    if (_modelState.rayTracingIndirectSpecular)
+        indirectSpecular.state = NSControlStateValueOn;
 }
+
+
+- (void)rayTracingOptionsChanged:(id)sender
+{
+    _modelState.rayTracingMultipleImportance = (_mipSampling.state == NSControlStateValueOn);
+    _modelState.rayTracingIndirectSpecular = (_indirectSpecular.state == NSControlStateValueOn);
+    
+    [_updateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
+}
+
 
 @end
