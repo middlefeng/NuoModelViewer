@@ -68,6 +68,18 @@
 }
 
 
+- (void)setIndirectSpecular:(bool)indirectSpecular
+{
+    _rayTracingRenderer.indirectSpecular = indirectSpecular;
+}
+
+
+- (void)setMultipleImportanceSampling:(bool)multipleImportanceSampling
+{
+    _rayTracingRenderer.multipleImportanceSampling = multipleImportanceSampling;
+}
+
+
 - (void)setRayTracingRecordStatus:(RecordStatus)rayTracingRecordStatus
 {
     BOOL changed = (_rayTracingRecordStatus != rayTracingRecordStatus);

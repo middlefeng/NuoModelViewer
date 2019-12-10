@@ -119,9 +119,14 @@
     if (!_rayTracingHybrid && _renderDelegate)
         return;
     
-    _renderDelegate = [[ModelRayTracerDelegate alloc] initWithCommandQueue:self.commandQueue
-                                                           withAccelerator:_rayAccelerator
-                                                             withSceneRoot:_modelState.sceneRoot];
+    ModelRayTracerDelegate* delegate = [[ModelRayTracerDelegate alloc] initWithCommandQueue:self.commandQueue
+                                                                            withAccelerator:_rayAccelerator
+                                                                              withSceneRoot:_modelState.sceneRoot];
+    
+    [delegate setMultipleImportanceSampling:_modelState.rayTracingMultipleImportance];
+    [delegate setIndirectSpecular:_modelState.rayTracingIndirectSpecular];
+    
+    _renderDelegate = delegate;
         
     _rayTracingHybrid = NO;
 }

@@ -31,6 +31,9 @@
                      withAccelerator:(NuoRayAccelerateStructure*)accelerateSturcture
                        withSceneRoot:(NuoMeshSceneRoot*)sceneRoot;
 
+- (void)setIndirectSpecular:(bool)indirectSpecular;
+- (void)setMultipleImportanceSampling:(bool)multipleImportance;
+
 
 @end
 
