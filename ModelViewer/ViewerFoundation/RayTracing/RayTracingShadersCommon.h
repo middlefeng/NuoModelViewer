@@ -108,8 +108,6 @@ struct PathSample
 
 
 
-constant bool kShadowOnTranslucent  [[ function_constant(0) ]];
-
 
 
 

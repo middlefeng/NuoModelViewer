@@ -116,6 +116,26 @@ enum kModelRayTracingTargets
 }
 
 
+- (void)setMultipleImportanceSampling:(bool)multipleImportanceSampling
+{
+    _multipleImportanceSampling = multipleImportanceSampling;
+    
+    [_primaryAndIncidentRaysPipeline setFunctionConstantBool:_multipleImportanceSampling at:0];
+    [_pimraryVirtualLighting setFunctionConstantBool:_multipleImportanceSampling at:0];
+    [_rayShadePipeline setFunctionConstantBool:_multipleImportanceSampling at:0];
+}
+
+
+- (void)setIndirectSpecular:(bool)indirectSpecular
+{
+    _indirectSpecular = indirectSpecular;
+       
+    [_primaryAndIncidentRaysPipeline setFunctionConstantBool:_indirectSpecular at:1];
+    [_pimraryVirtualLighting setFunctionConstantBool:_indirectSpecular at:1];
+    [_rayShadePipeline setFunctionConstantBool:_indirectSpecular at:1];
+}
+
+
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
@@ -224,18 +244,23 @@ enum kModelRayTracingTargets
         {
             _shadowRayVisibility.paths = _shadowRaysBuffer;
             _shadowRayVisibility.tracingUniform = rayTraceUniform;
-            _lightRayByScatterVisibility.paths = _lightRayByScatterBuffer;
-            _lightRayByScatterVisibility.tracingUniform = rayTraceUniform;
+            [_shadowRayVisibility visibilityTestInit:commandBuffer];
             
             [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.intersectionBuffer];
             
-            [_shadowRayVisibility visibilityTestInit:commandBuffer];
-            [_lightRayByScatterVisibility visibilityTestInit:commandBuffer];
+            if (_multipleImportanceSampling)
+            {
+                _lightRayByScatterVisibility.paths = _lightRayByScatterBuffer;
+                _lightRayByScatterVisibility.tracingUniform = rayTraceUniform;
+                [_lightRayByScatterVisibility visibilityTestInit:commandBuffer];
+            }
             
             for (uint i = 0; i < kRayBounce; ++i)
             {
                 [_shadowRayVisibility visibilityTest:commandBuffer];
-                [_lightRayByScatterVisibility visibilityTest:commandBuffer];
+                
+                if (_multipleImportanceSampling)
+                    [_lightRayByScatterVisibility visibilityTest:commandBuffer];
             }
             
             [_primaryRayVisibility visibilityTest:commandBuffer];

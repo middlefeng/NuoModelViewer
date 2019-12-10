@@ -182,6 +182,10 @@ float3 diffuse_fresnel_blend(float3 materialDiffuseColor, float3 materialSpecula
 }
 
 
+constant bool kIndirectSpecular [[ function_constant(1) ]];
+
+
+
 void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                    device Intersection& intersection,
                                    device RayStructureUniform& structUniform,
@@ -251,14 +255,18 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
         // renderer.
         //
         const bool reflection = (((int)(material.shinessDisolveIllum.z)) == 3);
-        float3 diffuseTerm, specularTerm;
+        float3 diffuseTerm, specularTerm = 0;
         
         if (reflection)
         {
             diffuseTerm = diffuse_fresnel_blend(material.diffuseColor, material.specularColor,
                                                 shadowVec, eyeDirection, normal);
-            specularTerm = specular_fresnel_blend(material.specularColor, specularPower,
-                                                  shadowVec, eyeDirection, normal);
+            
+            if (kIndirectSpecular)
+            {
+                specularTerm = specular_fresnel_blend(material.specularColor, specularPower,
+                                                      shadowVec, eyeDirection, normal);
+            }
         }
         else
         {

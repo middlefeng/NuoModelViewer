@@ -163,6 +163,9 @@ void spawn_ray(device const RayBuffer& ray, device RayBuffer& spawn, float dista
 #pragma mark -- Path Tracing
 
 
+constant bool kMultipleImportanceSampling [[ function_constant(0) ]];
+
+
 kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
                                 device RayStructureUniform& structUniform [[buffer(0)]],
                                 device RayTracingTargets& targets,
@@ -271,22 +274,30 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
         
         if (!isOcclusion)
         {
-            float3 colorByLight = shadowRay.pathScatter * shadowRayVisibility * shadowRayWeight;
-            float3 colorByScatter = lightByScatterRay.pathScatter * lightByScatterRayVisibility * scatterRayWeight;
-            
-            lightingTrcacingWrite(tid, colorByLight + colorByScatter, targets.lightingTracing);
-            //lightingTrcacingWrite(tid, shadowRay.pathScatter * shadowRayVisibility, targets.lightingTracing);
-            //lightingTrcacingWrite(tid, lightByScatterRay.pathScatter * lightByScatterRayVisibility, targets.lightingTracing);
+            if (kMultipleImportanceSampling)
+            {
+                float3 colorByLight = shadowRay.pathScatter * shadowRayVisibility * shadowRayWeight;
+                float3 colorByScatter = lightByScatterRay.pathScatter * lightByScatterRayVisibility * scatterRayWeight;
+                lightingTrcacingWrite(tid, colorByLight + colorByScatter, targets.lightingTracing);
+            }
+            else
+            {
+                lightingTrcacingWrite(tid, shadowRay.pathScatter * shadowRayVisibility, targets.lightingTracing);
+            }
         }
         
         if (isOcclusion)
         {
-            float3 occlusionByLight = shadowRay.pathScatter * (1.0 - shadowRayVisibility) * shadowRayWeight;
-            float3 occlusionByScatter = lightByScatterRay.pathScatter * (1.0 - lightByScatterRayVisibility) * scatterRayWeight;
-            
-            targets.lightingVirtualBlocked.write(float4(occlusionByLight + occlusionByScatter, 1.0), tid);
-            //targets.lightingVirtualBlocked.write(float4(shadowRay.pathScatter * (1.0 - shadowRayVisibility), 1.0), tid);
-            //targets.lightingVirtualBlocked.write(float4(lightByScatterRay.pathScatter * (1.0 - lightByScatterRayVisibility), 1.0), tid);
+            if (kMultipleImportanceSampling)
+            {
+                float3 occlusionByLight = shadowRay.pathScatter * (1.0 - shadowRayVisibility) * shadowRayWeight;
+                float3 occlusionByScatter = lightByScatterRay.pathScatter * (1.0 - lightByScatterRayVisibility) * scatterRayWeight;
+                targets.lightingVirtualBlocked.write(float4(occlusionByLight + occlusionByScatter, 1.0), tid);
+            }
+            else
+            {
+                targets.lightingVirtualBlocked.write(float4(shadowRay.pathScatter * (1.0 - shadowRayVisibility), 1.0), tid);
+            }
         }
     }
     
@@ -414,8 +425,11 @@ void self_illumination(uint2 tid,
                                                                        tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
                                                                        index, intersection, samplr);
             
-            sample_light_by_scatter(maxDistance, tracingUniforms.lightSources,
-                                    randomVars, intersection, material, ray, lightByScatterRay);
+            if (kMultipleImportanceSampling)
+            {
+                sample_light_by_scatter(maxDistance, tracingUniforms.lightSources,
+                                        randomVars, intersection, material, ray, lightByScatterRay);
+            }
             
             shadow_ray_emit_infinite_area(ray, intersection, structUniform, tracingUniforms,
                                           0, 2, /* sample among all light sources */
