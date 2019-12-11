@@ -220,8 +220,7 @@ enum kModelRayTracingTargets
         //
         [self runRayTraceCompute:_pimraryVirtualLighting withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
-                                   _shadowRaysBuffer.buffer,
-                                   _lightRayByScatterBuffer.buffer]];
+                                   _shadowRaysBuffer.buffer]];
     }
     
     [self updatePrimaryRayMask:kNuoRayIndex_OnTranslucent withCommandBuffer:commandBuffer];
