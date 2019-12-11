@@ -296,6 +296,7 @@
     NuoPopoverSheet* ambientPopover = [[NuoPopoverSheet alloc] initWithParent:scrollDocumentView];
     ambientPopover.sheetDelegate = self;
     [ambientPopover setFrame:popoverFrame];
+    _ambientPopover = ambientPopover;
     
     rowCoord += 1.2;
     
