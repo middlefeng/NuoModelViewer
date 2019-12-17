@@ -254,8 +254,8 @@ return
         {
             rotateX = 0.691151,
             rotateY = -0.659735,
-            density = 1.181309,
-            spacular = 1.542578,
+            irradiance = 1.181309,
+            specular = 1.542578,
             enableShadow = true,
             shadowSoften = 2.652381,
             shadowBias = 0.000000,
@@ -265,8 +265,8 @@ return
         {
             rotateX = 1.979203,
             rotateY = -0.534071,
-            density = 0.000000,
-            spacular = 1.975162,
+            irradiance = 0.000000,
+            specular = 1.975162,
             enableShadow = true,
             shadowSoften = 1.776680,
             shadowBias = 0.010000,
@@ -276,8 +276,8 @@ return
         {
             rotateX = 2.199116,
             rotateY = -0.376991,
-            density = 0.000000,
-            spacular = 0.000000,
+            irradiance = 0.000000,
+            specular = 0.000000,
             enableShadow = false,
         },
 
@@ -285,8 +285,8 @@ return
         {
             rotateX = -1.225221,
             rotateY = -0.031416,
-            density = 0.000000,
-            spacular = 0.000000,
+            irradiance = 0.000000,
+            specular = 0.000000,
             enableShadow = false,
         },
 
