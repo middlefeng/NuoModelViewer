@@ -1,5 +1,5 @@
 //
-//  ModelRayTracingBlendRenderer.h
+//  ModelHybridBlendRenderer.h
 //  ModelViewer
 //
 //  Created by middleware on 8/3/19.
