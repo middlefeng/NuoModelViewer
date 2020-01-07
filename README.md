@@ -10,6 +10,7 @@ A simple Wavefront OBJ viewer.
   * AMD Radeon RX Vega 56 is recommended.
   * AMD Radeon RX Vega 64, RX 5700, and so on, should be working, but untested.
   * AMD Radeon VII is highly recommended.
+  * AMD Radeon Pro Vega II (Duo) (in the Mac Pro 2019). Acknowledge to @ibuick for the verification.
 
 ## Latest Update
 
