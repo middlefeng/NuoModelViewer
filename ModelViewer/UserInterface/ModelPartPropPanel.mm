@@ -296,12 +296,15 @@
     
     if (virtualSurface)
     {
+        NuoBoardMesh* boardMesh = ((NuoBoardMesh*)meshes[0]);
+        
         _diffReflectanceLabel.hidden = NO;
         _diffRelectance.hidden = NO;
         _specReflectanceLabel.hidden = NO;
         _specRelectance.hidden = NO;
-        _diffRelectance.color = [((NuoBoardMesh*)meshes[0]) diffuse];
-        _specRelectance.color = [((NuoBoardMesh*)meshes[0]) specular];
+        _diffRelectance.color = [boardMesh diffuse];
+        _specRelectance.color = [boardMesh specular];
+        [self setSpecularPower:[boardMesh specularPower]];
     }
     else
     {
@@ -405,6 +408,12 @@
     }
     
     [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_DecreaseQuality];
+}
+
+
+- (void)setSpecularPower:(float)specularPower
+{
+    [_specularPowerSlider setFloatValue:specularPower];
 }
 
 
