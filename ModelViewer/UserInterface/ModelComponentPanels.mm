@@ -162,7 +162,6 @@
 - (void)updatePanels
 {
     [_modelPartsPanel updatePartsPanelWithReload:NO];
-    [_modelPartPropPanel updateForSelectedMesh];
     [_modelPartDimensionPanel updateForSelectedMesh];
 }
 
