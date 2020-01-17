@@ -12,6 +12,8 @@
 
 @interface NuoOpenEndSlider : NSView
 
+@property (assign, nonatomic) long sliderEnd;
+
 @end
 
 
