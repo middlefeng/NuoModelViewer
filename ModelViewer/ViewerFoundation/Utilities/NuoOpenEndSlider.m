@@ -10,6 +10,12 @@
 #import <AppKit/AppKit.h>
 
 
+
+static float kSlideNameLabelHeight = 21.0;
+static float kHorizontalMargin = 15.0;
+
+
+
 @implementation NuoOpenEndSlider
 {
     NSString* _sliderName;
@@ -28,6 +34,7 @@
     if (self)
     {
         _sliderName = name;
+        _sliderEnd = 200.0;
         
         [self initCommon];
     }
@@ -41,6 +48,42 @@
     _sliderNameLabel = [self createLabel:_sliderName withAligment:NSTextAlignmentLeft];
     _sliderEndField = [NSTextField new];
     _slider = [self createSliderMax:0 min:200];
+    
+    _sliderEndField.controlSize = NSControlSizeSmall;
+    _sliderEndField.font = [NSFont fontWithName:_sliderEndField.font.fontName size:11.0];
+    _sliderEndField.focusRingType = NSFocusRingTypeNone;
+    _sliderEndField.bezelStyle = NSTextFieldSquareBezel;
+    
+    [self addSubview:_sliderEndField];
+}
+
+
+- (void)updateLayout
+{
+    CGRect frame = self.frame;
+    CGSize frameSize = frame.size;
+    
+    float nameLabelOrigin = frameSize.height - kSlideNameLabelHeight - 3.0;
+    
+    CGRect nameLabelFrame = CGRectMake(kHorizontalMargin, nameLabelOrigin, frameSize.width, kSlideNameLabelHeight);
+    CGRect sliderFrame = CGRectMake(kHorizontalMargin, nameLabelOrigin - kSlideNameLabelHeight,
+                                    frameSize.width - kHorizontalMargin * 2.0 + 4.0,
+                                    kSlideNameLabelHeight);
+    
+    CGRect endFieldFrame = nameLabelFrame;
+    endFieldFrame.size.width = 60.0;
+    endFieldFrame.origin.x = kHorizontalMargin + sliderFrame.size.width - endFieldFrame.size.width - 4.0;
+    endFieldFrame.origin.y += 2.0;
+    
+    _sliderNameLabel.frame = nameLabelFrame;
+    _slider.frame = sliderFrame;
+    _slider.minValue = 0.0;
+    _slider.maxValue = _sliderEnd;
+    
+    _sliderEndField.frame = endFieldFrame;
+    
+    NSString* endValueString = [NSString stringWithFormat:@"%0.1ld", _sliderEnd];
+    _sliderEndField.stringValue = endValueString;
 }
 
 

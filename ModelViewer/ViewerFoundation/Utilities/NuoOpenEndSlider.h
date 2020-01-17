@@ -12,7 +12,14 @@
 
 @interface NuoOpenEndSlider : NSView
 
+
 @property (assign, nonatomic) long sliderEnd;
+@property (assign, nonatomic) long floatValue;
+
+
+- (instancetype)initWithName:(NSString*)name;
+- (void)updateLayout;
+
 
 @end
 
