@@ -55,6 +55,11 @@ static float kHorizontalMargin = 15.0;
     _sliderEndField.bezelStyle = NSTextFieldSquareBezel;
     
     [self addSubview:_sliderEndField];
+    
+    [_sliderEndField setTarget:self];
+    [_sliderEndField setAction:@selector(endValueChanged:)];
+    [_slider setTarget:self];
+    [_slider setAction:@selector(sliderValueChanged:)];
 }
 
 
@@ -79,11 +84,53 @@ static float kHorizontalMargin = 15.0;
     _slider.frame = sliderFrame;
     _slider.minValue = 0.0;
     _slider.maxValue = _sliderEnd;
+    _slider.floatValue = _floatValue;
     
     _sliderEndField.frame = endFieldFrame;
     
     NSString* endValueString = [NSString stringWithFormat:@"%0.1ld", _sliderEnd];
     _sliderEndField.stringValue = endValueString;
+}
+
+
+- (void)endValueChanged:(id)sender
+{
+    NSNumberFormatter* formatter = [NSNumberFormatter new];
+    long end = [formatter numberFromString:_sliderEndField.stringValue].longValue;
+    
+    _sliderEnd = end;
+    [self updateLayout];
+}
+
+
+- (void)sliderValueChanged:(id)sender
+{
+    _floatValue = _slider.floatValue;
+    
+    if (_valueChanged)
+        _valueChanged();
+}
+
+
+- (void)setFloatValue:(long)floatValue
+{
+    _floatValue = floatValue;
+    
+    float sectionValue;
+    float endValue = 10000.0;
+    
+    while (endValue > 10.0)
+    {
+        sectionValue = _floatValue / endValue;
+        if (sectionValue > 1.0)
+        {
+            sectionValue = floor(sectionValue);
+            _sliderEnd = fmax(200, (sectionValue + 1.0) * endValue);
+            break;
+        }
+        
+        endValue /= 10.0;
+    }
 }
 
 

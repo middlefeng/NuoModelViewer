@@ -16,6 +16,8 @@
 @property (assign, nonatomic) long sliderEnd;
 @property (assign, nonatomic) long floatValue;
 
+@property (strong, nonatomic) void (^valueChanged)(void);
+
 
 - (instancetype)initWithName:(NSString*)name;
 - (void)updateLayout;
