@@ -100,6 +100,13 @@ static float kHorizontalMargin = 15.0;
     
     _sliderEnd = end;
     [self updateLayout];
+    
+    if (_floatValue > _sliderEnd)
+    {
+        _floatValue = _sliderEnd;
+        if (_valueChanged)
+            _valueChanged();
+    }
 }
 
 
