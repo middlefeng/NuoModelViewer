@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by middleware on 1/29/17.
-//  Copyright © 2017 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 #import "ModelComponentPanels.h"
@@ -162,7 +162,6 @@
 - (void)updatePanels
 {
     [_modelPartsPanel updatePartsPanelWithReload:NO];
-    [_modelPartPropPanel updateForSelectedMesh];
     [_modelPartDimensionPanel updateForSelectedMesh];
 }
 

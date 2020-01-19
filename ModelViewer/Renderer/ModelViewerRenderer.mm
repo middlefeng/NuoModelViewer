@@ -145,6 +145,8 @@
 {
     if (_rayTracingHybrid)
         _rayTracingRecordStatus = kRecord_Stop;
+    
+    [self continueUserInteract];
 }
 
 

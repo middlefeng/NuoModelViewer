@@ -3,13 +3,14 @@
 //  ModelViewer
 //
 //  Created by middleware on 1/29/17.
-//  Copyright © 2017 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 #import "ModelPartPropPanel.h"
 #import "NuoMesh.h"
 #import "NuoBoardMesh.h"
 #import "NuoColorPicker.h"
+#import "NuoOpenEndSlider.h"
 
 #import "ModelPanelUpdate.h"
 #import "ModelOptionUpdate.h"
@@ -38,8 +39,7 @@
     NSTextField* _specReflectanceLabel;
     NuoColorPicker* _specRelectance;
     
-    NSTextField* _specularPower;
-    NSSlider* _specularPowerSlider;
+    NuoOpenEndSlider* _specularPowerSlider;
 }
 
 
@@ -86,10 +86,13 @@
         };
         [self addSubview:_specRelectance];
         
-        _specularPower = [self createLabel:@"Specular Power:" align:NSTextAlignmentRight editable:NO];
-        _specularPowerSlider = [self createSliderMax:2.0e5 min:0.0];
-        [_specularPowerSlider setTarget:self];
-        [_specularPowerSlider setAction:@selector(specularPowerChanged:)];
+        __weak ModelPartPropPanel* selfWeak = self;
+        _specularPowerSlider = [[NuoOpenEndSlider alloc] initWithName:@"Specular Power:"];
+        [_specularPowerSlider setValueChanged:^
+            {
+                [selfWeak specularPowerChanged];
+            }];
+        [self addSubview:_specularPowerSlider];
     }
     
     return self;
@@ -178,6 +181,7 @@
     
     CGRect editableFieldFrame = fieldFrame;
     editableFieldFrame.origin.x += 3;
+    editableFieldFrame.origin.y += 1.0;
     editableFieldFrame.size.width -= 6;
     [_smoothToleranceLabel setFrame:labelFrame];
     [_smoothToleranceField setFrame:editableFieldFrame];
@@ -211,13 +215,13 @@
     colorButtonFrame.origin.y = labelFrame.origin.y - (colorButtonFrame.size.height - labelFrame.size.height) / 2.0;
     [_specRelectance setFrame:colorButtonFrame];
     
-    labelFrame.origin.y -= (entryHeight + lineSpace);
-    labelFrame.size.width = 120;
-    fieldFrame.origin = CGPointMake(labelFrame.size.width + labelSpace, labelFrame.origin.y);
-    fieldFrame.size.width = viewSize.width - labelFrame.size.width - labelSpace * 2 - 10;
+    float openEndSliderHeight = 45.0;
+    labelFrame.origin.y -= (openEndSliderHeight + lineSpace + 2.0);
+    labelFrame.size.width = viewSize.width;
+    labelFrame.size.height = openEndSliderHeight;
     
-    [_specularPower setFrame:labelFrame];
-    [_specularPowerSlider setFrame:fieldFrame];
+    [_specularPowerSlider setFrame:labelFrame];
+    [_specularPowerSlider updateLayout];
 }
 
 
@@ -304,7 +308,7 @@
         _specRelectance.hidden = NO;
         _diffRelectance.color = [boardMesh diffuse];
         _specRelectance.color = [boardMesh specular];
-        [self setSpecularPower:[boardMesh specularPower]];
+        _specularPowerSlider.floatValue = [boardMesh specularPower];
     }
     else
     {
@@ -395,7 +399,7 @@
 }
 
 
-- (void)specularPowerChanged:(id)sender
+- (void)specularPowerChanged
 {
     for (NuoMesh* mesh in _selectedMeshes)
     {
@@ -437,7 +441,7 @@
     }
     
     if (virtualSurface)
-        return 220;
+        return 245;
     else
         return 140;
 }

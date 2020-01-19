@@ -30,8 +30,8 @@ struct ProjectedVertex
  *  fewer samples)
  */
 constant static float kSampleCount = 2.0; // 3.0 before 10.14.6
-constant static float kSampleCountCompensate = ((3.0 /* previous sample count */ * 2) + 1) /
-                                               ((kSampleCount * 2) + 1);
+constant static float kSampleCountCompensate = ((3.0 /* previous sample count */ * 2.0) + 1.0) /
+                                               ((kSampleCount * 2.0) + 1.0);
 
 
 ProjectedVertex vertex_project_common(device const Vertex *vertices,

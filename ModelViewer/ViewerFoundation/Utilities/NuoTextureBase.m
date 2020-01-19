@@ -323,7 +323,7 @@ handleTransparency:
     size_t w = [texture width];
     size_t h = [texture height];
     size_t bytesPerRow = 4 * w;
-    size_t sizeOfBuffer = bytesPerRow * h * 8;
+    size_t sizeOfBuffer = bytesPerRow * h;
     
     // support RGBA for now
     //
@@ -345,7 +345,7 @@ handleTransparency:
     size_t w = sizeOfBuffer.width;
     size_t h = sizeOfBuffer.height;
     size_t bytesPerRow = 4 * w;
-    size_t size = bytesPerRow * h * 8;
+    size_t size = bytesPerRow * h;
     
     CGDataProviderRef dataProvider = CGDataProviderCreateWithData(bytes, bytes, size,
                                                                   NuoDataProviderReleaseDataCallback);
