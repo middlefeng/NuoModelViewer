@@ -14,10 +14,14 @@ A simple Wavefront OBJ viewer.
 
 ## Latest Update
 
+* Specular lighting on a Fresnel surface.
+* Multiple-importance sampling.
+* Slider with adjustable scale.
 * Full ray tracing.
 
 <p align="left">
   <img width="800" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/F-35-ray-tracing-ground.jpg"/>
+  <img width="800" src="https://github.com/middlefeng/NuoModelViewer/blob/master/screenshots/indirect-light-spec.jpg"/>
 </p>
 
 * Hybrid rendering with ray tracing.
