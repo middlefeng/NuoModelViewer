@@ -51,10 +51,12 @@ enum kModelRayTracingTargets
     
     NuoRayBuffer* _incidentRaysBuffer;
     NuoRayBuffer* _shadowRaysBuffer;
+    NuoRayBuffer* _lightRayByScatterBuffer;
     
     NuoIlluminationTarget* _rayTracingResult;
     NuoRayVisibility* _primaryRayVisibility;
     NuoRayVisibility* _shadowRayVisibility;
+    NuoRayVisibility* _lightRayByScatterVisibility;
     
     PNuoRayTracingRandom _rng;
     CGSize _drawableSize;
@@ -104,9 +106,33 @@ enum kModelRayTracingTargets
         _shadowRayVisibility = [[NuoRayVisibility alloc] initWithCommandQueue:commandQueue];
         _shadowRayVisibility.rayStride = kRayBufferStride;
         _shadowRayVisibility.rayTracer = self;
+        
+        _lightRayByScatterVisibility = [[NuoRayVisibility alloc] initWithCommandQueue:commandQueue];
+        _lightRayByScatterVisibility.rayStride = kRayBufferStride;
+        _lightRayByScatterVisibility.rayTracer = self;
     }
     
     return self;
+}
+
+
+- (void)setMultipleImportanceSampling:(bool)multipleImportanceSampling
+{
+    _multipleImportanceSampling = multipleImportanceSampling;
+    
+    [_primaryAndIncidentRaysPipeline setFunctionConstantBool:_multipleImportanceSampling at:0];
+    [_pimraryVirtualLighting setFunctionConstantBool:_multipleImportanceSampling at:0];
+    [_rayShadePipeline setFunctionConstantBool:_multipleImportanceSampling at:0];
+}
+
+
+- (void)setIndirectSpecular:(bool)indirectSpecular
+{
+    _indirectSpecular = indirectSpecular;
+       
+    [_primaryAndIncidentRaysPipeline setFunctionConstantBool:_indirectSpecular at:1];
+    [_pimraryVirtualLighting setFunctionConstantBool:_indirectSpecular at:1];
+    [_rayShadePipeline setFunctionConstantBool:_indirectSpecular at:1];
 }
 
 
@@ -123,8 +149,12 @@ enum kModelRayTracingTargets
     _shadowRaysBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
     _shadowRaysBuffer.dimension = drawableSize;
     
+    _lightRayByScatterBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
+    _lightRayByScatterBuffer.dimension = drawableSize;
+    
     [_primaryRayVisibility setDrawableSize:drawableSize];
     [_shadowRayVisibility setDrawableSize:drawableSize];
+    [_lightRayByScatterVisibility setDrawableSize:drawableSize];
 }
 
 
@@ -204,6 +234,7 @@ enum kModelRayTracingTargets
         [self runRayTraceCompute:_primaryAndIncidentRaysPipeline withCommandBuffer:commandBuffer
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowRaysBuffer.buffer,
+                                   _lightRayByScatterBuffer.buffer,
                                    _incidentRaysBuffer.buffer]];
         
         [_primaryRayVisibility visibilityTestInit:commandBuffer];
@@ -212,20 +243,34 @@ enum kModelRayTracingTargets
         {
             _shadowRayVisibility.paths = _shadowRaysBuffer;
             _shadowRayVisibility.tracingUniform = rayTraceUniform;
+            [_shadowRayVisibility visibilityTestInit:commandBuffer];
             
             [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.intersectionBuffer];
             
-            [_shadowRayVisibility visibilityTestInit:commandBuffer];
+            if (_multipleImportanceSampling)
+            {
+                _lightRayByScatterVisibility.paths = _lightRayByScatterBuffer;
+                _lightRayByScatterVisibility.tracingUniform = rayTraceUniform;
+                [_lightRayByScatterVisibility visibilityTestInit:commandBuffer];
+            }
+            
             for (uint i = 0; i < kRayBounce; ++i)
-                 [_shadowRayVisibility visibilityTest:commandBuffer];
+            {
+                [_shadowRayVisibility visibilityTest:commandBuffer];
+                
+                if (_multipleImportanceSampling)
+                    [_lightRayByScatterVisibility visibilityTest:commandBuffer];
+            }
             
             [_primaryRayVisibility visibilityTest:commandBuffer];
             
             [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
                        withParameter:@[rayTraceUniform, randomBuffer,
                                        _shadowRaysBuffer.buffer,
+                                       _lightRayByScatterBuffer.buffer,
                                        _primaryRayVisibility.visibilities,
-                                       _shadowRayVisibility.visibilities]
+                                       _shadowRayVisibility.visibilities,
+                                       _lightRayByScatterVisibility.visibilities]
                       withExitantRay:_incidentRaysBuffer.buffer
                     withIntersection:self.intersectionBuffer];
         }

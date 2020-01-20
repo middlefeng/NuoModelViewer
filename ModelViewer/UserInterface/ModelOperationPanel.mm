@@ -14,6 +14,7 @@
 #import "NuoPopoverSheet.h"
 #import "ModelOperationTexturePopover.h"
 #import "ModelOperationAmbientPopover.h"
+#import "RayTracingOptionsPopover.h"
 
 
 @interface ModelOperationPanel() < NSTableViewDataSource, NSTableViewDelegate, NuoPopoverSheetDelegate >
@@ -49,6 +50,7 @@
 @property (nonatomic, strong) NSButton* rayTracingRecord;
 @property (nonatomic, strong) NSButton* rayTracingPause;
 @property (nonatomic, strong) NSButton* rayTracingHybridMode;
+@property (nonatomic, strong) NuoPopoverSheet* rayTracingPopover;
 
 @property (nonatomic, strong) NSPopUpButton* deviceList;
 
@@ -294,6 +296,7 @@
     NuoPopoverSheet* ambientPopover = [[NuoPopoverSheet alloc] initWithParent:scrollDocumentView];
     ambientPopover.sheetDelegate = self;
     [ambientPopover setFrame:popoverFrame];
+    _ambientPopover = ambientPopover;
     
     rowCoord += 1.2;
     
@@ -446,7 +449,7 @@
     
     // ray tracing hybrid with rasterization
     
-    rowCoord += 1.0;
+    rowCoord += 1.2;
     
     NSRect rayHybridFrame = [self buttonLoactionAtRow:rowCoord
                                           withLeading:0 inView:scrollDocumentView];
@@ -455,6 +458,17 @@
                                                       withSelector:@selector(rayTracingModeUpdate:)];
     [scrollDocumentView addSubview:rayTracingHybrid];
     _rayTracingHybridMode = rayTracingHybrid;
+    
+    // ray tracing options
+    
+    rayHybridFrame.origin.x += rayTracingHybrid.frame.size.width - 80.0;
+    rayHybridFrame.origin.y -= ((popoverFrame.size.height - rayTracingHybrid.frame.size.height) / 2.0);
+    rayHybridFrame.size = popoverButtonSize;
+    
+    NuoPopoverSheet* rayTracingOptionsPopover = [[NuoPopoverSheet alloc] initWithParent:scrollDocumentView];
+    [rayTracingOptionsPopover setFrame:rayHybridFrame];
+    rayTracingOptionsPopover.sheetDelegate = self;
+    _rayTracingPopover = rayTracingOptionsPopover;
     
     // ray tracing illumination stregth
     
@@ -777,6 +791,7 @@
 {
     _rayTracingHybrid = _rayTracingHybridMode.state == NSControlStateValueOn;
     
+    [self updateControls];
     [_optionUpdateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
 }
 
@@ -793,6 +808,7 @@
 - (void)updateControls
 {
     [_checkTexturePopover setEnabled:_modelState.modelOptions._textured];
+    [_rayTracingPopover setEnabled:!_rayTracingHybrid];
     
     [_checkMaterial setState:_modelState.modelOptions._basicMaterialized ? NSControlStateValueOn : NSControlStateValueOff];
     [_checkTexture setState:_modelState.modelOptions._textured ? NSControlStateValueOn : NSControlStateValueOff];
@@ -889,8 +905,10 @@
 {
     if (sheet == _checkTexturePopover)
         return CGSizeMake(250, 60);
-    else
+    else if (sheet == _ambientPopover)
         return CGSizeMake(250, 125);
+    else
+        return CGSizeMake(220, 60);
 }
 
 - (NSViewController *)popoverSheetcontentViewController:(NuoPopoverSheet *)sheet
@@ -902,11 +920,19 @@
                                                                                          withDelegate:_optionUpdateDelegate];
         return popover;
     }
-    else
+    else if (sheet == _ambientPopover)
     {
         ModelOperationAmbientPopover* popover = [[ModelOperationAmbientPopover alloc] initWithPopover:sheet.popover
                                                                                       withSourcePanel:self
                                                                                          withDelegate:_optionUpdateDelegate];
+        return popover;
+    }
+    else
+    {
+        RayTracingOptionsPopover* popover = [[RayTracingOptionsPopover alloc] initWithPopover:sheet.popover
+                                                                               withModelState:_modelState
+                                                                                 withDelegate:_optionUpdateDelegate];
+        
         return popover;
     }
 }

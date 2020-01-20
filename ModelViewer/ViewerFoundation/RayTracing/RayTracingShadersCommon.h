@@ -48,6 +48,11 @@ struct RayBuffer
     // determine if the ambient calculation should terminate, which is independent from
     // whether boucing should terminate
     bool ambientOccluded;
+    
+    // probability of the sample of the current sampling approach, and an alternative
+    // sampling approach in the multiple importance sampling
+    float pdf;
+    float pdfAlternative;
 };
 
 
@@ -97,11 +102,11 @@ struct PathSample
     bool specularReflection;
     bool transmission;
     bool transThrough;
+    
+    float pdf;
 };
 
 
-
-constant bool kShadowOnTranslucent  [[ function_constant(0) ]];
 
 
 
@@ -346,8 +351,6 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                    metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
                                    metal::sampler samplr);
 
-float light_source_scatter_sample(constant NuoRayTracingUniforms& tracingUniforms,
-                                  float3 direction);
 
 void ambient_with_no_block(uint2 tid,
                            device RayStructureUniform& structUniform,
@@ -367,6 +370,13 @@ void sample_scatter_ray(float maxDistance,
                         thread const RayBuffer& ray,
                         thread RayBuffer& incidentRay);
 
+void sample_light_by_scatter(float maxDistance,
+                             constant NuoRayTracingLightSource* lightSources,
+                             device NuoRayTracingRandomUnit& random,
+                             device Intersection& intersection,
+                             thread const NuoRayTracingMaterial& material,
+                             thread const RayBuffer& ray,
+                             device RayBuffer& shadowRay);
 
 float ambient_distance_factor(float criteriaBlock, float criteriaUnblock,
                               float intersection, float power);

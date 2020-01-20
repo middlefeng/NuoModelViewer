@@ -245,6 +245,12 @@ static const uint32_t kRayBounce = 4;
                                                         withOptions:MTLResourceStorageModeManaged
                                                       withChainSize:kInFlightBufferCount];
         
+        // no indirect specular for the hybrid rendering
+        //
+        [_primaryRaysPipeline setFunctionConstantBool:NO at:1];
+        [_primaryAndIncidentRaysPipeline setFunctionConstantBool:NO at:1];
+        [_rayShadePipeline setFunctionConstantBool:NO at:1];
+        
         _rayTracingResult = [NuoIlluminationTarget new];
         
         for (uint i = 0; i < 2; ++i)

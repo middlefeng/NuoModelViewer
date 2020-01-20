@@ -62,7 +62,9 @@ typedef struct
      *  in light source sampling of a monte carlo process, the (radiance / pdf-light)
      *  will be equal to radiance * solid-angle, hence the irradiance
      *
-     *  in a scatter sampling, the radiance is (irradiance / 2 * (1 - coneAngleCosine))
+     *  in a scatter sampling, the radiance is (irradiance / (2 * PI * (1 - coneAngleCosine)) * PI),
+     *  (the right-most PI factor is abitrarily multipled by the renderer, and in effct it cancels
+     *  the PI term in the denominator)
      */
     float irradiance;
 }
@@ -126,6 +128,9 @@ typedef struct
     
     vector2 uvLightSource;
     float lightSource;
+    
+    vector2 uvLightSourceByScatter;
+    float pathTermForLightSourceByScatter;
 }
 NuoRayTracingRandomUnit;
 

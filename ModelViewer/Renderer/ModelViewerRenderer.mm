@@ -116,12 +116,19 @@
 
 - (void)switchToRayTracing
 {
-    if (!_rayTracingHybrid && _renderDelegate)
-        return;
+    ModelRayTracerDelegate* delegate = (ModelRayTracerDelegate*)_renderDelegate;
+        
+    if (!delegate || _rayTracingHybrid)
+    {
+        delegate = [[ModelRayTracerDelegate alloc] initWithCommandQueue:self.commandQueue
+                                                        withAccelerator:_rayAccelerator
+                                                          withSceneRoot:_modelState.sceneRoot];
+    }
     
-    _renderDelegate = [[ModelRayTracerDelegate alloc] initWithCommandQueue:self.commandQueue
-                                                           withAccelerator:_rayAccelerator
-                                                             withSceneRoot:_modelState.sceneRoot];
+    [delegate setMultipleImportanceSampling:_modelState.rayTracingMultipleImportance];
+    [delegate setIndirectSpecular:_modelState.rayTracingIndirectSpecular];
+    
+    _renderDelegate = delegate;
         
     _rayTracingHybrid = NO;
 }

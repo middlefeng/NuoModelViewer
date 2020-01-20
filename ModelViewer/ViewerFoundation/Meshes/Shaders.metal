@@ -453,6 +453,15 @@ float3 specular_fresnel_incident(float3 specularReflectance, float materialSpecu
 }
 
 
+float3 diffuse_fresnel_incident(float3 Rd, float3 Rs, float wiTheta, float woTheta)
+{
+    float3 diffuse = (28.0 / 23.0) * Rd * (1.0 - Rs) * (1.0 - saturate(pow(1.0 - 0.5 * (wiTheta), 5.0))) *
+                                                       (1.0 - saturate(pow(1.0 - 0.5 * (woTheta), 5.0)));
+    
+    return diffuse;
+}
+
+
 // specular_common() returns (radiance * pi), because that saves some calculation and the 1/pi factor
 // in radiance is usually cancelled by the outside integral
 //

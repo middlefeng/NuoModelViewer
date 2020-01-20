@@ -172,6 +172,7 @@ metal::float3 specular_common_physically(float3 specularReflectance, float mater
 //
 metal::float3 specular_fresnel_incident(float3 specularReflectance, float materialSpecularPower,
                                         float3 lightDirection, float3 exitent);
+metal::float3 diffuse_fresnel_incident(float3 Rd, float3 Rs, float wiTheta, float woTheta);
 
 
 metal::float3 shadow_coverage_common(metal::float4 shadowCastModelPostion, bool translucent,

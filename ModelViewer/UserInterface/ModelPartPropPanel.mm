@@ -415,6 +415,12 @@
 }
 
 
+- (void)setSpecularPower:(float)specularPower
+{
+    [_specularPowerSlider setFloatValue:specularPower];
+}
+
+
 - (void)showIfSelected
 {
     if (_selectedMeshes)

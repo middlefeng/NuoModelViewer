@@ -25,6 +25,9 @@
 
 @property (nonatomic, readonly) NuoIlluminationTarget* rayTracingResult;
 
+@property (nonatomic, assign) bool multipleImportanceSampling;
+@property (nonatomic, assign) bool indirectSpecular;
+
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
