@@ -76,11 +76,26 @@
     [self.view addSubview:indirectSpecular];
     
     _indirectSpecular = indirectSpecular;
+    
+    [self updateControls];
+}
 
+
+- (void)updateControls
+{
     if (_modelState.rayTracingMultipleImportance)
-        mipSampling.state = NSControlStateValueOn;
+        _mipSampling.state = NSControlStateValueOn;
+    
     if (_modelState.rayTracingIndirectSpecular)
-        indirectSpecular.state = NSControlStateValueOn;
+    {
+        _indirectSpecular.state = NSControlStateValueOn;
+        _mipSampling.enabled = YES;
+    }
+    else
+    {
+        _mipSampling.enabled = NO;
+        _mipSampling.state = NSControlStateValueOff;
+    }
 }
 
 
@@ -88,6 +103,8 @@
 {
     _modelState.rayTracingMultipleImportance = (_mipSampling.state == NSControlStateValueOn);
     _modelState.rayTracingIndirectSpecular = (_indirectSpecular.state == NSControlStateValueOn);
+    
+    [self updateControls];
     
     [_updateDelegate modelOptionUpdate:kUpdateOption_RebuildPipeline];
 }
