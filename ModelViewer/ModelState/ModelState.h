@@ -50,11 +50,11 @@ class NuoLua;
 - (void)removeSelectedMesh;
 - (void)removeAllBoards;
 
-- (void)exportMainModel:(NuoTableExporter*)exporter;
+- (void)exportScenePoises:(NuoTableExporter*)exporter;
 - (void)exportBoardModels:(NuoTableExporter*)exporter;
 - (void)exportModelConfiguration:(NuoTableExporter*)exporter;
 
-- (void)importMainModel:(NuoLua*)lua;
+- (void)importScenePoises:(NuoLua*)lua;
 - (void)importBoardModels:(NuoLua*)lua;
 - (void)importModelConfiguration:(NuoLua*)lua;
 
@@ -65,6 +65,13 @@ class NuoLua;
 - (NuoBounds)selectedMeshBounds:(const NuoMatrixFloat44&)viewMatrix;
 - (void)selectedMeshTranslateX:(float)x Y:(float)y Z:(float)z;
 - (void)selectedMeshRotationX:(float)x Y:(float)y;
+
+- (BOOL)viewTransformReset;
+- (void)resetViewTransform;
+- (void)viewRotateX:(float)x Y:(float)y;
+- (void)viewTanslate:(const NuoVectorFloat3&)translation;
+- (NuoMatrixFloat44)viewMatrix;
+- (void)caliberateSceneCenter;
 
 - (size_t)configurableMeshPartsNumber;
 - (NSArray<NuoMesh*>*)configurableMeshParts;

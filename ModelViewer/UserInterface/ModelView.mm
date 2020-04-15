@@ -1025,7 +1025,7 @@ MouseDragMode;
 {
     _modelRender.lights = _notationRenderer.lightSources;
     
-    if (!_modelRender.viewTransformReset)
+    if (!_modelRender.modelState.viewTransformReset)
     {
         [_sceneResetMenu setTarget:self];
         [_sceneResetMenu setAction:@selector(resetScene:)];
@@ -1365,9 +1365,9 @@ MouseDragMode;
 
 - (void)resetScene:(id)sender
 {
-    if (!_modelRender.viewTransformReset)
+    if (!_modelRender.modelState.viewTransformReset)
     {
-        [_modelRender resetViewTransform];
+        [_modelRender.modelState resetViewTransform];
         [self render];
         
         [_sceneResetMenu setTarget:nil];

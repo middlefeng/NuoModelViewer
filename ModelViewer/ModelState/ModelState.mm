@@ -30,6 +30,17 @@
 @property (weak) id<MTLCommandQueue> commandQueue;
 
 
+// transform data. "viewRotation" is relative to the scene's center
+//
+@property (assign) NuoMatrixFloat44 viewRotation;
+@property (assign) NuoMatrixFloat44 viewTranslation;
+
+// need store the center of a snapshot of the scene as the meshes in the scene
+// keep moving
+//
+@property (assign) NuoVectorFloat3 sceneCenter;
+
+
 @end
 
 
@@ -62,6 +73,9 @@
         _modelOptions._texturedBump = YES;
         _modelOptions._combineByMaterials = NO;
         _modelOptions._physicallyReflection = YES;
+        
+        _viewRotation = NuoMatrixFloat44Identity;
+        _viewTranslation = NuoMatrixFloat44Identity;
     }
     
     return self;
@@ -259,6 +273,47 @@
 }
 
 
+- (BOOL)viewTransformReset
+{
+    return _viewRotation.IsIdentity() &&
+           _viewTranslation.IsIdentity();
+}
+
+
+- (void)resetViewTransform
+{
+    _viewRotation = NuoMatrixFloat44Identity;
+    _viewTranslation = NuoMatrixFloat44Identity;
+}
+
+
+- (void)viewRotateX:(float)x Y:(float)y
+{
+    _viewRotation = NuoMatrixRotationAppend(_viewRotation, x, y);
+}
+
+- (void)viewTanslate:(const NuoVectorFloat3&)translation
+{
+    _viewTranslation = NuoMatrixTranslation(translation) * _viewTranslation;
+}
+
+
+- (void)caliberateSceneCenter
+{
+    NuoBounds bounds = [_sceneRoot worldBounds:NuoMatrixFloat44Identity].boundingBox;
+    _sceneCenter = bounds._center;
+}
+
+
+- (NuoMatrixFloat44)viewMatrix
+{
+    // rotation is around the center of a previous scene snapshot
+    //
+    const NuoMatrixFloat44 viewTrans = NuoMatrixRotationAround(_viewRotation, _sceneCenter);
+    return _viewTranslation * viewTrans;
+}
+
+
 - (void)selectMesh:(NuoMesh*)mesh
 {
     _selectedMesh = mesh;
@@ -299,7 +354,7 @@
 }
 
 
-- (void)exportMainModel:(NuoTableExporter*)exporter
+- (void)exportScenePoises:(NuoTableExporter*)exporter
 {
     {
         exporter->StartEntry("rotationMatrix");
@@ -310,6 +365,18 @@
     {
         exporter->StartEntry("translationMatrix");
         exporter->SetMatrix(_mainModelMesh.transformTranslate);
+        exporter->EndEntry(true);
+    }
+    
+    {
+        exporter->StartEntry("viewMatrixRotation");
+        exporter->SetMatrix(_viewRotation);
+        exporter->EndEntry(true);
+    }
+    
+    {
+        exporter->StartEntry("viewMatrixTranslation");
+        exporter->SetMatrix(_viewTranslation);
         exporter->EndEntry(true);
     }
 }
@@ -453,7 +520,7 @@
 }
 
 
-- (void)importMainModel:(NuoLua*)lua
+- (void)importScenePoises:(NuoLua*)lua
 {
     lua->GetField("rotationMatrix", -1);
     [_mainModelMesh setTransformPoise:lua->GetMatrixFromTable(-1)];
@@ -462,6 +529,22 @@
     lua->GetField("translationMatrix", -1);
     if (!lua->IsNil(-1))
         [_mainModelMesh setTransformTranslate:lua->GetMatrixFromTable(-1)];
+    lua->RemoveField();
+    
+    // backward compatible the old "viewMatrix"
+    lua->GetField("viewMatrix", -1);
+    if (!lua->IsNil(-1))
+        _viewRotation = lua->GetMatrixFromTable(-1);
+    lua->RemoveField();
+    
+    lua->GetField("viewMatrixRotation", -1);
+    if (!lua->IsNil(-1))
+        _viewRotation = lua->GetMatrixFromTable(-1);
+    lua->RemoveField();
+    
+    lua->GetField("viewMatrixTranslation", -1);
+    if (!lua->IsNil(-1))
+        _viewTranslation = lua->GetMatrixFromTable(-1);
     lua->RemoveField();
 }
 

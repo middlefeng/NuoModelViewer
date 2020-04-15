@@ -42,15 +42,6 @@
 
 @interface ModelRenderer ()
 
-// transform data. "viewRotation" is relative to the scene's center
-//
-@property (assign) NuoMatrixFloat44 viewRotation;
-@property (assign) NuoMatrixFloat44 viewTranslation;
-
-// need store the center of a snapshot of the scene as the meshes in the scene
-// keep moving
-//
-@property (assign) NuoVectorFloat3 sceneCenter;
 
 @property (strong) NuoModelLoaderGPU* modelLoader;
 
@@ -89,9 +80,6 @@
         
         _sceneParameters = [[ModelSceneParameters alloc] initWithDevice:commandQueue.device];
         _sceneParameters.sceneRoot = _modelState.sceneRoot;
-        
-        _viewRotation = NuoMatrixFloat44Identity;
-        _viewTranslation = NuoMatrixFloat44Identity;
         
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
     }
@@ -220,7 +208,7 @@
     _transMode = transMode;
     
     if (transMode == kTransformMode_View)
-        [self caliberateSceneCenter];
+        [_modelState caliberateSceneCenter];
 }
 
 
@@ -228,7 +216,7 @@
 - (void)loadMesh:(NSString*)path withProgress:(NuoProgressFunction)progress
 {
     [_modelState loadMesh:path withProgress:progress];
-    [self caliberateSceneCenter];
+    [_modelState caliberateSceneCenter];
 }
 
 
@@ -334,20 +322,6 @@
 }
 
 
-- (BOOL)viewTransformReset
-{
-    return _viewRotation.IsIdentity() &&
-           _viewTranslation.IsIdentity();
-}
-
-
-- (void)resetViewTransform
-{
-    _viewRotation = NuoMatrixFloat44Identity;
-    _viewTranslation = NuoMatrixFloat44Identity;
-}
-
-
 - (void)createBoard:(CGSize)size withName:(NSString*)name
 {
     [_modelState createBoard:size withName:name];
@@ -406,18 +380,7 @@
         exporter.EndEntry(true);
     }
     
-    [_modelState exportMainModel:&exporter];
-    
-    {
-        exporter.StartEntry("viewMatrixRotation");
-        exporter.SetMatrix(_viewRotation);
-        exporter.EndEntry(true);
-        
-        exporter.StartEntry("viewMatrixTranslation");
-        exporter.SetMatrix(_viewTranslation);
-        exporter.EndEntry(true);
-    }
-    
+    [_modelState exportScenePoises:&exporter];
     [_modelState exportBoardModels:&exporter];
     
     {
@@ -532,24 +495,8 @@
 
 - (void)importScene:(NuoLua*)lua
 {
-    [_modelState importMainModel:lua];
-    
-    // backward compatible the old "viewMatrix"
-    lua->GetField("viewMatrix", -1);
-    if (!lua->IsNil(-1))
-        _viewRotation = lua->GetMatrixFromTable(-1);
-    lua->RemoveField();
-    
-    lua->GetField("viewMatrixRotation", -1);
-    if (!lua->IsNil(-1))
-        _viewRotation = lua->GetMatrixFromTable(-1);
-    lua->RemoveField();
-    
-    lua->GetField("viewMatrixTranslation", -1);
-    if (!lua->IsNil(-1))
-        _viewTranslation = lua->GetMatrixFromTable(-1);
-    lua->RemoveField();
-    
+    [_modelState importScenePoises:lua];
+
     lua->GetField("view", -1);
     self.fieldOfView = lua->GetFieldAsNumber("FOV", -1);
     lua->RemoveField();
@@ -585,7 +532,7 @@
     
     lua->RemoveField();
     
-    [self caliberateSceneCenter];
+    [_modelState caliberateSceneCenter];
 }
 
 
@@ -623,10 +570,10 @@
 
 - (void)handleDeltaPosition
 {
-    if (_transMode == kTransformMode_Model && [self viewTransformReset])
-        [self caliberateSceneCenter];
+    if (_transMode == kTransformMode_Model && [_modelState viewTransformReset])
+        [_modelState caliberateSceneCenter];
     
-    NuoBounds bounds = [_modelState selectedMeshBounds:[self viewMatrix]];
+    NuoBounds bounds = [_modelState selectedMeshBounds:[_modelState viewMatrix]];
     float radius = bounds.MaxDimension();
     
     // simply using "z" works until the view matrix is no longer an identitiy
@@ -641,7 +588,7 @@
     // accumulate delta rotation into matrix
     //
     if (_transMode == kTransformMode_View)
-        _viewRotation = NuoMatrixRotationAppend(_viewRotation, _rotationXDelta, _rotationYDelta);
+        [_modelState viewRotateX:_rotationXDelta Y:_rotationYDelta];
     else
         [_modelState selectedMeshRotationX:_rotationXDelta Y:_rotationYDelta];
     
@@ -663,28 +610,12 @@
     
     if (_transMode == kTransformMode_View)
     {
-        _viewTranslation = NuoMatrixTranslation(translation) * _viewTranslation;
+        [_modelState viewTanslate:translation];
     }
     else
     {
         [_modelState selectedMeshTranslateX:doTransX Y:doTransY Z:distanceDelta];
     }
-}
-
-
-- (void)caliberateSceneCenter
-{
-    NuoBounds bounds = [_modelState.sceneRoot worldBounds:NuoMatrixFloat44Identity].boundingBox;
-    _sceneCenter = bounds._center;
-}
-
-
-- (NuoMatrixFloat44)viewMatrix
-{
-    // rotation is around the center of a previous scene snapshot
-    //
-    const NuoMatrixFloat44 viewTrans = NuoMatrixRotationAround(_viewRotation, _sceneCenter);
-    return _viewTranslation * viewTrans;
 }
 
 
@@ -695,7 +626,7 @@
     //
     [self handleDeltaPosition];
     
-    [_sceneParameters setViewMatrix:[self viewMatrix]];
+    [_sceneParameters setViewMatrix:[_modelState viewMatrix]];
     [_sceneParameters setLights:_lights];
     [_sceneParameters updateUniforms:commandBuffer];
     
@@ -744,11 +675,11 @@
         else if (_rayAcceleratorOutOfSync)
             [_rayAccelerator setRoot:_modelState.sceneRoot withCommandBuffer:commandBuffer];
         
-        [_rayAccelerator setView:[self viewMatrix]];
+        [_rayAccelerator setView:[_modelState viewMatrix]];
         
         if (_rayAcceleratorOutOfSync)
         {
-            [_renderDelegate setViewMatrix:[self viewMatrix]];
+            [_renderDelegate setViewMatrix:[_modelState viewMatrix]];
             [_renderDelegate setAmbient:_ambientDensity];
             [_renderDelegate setAmbientParameters:_ambientParameters];
             [_renderDelegate setIlluminationStrength:_illuminationStrength];

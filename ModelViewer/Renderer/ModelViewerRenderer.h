@@ -74,7 +74,6 @@ class NuoLua;
 
 
 @property (nonatomic, assign) TransformMode transMode;
-@property (nonatomic, readonly) BOOL viewTransformReset;
 
 @property (nonatomic, assign) float backdropScaleDelta;
 @property (nonatomic, assign) float backdropTransXDelta;
@@ -118,7 +117,6 @@ class NuoLua;
 - (void)updateModelOptionsWithProgress:(NuoProgressFunction)progress;
 
 - (void)createBoard:(CGSize)size withName:(NSString*)name;
-- (void)resetViewTransform;
 - (void)removeSelectedMesh;
 - (void)selectMeshWithScreen:(CGPoint)point;
 
