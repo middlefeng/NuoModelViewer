@@ -5,10 +5,10 @@
 #import "NuoTypes.h"
 #import "NuoMeshSceneRenderPass.h"
 
+#import "ModelState.h"
 #import "ModelRenderDelegate.h"
 
 
-@class ModelState;
 @class NuoMesh;
 @class NuoMeshCompound;
 @class NuoMeshSceneRoot;
@@ -49,15 +49,6 @@ class NuoMeshOption;
  */
 
 
-
-typedef enum
-{
-    kTransformMode_Model,
-    kTransformMode_View,
-}
-TransformMode;
-
-
 class NuoLua;
 
 
@@ -72,8 +63,6 @@ class NuoLua;
 @property (nonatomic, strong) NuoBackdropMesh* backdropMesh;
 @property (nonatomic, readonly) BOOL hasMeshes;
 
-
-@property (nonatomic, assign) TransformMode transMode;
 
 @property (nonatomic, assign) float backdropScaleDelta;
 @property (nonatomic, assign) float backdropTransXDelta;

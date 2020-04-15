@@ -290,9 +290,9 @@ MouseDragMode;
     [_modelRender setAmbientParameters:_modelPanel.ambientParameters];
     [_modelRender setFieldOfView:_modelPanel.fieldOfViewRadian];
     [_modelRender setAmbientDensity:_modelPanel.ambientDensity];
-    [_modelRender setTransMode:_modelPanel.transformMode];
     [_modelRender setIlluminationStrength:_modelPanel.illumination];
     [_modelRender setShowCheckerboard:_modelPanel.showModelParts];
+    [_modelRender.modelState setTransMode:_modelPanel.transformMode];
     
     [_modelRender.sceneParameters setCullEnabled:_modelPanel.cullEnabled];
     

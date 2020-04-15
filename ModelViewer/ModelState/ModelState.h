@@ -26,6 +26,15 @@ class NuoLua;
 
 
 
+typedef enum
+{
+    kTransformMode_Model,
+    kTransformMode_View,
+}
+TransformMode;
+
+
+
 @interface ModelState : NSObject
 
 
@@ -36,6 +45,8 @@ class NuoLua;
 @property (nonatomic, strong) NuoMeshSceneRoot* sceneRoot;
 @property (nonatomic, readonly) NuoMeshCompound* mainModelMesh;
 @property (nonatomic, strong) NSArray<NuoMesh*>* selectedParts;
+
+@property (nonatomic, assign) TransformMode transMode;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
@@ -63,15 +74,14 @@ class NuoLua;
 
 - (void)selectMesh:(NuoMesh*)mesh;
 - (NuoBounds)selectedMeshBounds:(const NuoMatrixFloat44&)viewMatrix;
-- (void)selectedMeshTranslateX:(float)x Y:(float)y Z:(float)z;
-- (void)selectedMeshRotationX:(float)x Y:(float)y;
 
 - (BOOL)viewTransformReset;
 - (void)resetViewTransform;
-- (void)viewRotateX:(float)x Y:(float)y;
-- (void)viewTanslate:(const NuoVectorFloat3&)translation;
 - (NuoMatrixFloat44)viewMatrix;
 - (void)caliberateSceneCenter;
+
+- (void)rotateX:(float)x Y:(float)y;
+- (void)tanslate:(const NuoVectorFloat3&)translation;
 
 - (size_t)configurableMeshPartsNumber;
 - (NSArray<NuoMesh*>*)configurableMeshParts;

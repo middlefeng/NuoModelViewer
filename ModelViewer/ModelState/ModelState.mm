@@ -255,24 +255,6 @@
 }
 
 
-- (void)selectedMeshTranslateX:(float)x Y:(float)y Z:(float)z
-{
-    const NuoVectorFloat3 translation
-    (
-        x, y, z
-    );
-    
-     const NuoMatrixFloat44 transMatrix = NuoMatrixTranslation(translation) * _selectedMesh.transformTranslate;
-     [_selectedMesh setTransformTranslate:transMatrix];
-}
-
-
-- (void)selectedMeshRotationX:(float)x Y:(float)y
-{
-    _selectedMesh.transformPoise = NuoMatrixRotationAppend(_selectedMesh.transformPoise, x, y);
-}
-
-
 - (BOOL)viewTransformReset
 {
     return _viewRotation.IsIdentity() &&
@@ -287,14 +269,26 @@
 }
 
 
-- (void)viewRotateX:(float)x Y:(float)y
+- (void)rotateX:(float)x Y:(float)y
 {
-    _viewRotation = NuoMatrixRotationAppend(_viewRotation, x, y);
+    if (_transMode == kTransformMode_View)
+        _viewRotation = NuoMatrixRotationAppend(_viewRotation, x, y);
+    else
+        _selectedMesh.transformPoise = NuoMatrixRotationAppend(_selectedMesh.transformPoise, x, y);
 }
 
-- (void)viewTanslate:(const NuoVectorFloat3&)translation
+
+- (void)tanslate:(const NuoVectorFloat3&)translation
 {
-    _viewTranslation = NuoMatrixTranslation(translation) * _viewTranslation;
+    if (_transMode == kTransformMode_View)
+    {
+        _viewTranslation = NuoMatrixTranslation(translation) * _viewTranslation;
+    }
+    else
+    {
+        const NuoMatrixFloat44 transMatrix = NuoMatrixTranslation(translation) * _selectedMesh.transformTranslate;
+        [_selectedMesh setTransformTranslate:transMatrix];
+    }
 }
 
 
@@ -311,6 +305,15 @@
     //
     const NuoMatrixFloat44 viewTrans = NuoMatrixRotationAround(_viewRotation, _sceneCenter);
     return _viewTranslation * viewTrans;
+}
+
+
+- (void)setTransMode:(TransformMode)transMode
+{
+    _transMode = transMode;
+
+    if (transMode == kTransformMode_View)
+        [self caliberateSceneCenter];
 }
 
 

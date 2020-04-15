@@ -8,8 +8,6 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
 
-#import "ModelState.h"
-
 #include "NuoMeshSceneRoot.h"
 #include "NuoCubeMesh.h"
 #include "NuoBackdropMesh.h"
@@ -199,16 +197,6 @@
     
     [_renderDelegate setSampleCount:sampleCount];
     [_modelState setSampleCount:sampleCount];
-}
-
-
-
-- (void)setTransMode:(TransformMode)transMode
-{
-    _transMode = transMode;
-    
-    if (transMode == kTransformMode_View)
-        [_modelState caliberateSceneCenter];
 }
 
 
@@ -570,7 +558,7 @@
 
 - (void)handleDeltaPosition
 {
-    if (_transMode == kTransformMode_Model && [_modelState viewTransformReset])
+    if (_modelState.transMode == kTransformMode_Model && [_modelState viewTransformReset])
         [_modelState caliberateSceneCenter];
     
     NuoBounds bounds = [_modelState selectedMeshBounds:[_modelState viewMatrix]];
@@ -587,10 +575,7 @@
     
     // accumulate delta rotation into matrix
     //
-    if (_transMode == kTransformMode_View)
-        [_modelState viewRotateX:_rotationXDelta Y:_rotationYDelta];
-    else
-        [_modelState selectedMeshRotationX:_rotationXDelta Y:_rotationYDelta];
+    [_modelState rotateX:_rotationXDelta Y:_rotationYDelta];
     
     _rotationXDelta = 0;
     _rotationYDelta = 0;
@@ -608,14 +593,7 @@
         distanceDelta
     );
     
-    if (_transMode == kTransformMode_View)
-    {
-        [_modelState viewTanslate:translation];
-    }
-    else
-    {
-        [_modelState selectedMeshTranslateX:doTransX Y:doTransY Z:distanceDelta];
-    }
+    [_modelState tanslate:translation];
 }
 
 
