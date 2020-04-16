@@ -77,10 +77,7 @@
     static const float kCameraDistance = 1.0;
     NuoVectorFloat4 lightAsEye(0, 0, kCameraDistance, 1);
     
-    NuoLightSource* lightSource = _lightSource;
-    const NuoMatrixFloat44 lightDirectionMatrix = NuoMatrixRotation(lightSource.lightingRotationX,
-                                                                    lightSource.lightingRotationY);
-    lightAsEye = lightDirectionMatrix * lightAsEye;
+    lightAsEye = _lightSource.lightDirection * lightAsEye;
     lightAsEye = lightAsEye + center;
     lightAsEye.w(1.0);
     

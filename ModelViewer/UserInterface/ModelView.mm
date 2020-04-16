@@ -869,8 +869,7 @@ MouseDragMode;
     else if (_trackingLighting)
     {
         NuoLightSource* lightSource = _notationRenderer.selectedLightSource;
-        [_notationRenderer setRotateX:lightSource.lightingRotationX + deltaX];
-        [_notationRenderer setRotateY:lightSource.lightingRotationY + deltaY];
+        lightSource.lightDirection = NuoMatrixRotationAppend(lightSource.lightDirection, deltaX, deltaY);
     }
     else
     {

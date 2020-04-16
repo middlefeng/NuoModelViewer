@@ -280,13 +280,9 @@
             NuoLightSource* light = _lights[lightIndex];
             
             {
-                exporter.StartEntry("rotateX");
-                exporter.SetEntryValueFloat(light.lightingRotationX);
-                exporter.EndEntry(false);
-                
-                exporter.StartEntry("rotateY");
-                exporter.SetEntryValueFloat(light.lightingRotationY);
-                exporter.EndEntry(false);
+                exporter.StartEntry("rotation");
+                exporter.SetMatrix(light.lightDirection);
+                exporter.EndEntry(true);
                 
                 exporter.StartEntry("irradiance");
                 exporter.SetEntryValueFloat(light.lightingIrradiance);

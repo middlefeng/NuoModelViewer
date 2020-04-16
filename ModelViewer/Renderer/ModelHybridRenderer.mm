@@ -307,12 +307,11 @@ static const uint32_t kRayBounce = 4;
     for (uint i = 0; i < 2; ++i)
     {
         NuoLightSource* lightSource = _shadowPerLight[i].lightSource;
-        const NuoMatrixFloat44 matrix = NuoMatrixRotation(lightSource.lightingRotationX, lightSource.lightingRotationY);
         
         NuoRayTracingLightSource* lightSourceRayTracing = &(uniforms.lightSources[i]);
         NuoVectorFloat4 lightVec = NuoVectorFloat4(0.0, 0.0, 1.0, 0.0);
         
-        lightSourceRayTracing->direction = (matrix * lightVec)._vector.xyz;
+        lightSourceRayTracing->direction = (lightSource.lightDirection * lightVec)._vector.xyz;
         lightSourceRayTracing->irradiance = lightSource.lightingIrradiance;
         
         // the code used to pass lightSource.shadowSoften into the shader, and the shader use it as diameter of

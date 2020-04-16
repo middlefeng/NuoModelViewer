@@ -171,8 +171,27 @@
     {
         lua->GetItem(lightIndex, -1);
         
-        _lightSources[lightIndex].lightingRotationX = lua->GetFieldAsNumber("rotateX", -1);
-        _lightSources[lightIndex].lightingRotationY = lua->GetFieldAsNumber("rotateY", -1);
+        float rotationX = 0;
+        float rotationY = 0;
+        
+        lua->GetField("rotateX", -1);
+        if (!lua->IsNil(-1))
+            rotationX = lua->GetFieldAsNumber("rotateX", -2);
+        lua->RemoveField();
+        
+        lua->GetField("rotateY", -1);
+        if (!lua->IsNil(-1))
+            rotationY = lua->GetFieldAsNumber("rotateY", -2);
+        lua->RemoveField();
+        
+        if (rotationX != 0 || rotationY != 0)
+            _lightSources[lightIndex].lightDirection = NuoMatrixRotation(rotationX, rotationY);
+        
+        lua->GetField("rotation", -1);
+        if (!lua->IsNil(-1))
+            _lightSources[lightIndex].lightDirection = lua->GetMatrixFromTable(-1);
+        lua->RemoveField();
+        
         _lightSources[lightIndex].lightingIrradiance = lua->GetFieldAsNumber("irradiance", -1);
         _lightSources[lightIndex].lightingSpecular = lua->GetFieldAsNumber("specular", -1);
         _lightSources[lightIndex].enableShadow = lua->GetFieldAsBool("enableShadow", -1);
@@ -223,7 +242,7 @@
 }
 
 
-- (void)setRotateX:(float)rotateX
+/*- (void)setRotateX:(float)rotateX
 {
     _currentLightVector.lightSourceDesc.lightingRotationX = rotateX;
 }
@@ -233,7 +252,7 @@
 - (void)setRotateY:(float)rotateY
 {
     _currentLightVector.lightSourceDesc.lightingRotationY = rotateY;
-}
+}*/
 
 
 - (void)setShadowSoften:(float)soften

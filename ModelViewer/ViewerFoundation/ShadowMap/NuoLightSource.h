@@ -7,12 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
+#include "NuoMathVector.h"
 
 
 @interface NuoLightSource : NSObject
 
-@property (nonatomic, assign) float lightingRotationX;
-@property (nonatomic, assign) float lightingRotationY;
+@property (nonatomic, assign) NuoMatrixFloat44 lightDirection;
+
 @property (nonatomic, assign) float lightingIrradiance;
 @property (nonatomic, assign) float lightingSpecular;
 

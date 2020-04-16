@@ -105,7 +105,7 @@
     );
     
     const NuoMatrixFloat44 modelCenteringMatrix = NuoMatrixTranslation(translationToCenter);
-    const NuoMatrixFloat44 modelMatrix = NuoMatrixRotationAppend(modelCenteringMatrix, desc.lightingRotationX, desc.lightingRotationY);
+    const NuoMatrixFloat44 modelMatrix = desc.lightDirection * modelCenteringMatrix;
     [_lightVector updateUniform:inFlight withTransform:modelMatrix._m];
     
     NuoModelCharacterUniforms characters;
@@ -141,11 +141,8 @@
 {
     NuoLightSource* desc = _lightSourceDesc;
     
-    NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(desc.lightingRotationX,
-                                                        desc.lightingRotationY);
-    
     const NuoVectorFloat4 startVec(0, 0, 1, 1);
-    NuoVectorFloat4 projected = rotationMatrix * startVec;
+    NuoVectorFloat4 projected = desc.lightDirection * startVec;
     
     return CGPointMake(projected.x() / projected.w(), projected.y() / projected.w());
 }
