@@ -947,7 +947,7 @@ MouseDragMode;
             NSLog(@"Enterred.");
             return NSDragOperationCopy;
         }
-        else if ([path hasSuffix:@".zip"] && [self isValidPack:path])
+        else if ([path hasSuffix:@".zip"] && [_modelRender.modelState isValidPack:path])
         {
             return NSDragOperationCopy;
         }
@@ -1041,7 +1041,7 @@ MouseDragMode;
 
 - (void)loadMesh:(NSString*)path asPackage:(BOOL)isPackage withCompletion:(NuoSimpleFunction)completion
 {
-    __weak ModelRenderer* modelRender = _modelRender;
+    __weak ModelState* modelState = _modelRender.modelState;
     __weak ModelView* selfWeak = self;
     
     NuoProgressSheetPanel* progressPanel = [NuoProgressSheetPanel new];
@@ -1049,9 +1049,9 @@ MouseDragMode;
     [progressPanel performInBackground:^(NuoProgressFunction progressFunc)
                                     {
                                         if (isPackage)
-                                            [modelRender loadPackage:path withProgress:progressFunc];
+                                            [modelState loadPackage:path withProgress:progressFunc];
                                         else
-                                            [modelRender loadMesh:path withProgress:progressFunc];
+                                            [modelState loadMesh:path withProgress:progressFunc];
                                     }
                             withWindow:self.window
                         withCompletion:^
@@ -1068,13 +1068,6 @@ MouseDragMode;
     _documentName = [documentName stringByDeletingPathExtension];
     NSString* title = [[NSString alloc] initWithFormat:@"ModelView - %@", documentName];
     [self.window setTitle:title];
-}
-
-
-
-- (BOOL)isValidPack:(NSString*)path
-{
-    return [_modelRender isValidPack:path];
 }
 
 

@@ -92,10 +92,6 @@ class NuoLua;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
-- (void)loadMesh:(NSString*)path withProgress:(NuoProgressFunction)progress;
-- (BOOL)loadPackage:(NSString*)path withProgress:(NuoProgressFunction)progress;
-- (BOOL)isValidPack:(NSString*)path;
-
 - (NSArray<NuoMesh*>*)configurableMeshParts;
 - (NuoMeshCompound*)mainModelMesh;
 - (void)setAdvancedShaowEnabled:(BOOL)enabled;

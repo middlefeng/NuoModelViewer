@@ -55,6 +55,8 @@ TransformMode;
 - (void)setSampleCount:(NSUInteger)sampleCount;
 
 - (void)loadMesh:(NSString*)path withProgress:(NuoProgressFunction)progress;
+- (BOOL)loadPackage:(NSString*)path withProgress:(NuoProgressFunction)progress;
+- (BOOL)isValidPack:(NSString*)path;
 - (void)createMeshsWithProgress:(NuoProgressFunction)progress;
 
 - (NuoBoardMesh*)createBoard:(CGSize)size withName:(NSString*)name;
