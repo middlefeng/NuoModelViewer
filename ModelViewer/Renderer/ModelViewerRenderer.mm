@@ -29,23 +29,12 @@
 #import "ModelRayTracerDelegate.h"
 
 #import "NuoDirectoryUtils.h"
-#import "NuoModelLoaderGPU.h"
 #import "ModelSceneParameters.h"
 
 // inspect
 //
 #import "NuoCheckboardMesh.h"
 #import "NuoInspectableMaster.h"
-
-
-@interface ModelRenderer ()
-
-
-@property (strong) NuoModelLoaderGPU* modelLoader;
-
-
-@end
-
 
 
 @implementation ModelRenderer
