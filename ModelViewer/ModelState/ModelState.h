@@ -80,6 +80,7 @@ TransformMode;
 - (BOOL)viewTransformReset;
 - (void)resetViewTransform;
 - (NuoMatrixFloat44)viewMatrix;
+- (NuoMatrixFloat44)viewRotationMatrix;
 - (void)caliberateSceneCenter;
 
 - (void)rotateX:(float)x Y:(float)y;

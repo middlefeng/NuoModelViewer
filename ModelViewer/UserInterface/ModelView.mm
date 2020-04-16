@@ -549,6 +549,7 @@ MouseDragMode;
     _modelDissectRenderer.paramsProvider = _modelRender.sceneParameters;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
+    _notationRenderer.modelState = _modelRender.modelState;
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
     
     [_modelComponentPanels setModelState:_modelRender.modelState];

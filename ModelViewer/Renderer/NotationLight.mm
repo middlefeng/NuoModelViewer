@@ -137,12 +137,12 @@
 }
 
 
-- (CGPoint)headPointProjected
+- (CGPoint)headPointProjectedWithView:(const NuoMatrixFloat44&)view
 {
     NuoLightSource* desc = _lightSourceDesc;
     
     const NuoVectorFloat4 startVec(0, 0, 1, 1);
-    NuoVectorFloat4 projected = desc.lightDirection * startVec;
+    NuoVectorFloat4 projected = view * desc.lightDirection * startVec;
     
     return CGPointMake(projected.x() / projected.w(), projected.y() / projected.w());
 }

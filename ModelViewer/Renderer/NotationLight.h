@@ -30,7 +30,7 @@
 
 
 - (NuoMeshBounds)bounds;
-- (CGPoint)headPointProjected;
+- (CGPoint)headPointProjectedWithView:(const NuoMatrixFloat44&)view;
 
 
 @end

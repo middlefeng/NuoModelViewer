@@ -31,12 +31,6 @@
 @property (strong) NuoModelLoaderGPU* modelLoader;
 @property (weak) id<MTLCommandQueue> commandQueue;
 
-
-// transform data. "viewRotation" is relative to the scene's center
-//
-@property (assign) NuoMatrixFloat44 viewRotation;
-@property (assign) NuoMatrixFloat44 viewTranslation;
-
 // need store the center of a snapshot of the scene as the meshes in the scene
 // keep moving
 //
@@ -52,6 +46,11 @@
 {
     __weak NuoMeshCompound* _mainModelMesh;
     NuoMeshOptions _modelOptions;
+    
+    // transform data. "viewRotation" is relative to the scene's center
+    //
+    NuoMatrixFloat44 _viewRotation;
+    NuoMatrixFloat44 _viewTranslation;
 }
 
 
@@ -403,6 +402,12 @@
     //
     const NuoMatrixFloat44 viewTrans = NuoMatrixRotationAround(_viewRotation, _sceneCenter);
     return _viewTranslation * viewTrans;
+}
+
+
+- (NuoMatrixFloat44)viewRotationMatrix
+{
+    return _viewRotation;
 }
 
 

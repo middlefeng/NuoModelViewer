@@ -12,6 +12,8 @@
 
 
 @class NuoLightSource;
+@class ModelState;
+
 class NuoLua;
 
 
@@ -19,6 +21,7 @@ class NuoLua;
 
 
 @property (nonatomic, readonly) NSArray<NuoLightSource*>* lightSources;
+@property (nonatomic, weak) ModelState* modelState;
 
 @property (nonatomic, assign) float notationWidthCap;
 @property (nonatomic, assign) CGRect notationArea;
