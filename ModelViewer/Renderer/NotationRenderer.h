@@ -42,8 +42,8 @@ class NuoLua;
 
 // manipulator to the current selected light source
 
-//- (void)setRotateX:(float)rotateX;
-//- (void)setRotateY:(float)rotateY;
+- (void)updateRotationX:(float)deltaX Y:(float)deltaY;
+
 - (void)setIrradiance:(float)irradiance;
 - (void)setSpecular:(float)specular;
 - (void)setShadowSoften:(float)shadowSoften;

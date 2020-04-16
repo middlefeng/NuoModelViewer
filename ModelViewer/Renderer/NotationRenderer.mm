@@ -243,17 +243,14 @@
 }
 
 
-/*- (void)setRotateX:(float)rotateX
+- (void)updateRotationX:(float)deltaX Y:(float)deltaY
 {
-    _currentLightVector.lightSourceDesc.lightingRotationX = rotateX;
+    const NuoMatrixFloat44 updateMatrix = NuoMatrixRotation(deltaX, deltaY);
+    const NuoMatrixFloat44 viewRotation = _modelState.viewRotationMatrix;
+    _currentLightVector.lightSourceDesc.lightDirection
+            = (viewRotation.Inverse() * updateMatrix * viewRotation)
+                        * _currentLightVector.lightSourceDesc.lightDirection;
 }
-
-
-
-- (void)setRotateY:(float)rotateY
-{
-    _currentLightVector.lightSourceDesc.lightingRotationY = rotateY;
-}*/
 
 
 - (void)setShadowSoften:(float)soften
