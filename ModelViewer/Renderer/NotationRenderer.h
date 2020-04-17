@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by dfeng on 11/8/16.
-//  Copyright © 2016 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 
@@ -12,6 +12,8 @@
 
 
 @class NuoLightSource;
+@class ModelState;
+
 class NuoLua;
 
 
@@ -19,6 +21,7 @@ class NuoLua;
 
 
 @property (nonatomic, readonly) NSArray<NuoLightSource*>* lightSources;
+@property (nonatomic, weak) ModelState* modelState;
 
 @property (nonatomic, assign) float notationWidthCap;
 @property (nonatomic, assign) CGRect notationArea;
@@ -39,8 +42,8 @@ class NuoLua;
 
 // manipulator to the current selected light source
 
-- (void)setRotateX:(float)rotateX;
-- (void)setRotateY:(float)rotateY;
+- (void)updateRotationX:(float)deltaX Y:(float)deltaY;
+
 - (void)setIrradiance:(float)irradiance;
 - (void)setSpecular:(float)specular;
 - (void)setShadowSoften:(float)shadowSoften;

@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by middleware on 11/13/16.
-//  Copyright © 2016 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -30,7 +30,7 @@
 
 
 - (NuoMeshBounds)bounds;
-- (CGPoint)headPointProjected;
+- (CGPoint)headPointProjectedWithView:(const NuoMatrixFloat44&)view;
 
 
 @end

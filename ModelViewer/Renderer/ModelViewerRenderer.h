@@ -5,10 +5,10 @@
 #import "NuoTypes.h"
 #import "NuoMeshSceneRenderPass.h"
 
+#import "ModelState.h"
 #import "ModelRenderDelegate.h"
 
 
-@class ModelState;
 @class NuoMesh;
 @class NuoMeshCompound;
 @class NuoMeshSceneRoot;
@@ -49,15 +49,6 @@ class NuoMeshOption;
  */
 
 
-
-typedef enum
-{
-    kTransformMode_Model,
-    kTransformMode_View,
-}
-TransformMode;
-
-
 class NuoLua;
 
 
@@ -72,9 +63,6 @@ class NuoLua;
 @property (nonatomic, strong) NuoBackdropMesh* backdropMesh;
 @property (nonatomic, readonly) BOOL hasMeshes;
 
-
-@property (nonatomic, assign) TransformMode transMode;
-@property (nonatomic, readonly) BOOL viewTransformReset;
 
 @property (nonatomic, assign) float backdropScaleDelta;
 @property (nonatomic, assign) float backdropTransXDelta;
@@ -104,10 +92,6 @@ class NuoLua;
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
-- (void)loadMesh:(NSString*)path withProgress:(NuoProgressFunction)progress;
-- (BOOL)loadPackage:(NSString*)path withProgress:(NuoProgressFunction)progress;
-- (BOOL)isValidPack:(NSString*)path;
-
 - (NSArray<NuoMesh*>*)configurableMeshParts;
 - (NuoMeshCompound*)mainModelMesh;
 - (void)setAdvancedShaowEnabled:(BOOL)enabled;
@@ -118,7 +102,6 @@ class NuoLua;
 - (void)updateModelOptionsWithProgress:(NuoProgressFunction)progress;
 
 - (void)createBoard:(CGSize)size withName:(NSString*)name;
-- (void)resetViewTransform;
 - (void)removeSelectedMesh;
 - (void)selectMeshWithScreen:(CGPoint)point;
 

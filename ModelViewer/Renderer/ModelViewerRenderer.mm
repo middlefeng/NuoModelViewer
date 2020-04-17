@@ -8,15 +8,12 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
 
-#import "ModelState.h"
-
 #include "NuoMeshSceneRoot.h"
 #include "NuoCubeMesh.h"
 #include "NuoBackdropMesh.h"
 #include "NuoRenderPassTarget.h"
 #include "NuoModelBase.h"
 #include "NuoTableExporter.h"
-#include "NuoPackage.h"
 
 #include "NuoMathVector.h"
 
@@ -30,33 +27,12 @@
 #import "ModelHybridRenderDelegate.h"
 #import "ModelRayTracerDelegate.h"
 
-#import "NuoDirectoryUtils.h"
-#import "NuoModelLoaderGPU.h"
 #import "ModelSceneParameters.h"
 
 // inspect
 //
 #import "NuoCheckboardMesh.h"
 #import "NuoInspectableMaster.h"
-
-
-@interface ModelRenderer ()
-
-// transform data. "viewRotation" is relative to the scene's center
-//
-@property (assign) NuoMatrixFloat44 viewRotation;
-@property (assign) NuoMatrixFloat44 viewTranslation;
-
-// need store the center of a snapshot of the scene as the meshes in the scene
-// keep moving
-//
-@property (assign) NuoVectorFloat3 sceneCenter;
-
-@property (strong) NuoModelLoaderGPU* modelLoader;
-
-
-@end
-
 
 
 @implementation ModelRenderer
@@ -89,9 +65,6 @@
         
         _sceneParameters = [[ModelSceneParameters alloc] initWithDevice:commandQueue.device];
         _sceneParameters.sceneRoot = _modelState.sceneRoot;
-        
-        _viewRotation = NuoMatrixFloat44Identity;
-        _viewTranslation = NuoMatrixFloat44Identity;
         
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
     }
@@ -214,137 +187,9 @@
 }
 
 
-
-- (void)setTransMode:(TransformMode)transMode
-{
-    _transMode = transMode;
-    
-    if (transMode == kTransformMode_View)
-        [self caliberateSceneCenter];
-}
-
-
-
-- (void)loadMesh:(NSString*)path withProgress:(NuoProgressFunction)progress
-{
-    [_modelState loadMesh:path withProgress:progress];
-    [self caliberateSceneCenter];
-}
-
-
-
-- (BOOL)loadPackage:(NSString*)path withProgress:(NuoProgressFunction)progress
-{
-    const char* documentPath = pathForDocument();
-    NSString* packageFolder = [NSString stringWithUTF8String:documentPath];
-    packageFolder = [packageFolder stringByAppendingPathComponent:@"packaged_load"];
-    
-    NSFileManager* fileManager = [NSFileManager defaultManager];
-    BOOL isDir = NO;
-    BOOL exist = [fileManager fileExistsAtPath:packageFolder isDirectory:&isDir];
-    if (exist)
-        [fileManager removeItemAtPath:packageFolder error:nil];
-    
-    NuoPackage package;
-    std::string objFile;
-    size_t totalUncompressed = 0;
-    size_t uncompressed = 0;
-    
-    NuoUnpackCallback checkCallback = [&totalUncompressed](std::string filename, void* buffer, size_t length)
-    {
-        totalUncompressed += length;
-    };
-    
-    NuoUnpackCallback callback =
-    [&objFile, &uncompressed, &totalUncompressed, progress, fileManager, packageFolder]
-    (std::string filename, void* buffer, size_t length)
-    {
-        NSString* path = [NSString stringWithFormat:@"%@/%s", packageFolder, filename.c_str()];
-        
-        NSString* pathFolder = [path stringByDeletingLastPathComponent];
-        if (![fileManager fileExistsAtPath:pathFolder])
-            [fileManager createDirectoryAtPath:pathFolder withIntermediateDirectories:YES attributes:nil error:nil];
-        
-        NSData* data = [[NSData alloc] initWithBytesNoCopy:buffer length:length freeWhenDone:NO];
-        [data writeToFile:path atomically:NO];
-        
-        if ([path hasSuffix:@".obj"])
-            objFile = path.UTF8String;
-        
-        uncompressed += length;
-        
-        progress(uncompressed / (float)totalUncompressed * 0.3);
-    };
-    
-    package.open(path.UTF8String);
-    package.testFile(checkCallback);
-    package.unpackFile(callback);
-    
-    if (objFile.empty())
-    {
-        return NO;
-    }
-    
-    [self loadMesh:[NSString stringWithUTF8String:objFile.c_str()]
-                        withProgress:^(float progressPercent)
-                             {
-                                 progress(progressPercent * 0.5 + 0.5);
-                             }];
-    
-    return YES;
-}
-
-
-- (BOOL)isValidPack:(NSString*)path
-{
-    bool valid = false;
-    
-    NuoUnpackCallback callback = [&valid](std::string filename, void* buffer, size_t length)
-    {
-        if (valid)
-            return;
-        
-        size_t extPos = filename.find(".obj");
-        
-        if (extPos == std::string::npos)
-            return;
-        
-        size_t fileNameLength = filename.length();
-        if (fileNameLength - extPos == 4)
-        {
-            size_t firstPos = filename.find("/");
-            size_t lastPos = filename.find_last_of("/");
-            
-            if (firstPos != std::string::npos && firstPos == lastPos)
-                valid = true;
-        }
-    };
-    
-    NuoPackage package;
-    package.open(path.UTF8String);
-    package.testFile(callback);
-    
-    return valid;
-}
-
-
 - (BOOL)hasMeshes
 {
     return [_modelState.sceneRoot.meshes count] != 0;
-}
-
-
-- (BOOL)viewTransformReset
-{
-    return _viewRotation.IsIdentity() &&
-           _viewTranslation.IsIdentity();
-}
-
-
-- (void)resetViewTransform
-{
-    _viewRotation = NuoMatrixFloat44Identity;
-    _viewTranslation = NuoMatrixFloat44Identity;
 }
 
 
@@ -406,18 +251,7 @@
         exporter.EndEntry(true);
     }
     
-    [_modelState exportMainModel:&exporter];
-    
-    {
-        exporter.StartEntry("viewMatrixRotation");
-        exporter.SetMatrix(_viewRotation);
-        exporter.EndEntry(true);
-        
-        exporter.StartEntry("viewMatrixTranslation");
-        exporter.SetMatrix(_viewTranslation);
-        exporter.EndEntry(true);
-    }
-    
+    [_modelState exportScenePoises:&exporter];
     [_modelState exportBoardModels:&exporter];
     
     {
@@ -446,13 +280,9 @@
             NuoLightSource* light = _lights[lightIndex];
             
             {
-                exporter.StartEntry("rotateX");
-                exporter.SetEntryValueFloat(light.lightingRotationX);
-                exporter.EndEntry(false);
-                
-                exporter.StartEntry("rotateY");
-                exporter.SetEntryValueFloat(light.lightingRotationY);
-                exporter.EndEntry(false);
+                exporter.StartEntry("rotation");
+                exporter.SetMatrix(light.lightDirection);
+                exporter.EndEntry(true);
                 
                 exporter.StartEntry("irradiance");
                 exporter.SetEntryValueFloat(light.lightingIrradiance);
@@ -532,24 +362,8 @@
 
 - (void)importScene:(NuoLua*)lua
 {
-    [_modelState importMainModel:lua];
-    
-    // backward compatible the old "viewMatrix"
-    lua->GetField("viewMatrix", -1);
-    if (!lua->IsNil(-1))
-        _viewRotation = lua->GetMatrixFromTable(-1);
-    lua->RemoveField();
-    
-    lua->GetField("viewMatrixRotation", -1);
-    if (!lua->IsNil(-1))
-        _viewRotation = lua->GetMatrixFromTable(-1);
-    lua->RemoveField();
-    
-    lua->GetField("viewMatrixTranslation", -1);
-    if (!lua->IsNil(-1))
-        _viewTranslation = lua->GetMatrixFromTable(-1);
-    lua->RemoveField();
-    
+    [_modelState importScenePoises:lua];
+
     lua->GetField("view", -1);
     self.fieldOfView = lua->GetFieldAsNumber("FOV", -1);
     lua->RemoveField();
@@ -585,7 +399,7 @@
     
     lua->RemoveField();
     
-    [self caliberateSceneCenter];
+    [_modelState caliberateSceneCenter];
 }
 
 
@@ -623,10 +437,10 @@
 
 - (void)handleDeltaPosition
 {
-    if (_transMode == kTransformMode_Model && [self viewTransformReset])
-        [self caliberateSceneCenter];
+    if (_modelState.transMode == kTransformMode_Model && [_modelState viewTransformReset])
+        [_modelState caliberateSceneCenter];
     
-    NuoBounds bounds = [_modelState selectedMeshBounds:[self viewMatrix]];
+    NuoBounds bounds = [_modelState selectedMeshBounds:[_modelState viewMatrix]];
     float radius = bounds.MaxDimension();
     
     // simply using "z" works until the view matrix is no longer an identitiy
@@ -640,10 +454,7 @@
     
     // accumulate delta rotation into matrix
     //
-    if (_transMode == kTransformMode_View)
-        _viewRotation = NuoMatrixRotationAppend(_viewRotation, _rotationXDelta, _rotationYDelta);
-    else
-        [_modelState selectedMeshRotationX:_rotationXDelta Y:_rotationYDelta];
+    [_modelState rotateX:_rotationXDelta Y:_rotationYDelta];
     
     _rotationXDelta = 0;
     _rotationYDelta = 0;
@@ -661,30 +472,7 @@
         distanceDelta
     );
     
-    if (_transMode == kTransformMode_View)
-    {
-        _viewTranslation = NuoMatrixTranslation(translation) * _viewTranslation;
-    }
-    else
-    {
-        [_modelState selectedMeshTranslateX:doTransX Y:doTransY Z:distanceDelta];
-    }
-}
-
-
-- (void)caliberateSceneCenter
-{
-    NuoBounds bounds = [_modelState.sceneRoot worldBounds:NuoMatrixFloat44Identity].boundingBox;
-    _sceneCenter = bounds._center;
-}
-
-
-- (NuoMatrixFloat44)viewMatrix
-{
-    // rotation is around the center of a previous scene snapshot
-    //
-    const NuoMatrixFloat44 viewTrans = NuoMatrixRotationAround(_viewRotation, _sceneCenter);
-    return _viewTranslation * viewTrans;
+    [_modelState tanslate:translation];
 }
 
 
@@ -695,7 +483,7 @@
     //
     [self handleDeltaPosition];
     
-    [_sceneParameters setViewMatrix:[self viewMatrix]];
+    [_sceneParameters setViewMatrix:[_modelState viewMatrix]];
     [_sceneParameters setLights:_lights];
     [_sceneParameters updateUniforms:commandBuffer];
     
@@ -744,11 +532,11 @@
         else if (_rayAcceleratorOutOfSync)
             [_rayAccelerator setRoot:_modelState.sceneRoot withCommandBuffer:commandBuffer];
         
-        [_rayAccelerator setView:[self viewMatrix]];
+        [_rayAccelerator setView:[_modelState viewMatrix]];
         
         if (_rayAcceleratorOutOfSync)
         {
-            [_renderDelegate setViewMatrix:[self viewMatrix]];
+            [_renderDelegate setViewMatrix:[_modelState viewMatrix]];
             [_renderDelegate setAmbient:_ambientDensity];
             [_renderDelegate setAmbientParameters:_ambientParameters];
             [_renderDelegate setIlluminationStrength:_illuminationStrength];

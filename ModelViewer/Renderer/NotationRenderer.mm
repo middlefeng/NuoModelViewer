@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by dfeng on 11/8/16.
-//  Copyright © 2016 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 
@@ -23,6 +23,7 @@
 #import "NuoCommandBuffer.h"
 #import "NuoBufferSwapChain.h"
 
+#import "ModelState.h"
 #include "NuoTypes.h"
 
 
@@ -117,7 +118,7 @@
     const float cameraDistance = cameraDefaultDistance + zoom * modelSpan / 20.0f;
     
     const NuoVectorFloat3 cameraTranslation(0, 0, cameraDistance);
-    const NuoMatrixFloat44 viewMatrix = NuoMatrixTranslation(cameraTranslation);
+    const NuoMatrixFloat44 viewMatrix = NuoMatrixTranslation(cameraTranslation) * _modelState.viewRotationMatrix;
     
     const float aspect = _notationArea.size.width / _notationArea.size.height;
     const float near = -cameraDistance - modelSpan;
@@ -146,7 +147,7 @@
     
     for (size_t i = 0; i < _lightVectors.count; ++i)
     {
-        CGPoint headProjected = _lightVectors[i].headPointProjected;
+        CGPoint headProjected = [_lightVectors[i] headPointProjectedWithView:_modelState.viewRotationMatrix];
         float distance = sqrt((headProjected.x - normalized.x) * (headProjected.x - normalized.x) +
                               (headProjected.y - normalized.y) * (headProjected.y - normalized.y));
         if (distance < minDistance)
@@ -171,8 +172,27 @@
     {
         lua->GetItem(lightIndex, -1);
         
-        _lightSources[lightIndex].lightingRotationX = lua->GetFieldAsNumber("rotateX", -1);
-        _lightSources[lightIndex].lightingRotationY = lua->GetFieldAsNumber("rotateY", -1);
+        float rotationX = 0;
+        float rotationY = 0;
+        
+        lua->GetField("rotateX", -1);
+        if (!lua->IsNil(-1))
+            rotationX = lua->GetFieldAsNumber("rotateX", -2);
+        lua->RemoveField();
+        
+        lua->GetField("rotateY", -1);
+        if (!lua->IsNil(-1))
+            rotationY = lua->GetFieldAsNumber("rotateY", -2);
+        lua->RemoveField();
+        
+        if (rotationX != 0 || rotationY != 0)
+            _lightSources[lightIndex].lightDirection = NuoMatrixRotation(rotationX, rotationY);
+        
+        lua->GetField("rotation", -1);
+        if (!lua->IsNil(-1))
+            _lightSources[lightIndex].lightDirection = lua->GetMatrixFromTable(-1);
+        lua->RemoveField();
+        
         _lightSources[lightIndex].lightingIrradiance = lua->GetFieldAsNumber("irradiance", -1);
         _lightSources[lightIndex].lightingSpecular = lua->GetFieldAsNumber("specular", -1);
         _lightSources[lightIndex].enableShadow = lua->GetFieldAsBool("enableShadow", -1);
@@ -223,16 +243,13 @@
 }
 
 
-- (void)setRotateX:(float)rotateX
+- (void)updateRotationX:(float)deltaX Y:(float)deltaY
 {
-    _currentLightVector.lightSourceDesc.lightingRotationX = rotateX;
-}
-
-
-
-- (void)setRotateY:(float)rotateY
-{
-    _currentLightVector.lightSourceDesc.lightingRotationY = rotateY;
+    const NuoMatrixFloat44 updateMatrix = NuoMatrixRotation(deltaX, deltaY);
+    const NuoMatrixFloat44 viewRotation = _modelState.viewRotationMatrix;
+    _currentLightVector.lightSourceDesc.lightDirection
+            = (viewRotation.Inverse() * updateMatrix * viewRotation)
+                        * _currentLightVector.lightSourceDesc.lightDirection;
 }
 
 

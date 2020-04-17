@@ -3,17 +3,19 @@
 //  ModelViewer
 //
 //  Created by Dong on 10/28/19.
-//  Copyright © 2019 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 #import "ModelState.h"
 #import "NuoModelLoaderGPU.h"
+#import "NuoDirectoryUtils.h"
 
 #include "NuoBoardMesh.h"
 #include "NuoMeshSceneRoot.h"
 
 #include "NuoLua.h"
 #include "NuoModelLoader.h"
+#include "NuoPackage.h"
 #include "NuoTableExporter.h"
 
 
@@ -29,6 +31,11 @@
 @property (strong) NuoModelLoaderGPU* modelLoader;
 @property (weak) id<MTLCommandQueue> commandQueue;
 
+// need store the center of a snapshot of the scene as the meshes in the scene
+// keep moving
+//
+@property (assign) NuoVectorFloat3 sceneCenter;
+
 
 @end
 
@@ -39,6 +46,11 @@
 {
     __weak NuoMeshCompound* _mainModelMesh;
     NuoMeshOptions _modelOptions;
+    
+    // transform data. "viewRotation" is relative to the scene's center
+    //
+    NuoMatrixFloat44 _viewRotation;
+    NuoMatrixFloat44 _viewTranslation;
 }
 
 
@@ -62,6 +74,9 @@
         _modelOptions._texturedBump = YES;
         _modelOptions._combineByMaterials = NO;
         _modelOptions._physicallyReflection = YES;
+        
+        _viewRotation = NuoMatrixFloat44Identity;
+        _viewTranslation = NuoMatrixFloat44Identity;
     }
     
     return self;
@@ -89,6 +104,102 @@
     const float defaultDistance = - 3.0 * radius;
     const NuoVectorFloat3 defaultDistanceVec(0, 0, defaultDistance);
     [_mainModelMesh setTransformTranslate:NuoMatrixTranslation(defaultDistanceVec)];
+    
+    [self caliberateSceneCenter];
+}
+
+
+- (BOOL)loadPackage:(NSString*)path withProgress:(NuoProgressFunction)progress
+{
+    const char* documentPath = pathForDocument();
+    NSString* packageFolder = [NSString stringWithUTF8String:documentPath];
+    packageFolder = [packageFolder stringByAppendingPathComponent:@"packaged_load"];
+    
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    BOOL isDir = NO;
+    BOOL exist = [fileManager fileExistsAtPath:packageFolder isDirectory:&isDir];
+    if (exist)
+        [fileManager removeItemAtPath:packageFolder error:nil];
+    
+    NuoPackage package;
+    std::string objFile;
+    size_t totalUncompressed = 0;
+    size_t uncompressed = 0;
+    
+    NuoUnpackCallback checkCallback = [&totalUncompressed](std::string filename, void* buffer, size_t length)
+    {
+        totalUncompressed += length;
+    };
+    
+    NuoUnpackCallback callback =
+    [&objFile, &uncompressed, &totalUncompressed, progress, fileManager, packageFolder]
+    (std::string filename, void* buffer, size_t length)
+    {
+        NSString* path = [NSString stringWithFormat:@"%@/%s", packageFolder, filename.c_str()];
+        
+        NSString* pathFolder = [path stringByDeletingLastPathComponent];
+        if (![fileManager fileExistsAtPath:pathFolder])
+            [fileManager createDirectoryAtPath:pathFolder withIntermediateDirectories:YES attributes:nil error:nil];
+        
+        NSData* data = [[NSData alloc] initWithBytesNoCopy:buffer length:length freeWhenDone:NO];
+        [data writeToFile:path atomically:NO];
+        
+        if ([path hasSuffix:@".obj"])
+            objFile = path.UTF8String;
+        
+        uncompressed += length;
+        
+        progress(uncompressed / (float)totalUncompressed * 0.3);
+    };
+    
+    package.open(path.UTF8String);
+    package.testFile(checkCallback);
+    package.unpackFile(callback);
+    
+    if (objFile.empty())
+    {
+        return NO;
+    }
+    
+    [self loadMesh:[NSString stringWithUTF8String:objFile.c_str()] withProgress:^(float progressPercent)
+                             {
+                                 progress(progressPercent * 0.5 + 0.5);
+                             }];
+    
+    return YES;
+}
+
+
+- (BOOL)isValidPack:(NSString*)path
+{
+    bool valid = false;
+    
+    NuoUnpackCallback callback = [&valid](std::string filename, void* buffer, size_t length)
+    {
+        if (valid)
+            return;
+        
+        size_t extPos = filename.find(".obj");
+        
+        if (extPos == std::string::npos)
+            return;
+        
+        size_t fileNameLength = filename.length();
+        if (fileNameLength - extPos == 4)
+        {
+            size_t firstPos = filename.find("/");
+            size_t lastPos = filename.find_last_of("/");
+            
+            if (firstPos != std::string::npos && firstPos == lastPos)
+                valid = true;
+        }
+    };
+    
+    NuoPackage package;
+    package.open(path.UTF8String);
+    package.testFile(callback);
+    
+    return valid;
 }
 
 
@@ -241,21 +352,71 @@
 }
 
 
-- (void)selectedMeshTranslateX:(float)x Y:(float)y Z:(float)z
+- (BOOL)viewTransformReset
 {
-    const NuoVectorFloat3 translation
-    (
-        x, y, z
-    );
-    
-     const NuoMatrixFloat44 transMatrix = NuoMatrixTranslation(translation) * _selectedMesh.transformTranslate;
-     [_selectedMesh setTransformTranslate:transMatrix];
+    return _viewRotation.IsIdentity() &&
+           _viewTranslation.IsIdentity();
 }
 
 
-- (void)selectedMeshRotationX:(float)x Y:(float)y
+- (void)resetViewTransform
 {
-    _selectedMesh.transformPoise = NuoMatrixRotationAppend(_selectedMesh.transformPoise, x, y);
+    _viewRotation = NuoMatrixFloat44Identity;
+    _viewTranslation = NuoMatrixFloat44Identity;
+}
+
+
+- (void)rotateX:(float)x Y:(float)y
+{
+    if (_transMode == kTransformMode_View)
+        _viewRotation = NuoMatrixRotationAppend(_viewRotation, x, y);
+    else
+        _selectedMesh.transformPoise = NuoMatrixRotationAppend(_selectedMesh.transformPoise, x, y);
+}
+
+
+- (void)tanslate:(const NuoVectorFloat3&)translation
+{
+    if (_transMode == kTransformMode_View)
+    {
+        _viewTranslation = NuoMatrixTranslation(translation) * _viewTranslation;
+    }
+    else
+    {
+        const NuoMatrixFloat44 transMatrix = NuoMatrixTranslation(translation) * _selectedMesh.transformTranslate;
+        [_selectedMesh setTransformTranslate:transMatrix];
+    }
+}
+
+
+- (void)caliberateSceneCenter
+{
+    NuoBounds bounds = [_sceneRoot worldBounds:NuoMatrixFloat44Identity].boundingBox;
+    _sceneCenter = bounds._center;
+}
+
+
+- (NuoMatrixFloat44)viewMatrix
+{
+    // rotation is around the center of a previous scene snapshot
+    //
+    const NuoMatrixFloat44 viewTrans = NuoMatrixRotationAround(_viewRotation, _sceneCenter);
+    return _viewTranslation * viewTrans;
+}
+
+
+- (NuoMatrixFloat44)viewRotationMatrix
+{
+    return _viewRotation;
+}
+
+
+- (void)setTransMode:(TransformMode)transMode
+{
+    _transMode = transMode;
+
+    if (transMode == kTransformMode_View)
+        [self caliberateSceneCenter];
 }
 
 
@@ -299,7 +460,7 @@
 }
 
 
-- (void)exportMainModel:(NuoTableExporter*)exporter
+- (void)exportScenePoises:(NuoTableExporter*)exporter
 {
     {
         exporter->StartEntry("rotationMatrix");
@@ -310,6 +471,18 @@
     {
         exporter->StartEntry("translationMatrix");
         exporter->SetMatrix(_mainModelMesh.transformTranslate);
+        exporter->EndEntry(true);
+    }
+    
+    {
+        exporter->StartEntry("viewMatrixRotation");
+        exporter->SetMatrix(_viewRotation);
+        exporter->EndEntry(true);
+    }
+    
+    {
+        exporter->StartEntry("viewMatrixTranslation");
+        exporter->SetMatrix(_viewTranslation);
         exporter->EndEntry(true);
     }
 }
@@ -453,7 +626,7 @@
 }
 
 
-- (void)importMainModel:(NuoLua*)lua
+- (void)importScenePoises:(NuoLua*)lua
 {
     lua->GetField("rotationMatrix", -1);
     [_mainModelMesh setTransformPoise:lua->GetMatrixFromTable(-1)];
@@ -462,6 +635,22 @@
     lua->GetField("translationMatrix", -1);
     if (!lua->IsNil(-1))
         [_mainModelMesh setTransformTranslate:lua->GetMatrixFromTable(-1)];
+    lua->RemoveField();
+    
+    // backward compatible the old "viewMatrix"
+    lua->GetField("viewMatrix", -1);
+    if (!lua->IsNil(-1))
+        _viewRotation = lua->GetMatrixFromTable(-1);
+    lua->RemoveField();
+    
+    lua->GetField("viewMatrixRotation", -1);
+    if (!lua->IsNil(-1))
+        _viewRotation = lua->GetMatrixFromTable(-1);
+    lua->RemoveField();
+    
+    lua->GetField("viewMatrixTranslation", -1);
+    if (!lua->IsNil(-1))
+        _viewTranslation = lua->GetMatrixFromTable(-1);
     lua->RemoveField();
 }
 

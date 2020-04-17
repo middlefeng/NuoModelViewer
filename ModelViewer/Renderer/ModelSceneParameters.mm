@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by Dong on 7/26/19.
-//  Copyright © 2019 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 #import "ModelSceneParameters.h"
@@ -91,10 +91,7 @@
     lighting.ambient = _ambient._vector;
     for (unsigned int i = 0; i < 4; ++i)
     {
-        const NuoMatrixFloat44 rotationMatrix = NuoMatrixRotation(_lights[i].lightingRotationX,
-                                                                  _lights[i].lightingRotationY);
-        
-        const NuoVectorFloat4 lightVector(rotationMatrix * NuoVectorFloat4(0, 0, 1, 0));
+        const NuoVectorFloat4 lightVector(_lights[i].lightDirection * NuoVectorFloat4(0, 0, 1, 0));
         lighting.lightParams[i].direction = lightVector._vector;
         lighting.lightParams[i].irradiance = _lights[i].lightingIrradiance;
         lighting.lightParams[i].specular = _lights[i].lightingSpecular;

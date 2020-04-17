@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by Dong on 10/28/19.
-//  Copyright © 2019 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 #import <Metal/Metal.h>
@@ -26,6 +26,15 @@ class NuoLua;
 
 
 
+typedef enum
+{
+    kTransformMode_Model,
+    kTransformMode_View,
+}
+TransformMode;
+
+
+
 @interface ModelState : NSObject
 
 
@@ -37,6 +46,8 @@ class NuoLua;
 @property (nonatomic, readonly) NuoMeshCompound* mainModelMesh;
 @property (nonatomic, strong) NSArray<NuoMesh*>* selectedParts;
 
+@property (nonatomic, assign) TransformMode transMode;
+
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
@@ -44,17 +55,19 @@ class NuoLua;
 - (void)setSampleCount:(NSUInteger)sampleCount;
 
 - (void)loadMesh:(NSString*)path withProgress:(NuoProgressFunction)progress;
+- (BOOL)loadPackage:(NSString*)path withProgress:(NuoProgressFunction)progress;
+- (BOOL)isValidPack:(NSString*)path;
 - (void)createMeshsWithProgress:(NuoProgressFunction)progress;
 
 - (NuoBoardMesh*)createBoard:(CGSize)size withName:(NSString*)name;
 - (void)removeSelectedMesh;
 - (void)removeAllBoards;
 
-- (void)exportMainModel:(NuoTableExporter*)exporter;
+- (void)exportScenePoises:(NuoTableExporter*)exporter;
 - (void)exportBoardModels:(NuoTableExporter*)exporter;
 - (void)exportModelConfiguration:(NuoTableExporter*)exporter;
 
-- (void)importMainModel:(NuoLua*)lua;
+- (void)importScenePoises:(NuoLua*)lua;
 - (void)importBoardModels:(NuoLua*)lua;
 - (void)importModelConfiguration:(NuoLua*)lua;
 
@@ -63,8 +76,15 @@ class NuoLua;
 
 - (void)selectMesh:(NuoMesh*)mesh;
 - (NuoBounds)selectedMeshBounds:(const NuoMatrixFloat44&)viewMatrix;
-- (void)selectedMeshTranslateX:(float)x Y:(float)y Z:(float)z;
-- (void)selectedMeshRotationX:(float)x Y:(float)y;
+
+- (BOOL)viewTransformReset;
+- (void)resetViewTransform;
+- (NuoMatrixFloat44)viewMatrix;
+- (NuoMatrixFloat44)viewRotationMatrix;
+- (void)caliberateSceneCenter;
+
+- (void)rotateX:(float)x Y:(float)y;
+- (void)tanslate:(const NuoVectorFloat3&)translation;
 
 - (size_t)configurableMeshPartsNumber;
 - (NSArray<NuoMesh*>*)configurableMeshParts;

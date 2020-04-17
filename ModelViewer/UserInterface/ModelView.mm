@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by middleware on 8/26/16.
-//  Copyright © 2016 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 #import "ModelView.h"
@@ -290,9 +290,9 @@ MouseDragMode;
     [_modelRender setAmbientParameters:_modelPanel.ambientParameters];
     [_modelRender setFieldOfView:_modelPanel.fieldOfViewRadian];
     [_modelRender setAmbientDensity:_modelPanel.ambientDensity];
-    [_modelRender setTransMode:_modelPanel.transformMode];
     [_modelRender setIlluminationStrength:_modelPanel.illumination];
     [_modelRender setShowCheckerboard:_modelPanel.showModelParts];
+    [_modelRender.modelState setTransMode:_modelPanel.transformMode];
     
     [_modelRender.sceneParameters setCullEnabled:_modelPanel.cullEnabled];
     
@@ -549,6 +549,7 @@ MouseDragMode;
     _modelDissectRenderer.paramsProvider = _modelRender.sceneParameters;
     _modelDissectRenderer.splitViewProportion = 0.5;
     _notationRenderer = [[NotationRenderer alloc] initWithCommandQueue:self.commandQueue];
+    _notationRenderer.modelState = _modelRender.modelState;
     _motionBlurRenderer = [[MotionBlurRenderer alloc] initWithCommandQueue:self.commandQueue];
     
     [_modelComponentPanels setModelState:_modelRender.modelState];
@@ -868,9 +869,7 @@ MouseDragMode;
     }
     else if (_trackingLighting)
     {
-        NuoLightSource* lightSource = _notationRenderer.selectedLightSource;
-        [_notationRenderer setRotateX:lightSource.lightingRotationX + deltaX];
-        [_notationRenderer setRotateY:lightSource.lightingRotationY + deltaY];
+        [_notationRenderer updateRotationX:deltaX Y:deltaY];
     }
     else
     {
@@ -947,7 +946,7 @@ MouseDragMode;
             NSLog(@"Enterred.");
             return NSDragOperationCopy;
         }
-        else if ([path hasSuffix:@".zip"] && [self isValidPack:path])
+        else if ([path hasSuffix:@".zip"] && [_modelRender.modelState isValidPack:path])
         {
             return NSDragOperationCopy;
         }
@@ -1025,7 +1024,7 @@ MouseDragMode;
 {
     _modelRender.lights = _notationRenderer.lightSources;
     
-    if (!_modelRender.viewTransformReset)
+    if (!_modelRender.modelState.viewTransformReset)
     {
         [_sceneResetMenu setTarget:self];
         [_sceneResetMenu setAction:@selector(resetScene:)];
@@ -1041,7 +1040,7 @@ MouseDragMode;
 
 - (void)loadMesh:(NSString*)path asPackage:(BOOL)isPackage withCompletion:(NuoSimpleFunction)completion
 {
-    __weak ModelRenderer* modelRender = _modelRender;
+    __weak ModelState* modelState = _modelRender.modelState;
     __weak ModelView* selfWeak = self;
     
     NuoProgressSheetPanel* progressPanel = [NuoProgressSheetPanel new];
@@ -1049,9 +1048,9 @@ MouseDragMode;
     [progressPanel performInBackground:^(NuoProgressFunction progressFunc)
                                     {
                                         if (isPackage)
-                                            [modelRender loadPackage:path withProgress:progressFunc];
+                                            [modelState loadPackage:path withProgress:progressFunc];
                                         else
-                                            [modelRender loadMesh:path withProgress:progressFunc];
+                                            [modelState loadMesh:path withProgress:progressFunc];
                                     }
                             withWindow:self.window
                         withCompletion:^
@@ -1068,13 +1067,6 @@ MouseDragMode;
     _documentName = [documentName stringByDeletingPathExtension];
     NSString* title = [[NSString alloc] initWithFormat:@"ModelView - %@", documentName];
     [self.window setTitle:title];
-}
-
-
-
-- (BOOL)isValidPack:(NSString*)path
-{
-    return [_modelRender isValidPack:path];
 }
 
 
@@ -1365,9 +1357,9 @@ MouseDragMode;
 
 - (void)resetScene:(id)sender
 {
-    if (!_modelRender.viewTransformReset)
+    if (!_modelRender.modelState.viewTransformReset)
     {
-        [_modelRender resetViewTransform];
+        [_modelRender.modelState resetViewTransform];
         [self render];
         
         [_sceneResetMenu setTarget:nil];

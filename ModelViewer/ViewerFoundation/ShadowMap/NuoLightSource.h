@@ -3,16 +3,17 @@
 //  ModelViewer
 //
 //  Created by middleware on 11/19/16.
-//  Copyright © 2016 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
+#include "NuoMathVector.h"
 
 
 @interface NuoLightSource : NSObject
 
-@property (nonatomic, assign) float lightingRotationX;
-@property (nonatomic, assign) float lightingRotationY;
+@property (nonatomic, assign) NuoMatrixFloat44 lightDirection;
+
 @property (nonatomic, assign) float lightingIrradiance;
 @property (nonatomic, assign) float lightingSpecular;
 
