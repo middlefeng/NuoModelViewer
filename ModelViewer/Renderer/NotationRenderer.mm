@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by dfeng on 11/8/16.
-//  Copyright © 2016 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 

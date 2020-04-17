@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by middleware on 8/3/19.
-//  Copyright © 2019 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 #import "ModelHybridRenderer.h"

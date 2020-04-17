@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by Dong on 10/28/19.
-//  Copyright © 2019 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 #import <Metal/Metal.h>

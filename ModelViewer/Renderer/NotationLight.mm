@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by middleware on 11/13/16.
-//  Copyright © 2017 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 #import "NotationLight.h"

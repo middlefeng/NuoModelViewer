@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by middleware on 6/22/18.
-//  Copyright © 2018 middleware. All rights reserved.
+//  Copyright © 2020 middleware. All rights reserved.
 //
 
 #import "ModelRayTracingRenderer.h"
