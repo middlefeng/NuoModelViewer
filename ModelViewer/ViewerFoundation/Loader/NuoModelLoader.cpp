@@ -203,6 +203,7 @@ NuoModelLoader::~NuoModelLoader()
 void NuoModelLoader::LoadModel(const std::string& path)
 {
     std::string err;
+    std::string warn;
     
     size_t pos = path.find_last_of("/");
     
@@ -212,7 +213,7 @@ void NuoModelLoader::LoadModel(const std::string& path)
     _internal->_materials.clear();
     
     tinyobj::LoadObj(&_internal->_attrib, &_internal->_shapes, &_internal->_materials,
-                     &err, path.c_str(), _internal->_basePath.c_str());
+                     &warn, &err, path.c_str(), _internal->_basePath.c_str());
 }
 
 
