@@ -14,6 +14,7 @@
 
 enum UpdateOptions
 {
+    kUpdateOption_None            = 0,
     kUpdateOption_DecreaseQuality = 1,
     kUpdateOption_RebuildPipeline = 2,
 };
