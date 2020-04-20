@@ -31,8 +31,7 @@
 
 // light to illuminate the notations
 //
-@property (nonatomic, strong) id<MTLBuffer> lightBuffer;
-
+@property (nonatomic, strong) NuoBufferSwapChain* lightBuffer;
 @property (nonatomic, strong) NuoBufferSwapChain* transforms;
 
 @property (nonatomic, strong) NSArray<NotationLight*>* lightVectors;
@@ -40,6 +39,8 @@
 
 @end
 
+
+static NuoLightUniforms kLightUniform;
 
 
 @implementation NotationRenderer
@@ -80,18 +81,22 @@
         
         // the direction of light used to render the "light vector"
         //
-        NuoLightUniforms lightUniform; memset(&lightUniform, 0, sizeof(NuoLightUniforms));
-        
-        lightUniform.lightParams[0].direction.x = 0.13;
-        lightUniform.lightParams[0].direction.y = 0.72;
-        lightUniform.lightParams[0].direction.z = 0.68;
-        lightUniform.lightParams[0].irradiance = 1.0f;
-        lightUniform.lightParams[0].specular = 0.6f;
-        
-        _lightBuffer = [commandQueue.device newBufferWithLength:sizeof(NuoLightUniforms)
-                                                        options:MTLResourceOptionCPUCacheModeDefault];
-        
-        memcpy([_lightBuffer contents], &lightUniform, sizeof(NuoLightUniforms));
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^
+        {
+            memset(&kLightUniform, 0, sizeof(NuoLightUniforms));
+            
+            kLightUniform.lightParams[0].direction.x = 0.13;
+            kLightUniform.lightParams[0].direction.y = 0.72;
+            kLightUniform.lightParams[0].direction.z = 0.68;
+            kLightUniform.lightParams[0].irradiance = 1.0f;
+            kLightUniform.lightParams[0].specular = 0.6f;
+        });
+
+        _lightBuffer = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
+                                                   WithBufferSize:sizeof(NuoLightUniforms)
+                                                      withOptions:MTLResourceStorageModeManaged
+                                                    withChainSize:kInFlightBufferCount];
         
         _transforms = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                   WithBufferSize:sizeof(NuoUniforms)
@@ -131,6 +136,15 @@
     uniforms.viewProjectionMatrix = (projectionMatrix * viewMatrix)._m;
     
     [_transforms updateBufferWithInFlight:inFlight withContent:&uniforms];
+    
+    NuoLightUniforms lightUniforms(kLightUniform);
+    auto vector = lightUniforms.lightParams[0].direction;
+    NuoVectorFloat4 lightVector(vector.x, vector.y, vector.z, 0.0);
+    
+    lightVector = _modelState.viewRotationMatrix.Inverse() * lightVector;
+    lightUniforms.lightParams[0].direction = lightVector._vector;
+    
+    [_lightBuffer updateBufferWithInFlight:inFlight withContent:&lightUniforms];
 }
 
 
@@ -304,7 +318,7 @@
     
     [renderPass setCullMode:MTLCullModeNone];
     [renderPass setVertexBufferSwapChain:_transforms offset:0 atIndex:1];
-    [renderPass setFragmentBuffer:_lightBuffer offset:0 atIndex:0];
+    [renderPass setFragmentBufferSwapChain:_lightBuffer offset:0 atIndex:0];
     
     for (size_t i = 0; i < _lightVectors.count; ++i)
     {
