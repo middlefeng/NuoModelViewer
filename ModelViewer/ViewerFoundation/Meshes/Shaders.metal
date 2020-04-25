@@ -424,10 +424,14 @@ float3 specular_refectance_normalized(float3 specularReflectance, float material
 // the code embodies the half-vector based specular which is ((m + 8) / (8 * pi)) * Cspecular * power(cos(theta), m)
 //               p253 (7.47) the reflection based version is ((m + 2) / (2 * pi)) * Cspecular * power(cos(reflection), m)
 //
-// for the details of how the above normalization term is deduced, see http://www.farbrausch.de/%7Efg/stuff/phong.pdf
+// for the details of how the above normalization term is deduced, see
+//      http://www.farbrausch.de/%7Efg/stuff/phong.pdf, or
+//      https://sipoint.files.wordpress.com/2019/06/phong.pdf
 //          the reflection based version could be deduced by simple integral: cos^m(x)sin(x)dx = -cos^(m+1)d(cos(x))
 //          the half-vector based version is an approximation, to a more complicated integral form.
+//
 //          a ((m + 2) / (8 * pi)) factor is given in https://seblagarde.wordpress.com/2011/08/17/hello-world/
+//          which is for the blinn-phong with a 1/cos(theta) factor
 //
 float3 specular_common_physically(float3 specularReflectance, float materialSpecularPower,
                                   float3 lightDirection, float3 normal, float3 halfway)
