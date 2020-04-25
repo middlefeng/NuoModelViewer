@@ -433,6 +433,8 @@ float3 specular_refectance_normalized(float3 specularReflectance, float material
 //          a ((m + 2) / (8 * pi)) factor is given in https://seblagarde.wordpress.com/2011/08/17/hello-world/
 //          which is for the blinn-phong with a 1/cos(theta) factor
 //
+// more on https://raw.githubusercontent.com/middlefeng/NuoModelViewer/master/document/normalization-factor.jpg
+//
 float3 specular_common_physically(float3 specularReflectance, float materialSpecularPower,
                                   float3 lightDirection, float3 normal, float3 halfway)
 {
