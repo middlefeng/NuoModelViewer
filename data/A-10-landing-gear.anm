@@ -1,0 +1,19 @@
+
+
+anchor = { 0.0, -3.8, 0.7 }
+axis = { 1.0, 0.0, 0.0 }
+radius = 3.1415 * 2.0
+
+animations =
+{
+	["Front"] =
+	{
+		object = { "GearDoorF0", "GearLegFro", "GearShockF", "WheelFr", "TireFr", "Box08" },
+		axis = axis,
+		anchor = anchor,
+		radius = radius
+	},
+}
+
+
+return animations
