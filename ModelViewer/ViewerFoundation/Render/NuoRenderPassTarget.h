@@ -68,6 +68,12 @@
  */
 @property (nonatomic, assign) BOOL sharedTargetTexture;
 
+/**
+ *  set as true, before the drawableSize is changed, if the depth map is to be used
+ *  by other render process
+ */
+@property (nonatomic, assign) BOOL storeDepth;
+
 @property (nonatomic, readonly) MTLPixelFormat targetPixelFormat;
 
 

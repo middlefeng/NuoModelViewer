@@ -60,7 +60,7 @@
         _depthAttachment.type = kNuoRenderPassAttachment_Depth;
         _depthAttachment.needClear = YES;
         _depthAttachment.manageTexture = YES;
-        _depthAttachment.needStore = NO;
+        _depthAttachment.needStore = NO;        // this disable the depth map from being used afterwards, on ASi GPU
         _depthAttachment.device = _device;
     }
     
@@ -74,6 +74,11 @@
            texture.height == self.drawableSize.height;
 }
 
+
+- (void)setStoreDepth:(BOOL)storeDepth
+{
+    _depthAttachment.needStore = storeDepth;
+}
 
 
 - (void)setClearColor:(MTLClearColor)clearColor
