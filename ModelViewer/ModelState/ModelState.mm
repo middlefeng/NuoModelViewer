@@ -77,6 +77,8 @@
         
         _viewRotation = NuoMatrixFloat44Identity;
         _viewTranslation = NuoMatrixFloat44Identity;
+        
+        _sceneSampleCount = kSampleCount;
     }
     
     return self;
@@ -330,9 +332,11 @@
 }
 
 
-- (void)setSampleCount:(NSUInteger)sampleCount
+- (void)setSceneSampleCount:(NSUInteger)sceneSampleCount
 {
-    [_sceneRoot setSampleCount:sampleCount];
+    _sceneSampleCount = sceneSampleCount;
+    
+    [_sceneRoot setSampleCount:sceneSampleCount];
 }
 
 

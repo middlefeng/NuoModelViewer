@@ -79,9 +79,17 @@
 
 - (void)setDepthMapTo:(id<MTLRenderCommandEncoder>)renderPass
 {
-    id<MTLTexture> depthMap = [_paramsProvider depthMap];
+    id<MTLTexture> depthMap = [self depthMap];
     if (depthMap)
         [renderPass setFragmentTexture:depthMap atIndex:4];
+}
+
+
+- (id<MTLTexture>)depthMap
+{
+    // to override, not mean being called
+    //
+    assert(false);
 }
 
 

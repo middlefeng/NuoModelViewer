@@ -145,12 +145,6 @@
 }
 
 
-- (id<MTLTexture>)depthMap
-{
-    return _immediateTarget.depthTexture;
-}
-
-
 - (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask
 {
     if (_rayTracingRecordStatus != kRecord_Stop)

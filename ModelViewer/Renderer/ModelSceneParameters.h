@@ -19,7 +19,6 @@
 
 @protocol ModelShadowMapProvider <NSObject>
 
-- (id<MTLTexture>)depthMap;
 - (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
 
 @end

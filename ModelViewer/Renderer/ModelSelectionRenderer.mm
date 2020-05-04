@@ -8,6 +8,7 @@
 
 #import "ModelSelectionRenderer.h"
 #import "ModelState.h"
+#import "NuoMeshSceneRoot.h"
 #import "NuoTextureMesh.h"
 
 
@@ -20,6 +21,7 @@
     // scene's render result (through _textureMesh).
     //
     NuoRenderPassTarget* _immediateTarget;
+    NuoRenderPassTarget* _depthTarget;
     
     NuoTextureMesh* _textureMesh;
 }
@@ -39,6 +41,14 @@
         _immediateTarget.manageTargetTexture = YES;
         _immediateTarget.sharedTargetTexture = NO;
         
+        _depthTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
+                                                         withPixelFormat:pixelFormat
+                                                         withSampleCount:sampleCount];
+        _depthTarget.name = @"selection - depth";
+        _depthTarget.manageTargetTexture = YES;
+        _depthTarget.sharedTargetTexture = NO;
+        _depthTarget.resolveDepth = YES;
+        
         _textureMesh = [[NuoTextureMesh alloc] initWithCommandQueue:self.commandQueue];
         [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
         
@@ -52,7 +62,33 @@
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
+    
     [_immediateTarget setDrawableSize:drawableSize];
+    [_depthTarget setDrawableSize:drawableSize];
+}
+
+
+- (id<MTLTexture>)depthMap
+{
+    return _depthTarget.depthTexture;
+}
+
+
+
+- (void)predrawWithCommandBuffer:(NuoCommandBuffer *)commandBuffer
+{
+    const NSUInteger modelSceneSampleCount = [_modelState sceneSampleCount];
+    if (modelSceneSampleCount != [_depthTarget sampleCount])
+        [_depthTarget setSampleCount:modelSceneSampleCount];
+    
+    NuoRenderPassEncoder* renderPass = [_depthTarget retainRenderPassEndcoder:commandBuffer];
+    
+    renderPass.label = @"Selection - depth";
+    
+    [self setSceneBuffersTo:renderPass];
+    [_modelState.sceneRoot drawMesh:renderPass];
+    
+    [_depthTarget releaseRenderPassEndcoder];
 }
 
 
@@ -76,6 +112,8 @@
             //
             [self setSceneBuffersTo:renderPass];
             [self setDepthMapTo:renderPass];
+            
+            //[renderPass setFragmentTexture:_depthTarget.depthTexture atIndex:4];
             
             for (NuoMesh* selectedMesh in _modelState.selectedIndicators)
                 [selectedMesh drawMesh:renderPass];

@@ -183,7 +183,7 @@
     // no calling to cube/backdrop render. they are not MSAA-ed
     
     [_renderDelegate setSampleCount:sampleCount];
-    [_modelState setSampleCount:sampleCount];
+    [_modelState setSceneSampleCount:sampleCount];
 }
 
 
