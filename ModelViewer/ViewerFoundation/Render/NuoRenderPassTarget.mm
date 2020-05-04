@@ -60,7 +60,8 @@
         _depthAttachment.type = kNuoRenderPassAttachment_Depth;
         _depthAttachment.needClear = YES;
         _depthAttachment.manageTexture = YES;
-        _depthAttachment.needStore = NO;
+        _depthAttachment.needStore = NO;        // somehow a store action is not needed even for the case
+                                                // in which another party need read the depth
         _depthAttachment.device = _device;
     }
     

@@ -21,6 +21,7 @@
     // scene's render result (through _textureMesh).
     //
     NuoRenderPassTarget* _immediateTarget;
+    
     NuoRenderPassTarget* _depthTarget;
     
     NuoTextureMesh* _textureMesh;
@@ -77,29 +78,31 @@
 
 - (void)predrawWithCommandBuffer:(NuoCommandBuffer *)commandBuffer
 {
-    const NSUInteger modelSceneSampleCount = [_modelState sceneSampleCount];
-    if (modelSceneSampleCount != [_depthTarget sampleCount])
-        [_depthTarget setSampleCount:modelSceneSampleCount];
-    
-    NuoRenderPassEncoder* renderPass = [_depthTarget retainRenderPassEndcoder:commandBuffer];
-    
-    renderPass.label = @"Selection - depth";
-    
-    [self setSceneBuffersTo:renderPass];
-    [_modelState.sceneRoot drawMesh:renderPass];
-    
-    [_depthTarget releaseRenderPassEndcoder];
-}
-
-
-
-- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
-{
     {
-        // the immediate rendering must NOT be put in the predraw because the depth map, which comes from
-        // the model renderer, has not been ready (meaning not refreshed for the current frame, still the
-        // residual of the last) at that point
+        const NSUInteger modelSceneSampleCount = [_modelState sceneSampleCount];
+        if (modelSceneSampleCount != [_depthTarget sampleCount])
+            [_depthTarget setSampleCount:modelSceneSampleCount];
         
+        NuoRenderPassEncoder* renderPass = [_depthTarget retainRenderPassEndcoder:commandBuffer];
+        
+        renderPass.label = @"Selection - depth";
+        
+        [self setSceneBuffersTo:renderPass];
+        [_modelState.sceneRoot drawMesh:renderPass];
+        
+        [_depthTarget releaseRenderPassEndcoder];
+    }
+    
+    // the above code make this render generate its own depth map so the comments below are
+    // obsoleted. immediate rendering happens in the predraw step.
+    //
+    /* *** below: obsoleted comments
+    //
+    // the immediate rendering must NOT be put in the predraw because the depth map, which comes from
+    // the model renderer, has not been ready (meaning not refreshed for the current frame, still the
+    // residual of the last) at that point */
+    
+    {
         NuoRenderPassEncoder* renderPass = [_immediateTarget retainRenderPassEndcoder:commandBuffer];
         
         renderPass.label = @"Selection - immediate";
@@ -113,15 +116,18 @@
             [self setSceneBuffersTo:renderPass];
             [self setDepthMapTo:renderPass];
             
-            //[renderPass setFragmentTexture:_depthTarget.depthTexture atIndex:4];
-            
             for (NuoMesh* selectedMesh in _modelState.selectedIndicators)
                 [selectedMesh drawMesh:renderPass];
         }
         
         [_immediateTarget releaseRenderPassEndcoder];
     }
-    
+}
+
+
+
+- (void)drawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
+{
     NuoRenderPassEncoder* renderPass = [self retainDefaultEncoder:commandBuffer];
     
     renderPass.label = @"Selection - overlay";
