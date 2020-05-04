@@ -39,8 +39,6 @@ NuoSceneMask;
 - (BOOL)cullEnabled;
 
 - (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
-- (id<MTLTexture>)depthMap;
-
 
 @end
 
@@ -66,6 +64,12 @@ NuoSceneMask;
  *  basic and almost always needed, this is not required by renderers which do not need a depth map
  */
 - (void)setDepthMapTo:(NuoRenderPassEncoder*)renderPass;
+
+
+/**
+ *  sub class to override to provide a depthMap
+ */
+- (id<MTLTexture>)depthMap;
 
 
 @end

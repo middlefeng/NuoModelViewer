@@ -45,6 +45,7 @@ TransformMode;
 @property (nonatomic, strong) NuoMeshSceneRoot* sceneRoot;
 @property (nonatomic, readonly) NuoMeshCompound* mainModelMesh;
 @property (nonatomic, strong) NSArray<NuoMesh*>* selectedParts;
+@property (nonatomic, assign) NSUInteger sceneSampleCount;
 
 @property (nonatomic, assign) TransformMode transMode;
 
@@ -52,7 +53,6 @@ TransformMode;
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 
 - (void)setAdvancedShaowEnabled:(BOOL)enabled;
-- (void)setSampleCount:(NSUInteger)sampleCount;
 
 - (void)loadMesh:(NSString*)path withProgress:(NuoProgressFunction)progress;
 - (BOOL)loadPackage:(NSString*)path withProgress:(NuoProgressFunction)progress;

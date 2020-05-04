@@ -122,11 +122,6 @@
     return _cullEnabled;
 }
 
-- (id<MTLTexture>)depthMap
-{
-    return [_shadowMap depthMap];
-}
-
 - (NuoBufferSwapChain*)lightCastBuffers
 {
     return _lightCastBuffers;
