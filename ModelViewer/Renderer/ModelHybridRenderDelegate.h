@@ -20,7 +20,7 @@
 
 
 
-@interface ModelHybridRenderDelegate : NuoMeshSceneRenderPass < ModelRenderDelegate, ModelShadowMapProvider >
+@interface ModelHybridRenderDelegate : NuoMeshSceneRenderPass < ModelRenderDelegate >
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
