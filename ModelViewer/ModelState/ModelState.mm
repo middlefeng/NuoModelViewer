@@ -356,6 +356,12 @@
 }
 
 
+- (NuoBounds)worldBounds
+{
+    return [_sceneRoot worldBounds:[self viewMatrix]].boundingBox;
+}
+
+
 - (BOOL)viewTransformReset
 {
     return _viewRotation.IsIdentity() &&

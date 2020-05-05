@@ -64,8 +64,6 @@
         _modelState = [[ModelState alloc] initWithCommandQueue:commandQueue];
         
         _sceneParameters = [[ModelSceneParameters alloc] initWithDevice:commandQueue.device];
-        _sceneParameters.sceneRoot = _modelState.sceneRoot;
-        
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
     }
 
@@ -483,9 +481,8 @@
     //
     [self handleDeltaPosition];
     
-    [_sceneParameters setViewMatrix:[_modelState viewMatrix]];
-    [_sceneParameters setLights:_lights];
-    [_sceneParameters updateUniforms:commandBuffer];
+    [_sceneParameters updateUniforms:commandBuffer withBounds:_modelState.worldBounds
+                            withView:_modelState.viewMatrix withLights:_lights];
     
     [_modelState.sceneRoot updateUniform:commandBuffer withTransform:NuoMatrixFloat44Identity];
     [_modelState.sceneRoot setCullEnabled:_sceneParameters.cullEnabled];
