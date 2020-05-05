@@ -27,9 +27,10 @@ class NuoBounds;
 
 
 /**
- *  provider of info that required by render a scene
+ *  app level implementation to the provider protocol of info that required by render a scene
  *
- *  shadow map is option for a ray tracing based renderer
+ *  note that almost none of the properties or methods defined below blong to the protocol. they
+ *  are all app-specific method which help to calculate the required parameters
  */
 
 @interface ModelSceneParameters : NSObject < NuoMeshSceneParametersProvider >
@@ -44,6 +45,13 @@ class NuoBounds;
 @property (readonly, nonatomic) NuoMatrixFloat44 projection;
 
 
+/**
+ *  unlike most parameters, shadow map management is a bit too complicated to be handled in a "update..." method.
+ *  so a shadow map provider protocol is implemented by a renderer that generates them in the course of rendering.
+ *
+ *  note that this is an app-level protocol rather than a foundation-level one. simpler app would provide shadow
+ *  maps in their ModelSceneParameters implementation directly
+ */
 @property (weak, nonatomic) id<ModelShadowMapProvider> shadowMap;
 
 

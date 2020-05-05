@@ -21,6 +21,12 @@
 
 
 
+@interface ModelHybridRenderDelegate() < ModelShadowMapProvider >
+
+@end
+
+
+
 @implementation ModelHybridRenderDelegate
 {
     NuoShadowMapRenderer* _shadowMapRenderer[2];
@@ -136,15 +142,6 @@
 - (void)setAmbient:(const NuoVectorFloat3&)ambient
 {
     _ambient = ambient;
-}
-
-
-- (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask
-{
-    if (_rayTracingRecordStatus != kRecord_Stop)
-        return [_rayTracingRenderer shadowForLightSource:index withMask:mask];
-    else
-        return _shadowMapRenderer[index].renderTarget.targetTexture;
 }
 
 
@@ -272,6 +269,19 @@
 - (void)setDelegateTarget:(NuoRenderPassTarget*)target
 {
     _delegateTarget = target;
+}
+
+
+
+#pragma mark -- Protocol Functions - ModelShadowMapProvider
+
+
+- (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask
+{
+    if (_rayTracingRecordStatus != kRecord_Stop)
+        return [_rayTracingRenderer shadowForLightSource:index withMask:mask];
+    else
+        return _shadowMapRenderer[index].renderTarget.targetTexture;
 }
 
 

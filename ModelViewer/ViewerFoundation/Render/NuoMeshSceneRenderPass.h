@@ -28,7 +28,10 @@ NuoSceneMask;
 @class NuoBufferSwapChain;
 
 
-
+/**
+ *  an application should provide a NuoMeshSceneRenderPass required parameter buffers
+ *  through this protocol
+ */
 @protocol NuoMeshSceneParametersProvider
 
 
