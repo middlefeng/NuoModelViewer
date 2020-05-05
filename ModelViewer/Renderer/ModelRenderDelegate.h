@@ -42,7 +42,6 @@ RecordStatus;
 // info that required by real-time/hybrid only
 //
 - (void)setSampleCount:(NSUInteger)count;
-- (void)setResolveDepth:(BOOL)resolveDepth;
 
 - (void)predrawWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
             withRayStructChanged:(BOOL)changed
