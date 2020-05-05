@@ -76,6 +76,7 @@ TransformMode;
 
 - (void)selectMesh:(NuoMesh*)mesh;
 - (NuoBounds)selectedMeshBounds:(const NuoMatrixFloat44&)viewMatrix;
+- (NuoBounds)worldBounds;
 
 - (BOOL)viewTransformReset;
 - (void)resetViewTransform;

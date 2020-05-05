@@ -15,6 +15,8 @@
 @class NuoMeshSceneRoot;
 @class NuoLightSource;
 
+class NuoBounds;
+
 
 
 @protocol ModelShadowMapProvider <NSObject>
@@ -34,14 +36,11 @@
 
 
 @property (assign, nonatomic) BOOL cullEnabled;
-@property (weak, nonatomic) NuoMeshSceneRoot* sceneRoot;
-@property (weak, nonatomic) NSArray<NuoLightSource*>* lights;
 
 @property (assign, nonatomic) NuoVectorFloat3 ambient;
 
 @property (assign, nonatomic) float fieldOfView;
 @property (assign, nonatomic) CGSize drawableSize;
-@property (assign, nonatomic) NuoMatrixFloat44 viewMatrix;
 @property (readonly, nonatomic) NuoMatrixFloat44 projection;
 
 
@@ -54,7 +53,8 @@
 - (void)updateLightCastWithInFlight:(id<NuoRenderInFlight>)inFlight
                         withContent:(NuoLightVertexUniforms*)content;
 
-- (void)updateUniforms:(NuoCommandBuffer*)commandBuffer;
+- (void)updateUniforms:(NuoCommandBuffer*)commandBuffer withBounds:(const NuoBounds&)bounds
+              withView:(const NuoMatrixFloat44&)viewMatrix withLights:(NSArray<NuoLightSource*>*)lights;
 
 
 @end
