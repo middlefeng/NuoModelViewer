@@ -139,12 +139,6 @@
 }
 
 
-- (void)setResolveDepth:(BOOL)resolveDepth
-{
-    [_immediateTarget setResolveDepth:resolveDepth];
-}
-
-
 - (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask
 {
     if (_rayTracingRecordStatus != kRecord_Stop)

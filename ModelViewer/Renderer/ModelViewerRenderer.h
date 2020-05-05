@@ -105,7 +105,6 @@ class NuoLua;
 - (void)removeSelectedMesh;
 - (void)selectMeshWithScreen:(CGPoint)point;
 
-- (void)setResolveDepth:(BOOL)resolveDepth;
 - (void)setAmbientParameters:(const NuoAmbientUniformField&)ambientParameters;
 - (const NuoAmbientUniformField&)ambientParameters;
 

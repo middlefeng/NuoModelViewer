@@ -638,11 +638,4 @@
 
 
 
-- (void)setResolveDepth:(BOOL)resolveDepth
-{
-    [_renderDelegate setResolveDepth:resolveDepth];
-}
-
-
-
 @end

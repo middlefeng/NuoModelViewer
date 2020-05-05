@@ -116,12 +116,6 @@
 }
 
 
-- (void)setResolveDepth:(BOOL)resolveDepth
-{
-}
-
-
-
 - (void)rayStructUpdated
 {
     [_rayTracingRenderer rayStructUpdated];
