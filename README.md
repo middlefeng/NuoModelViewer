@@ -1,9 +1,9 @@
 # Nuo Model Viewer
 
 This project consists of:
-* A Wavefront OBJ viewer, supporting both real-time rendering and ray-tracing, which is based on a few reusable components listed below.
-* A reusable framework, Viewer Foundation, consists of:
-  * An encapsulation to the Metal APIs, Viewer Foundation Render, which provides simplified resource and state management on top of the Metal APIs.
+* A Wavefront OBJ viewer, supporting both real-time rendering and ray-tracing, which is based on Viewer Foundation, a reusable framework.
+* Viewer Foundation, a reusable framework consisting of:
+  * Viewer Foundation Render, which is an encapsulation to the Metal APIs, providing simplified resource and state management on top of the Metal APIs.
   * A scene-graph-like system which enables building real-time and path-tracing based renderers.
 
 ## Supported GPUs
