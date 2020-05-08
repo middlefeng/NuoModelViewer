@@ -17,7 +17,7 @@
 #import "NuoRenderInFlight.h"
 
 
-@class NuoBufferSwapChain;
+@class NuoBufferInFlight;
 
 
 @interface NuoRenderPassEncoder  : NSObject <NuoRenderInFlight>
@@ -38,10 +38,10 @@
 - (void)setFragmentBuffer:(id<MTLBuffer>)buffer offset:(uint)offset atIndex:(uint)index;
 - (void)setVertexBuffer:(id<MTLBuffer>)vertexBuffer offset:(uint)offset atIndex:(uint)index;
 
-- (void)setFragmentBufferSwapChain:(NuoBufferSwapChain*)buffer
-                            offset:(uint)offset atIndex:(uint)index;
-- (void)setVertexBufferSwapChain:(NuoBufferSwapChain*)buffers
-                          offset:(uint)offset atIndex:(uint)index;
+- (void)setFragmentBufferInFlight:(NuoBufferInFlight*)buffer
+                           offset:(uint)offset atIndex:(uint)index;
+- (void)setVertexBufferInFlight:(NuoBufferInFlight*)buffers
+                         offset:(uint)offset atIndex:(uint)index;
 
 
 - (void)drawWithIndices:(id<MTLBuffer>)indexBuffer;

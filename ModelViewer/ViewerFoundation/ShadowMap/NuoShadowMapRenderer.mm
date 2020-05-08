@@ -133,7 +133,7 @@
     
     renderPass.label = @"Shadow Map";
 
-    [renderPass setVertexBufferSwapChain:_transUniformBuffers offset:0 atIndex:1];
+    [renderPass setVertexBufferInFlight:_transUniformBuffers offset:0 atIndex:1];
     [_sceneRoot drawShadow:renderPass];
     
     [self releaseDefaultEncoder];

@@ -25,7 +25,7 @@ NuoSceneMask;
 
 
 
-@class NuoBufferSwapChain;
+@class NuoBufferInFlight;
 
 
 /**
@@ -35,9 +35,9 @@ NuoSceneMask;
 @protocol NuoMeshSceneParametersProvider
 
 
-- (NuoBufferSwapChain*)transUniformBuffers;
-- (NuoBufferSwapChain*)lightCastBuffers;
-- (NuoBufferSwapChain*)lightingUniformBuffers;
+- (NuoBufferInFlight*)transUniformBuffers;
+- (NuoBufferInFlight*)lightCastBuffers;
+- (NuoBufferInFlight*)lightingUniformBuffers;
 - (id<MTLBuffer>)modelCharacterUnfiromBuffer;
 - (BOOL)cullEnabled;
 

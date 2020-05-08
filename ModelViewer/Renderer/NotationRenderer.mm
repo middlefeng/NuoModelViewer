@@ -317,8 +317,8 @@ static NuoLightUniforms kLightUniform;
     [self updateUniformsForView:commandBuffer];
     
     [renderPass setCullMode:MTLCullModeNone];
-    [renderPass setVertexBufferSwapChain:_transforms offset:0 atIndex:1];
-    [renderPass setFragmentBufferSwapChain:_lightBuffer offset:0 atIndex:0];
+    [renderPass setVertexBufferInFlight:_transforms offset:0 atIndex:1];
+    [renderPass setFragmentBufferInFlight:_lightBuffer offset:0 atIndex:0];
     
     for (size_t i = 0; i < _lightVectors.count; ++i)
     {
