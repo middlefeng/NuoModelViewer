@@ -142,7 +142,7 @@
     [renderPass setFragmentSamplerState:_samplerState atIndex:1];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBufferSwapChain:_backdropTransformBuffers offset:0 atIndex:3];
+    [renderPass setVertexBufferInFlight:_backdropTransformBuffers offset:0 atIndex:3];
     
     [renderPass setFragmentTexture:_backdropTex atIndex:2];
     

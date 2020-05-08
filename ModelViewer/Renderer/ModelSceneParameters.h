@@ -31,6 +31,10 @@ class NuoBounds;
  *
  *  note that almost none of the properties or methods defined below blong to the protocol. they
  *  are all app-specific method which help to calculate the required parameters
+ *
+ *  also note that this provider implementation does not hold a reference to the app level centrialized
+ *  model. it is preferred be dedicated to parameter buffers management, and information are synced
+ *  through a set of "update...." methods.
  */
 
 @interface ModelSceneParameters : NSObject < NuoMeshSceneParametersProvider >

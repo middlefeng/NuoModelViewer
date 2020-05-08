@@ -123,12 +123,12 @@
     return _cullEnabled;
 }
 
-- (NuoBufferSwapChain*)lightCastBuffers
+- (NuoBufferInFlight*)lightCastBuffers
 {
     return _lightCastBuffers;
 }
 
-- (NuoBufferSwapChain*)lightingUniformBuffers
+- (NuoBufferInFlight*)lightingUniformBuffers
 {
     return _lightingUniformBuffers;
 }
@@ -143,7 +143,7 @@
     return [_shadowMap shadowMap:index withMask:mask];
 }
 
-- (NuoBufferSwapChain*)transUniformBuffers
+- (NuoBufferInFlight*)transUniformBuffers
 {
     return _transUniformBuffers;
 }

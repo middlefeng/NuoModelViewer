@@ -58,9 +58,9 @@
 {
     id<NuoMeshSceneParametersProvider> provider = _paramsProvider;
     
-    [renderPass setVertexBufferSwapChain:[provider transUniformBuffers] offset:0 atIndex:1];
-    [renderPass setVertexBufferSwapChain:[provider lightCastBuffers] offset:0 atIndex:2];
-    [renderPass setFragmentBufferSwapChain:[provider lightingUniformBuffers] offset:0 atIndex:0];
+    [renderPass setVertexBufferInFlight:[provider transUniformBuffers] offset:0 atIndex:1];
+    [renderPass setVertexBufferInFlight:[provider lightCastBuffers] offset:0 atIndex:2];
+    [renderPass setFragmentBufferInFlight:[provider lightingUniformBuffers] offset:0 atIndex:0];
     
     [renderPass setFragmentBuffer:[provider modelCharacterUnfiromBuffer] offset:0 atIndex:1];
     [renderPass setFragmentTexture:[provider shadowMap:0 withMask:kNuoSceneMask_Opaque] atIndex:0];

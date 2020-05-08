@@ -13,7 +13,18 @@
 @protocol NuoRenderInFlight;
 
 
-@interface NuoBufferSwapChain : NSObject
+
+@interface NuoBufferInFlight : NSObject
+
+
+- (id<MTLBuffer>)bufferForInFlight:(id<NuoRenderInFlight>)renderpass;
+
+
+@end
+
+
+
+@interface NuoBufferSwapChain : NuoBufferInFlight
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
@@ -24,8 +35,6 @@
 
 - (void)updateBufferWithInFlight:(id<NuoRenderInFlight>)inFlight
                      withContent:(void*)content;
-
-- (id<MTLBuffer>)bufferForInFlight:(id<NuoRenderInFlight>)renderpass;
 
 
 @end

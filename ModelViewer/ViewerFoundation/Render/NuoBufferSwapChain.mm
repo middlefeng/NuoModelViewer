@@ -12,6 +12,17 @@
 
 
 
+@implementation NuoBufferInFlight
+
+- (id<MTLBuffer>)bufferForInFlight:(id<NuoRenderInFlight>)renderpass;
+{
+    return nil;
+}
+
+@end
+
+
+
 @implementation NuoBufferSwapChain
 {
     NSArray<id<MTLBuffer>>* _buffers;

@@ -180,7 +180,7 @@ static uint16_t kIndices[] =
     [renderPass setDepthStencilState:self.depthStencilState];
     
     [renderPass setVertexBuffer:self.vertexBuffer offset:0 atIndex:0];
-    [renderPass setVertexBufferSwapChain:_cubeMatrixBuffer offset:0 atIndex:1];
+    [renderPass setVertexBufferInFlight:_cubeMatrixBuffer offset:0 atIndex:1];
     [renderPass setFragmentTexture:_cubeTexture atIndex:0];
     [renderPass setFragmentSamplerState:_samplerState atIndex:0];
     
