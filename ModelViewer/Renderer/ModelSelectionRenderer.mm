@@ -109,12 +109,9 @@
         
         if (_enabled)
         {
-            // the indicator layer is renderred according to
-            //  - the scene parameter
-            //  - the scene's depth map (for covering effect)
+            // the indicator layer is renderred according to the scene parameter
             //
             [self setSceneBuffersTo:renderPass];
-            [self setDepthMapTo:renderPass];
             
             for (NuoMesh* selectedMesh in _modelState.selectedIndicators)
                 [selectedMesh drawMesh:renderPass];

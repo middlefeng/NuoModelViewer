@@ -63,13 +63,6 @@ NuoSceneMask;
 - (void)setSceneBuffersTo:(NuoRenderPassEncoder*)renderPass;
 
 /**
- *  the function set a depth map to the render pass. unlike "setSceneBuffersTo:..." which is very
- *  basic and almost always needed, this is not required by renderers which do not need a depth map
- */
-- (void)setDepthMapTo:(NuoRenderPassEncoder*)renderPass;
-
-
-/**
  *  sub class to override to provide a depthMap
  */
 - (id<MTLTexture>)depthMap;
