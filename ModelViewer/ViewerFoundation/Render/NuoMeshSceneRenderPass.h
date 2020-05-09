@@ -29,8 +29,8 @@ NuoSceneMask;
 
 
 /**
- *  an application should provide a NuoMeshSceneRenderPass required parameter buffers
- *  through this protocol
+ *  an application should provide all required parameter buffers through this protocol
+ *  to a NuoMeshSceneRenderPass to render a set of meshes (i.e. a scene)
  */
 @protocol NuoMeshSceneParametersProvider
 
