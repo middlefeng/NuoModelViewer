@@ -40,6 +40,7 @@
 
 @synthesize indexBuffer = _indexBuffer;
 @synthesize vertexBuffer = _vertexBuffer;
+@dynamic transformBuffers;
 
 
 
@@ -171,7 +172,7 @@
     _commandQueue = mesh.commandQueue;
     _vertexBuffer = mesh.vertexBuffer;
     _indexBuffer = mesh.indexBuffer;
-    _transformBuffers = mesh.transformBuffers;
+    _transformSwapChain = mesh->_transformSwapChain;
     _enabled = mesh.enabled;
     _cullEnabled = mesh.cullEnabled;
     

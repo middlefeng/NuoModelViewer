@@ -72,7 +72,7 @@
 
 // all (prior view-matrix) mesh-transforms concatenate and passed to GPU
 //
-@property (nonatomic, strong) NuoBufferInFlight* transformBuffers;
+@property (nonatomic, readonly) NuoBufferInFlight* transformBuffers;
 
 
 
