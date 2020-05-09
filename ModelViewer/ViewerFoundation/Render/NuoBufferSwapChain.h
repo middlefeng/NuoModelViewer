@@ -13,6 +13,11 @@
 @protocol NuoRenderInFlight;
 
 
+/**
+ *  a reader to a parameter buffer should work with NuoBufferInFlight protocol
+ *  rather than NuoBufferSwapChain. the latter is used by the writters that update
+ *  a scene's parameters
+ */
 
 @interface NuoBufferInFlight : NSObject
 
@@ -23,6 +28,10 @@
 @end
 
 
+
+/**
+ *  tri-buffer encapsulation
+ */
 
 @interface NuoBufferSwapChain : NuoBufferInFlight
 
