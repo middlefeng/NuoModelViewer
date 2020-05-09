@@ -69,6 +69,8 @@
     [renderPass setFragmentTexture:[provider shadowMap:1 withMask:kNuoSceneMask_Translucent] atIndex:3];
     [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
     
+    [self setDepthMapTo:renderPass];
+    
     NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
     [inspectMaster updateTexture:[provider shadowMap:0 withMask:kNuoSceneMask_Opaque]
                          forName:kInspectable_Shadow];
@@ -89,7 +91,7 @@
 {
     // to override, not mean being called
     //
-    assert(false);
+    return nil;
 }
 
 
