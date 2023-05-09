@@ -710,7 +710,7 @@ kernel void light_direction_visualize(uint2 tid [[thread_position_in_grid]],
     
     if (intersection.distance >= 0.0f)
     {
-        thread const float3& lightVec = tracingUniforms.lightSources[0].direction;
+        thread const float3 lightVec = tracingUniforms.lightSources[0].direction;
         dstTex.write(float4(lightVec.x, lightVec.y, 0.0, 1.0f), tid);
     }
 }

@@ -306,6 +306,8 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     
     targets.modelMask.write(float4(primaryVisibility[rayIdx], 1.0), tid);
     
+    threadgroup_barrier(mem_flags::mem_texture);
+    
     self_illumination(tid, structUniform, tracingUniforms,
                       shadowRayMain, lightByScatter,
                       structUniform.exitantRays /* incident rays are the
