@@ -43,8 +43,8 @@ static void self_illumination(uint2 tid,
                               array<texture2d<float>, kTextureBindingsCap> diffuseTex,
                               sampler samplr);
 
-static void lightingTrcacingWrite(uint2 tid, float3 value,
-                                  texture2d<float, access::read_write> texture);
+static void lightingTracingWrite(uint2 tid, float3 value,
+                                 texture2d<float, access::read_write> texture);
 
 
 void spawn_ray(device const RayBuffer& ray, device RayBuffer& spawn, float distance, float skip);
@@ -278,7 +278,7 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
             {
                 float3 colorByLight = shadowRay.pathScatter * shadowRayVisibility * shadowRayWeight;
                 float3 colorByScatter = lightByScatterRay.pathScatter * lightByScatterRayVisibility * scatterRayWeight;
-                lightingTrcacingWrite(tid, colorByLight + colorByScatter, targets.lightingTracing);
+                lightingTracingWrite(tid, colorByLight + colorByScatter, targets.lightingTracing);
             }
             
             if (isOcclusion)
@@ -293,7 +293,7 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
             if (!isOcclusion)
             {
                 float3 color = shadowRay.pathScatter * shadowRayVisibility;
-                lightingTrcacingWrite(tid, color, targets.lightingTracing);
+                lightingTracingWrite(tid, color, targets.lightingTracing);
             }
         
             if (isOcclusion)
@@ -305,8 +305,6 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
     }
     
     targets.modelMask.write(float4(primaryVisibility[rayIdx], 1.0), tid);
-    
-    threadgroup_barrier(mem_flags::mem_texture);
     
     self_illumination(tid, structUniform, tracingUniforms,
                       shadowRayMain, lightByScatter,
@@ -333,15 +331,19 @@ static void overlayWrite(uint hitType, float3 value, uint2 tid, bool directAmbie
                                                     targets.overlayForVirtual   // direct ambient for reducing occlusion
                                                   : targets.lightingTracing;    // indirect ambient to be added to the result
     
+    threadgroup_barrier(mem_flags::mem_texture);
+    
     const float4 color = texture.read(tid);
     const float4 result = float4(color.rgb + value.rgb, 1.0);
     texture.write(result, tid);
 }
 
 
-static void lightingTrcacingWrite(uint2 tid, float3 value,
+static void lightingTracingWrite(uint2 tid, float3 value,
                                   texture2d<float, access::read_write> texture)
 {
+    threadgroup_barrier(mem_flags::mem_texture);
+    
     const float4 color = texture.read(tid);
     const float4 result = float4(color.rgb + value, 1.0);
     texture.write(result, tid);

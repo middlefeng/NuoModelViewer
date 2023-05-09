@@ -284,6 +284,8 @@ static void overlayWrite(uint hitType, float4 value, uint2 tid,
     texture2d<float, access::read_write> texture = (hitType & kNuoRayMask_Virtual)?
                                                     targets.overlayForVirtual : targets.overlayResult;
     
+    threadgroup_barrier(mem_flags::mem_texture);
+    
     const float4 color = texture.read(tid);
     const float4 result = float4(color.rgb + value.rgb, saturate(color.a + value.a));
     texture.write(result, tid);
