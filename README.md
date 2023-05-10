@@ -8,16 +8,20 @@ This project consists of:
 
 ## Supported GPUs
 
-* Intel HD serious GPUs are **not** supported. (Built-in integrated GPU in most models of Mac.)
-* AMD Radeon Pro 560, and built-in descrete GPUs in almost all MacBook Pro later than 2017, are barely suppored. Their performance would be poor for the ray tracing rendering.
-* AMD Radeon RX 580 or above is recommended, in particular but not limited to:
-  * AMD Radeon RX Vega 56 is recommended.
-  * AMD Radeon RX Vega 64, RX 5700, and so on, should be working, but untested.
-  * AMD Radeon VII is highly recommended.
-  * AMD Radeon Pro Vega II (Duo) (in the Mac Pro 2019). [1]
-  * AMD Radeon Pro W5700. [1]
-  
-  [1] Acknowledge to @ibuick for the verification.
+* Apple Silicon GPU is supposed to be the only GPU working on macOS in the future.
+  * M1 Max (tested).
+
+⚠️❗The whole Intel Mac product line has been terminated. AMD eGPU support is obsoleted.
+> * Intel HD serious GPUs are **not** supported. (Built-in integrated GPU in most models of Mac.)
+> * AMD Radeon Pro 560, and built-in descrete GPUs in almost all MacBook Pro later than 2017, are barely suppored. Their performance would be poor for the ray tracing rendering.
+> * For early macOS on Intel supporting eGPU, AMD Radeon RX 580 or above is recommended, in particular but not limited to:
+>   * AMD Radeon RX Vega 56 is recommended.
+>   * AMD Radeon RX Vega 64, RX 5700, and so on, should be working, but untested.
+>   * AMD Radeon VII is highly recommended.
+>   * AMD Radeon Pro Vega II (Duo) (in the Mac Pro 2019). [1]
+>   * AMD Radeon Pro W5700. [1]
+> 
+>  [1] Acknowledge to @ibuick for the verification.
 
 ## Latest Update
 
