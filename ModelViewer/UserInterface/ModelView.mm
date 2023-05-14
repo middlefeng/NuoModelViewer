@@ -3,7 +3,8 @@
 //  ModelViewer
 //
 //  Created by middleware on 8/26/16.
-//  Copyright © 2020 middleware. All rights reserved.
+//  Updated 5/13/2023.
+//  Copyright © 2023 middleware. All rights reserved.
 //
 
 #import "ModelView.h"
@@ -287,14 +288,6 @@ MouseDragMode;
     target.clearColor = MTLClearColorMake(color, color, color, 1);
     
     [self showHideFrameRate:_modelPanel.showFrameRate];
-    [_modelRender setAmbientParameters:_modelPanel.ambientParameters];
-    [_modelRender setFieldOfView:_modelPanel.fieldOfViewRadian];
-    [_modelRender setAmbientDensity:_modelPanel.ambientDensity];
-    [_modelRender setIlluminationStrength:_modelPanel.illumination];
-    [_modelRender setShowCheckerboard:_modelPanel.showModelParts];
-    [_modelRender.modelState setTransMode:_modelPanel.transformMode];
-    
-    [_modelRender.sceneParameters setCullEnabled:_modelPanel.cullEnabled];
     
     [_modelSelectionRenderer setEnabled:_modelPanel.showModelParts];
     [_modelComponentPanels setHidden:!_modelPanel.showModelParts];
@@ -308,6 +301,19 @@ MouseDragMode;
     {
         [self setupPipelineSettings];
     }
+    
+    // the setup of parameter buffers are placed after the pipeline-setting-setup because of
+    // buffers are managed by inner sub-renderers or renderer-delegate that is created in the
+    // pipeline-setting-setup phase
+    //
+    [_modelRender setAmbientParameters:_modelPanel.ambientParameters];
+    [_modelRender setFieldOfView:_modelPanel.fieldOfViewRadian];
+    [_modelRender setAmbientDensity:_modelPanel.ambientDensity];
+    [_modelRender setIlluminationStrength:_modelPanel.illumination];
+    [_modelRender setShowCheckerboard:_modelPanel.showModelParts];
+    [_modelRender.modelState setTransMode:_modelPanel.transformMode];
+    
+    [_modelRender.sceneParameters setCullEnabled:_modelPanel.cullEnabled];
         
     if (!_modelPanel.showFrameRate)
         [self accumulatingRecord:(_modelPanel.rayTracingRecordStatus == kRecord_Start)];
