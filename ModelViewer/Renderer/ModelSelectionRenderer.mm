@@ -85,6 +85,10 @@
     
     renderPass.label = @"Selection - depth";
     
+    // in order to manage a depth map by this selection renderer itself, the whole scene
+    // is rendered by this renderer but discarded, only the depth map used in subsequent
+    // selection indicators rendering
+    //
     [self setSceneBuffersTo:renderPass];
     [_modelState.sceneRoot drawMesh:renderPass];
     
