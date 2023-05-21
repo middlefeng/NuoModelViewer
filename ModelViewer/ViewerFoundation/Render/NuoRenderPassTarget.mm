@@ -75,12 +75,6 @@
 }
 
 
-- (void)setStoreDepth:(BOOL)storeDepth
-{
-    _depthAttachment.needStore = storeDepth;
-}
-
-
 - (void)setClearColor:(MTLClearColor)clearColor
 {
     _clearColor = clearColor;
@@ -114,12 +108,12 @@
 }
 
 
-- (void)setResolveDepth:(BOOL)resolveDepth
+- (void)setStoreDepth:(BOOL)storeDepth
 {
-    if (_resolveDepth == resolveDepth)
+    if (_storeDepth == storeDepth)
         return;
     
-    _resolveDepth = resolveDepth;
+    _storeDepth = storeDepth;
     
     if (_drawableSize.width > 0 && _drawableSize.height > 0)
         [self makeTextures];
@@ -153,7 +147,8 @@
     }
     
     _depthAttachment.drawableSize = self.drawableSize;
-    _depthAttachment.needResolve = _resolveDepth;
+    _depthAttachment.needResolve = _storeDepth;
+    _depthAttachment.needStore = _storeDepth;
     _depthAttachment.sampleCount = _sampleCount;
     _depthAttachment.name = _name;
     [_depthAttachment makeTexture];

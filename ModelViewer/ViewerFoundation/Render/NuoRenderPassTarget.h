@@ -43,10 +43,10 @@
 @property (nonatomic, assign) CGSize drawableSize;
 
 /**
- *  with multi-sampling, determine whether the depth map need to be
- *  resolved to be used by other renderers
+ *  whether the depth map shall be stored for other renderers' use.
+ *  in case of multi-sampling, the depth map need be resolved before being stored
  */
-@property (nonatomic, assign) BOOL resolveDepth;
+@property (nonatomic, assign) BOOL storeDepth;
 
 /**
  *  the texture that holds the rendered pixels of the current pass, this are
@@ -68,11 +68,6 @@
  */
 @property (nonatomic, assign) BOOL sharedTargetTexture;
 
-/**
- *  set as true, before the drawableSize is changed, if the depth map is to be used
- *  by other render process
- */
-@property (nonatomic, assign) BOOL storeDepth;
 
 @property (nonatomic, readonly) MTLPixelFormat targetPixelFormat;
 

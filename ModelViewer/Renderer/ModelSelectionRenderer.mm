@@ -49,7 +49,6 @@
         _depthTarget.name = @"selection - depth";
         _depthTarget.manageTargetTexture = YES;
         _depthTarget.sharedTargetTexture = NO;
-        _depthTarget.resolveDepth = YES;
         _depthTarget.storeDepth = YES;
         
         _textureMesh = [[NuoTextureMesh alloc] initWithCommandQueue:self.commandQueue];
