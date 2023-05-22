@@ -13,7 +13,9 @@
 #import "NuoBufferSwapChain.h"
 #import "NuoLightSource.h"
 
-#import "NuoMeshSceneRoot.h"
+
+#include "NuoMeshBounds.h"
+#include <algorithm>
 
 
 
@@ -63,16 +65,15 @@
 
 
 - (void)updateUniforms:(NuoCommandBuffer*)commandBuffer
+            withBounds:(const NuoBounds&)bounds
+              withView:(const NuoMatrixFloat44&)viewMatrix
+            withLights:(NSArray<NuoLightSource*>*)lights
 {
-    const NuoMatrixFloat44& viewTrans = _viewMatrix;
-    
     const CGSize& drawableSize = _drawableSize;
     const float aspect = drawableSize.width / drawableSize.height;
     
-    // bounding box transform and determining the near/far
+    // bounding box determines transform and determining the near/far
     //
-    NuoBounds bounds = [_sceneRoot worldBounds:viewTrans].boundingBox;
-    
     float near = -bounds._center.z() - bounds._span.z() / 2.0 + 0.01;
     float far = near + bounds._span.z() + 0.02;
     near = std::max<float>(0.001, near);
@@ -81,9 +82,9 @@
     _projection = NuoMatrixPerspective(aspect, _fieldOfView, near, far);
     
     NuoUniforms uniforms;
-    uniforms.viewMatrix = viewTrans._m;
-    uniforms.viewMatrixInverse = viewTrans.Inverse()._m;
-    uniforms.viewProjectionMatrix = (_projection * viewTrans)._m;
+    uniforms.viewMatrix = viewMatrix._m;
+    uniforms.viewMatrixInverse = viewMatrix.Inverse()._m;
+    uniforms.viewProjectionMatrix = (_projection * viewMatrix)._m;
     
     [_transUniformBuffers updateBufferWithInFlight:commandBuffer withContent:&uniforms];
     
@@ -91,16 +92,16 @@
     lighting.ambient = _ambient._vector;
     for (unsigned int i = 0; i < 4; ++i)
     {
-        const NuoVectorFloat4 lightVector(_lights[i].lightDirection * NuoVectorFloat4(0, 0, 1, 0));
+        const NuoVectorFloat4 lightVector(lights[i].lightDirection * NuoVectorFloat4(0, 0, 1, 0));
         lighting.lightParams[i].direction = lightVector._vector;
-        lighting.lightParams[i].irradiance = _lights[i].lightingIrradiance;
-        lighting.lightParams[i].specular = _lights[i].lightingSpecular;
+        lighting.lightParams[i].irradiance = lights[i].lightingIrradiance;
+        lighting.lightParams[i].specular = lights[i].lightingSpecular;
         
         if (i < 2)
         {
-            lighting.shadowParams[i].soften = _lights[i].shadowSoften;
-            lighting.shadowParams[i].bias = _lights[i].shadowBias;
-            lighting.shadowParams[i].occluderRadius = _lights[i].shadowOccluderRadius;
+            lighting.shadowParams[i].soften = lights[i].shadowSoften;
+            lighting.shadowParams[i].bias = lights[i].shadowBias;
+            lighting.shadowParams[i].occluderRadius = lights[i].shadowOccluderRadius;
         }
     }
     
@@ -122,17 +123,12 @@
     return _cullEnabled;
 }
 
-- (id<MTLTexture>)depthMap
-{
-    return [_shadowMap depthMap];
-}
-
-- (NuoBufferSwapChain*)lightCastBuffers
+- (NuoBufferInFlight*)lightCastBuffers
 {
     return _lightCastBuffers;
 }
 
-- (NuoBufferSwapChain*)lightingUniformBuffers
+- (NuoBufferInFlight*)lightingUniformBuffers
 {
     return _lightingUniformBuffers;
 }
@@ -147,7 +143,7 @@
     return [_shadowMap shadowMap:index withMask:mask];
 }
 
-- (NuoBufferSwapChain*)transUniformBuffers
+- (NuoBufferInFlight*)transUniformBuffers
 {
     return _transUniformBuffers;
 }

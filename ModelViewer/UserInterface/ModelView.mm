@@ -615,7 +615,6 @@ MouseDragMode;
     modelRenderTarget.manageTargetTexture = YES;
     modelRenderTarget.name = @"Model";
     
-    [_modelRender setResolveDepth:(_modelSelectionRenderer != nil)];
     [_modelRender setRenderTarget:modelRenderTarget];
     lastTarget = modelRenderTarget;
     

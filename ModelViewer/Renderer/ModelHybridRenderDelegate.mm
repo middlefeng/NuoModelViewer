@@ -21,6 +21,12 @@
 
 
 
+@interface ModelHybridRenderDelegate() < ModelShadowMapProvider >
+
+@end
+
+
+
 @implementation ModelHybridRenderDelegate
 {
     NuoShadowMapRenderer* _shadowMapRenderer[2];
@@ -139,27 +145,6 @@
 }
 
 
-- (void)setResolveDepth:(BOOL)resolveDepth
-{
-    [_immediateTarget setResolveDepth:resolveDepth];
-}
-
-
-- (id<MTLTexture>)depthMap
-{
-    return _immediateTarget.depthTexture;
-}
-
-
-- (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask
-{
-    if (_rayTracingRecordStatus != kRecord_Stop)
-        return [_rayTracingRenderer shadowForLightSource:index withMask:mask];
-    else
-        return _shadowMapRenderer[index].renderTarget.targetTexture;
-}
-
-
 - (void)rayStructUpdated
 {
     [_rayTracingRenderer rayStructUpdated];
@@ -219,7 +204,8 @@
         lightUniforms.lightCastMatrix[0] = _shadowMapRenderer[0].lightCastMatrix._m;
         lightUniforms.lightCastMatrix[1] = _shadowMapRenderer[1].lightCastMatrix._m;
         
-        [self.paramsProvider.lightCastBuffers updateBufferWithInFlight:commandBuffer withContent:&lightUniforms];
+        ModelSceneParameters* params = (ModelSceneParameters*)self.paramsProvider;
+        [params updateLightCastWithInFlight:commandBuffer withContent:&lightUniforms];
         
         // seems unnecessary with ray tracing running, and it slows down ray tracing on
         // 10.14.2 occasionally for unknown reason
@@ -284,6 +270,19 @@
 - (void)setDelegateTarget:(NuoRenderPassTarget*)target
 {
     _delegateTarget = target;
+}
+
+
+
+#pragma mark -- Protocol Functions - ModelShadowMapProvider
+
+
+- (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask
+{
+    if (_rayTracingRecordStatus != kRecord_Stop)
+        return [_rayTracingRenderer shadowForLightSource:index withMask:mask];
+    else
+        return _shadowMapRenderer[index].renderTarget.targetTexture;
 }
 
 

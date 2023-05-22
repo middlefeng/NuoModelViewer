@@ -3,7 +3,8 @@
 //  ModelViewer
 //
 //  Created by middleware on 11/7/16.
-//  Copyright © 2016 middleware. All rights reserved.
+//  Updated by Dong on 5/21/23.
+//  Copyright © 2023 middleware. All rights reserved.
 //
 
 #import "NuoRenderPassTarget.h"
@@ -60,7 +61,7 @@
         _depthAttachment.type = kNuoRenderPassAttachment_Depth;
         _depthAttachment.needClear = YES;
         _depthAttachment.manageTexture = YES;
-        _depthAttachment.needStore = NO;
+        _depthAttachment.needStore = NO;        // by default, disable the depth map from being used afterwards (espically on ASi GPU)
         _depthAttachment.device = _device;
     }
     
@@ -73,7 +74,6 @@
     return texture.width == self.drawableSize.width &&
            texture.height == self.drawableSize.height;
 }
-
 
 
 - (void)setClearColor:(MTLClearColor)clearColor
@@ -109,12 +109,12 @@
 }
 
 
-- (void)setResolveDepth:(BOOL)resolveDepth
+- (void)setStoreDepth:(BOOL)storeDepth
 {
-    if (_resolveDepth == resolveDepth)
+    if (_storeDepth == storeDepth)
         return;
     
-    _resolveDepth = resolveDepth;
+    _storeDepth = storeDepth;
     
     if (_drawableSize.width > 0 && _drawableSize.height > 0)
         [self makeTextures];
@@ -147,8 +147,14 @@
         [colorAttachment makeTexture];
     }
     
+    // the NuoRenderPassAttachment class has both needResolve and needStore properties.
+    // for a depth attachement in a NuoRenderPassTarget, the two properties are considered
+    // as collectively equivelent to whether the depth map is used by another renderer.
+    //
+    _depthAttachment.needResolve = _storeDepth;
+    _depthAttachment.needStore = _storeDepth;
+    
     _depthAttachment.drawableSize = self.drawableSize;
-    _depthAttachment.needResolve = _resolveDepth;
     _depthAttachment.sampleCount = _sampleCount;
     _depthAttachment.name = _name;
     [_depthAttachment makeTexture];

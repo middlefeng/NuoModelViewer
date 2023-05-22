@@ -58,9 +58,9 @@
 {
     id<NuoMeshSceneParametersProvider> provider = _paramsProvider;
     
-    [renderPass setVertexBufferSwapChain:[provider transUniformBuffers] offset:0 atIndex:1];
-    [renderPass setVertexBufferSwapChain:[provider lightCastBuffers] offset:0 atIndex:2];
-    [renderPass setFragmentBufferSwapChain:[provider lightingUniformBuffers] offset:0 atIndex:0];
+    [renderPass setVertexBufferInFlight:[provider transUniformBuffers] offset:0 atIndex:1];
+    [renderPass setVertexBufferInFlight:[provider lightCastBuffers] offset:0 atIndex:2];
+    [renderPass setFragmentBufferInFlight:[provider lightingUniformBuffers] offset:0 atIndex:0];
     
     [renderPass setFragmentBuffer:[provider modelCharacterUnfiromBuffer] offset:0 atIndex:1];
     [renderPass setFragmentTexture:[provider shadowMap:0 withMask:kNuoSceneMask_Opaque] atIndex:0];
@@ -68,6 +68,8 @@
     [renderPass setFragmentTexture:[provider shadowMap:0 withMask:kNuoSceneMask_Translucent] atIndex:2];
     [renderPass setFragmentTexture:[provider shadowMap:1 withMask:kNuoSceneMask_Translucent] atIndex:3];
     [renderPass setFragmentSamplerState:_shadowMapSamplerState atIndex:0];
+    
+    [self setDepthMapTo:renderPass];
     
     NuoInspectableMaster* inspectMaster = [NuoInspectableMaster sharedMaster];
     [inspectMaster updateTexture:[provider shadowMap:0 withMask:kNuoSceneMask_Opaque]
@@ -77,11 +79,19 @@
 }
 
 
-- (void)setDepthMapTo:(id<MTLRenderCommandEncoder>)renderPass
+- (void)setDepthMapTo:(NuoRenderPassEncoder*)renderPass
 {
-    id<MTLTexture> depthMap = [_paramsProvider depthMap];
+    id<MTLTexture> depthMap = [self depthMap];
     if (depthMap)
         [renderPass setFragmentTexture:depthMap atIndex:4];
+}
+
+
+- (id<MTLTexture>)depthMap
+{
+    // to override, not mean being called
+    //
+    return nil;
 }
 
 

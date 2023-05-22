@@ -3,7 +3,8 @@
 //  ModelViewer
 //
 //  Created by middleware on 11/7/16.
-//  Copyright © 2016 middleware. All rights reserved.
+//  Updated by Dong on 5/21/23
+//  Copyright © 2023 middleware. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -43,10 +44,10 @@
 @property (nonatomic, assign) CGSize drawableSize;
 
 /**
- *  with multi-sampling, determine whether the depth map need to be
- *  resolved to be used by other renderers
+ *  whether the depth map shall be stored for other renderers' use.
+ *  in case of multi-sampling, the depth map need be resolved before being stored
  */
-@property (nonatomic, assign) BOOL resolveDepth;
+@property (nonatomic, assign) BOOL storeDepth;
 
 /**
  *  the texture that holds the rendered pixels of the current pass, this are
@@ -67,6 +68,7 @@
  *  screen display (amature to readback on-screen texture) 
  */
 @property (nonatomic, assign) BOOL sharedTargetTexture;
+
 
 @property (nonatomic, readonly) MTLPixelFormat targetPixelFormat;
 

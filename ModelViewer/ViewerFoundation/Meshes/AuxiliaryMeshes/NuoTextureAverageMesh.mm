@@ -161,7 +161,7 @@
     
     [renderPass setFragmentTexture:_texturesAccumulated.targetTexture atIndex:0];
     [renderPass setFragmentTexture:_textureLatest atIndex:1];
-    [renderPass setFragmentBufferSwapChain:_texCountBuffer offset:0 atIndex:0];
+    [renderPass setFragmentBufferInFlight:_texCountBuffer offset:0 atIndex:0];
     [super drawMesh:renderPass];
     
     [renderPass popParameterState];

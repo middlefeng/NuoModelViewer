@@ -13,7 +13,27 @@
 @protocol NuoRenderInFlight;
 
 
-@interface NuoBufferSwapChain : NSObject
+/**
+ *  a reader to a parameter buffer should work with NuoBufferInFlight protocol
+ *  rather than NuoBufferSwapChain. the latter is used by the writters that update
+ *  a scene's parameters
+ */
+
+@interface NuoBufferInFlight : NSObject
+
+
+- (id<MTLBuffer>)bufferForInFlight:(id<NuoRenderInFlight>)renderpass;
+
+
+@end
+
+
+
+/**
+ *  tri-buffer encapsulation
+ */
+
+@interface NuoBufferSwapChain : NuoBufferInFlight
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device
@@ -24,8 +44,6 @@
 
 - (void)updateBufferWithInFlight:(id<NuoRenderInFlight>)inFlight
                      withContent:(void*)content;
-
-- (id<MTLBuffer>)bufferForInFlight:(id<NuoRenderInFlight>)renderpass;
 
 
 @end

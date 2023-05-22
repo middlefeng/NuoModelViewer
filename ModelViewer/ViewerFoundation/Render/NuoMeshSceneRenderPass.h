@@ -25,22 +25,23 @@ NuoSceneMask;
 
 
 
-@class NuoBufferSwapChain;
+@class NuoBufferInFlight;
 
 
-
+/**
+ *  an application should provide all required parameter buffers through this protocol
+ *  to a NuoMeshSceneRenderPass to render a set of meshes (i.e. a scene)
+ */
 @protocol NuoMeshSceneParametersProvider
 
 
-- (NuoBufferSwapChain*)transUniformBuffers;
-- (NuoBufferSwapChain*)lightCastBuffers;
-- (NuoBufferSwapChain*)lightingUniformBuffers;
+- (NuoBufferInFlight*)transUniformBuffers;
+- (NuoBufferInFlight*)lightCastBuffers;
+- (NuoBufferInFlight*)lightingUniformBuffers;
 - (id<MTLBuffer>)modelCharacterUnfiromBuffer;
 - (BOOL)cullEnabled;
 
 - (id<MTLTexture>)shadowMap:(uint)index withMask:(NuoSceneMask)mask;
-- (id<MTLTexture>)depthMap;
-
 
 @end
 
@@ -62,10 +63,9 @@ NuoSceneMask;
 - (void)setSceneBuffersTo:(NuoRenderPassEncoder*)renderPass;
 
 /**
- *  the function set a depth map to the render pass. unlike "setSceneBuffersTo:..." which is very
- *  basic and almost always needed, this is not required by renderers which do not need a depth map
+ *  sub class to override to provide a depthMap
  */
-- (void)setDepthMapTo:(NuoRenderPassEncoder*)renderPass;
+- (id<MTLTexture>)depthMap;
 
 
 @end
