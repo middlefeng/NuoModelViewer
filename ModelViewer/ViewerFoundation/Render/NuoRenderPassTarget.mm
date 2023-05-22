@@ -3,7 +3,8 @@
 //  ModelViewer
 //
 //  Created by middleware on 11/7/16.
-//  Copyright © 2016 middleware. All rights reserved.
+//  Updated by Dong on 5/21/23.
+//  Copyright © 2023 middleware. All rights reserved.
 //
 
 #import "NuoRenderPassTarget.h"
@@ -146,9 +147,14 @@
         [colorAttachment makeTexture];
     }
     
-    _depthAttachment.drawableSize = self.drawableSize;
+    // the NuoRenderPassAttachment class has both needResolve and needStore property.
+    // for a depth attachement, they are considered as equivelent to whether the depth
+    // is used by another renderer.
+    //
     _depthAttachment.needResolve = _storeDepth;
     _depthAttachment.needStore = _storeDepth;
+    
+    _depthAttachment.drawableSize = self.drawableSize;
     _depthAttachment.sampleCount = _sampleCount;
     _depthAttachment.name = _name;
     [_depthAttachment makeTexture];
