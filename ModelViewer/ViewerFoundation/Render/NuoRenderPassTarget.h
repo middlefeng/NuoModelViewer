@@ -3,7 +3,8 @@
 //  ModelViewer
 //
 //  Created by middleware on 11/7/16.
-//  Copyright © 2016 middleware. All rights reserved.
+//  Updated by Dong on 5/21/23
+//  Copyright © 2023 middleware. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

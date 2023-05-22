@@ -61,7 +61,7 @@
         _depthAttachment.type = kNuoRenderPassAttachment_Depth;
         _depthAttachment.needClear = YES;
         _depthAttachment.manageTexture = YES;
-        _depthAttachment.needStore = NO;        // this disable the depth map from being used afterwards, on ASi GPU
+        _depthAttachment.needStore = NO;        // by default, disable the depth map from being used afterwards (espically on ASi GPU)
         _depthAttachment.device = _device;
     }
     
@@ -147,9 +147,9 @@
         [colorAttachment makeTexture];
     }
     
-    // the NuoRenderPassAttachment class has both needResolve and needStore property.
-    // for a depth attachement, they are considered as equivelent to whether the depth
-    // is used by another renderer.
+    // the NuoRenderPassAttachment class has both needResolve and needStore properties.
+    // for a depth attachement in a NuoRenderPassTarget, the two properties are considered
+    // as collectively equivelent to whether the depth map is used by another renderer.
     //
     _depthAttachment.needResolve = _storeDepth;
     _depthAttachment.needStore = _storeDepth;

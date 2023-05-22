@@ -3,7 +3,8 @@
 //  ModelViewer
 //
 //  Created by middleware on 1/16/17.
-//  Copyright © 2017 middleware. All rights reserved.
+//  Updated by Dong on 5/21/23
+//  Copyright © 2023 middleware. All rights reserved.
 //
 
 #import "NuoShadowMapTarget.h"
