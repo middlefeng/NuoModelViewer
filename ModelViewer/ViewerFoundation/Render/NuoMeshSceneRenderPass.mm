@@ -77,7 +77,7 @@
 }
 
 
-- (void)setDepthMapTo:(id<MTLRenderCommandEncoder>)renderPass
+- (void)setDepthMapTo:(NuoRenderPassEncoder*)renderPass
 {
     id<MTLTexture> depthMap = [self depthMap];
     if (depthMap)
