@@ -64,6 +64,9 @@
                      withPixelFormat:(MTLPixelFormat)pixelFormat
                             withName:(NSString*)name;
 
+
+- (void)reset;
+- (void)setDrawableSize:(CGSize)drawableSize;
 - (void)clearRenderTargetWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 - (void)accumulateWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 

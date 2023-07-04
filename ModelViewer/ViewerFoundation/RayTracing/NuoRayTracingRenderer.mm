@@ -66,9 +66,7 @@
 
 @implementation NuoRayTracingRenderer
 {
-    NSArray<NuoRenderPassTarget*>* _rayTracingTargets;
-    NSArray<NuoRenderPassTarget*>* _rayTracingAccumulates;
-    NSArray<NuoTextureAccumulator*>* _accumulators;
+    NSArray<NuoTargetAccumulator*>* _accumulators;
     
     CGSize _drawableSize;
     
@@ -97,37 +95,15 @@
     
     if (self && targetCount > 0)
     {
-        NuoRenderPassTarget* rayTracingTargets[targetCount];
-        NuoRenderPassTarget* rayTracingAccumulates[targetCount];
-        NuoTextureAccumulator* accumulators[targetCount];
+        NuoTargetAccumulator* accumulators[targetCount];
         
         for (uint i = 0; i < targetCount; ++i)
         {
-            rayTracingTargets[i] = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                     withPixelFormat:pixelFormat
-                                                                     withSampleCount:1];
-        
-            rayTracingTargets[i].manageTargetTexture = YES;
-            rayTracingTargets[i].sharedTargetTexture = NO;
-            rayTracingTargets[i].colorAttachments[0].needWrite = YES;
-            rayTracingTargets[i].name = @"Ray Tracing";
-        
-            rayTracingAccumulates[i] = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                         withPixelFormat:pixelFormat
-                                                                         withSampleCount:1];
-            
-            rayTracingAccumulates[i].manageTargetTexture = YES;
-            rayTracingAccumulates[i].sharedTargetTexture = NO;
-            rayTracingAccumulates[i].colorAttachments[0].needWrite = YES;
-            rayTracingAccumulates[i].name = @"Ray Tracing Accumulate";
-            rayTracingAccumulates[i].clearColor = MTLClearColorMake(0, 0, 0, 0);
-            
-            accumulators[i] = [[NuoTextureAccumulator alloc] initWithCommandQueue:self.commandQueue];
-            [accumulators[i] makePipelineAndSampler];
+            accumulators[i] = [[NuoTargetAccumulator alloc] initWithCommandQueue:self.commandQueue
+                                                                 withPixelFormat:pixelFormat
+                                                                        withName:@"Ray Tracing"];
         }
         
-        _rayTracingTargets = [[NSArray alloc] initWithObjects:rayTracingTargets count:targetCount];
-        _rayTracingAccumulates = [[NSArray alloc] initWithObjects:rayTracingAccumulates count:targetCount];
         _accumulators = [[NSArray alloc] initWithObjects:accumulators count:targetCount];
         
         MTLSamplerDescriptor *samplerDesc = [MTLSamplerDescriptor new];
@@ -161,15 +137,10 @@
     [super setDrawableSize:drawableSize];
     
     if (!CGSizeEqualToSize(_drawableSize, drawableSize))
-    {
         _targetsUniform = [NSMutableDictionary new];
-    }
     
-    for (uint i = 0; i < _rayTracingTargets.count; ++i)
-    {
-        [_rayTracingTargets[i] setDrawableSize:drawableSize];
-        [_rayTracingAccumulates[i] setDrawableSize:drawableSize];
-    }
+    for (NuoTargetAccumulator* accumulator in _accumulators)
+        [accumulator setDrawableSize:drawableSize];
     
     const uint w = (uint)drawableSize.width;
     const uint h = (uint)drawableSize.height;
@@ -314,32 +285,24 @@
 {
     // clear the ray tracing target
     //
-    for (NuoRenderPassTarget* tracingTarget in _rayTracingTargets)
-    {
-        tracingTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
-        [tracingTarget retainRenderPassEndcoder:commandBuffer];
-        [tracingTarget releaseRenderPassEndcoder];
-    }
+    for (NuoTargetAccumulator* accumulator in _accumulators)
+        [accumulator clearRenderTargetWithCommandBuffer:commandBuffer];
     
     [self runRayTraceShade:commandBuffer];
     
-    for (uint i = 0; i < _rayTracingTargets.count; ++i)
-    {
-        [_accumulators[i] accumulateTexture:_rayTracingTargets[i].targetTexture
-                                  onTexture:_rayTracingAccumulates[i].targetTexture
-                          withCommandBuffer:commandBuffer];
-    }
+    for (NuoTargetAccumulator* accumulator in _accumulators)
+        [accumulator accumulateWithCommandBuffer:commandBuffer];
 }
 
 
 
 - (NSArray<id<MTLTexture>>*)targetTextures
 {
-    id<MTLTexture> textures[_rayTracingAccumulates.count];
-    for (uint i = 0; i < _rayTracingAccumulates.count; ++i)
-        textures[i] = _rayTracingAccumulates[i].targetTexture;
+    id<MTLTexture> textures[_accumulators.count];
+    for (uint i = 0; i < _accumulators.count; ++i)
+        textures[i] = _accumulators[i].accumulateTarget.targetTexture;
     
-    return [[NSArray alloc] initWithObjects:textures count:_rayTracingAccumulates.count];
+    return [[NSArray alloc] initWithObjects:textures count:_accumulators.count];
 }
 
 
@@ -401,9 +364,9 @@
     [buffer encodeWith:encoder forIndex:1];
     
     uint i = 0;
-    for (NuoRenderPassTarget* target in _rayTracingTargets)
+    for (NuoTargetAccumulator* accumulator in _accumulators)
     {
-        [buffer setTexture:target.targetTexture
+        [buffer setTexture:accumulator.renderTarget.targetTexture
                        for:(MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite)
                    atIndex:i++];
     }

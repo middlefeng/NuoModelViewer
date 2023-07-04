@@ -369,6 +369,19 @@
 }
 
 
+- (void)reset
+{
+    [_accumulator reset];
+}
+
+
+- (void)setDrawableSize:(CGSize)drawableSize
+{
+    [_renderTarget setDrawableSize:drawableSize];
+    [_accumulateTarget setDrawableSize:drawableSize];
+}
+
+
 - (void)clearRenderTargetWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 {
     _renderTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
