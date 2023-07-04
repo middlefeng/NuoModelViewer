@@ -52,3 +52,20 @@
 - (void)reset;
 
 @end
+
+
+
+@interface NuoTargetAccumulator : NSObject
+
+@property (nonatomic, readonly) NuoRenderPassTarget* renderTarget;
+@property (nonatomic, readonly) NuoRenderPassTarget* accumulateTarget;
+
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                     withPixelFormat:(MTLPixelFormat)pixelFormat
+                            withName:(NSString*)name;
+
+- (void)clearRenderTargetWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
+- (void)accumulateWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
+
+@end
+
