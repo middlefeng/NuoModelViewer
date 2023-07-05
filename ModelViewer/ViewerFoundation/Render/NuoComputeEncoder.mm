@@ -114,6 +114,8 @@
 {
     id<MTLComputeCommandEncoder> _encoder;
     NuoRenderPassParameterState _parameterState;
+    
+    uint _inFlight;
 }
 
 
@@ -122,6 +124,7 @@
  */
 - (instancetype)initWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
                              withName:(NSString*)name
+                         withInFlight:(uint)inFlight
 {
     self = [super init];
     
@@ -129,6 +132,7 @@
     {
         _encoder = [commandBuffer computeCommandEncoder];
         _encoder.label = name;
+        _inFlight = inFlight;
         
         _dataSize = CGSizeZero;
         
@@ -223,5 +227,10 @@
 }
 
 
+
+- (uint)inFlight
+{
+    return _inFlight;
+}
 
 @end

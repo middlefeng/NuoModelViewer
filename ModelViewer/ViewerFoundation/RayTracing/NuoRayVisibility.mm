@@ -76,8 +76,8 @@
     }
     
     [_rayTracer runRayTraceCompute:_pipelineInit
-                 withCommandBuffer:commandBuffer
-                       withTargets:NO withParameter:@[_tracingUniform, _spawnRays.buffer, _visibilities]
+                       withEncoder:[_pipelineInit encoderWithCommandBuffer:commandBuffer]
+                       withTargets:nil withParameter:@[_tracingUniform, _spawnRays.buffer, _visibilities]
                     withExitantRay:_paths.buffer withIntersection:intersectBuffer];
 }
 
@@ -87,8 +87,8 @@
     [_rayTracer rayIntersect:commandBuffer withRays:_spawnRays withIntersection:_spawnIntersectionBuffer];
     
     [_rayTracer runRayTraceCompute:_pipeline
-                 withCommandBuffer:commandBuffer
-                     withTargets:NO withParameter:@[_tracingUniform, _visibilities]
+                       withEncoder:[_pipeline encoderWithCommandBuffer:commandBuffer]
+                       withTargets:nil withParameter:@[_tracingUniform, _visibilities]
                     withExitantRay:_spawnRays.buffer
                   withIntersection:_spawnIntersectionBuffer];
 }

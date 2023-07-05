@@ -16,7 +16,8 @@
 @interface NuoComputeEncoder()
 
 - (instancetype)initWithCommandBuffer:(id<MTLCommandBuffer>)commandBuffer
-                             withName:(NSString*)name;
+                             withName:(NSString*)name
+                         withInFlight:(uint)inFlight;
 
 
 @end
@@ -131,7 +132,8 @@
 - (NuoComputeEncoder*)computeEncoderWithName:(NSString*)name
 {
     return [[NuoComputeEncoder alloc] initWithCommandBuffer:_commandBuffer
-                                                   withName:name];
+                                                   withName:name
+                                               withInFlight:_inFlight];
 }
 
 

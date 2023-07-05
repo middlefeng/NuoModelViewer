@@ -187,27 +187,25 @@
 
 
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
-         withCommandBuffer:(NuoCommandBuffer*)commandBuffer
-               withTargets:(BOOL)withTargets
+               withEncoder:(NuoComputeEncoder*)computeEncoder
+               withTargets:(NuoArgumentBuffer*)targets
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
             withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection
 {
-    NuoComputeEncoder* computeEncoder = [pipeline encoderWithCommandBuffer:commandBuffer];
     id<MTLBuffer> effectiveRay = exitantRay ? exitantRay : [_rayStructure primaryRayBuffer].buffer;
     
     uint i = 0;
 
     NuoArgumentBuffer* argumentBuffer = [self raystructUniform:pipeline
-                                                  withInFlight:commandBuffer
+                                                  withInFlight:computeEncoder
                                                 withExitantRay:effectiveRay
                                               withIntersection:intersection];
     [computeEncoder setArgumentBuffer:argumentBuffer];
     
-    if (withTargets)
+    if (targets)
     {
-        NuoArgumentBuffer* targetBuffer = [self targetsUniform:pipeline];
-        [computeEncoder setArgumentBuffer:targetBuffer];
+        [computeEncoder setArgumentBuffer:targets];
         ++i;
     }
     
@@ -237,9 +235,14 @@
             withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection
 {
-    [self runRayTraceCompute:pipeline
-           withCommandBuffer:commandBuffer
-                 withTargets:YES withParameter:paramterBuffers
+    // this must not be put in place of the call to runRayTraceCompute because
+    // there might be uncertain execute order for the parameters yielding. this
+    // must be performed before targetsUniform
+    //
+    NuoComputeEncoder* encoder = [pipeline encoderWithCommandBuffer:commandBuffer];
+    
+    [self runRayTraceCompute:pipeline withEncoder:encoder
+                 withTargets:[self targetsUniform:pipeline] withParameter:paramterBuffers
               withExitantRay:exitantRay withIntersection:intersection];
 }
 
@@ -349,6 +352,10 @@
 }
 
 
+/**
+ *  encode an argument buffer for each pipline. resue the existing argument buffer
+ *  for a pipeline if one has been encoded.
+ */
 - (NuoArgumentBuffer*)targetsUniform:(NuoComputePipeline*)pipeline
 {
     NuoArgumentBufferKey* key = [NuoArgumentBufferKey new];

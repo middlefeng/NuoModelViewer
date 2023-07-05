@@ -13,6 +13,8 @@
 
 @class NuoRayBuffer;
 @class NuoComputePipeline;
+@class NuoComputeEncoder;
+@class NuoArgumentBuffer;
 @class NuoRayAccelerateStructure;
 
 
@@ -59,13 +61,17 @@
  *  protocol with "pipeline" shader:
  *  parameter buffers:
  *      0. ray struct uniform (common for all renderers)
- *      1. targets (specific to each renderer)
+ *      1. targets in an encoded argument buffer
  *      2. extra parameter (sepcific to each renderer)
  *      ... model material textures
+ *
+ *  an "encoder" is needed as the second parameter, rather than a command buffer. this is to
+ *  allow the argument buffer, as the third parameter, to be created in the same encoding
+ *  process as that strated by the same encoder
  */
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
-         withCommandBuffer:(NuoCommandBuffer*)commandBuffer
-               withTargets:(BOOL)withTargets
+               withEncoder:(NuoComputeEncoder*)encoder
+               withTargets:(NuoArgumentBuffer*)targets
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
             withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection;
