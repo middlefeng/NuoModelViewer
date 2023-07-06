@@ -143,6 +143,8 @@ enum kModelRayTracingTargets
     if (CGSizeEqualToSize(_drawableSize, drawableSize))
         return;
     
+    _drawableSize = drawableSize;
+    
     _incidentRaysBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
     _incidentRaysBuffer.dimension = drawableSize;
     
