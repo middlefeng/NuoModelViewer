@@ -235,9 +235,8 @@
             withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection
 {
-    // this must not be put in place of the call to runRayTraceCompute because
-    // there might be uncertain execute order for the parameters yielding. this
-    // must be performed before targetsUniform
+    // the creation of a computer encoder must be performed ahead of the creation of an argument
+    // encoder of the same pipeline. that's why the following line shall be in prior to [self targetsUniform ...]
     //
     NuoComputeEncoder* encoder = [pipeline encoderWithCommandBuffer:commandBuffer];
     

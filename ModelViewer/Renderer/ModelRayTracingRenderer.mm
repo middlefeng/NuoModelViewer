@@ -65,8 +65,8 @@ enum kModelRayTracingTargets
     
     // inspectable resources
     NuoComputePipeline* _intersectionPipeline;
-    NSMutableDictionary<NSString*, NuoArgumentBuffer*>* _inspectTargetsUniform;
-    NSMutableDictionary<NSString*, NuoTargetAccumulator*>* _intersectionVis;
+    NSMutableDictionary<NSString*, NuoArgumentBuffer*>* _inspectTargets;
+    NSMutableDictionary<NSString*, NuoTargetAccumulator*>* _inspectAccumulators;
 }
 
 
@@ -118,8 +118,8 @@ enum kModelRayTracingTargets
         _lightRayByScatterVisibility.rayStride = kRayBufferStride;
         _lightRayByScatterVisibility.rayTracer = self;
         
-        _inspectTargetsUniform = [NSMutableDictionary new];
-        _intersectionVis = [NSMutableDictionary new];
+        _inspectTargets = [NSMutableDictionary new];
+        _inspectAccumulators = [NSMutableDictionary new];
     }
     
     return self;
@@ -149,9 +149,9 @@ enum kModelRayTracingTargets
 - (void)resetResources
 {
     [super resetResources];
-    [_intersectionVis enumerateKeysAndObjectsUsingBlock:^(NSString* key,
-                                                          NuoTargetAccumulator * a,
-                                                          BOOL* stop)
+    [_inspectAccumulators enumerateKeysAndObjectsUsingBlock:^(NSString* key,
+                                                              NuoTargetAccumulator * a,
+                                                              BOOL* stop)
         { [a reset]; }];
 }
 
@@ -179,9 +179,9 @@ enum kModelRayTracingTargets
     [_shadowRayVisibility setDrawableSize:drawableSize];
     [_lightRayByScatterVisibility setDrawableSize:drawableSize];
     
-    [_intersectionVis enumerateKeysAndObjectsUsingBlock:^(NSString* key,
-                                                          NuoTargetAccumulator * a,
-                                                          BOOL* stop)
+    [_inspectTargets enumerateKeysAndObjectsUsingBlock:^(NSString* key,
+                                                         NuoTargetAccumulator * a,
+                                                         BOOL* stop)
         { [a setDrawableSize:_drawableSize]; }];
 }
 
@@ -337,21 +337,21 @@ enum kModelRayTracingTargets
                                                               withFunction:@"intersection_visualize"];
     }
     
-    NuoTargetAccumulator* accumlator = [_intersectionVis objectForKey:name];
+    NuoTargetAccumulator* accumlator = [_inspectAccumulators objectForKey:name];
     if (accumlator == nil)
     {
         accumlator = [[NuoTargetAccumulator alloc] initWithCommandQueue:commandBuffer.commandQueue
                                                         withPixelFormat:MTLPixelFormatRGBA32Float
                                                                withName:@"Ray Tracing Intersection Visualization"];
         [accumlator setDrawableSize:_drawableSize];
-        [_intersectionVis setObject:accumlator forKey:name];
+        [_inspectAccumulators setObject:accumlator forKey:name];
     }
     
     [accumlator clearRenderTargetWithCommandBuffer:commandBuffer];
     
     NuoComputeEncoder* encoder = [_intersectionPipeline encoderWithCommandBuffer:commandBuffer];
     
-    NuoArgumentBuffer* target = [_inspectTargetsUniform objectForKey:name];
+    NuoArgumentBuffer* target = [_inspectTargets objectForKey:name];
     if (!target)
     {
         // this must happen after [_intersectionPipeline encoderWithCommandBuffer ...], or the
@@ -364,7 +364,7 @@ enum kModelRayTracingTargets
         [target setTexture:accumlator.renderTarget.targetTexture
                        for:(MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite) atIndex:0];
         
-        [_inspectTargetsUniform setObject:target forKey:name];
+        [_inspectTargets setObject:target forKey:name];
     }
     
     [self runRayTraceCompute:_intersectionPipeline
