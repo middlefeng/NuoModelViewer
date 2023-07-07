@@ -179,10 +179,11 @@ enum kModelRayTracingTargets
     [_shadowRayVisibility setDrawableSize:drawableSize];
     [_lightRayByScatterVisibility setDrawableSize:drawableSize];
     
-    [_inspectTargets enumerateKeysAndObjectsUsingBlock:^(NSString* key,
-                                                         NuoTargetAccumulator * a,
-                                                         BOOL* stop)
+    [_inspectAccumulators enumerateKeysAndObjectsUsingBlock:^(NSString* key,
+                                                              NuoTargetAccumulator * a,
+                                                              BOOL* stop)
         { [a setDrawableSize:_drawableSize]; }];
+    [_inspectTargets removeAllObjects];
 }
 
 
