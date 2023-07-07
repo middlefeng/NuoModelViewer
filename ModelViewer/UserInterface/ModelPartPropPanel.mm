@@ -248,13 +248,9 @@
     }
     
     NSString* names = nil;
-#if METAL_2
     NSControlStateValue smoothOption = NSControlStateValueOff;
     NSControlStateValue reverseCullOption = NSControlStateValueOff;
-#else
-    NSInteger smoothOption = NSOffState;
-    NSInteger reverseCullOption = NSOffState;
-#endif
+
     NSString* smoothToleranceStr = @"0.0";
     CGFloat smoothTolerance = 0.0f;
     
