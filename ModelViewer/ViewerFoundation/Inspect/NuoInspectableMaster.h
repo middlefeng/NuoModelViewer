@@ -16,6 +16,8 @@
 extern NSString* const kInspectable_Immediate;
 extern NSString* const kInspectable_ImmediateAlpha;
 extern NSString* const kInspectable_RayTracing;
+extern NSString* const kInspectable_RayTracingIntersec;
+extern NSString* const kInspectable_RayTracingIntersecVir;
 extern NSString* const kInspectable_RayTracingVirtualBlocked;
 extern NSString* const kInspectable_Illuminate;
 extern NSString* const kInspectable_Ambient;
@@ -63,6 +65,7 @@ extern NSString* const kInspectable_ShadowOverlay;
 - (NuoInspectable*)setInspector:(id<NuoInspector>)inspector forName:(NSString*)name;
 - (void)removeInspectorForName:(NSString*)name;
 - (void)updateTexture:(id<MTLTexture>)texture forName:(NSString*)name;
+- (BOOL)isInspected:(NSString*)name;
 
 - (void)inspect;
 

@@ -507,3 +507,32 @@ void self_illumination(uint2 tid,
     }
 }
 
+
+#pragma mark -- Inspect Visualization
+
+
+struct RayTracingVisualization
+{
+    texture2d<float, access::read_write> intersections [[id(0)]];
+};
+
+
+kernel void intersection_visualize(uint2 tid [[thread_position_in_grid]],
+                                   device RayStructureUniform& structUniform [[buffer(0)]],
+                                   device RayTracingVisualization& targets,
+                                   constant NuoRayTracingUniforms& tracingUniforms)
+{
+    constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
+    
+    if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
+        return;
+    
+    unsigned int rayIdx = tid.y * uniforms.wViewPort + tid.x;
+    device Intersection & intersection = structUniform.intersections[rayIdx];
+    
+    if (intersection.distance >= 0.0f)
+    {
+        targets.intersections.write(float4(1.0, 0.0, 0.0, 1.0f), tid);
+    }
+}
+

@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 
+#import "NuoRenderInFlight.h"
+
 
 
 @class NuoComputeEncoder;
@@ -36,7 +38,7 @@
 
 
 
-@interface NuoComputeEncoder : NSObject
+@interface NuoComputeEncoder : NSObject < NuoRenderInFlight >
 
 
 @property (nonatomic, assign) CGSize dataSize;

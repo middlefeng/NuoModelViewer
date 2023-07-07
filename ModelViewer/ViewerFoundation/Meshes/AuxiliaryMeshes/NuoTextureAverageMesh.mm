@@ -321,6 +321,93 @@
 }
 
 
+@end
+
+
+
+
+
+@implementation NuoTargetAccumulator
+{
+    NuoRenderPassTarget* _renderTarget;
+    NuoRenderPassTarget* _accumulateTarget;
+    NuoTextureAccumulator* _accumulator;
+}
+
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+                     withPixelFormat:(MTLPixelFormat)pixelFormat
+                            withName:(NSString*)name
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _renderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
+                                                          withPixelFormat:pixelFormat
+                                                          withSampleCount:1];
+    
+        _renderTarget.manageTargetTexture = YES;
+        _renderTarget.sharedTargetTexture = NO;
+        _renderTarget.colorAttachments[0].needWrite = YES;
+        _renderTarget.name = [name stringByAppendingString:@" - Render Target"];
+    
+        _accumulateTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
+                                                              withPixelFormat:pixelFormat
+                                                              withSampleCount:1];
+        
+        _accumulateTarget.manageTargetTexture = YES;
+        _accumulateTarget.sharedTargetTexture = NO;
+        _accumulateTarget.colorAttachments[0].needWrite = YES;
+        _accumulateTarget.name = [name stringByAppendingString:@" - Accumulate"];
+        _accumulateTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
+        
+        _accumulator = [[NuoTextureAccumulator alloc] initWithCommandQueue:commandQueue];
+        [_accumulator makePipelineAndSampler];
+    }
+    
+    return self;
+}
+
+
+- (void)reset
+{
+    [_accumulator reset];
+}
+
+
+- (void)setDrawableSize:(CGSize)drawableSize
+{
+    [_renderTarget setDrawableSize:drawableSize];
+    [_accumulateTarget setDrawableSize:drawableSize];
+}
+
+
+- (void)clearRenderTargetWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
+{
+    _renderTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
+    [_renderTarget retainRenderPassEndcoder:commandBuffer];
+    [_renderTarget releaseRenderPassEndcoder];
+}
+
+
+- (void)accumulateWithCommandBuffer:(NuoCommandBuffer*)commandBuffer
+{
+    [_accumulator accumulateTexture:_renderTarget.targetTexture
+                          onTexture:_accumulateTarget.targetTexture
+                  withCommandBuffer:commandBuffer];
+}
+
+
+- (NuoRenderPassTarget*)renderTarget
+{
+    return _renderTarget;
+}
+
+
+- (NuoRenderPassTarget*)accumulateTarget
+{
+    return _accumulateTarget;
+}
 
 
 @end

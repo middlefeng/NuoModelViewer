@@ -674,11 +674,11 @@ float ambient_distance_factor(float criteriaBlock, float criteriaUnblock,
  *  debug tools
  */
 
-kernel void intersection_visualize(uint2 tid [[thread_position_in_grid]],
-                                   constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
-                                   device RayBuffer* rays [[buffer(1)]],
-                                   device Intersection *intersections [[buffer(2)]],
-                                   texture2d<float, access::write> dstTex [[texture(0)]])
+kernel void intersection_visualization(uint2 tid [[thread_position_in_grid]],
+                                       constant NuoRayVolumeUniform& uniforms [[buffer(0)]],
+                                       device RayBuffer* rays [[buffer(1)]],
+                                       device Intersection *intersections [[buffer(2)]],
+                                       texture2d<float, access::write> dstTex [[texture(0)]])
 {
     if (!(tid.x < uniforms.wViewPort && tid.y < uniforms.hViewPort))
         return;

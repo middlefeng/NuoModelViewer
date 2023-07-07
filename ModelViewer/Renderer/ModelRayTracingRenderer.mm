@@ -17,6 +17,8 @@
 #import "NuoRayBuffer.h"
 #import "NuoRayAccelerateStructure.h"
 #import "NuoRayVisibility.h"
+#import "NuoTextureAverageMesh.h"
+#import "NuoArgumentBuffer.h"
 
 #include "NuoTypes.h"
 #include "NuoRayTracingRandom.h"
@@ -60,6 +62,11 @@ enum kModelRayTracingTargets
     
     PNuoRayTracingRandom _rng;
     CGSize _drawableSize;
+    
+    // inspectable resources
+    NuoComputePipeline* _intersectionPipeline;
+    NSMutableDictionary<NSString*, NuoArgumentBuffer*>* _inspectTargets;
+    NSMutableDictionary<NSString*, NuoTargetAccumulator*>* _inspectAccumulators;
 }
 
 
@@ -110,6 +117,9 @@ enum kModelRayTracingTargets
         _lightRayByScatterVisibility = [[NuoRayVisibility alloc] initWithCommandQueue:commandQueue];
         _lightRayByScatterVisibility.rayStride = kRayBufferStride;
         _lightRayByScatterVisibility.rayTracer = self;
+        
+        _inspectTargets = [NSMutableDictionary new];
+        _inspectAccumulators = [NSMutableDictionary new];
     }
     
     return self;
@@ -136,12 +146,25 @@ enum kModelRayTracingTargets
 }
 
 
+- (void)resetResources
+{
+    [super resetResources];
+    [_inspectAccumulators enumerateKeysAndObjectsUsingBlock:^(NSString* key,
+                                                              NuoTargetAccumulator * a,
+                                                              BOOL* stop)
+        { [a reset]; }];
+}
+
+
+
 - (void)setDrawableSize:(CGSize)drawableSize
 {
     [super setDrawableSize:drawableSize];
     
     if (CGSizeEqualToSize(_drawableSize, drawableSize))
         return;
+    
+    _drawableSize = drawableSize;
     
     _incidentRaysBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:self.commandQueue];
     _incidentRaysBuffer.dimension = drawableSize;
@@ -155,6 +178,11 @@ enum kModelRayTracingTargets
     [_primaryRayVisibility setDrawableSize:drawableSize];
     [_shadowRayVisibility setDrawableSize:drawableSize];
     [_lightRayByScatterVisibility setDrawableSize:drawableSize];
+    
+    [_inspectTargets enumerateKeysAndObjectsUsingBlock:^(NSString* key,
+                                                         NuoTargetAccumulator * a,
+                                                         BOOL* stop)
+        { [a setDrawableSize:_drawableSize]; }];
 }
 
 
@@ -215,6 +243,10 @@ enum kModelRayTracingTargets
     
     if ([self primaryRayIntersect:commandBuffer])
     {
+        // inspect intersection
+        [self inspectIntersection:commandBuffer forName:kInspectable_RayTracingIntersecVir
+              withRayTraceUniform:rayTraceUniform];
+        
         // generate rays for the two light sources, from virtual objects
         //
         [self runRayTraceCompute:_pimraryVirtualLighting withCommandBuffer:commandBuffer
@@ -226,6 +258,10 @@ enum kModelRayTracingTargets
     
     if ([self primaryRayIntersect:commandBuffer])
     {
+        // inspect intersection
+        [self inspectIntersection:commandBuffer forName:kInspectable_RayTracingIntersec
+              withRayTraceUniform:rayTraceUniform];
+        
         _primaryRayVisibility.tracingUniform = rayTraceUniform;
         
         // generate rays for the two light sources, from translucent objects
@@ -281,6 +317,63 @@ enum kModelRayTracingTargets
     [inspect updateTexture:targets.regularLighting forName:kInspectable_RayTracing];
     [inspect updateTexture:targets.directVirtualBlocked forName:kInspectable_RayTracingVirtualBlocked];
     [inspect updateTexture:targets.ambientVirtualWithoutBlock forName:kInspectable_AmbientVirtualWithoutBlock];
+}
+
+
+- (void)inspectIntersection:(NuoCommandBuffer*)commandBuffer
+                    forName:(NSString*)name withRayTraceUniform:(id<MTLBuffer>)rayTraceUniform
+{
+    NuoInspectableMaster* inspect = [NuoInspectableMaster sharedMaster];
+    if (![inspect isInspected:name])
+    {
+        return;
+    }
+    
+    id<MTLDevice> device = commandBuffer.commandQueue.device;
+    
+    if (!_intersectionPipeline)
+    {
+        _intersectionPipeline = [[NuoComputePipeline alloc] initWithDevice:device
+                                                              withFunction:@"intersection_visualize"];
+    }
+    
+    NuoTargetAccumulator* accumlator = [_inspectAccumulators objectForKey:name];
+    if (accumlator == nil)
+    {
+        accumlator = [[NuoTargetAccumulator alloc] initWithCommandQueue:commandBuffer.commandQueue
+                                                        withPixelFormat:MTLPixelFormatRGBA32Float
+                                                               withName:@"Ray Tracing Intersection Visualization"];
+        [accumlator setDrawableSize:_drawableSize];
+        [_inspectAccumulators setObject:accumlator forKey:name];
+    }
+    
+    [accumlator clearRenderTargetWithCommandBuffer:commandBuffer];
+    
+    NuoComputeEncoder* encoder = [_intersectionPipeline encoderWithCommandBuffer:commandBuffer];
+    
+    NuoArgumentBuffer* target = [_inspectTargets objectForKey:name];
+    if (!target)
+    {
+        // this must happen after [_intersectionPipeline encoderWithCommandBuffer ...], or the
+        // creation of an argument encoder fails
+        //
+        id<MTLArgumentEncoder> encoder = [_intersectionPipeline argumentEncoder:1];
+        
+        target = [NuoArgumentBuffer new];
+        [target encodeWith:encoder forIndex:1];
+        [target setTexture:accumlator.renderTarget.targetTexture
+                       for:(MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite) atIndex:0];
+        
+        [_inspectTargets setObject:target forKey:name];
+    }
+    
+    [self runRayTraceCompute:_intersectionPipeline
+                 withEncoder:encoder withTargets:target
+               withParameter:@[rayTraceUniform] withExitantRay:nil
+            withIntersection:self.intersectionBuffer];
+    
+    [accumlator accumulateWithCommandBuffer:commandBuffer];
+    [inspect updateTexture:accumlator.accumulateTarget.targetTexture forName:name];
 }
 
 
