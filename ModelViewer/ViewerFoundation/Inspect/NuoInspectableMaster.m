@@ -16,7 +16,8 @@ static NuoInspectableMaster* sInspectableMaster = nil;
 NSString* const kInspectable_Immediate = @"inspectable_immediate";
 NSString* const kInspectable_ImmediateAlpha = @"inspectable_immediateAlpha";
 NSString* const kInspectable_RayTracing = @"inspectable_rayTracing";
-NSString* const kInspectable_RayTracingIntersections = @"inspectable_rayTracingIntersections";
+NSString* const kInspectable_RayTracingIntersec = @"inspectable_rayTracingIntersections";
+NSString* const kInspectable_RayTracingIntersecVir = @"inspectable_rayTracingIntersectionsVirtual";
 NSString* const kInspectable_RayTracingVirtualBlocked = @"inspectable_rayTracingVirtualBlocked";
 NSString* const kInspectable_Illuminate = @"inspectable_illuminate";
 NSString* const kInspectable_Ambient = @"inspectable_ambient";
@@ -60,7 +61,8 @@ NSString* const kInspectable_DirectLightWithShadow = @"inspectable_directLightWi
     return @{ kInspectable_Immediate: [NuoInspectable inspectableWithTitle:@"Immediate" withMean:nil],
               kInspectable_ImmediateAlpha: [NuoInspectable inspectableWithTitle:@"Immediate Alpha" withMean:@"fragment_alpha"],
               kInspectable_RayTracing: [NuoInspectable inspectableWithTitle:@"Ray Tracing" withMean:nil],
-              kInspectable_RayTracingIntersections: [NuoInspectable inspectableWithTitle:@"Ray Tracing Intersections" withMean:nil],
+              kInspectable_RayTracingIntersec: [NuoInspectable inspectableWithTitle:@"Ray Tracing Intersections" withMean:nil],
+              kInspectable_RayTracingIntersecVir: [NuoInspectable inspectableWithTitle:@"Ray Tracing Intersections Virtual" withMean:nil],
               kInspectable_RayTracingVirtualBlocked: [NuoInspectable inspectableWithTitle:@"Ray Tracing Virtual Blocked" withMean:nil],
               kInspectable_Illuminate: [NuoInspectable inspectableWithTitle:@"Illumination" withMean:nil],
               kInspectable_Ambient: [NuoInspectable inspectableWithTitle:@"Ambient" withMean:nil],
