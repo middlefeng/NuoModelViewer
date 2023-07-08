@@ -35,6 +35,8 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     MPSRayIntersector* _intersector;
     MPSTriangleAccelerationStructure* _accelerateStructure;
     
+    id<MTLAccelerationStructure> _mtlAccelerateStructure;
+    
     NuoPrimaryRayEmitter* _primaryRayEmitter;
 }
 
@@ -133,8 +135,6 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     [self setMaskBuffer:root];
     
     [encoder endEncoding];
-    [commandBuffer commit];
-    [commandBuffer waitUntilCompleted];
     
     _accelerateStructure.vertexBuffer = _vertexBuffer;
     _accelerateStructure.indexType = MPSDataTypeUInt32;
@@ -143,6 +143,42 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     _accelerateStructure.maskBuffer = _maskBuffer;
     
     [_accelerateStructure rebuild];
+    
+    auto mtlGeometryDesc = [MTLAccelerationStructureTriangleGeometryDescriptor descriptor];
+    mtlGeometryDesc.vertexBuffer = _vertexBuffer;
+    mtlGeometryDesc.indexType = MTLIndexTypeUInt32;
+    mtlGeometryDesc.indexBuffer = _indexBuffer;
+    mtlGeometryDesc.triangleCount = triangleCount;
+ 
+    mtlGeometryDesc.intersectionFunctionTableOffset = 0;
+    
+    auto accelDesc = [MTLPrimitiveAccelerationStructureDescriptor descriptor];
+    accelDesc.geometryDescriptors = @[ mtlGeometryDesc ];
+    
+    id<MTLDevice> device = _commandQueue.device;
+    auto accelSizes = [device accelerationStructureSizesWithDescriptor:accelDesc];
+    _mtlAccelerateStructure =
+        [device newAccelerationStructureWithSize:accelSizes.accelerationStructureSize];
+
+    id<MTLBuffer> scratchBuffer = [device newBufferWithLength:accelSizes.buildScratchBufferSize
+                                                      options:MTLResourceStorageModePrivate];
+
+    auto commandEncoder = [commandBuffer accelerationStructureCommandEncoder];
+    id<MTLBuffer> compactedSizeBuffer = [device newBufferWithLength:sizeof(uint32_t) options:MTLResourceStorageModeShared];
+
+    [commandEncoder buildAccelerationStructure:_mtlAccelerateStructure
+                                    descriptor:accelDesc
+                                 scratchBuffer:scratchBuffer
+                           scratchBufferOffset:0];
+    
+    [commandEncoder writeCompactedAccelerationStructureSize:_mtlAccelerateStructure
+                                                   toBuffer:compactedSizeBuffer
+                                                     offset:0];
+    [commandEncoder endEncoding];
+    
+    [commandBuffer commit];
+    [commandBuffer waitUntilCompleted];
+    
 }
 
 
