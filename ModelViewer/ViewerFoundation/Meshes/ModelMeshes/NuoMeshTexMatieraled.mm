@@ -115,7 +115,7 @@
     
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
-    pipelineDescriptor.sampleCount = self.sampleCount;
+    pipelineDescriptor.rasterSampleCount = self.sampleCount;
     
     bool alphaInbedded = !_ignoreTextureAlpha;
     bool hasTexOpacity = !(!_textureOpacity);
@@ -334,7 +334,7 @@
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_light_materialed"
                                                         constantValues:funcConstant error:nil];
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
-    pipelineDescriptor.sampleCount = self.sampleCount;
+    pipelineDescriptor.rasterSampleCount = self.sampleCount;
     
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];

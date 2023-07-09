@@ -9,6 +9,7 @@
 #import "NuoTextureBase.h"
 
 #import <CoreImage/CoreImage.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 
 
@@ -354,7 +355,9 @@ handleTransparency:
     CGImageRef image = CGImageCreate(w, h, 8, 8 * 4, bytesPerRow, colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big,
                                      dataProvider, NULL, false, kCGRenderingIntentDefault);
     
-    CGImageDestinationRef destination = CGImageDestinationCreateWithURL((__bridge CFURLRef)url, kUTTypePNG, 1, NULL);
+    CGImageDestinationRef destination = CGImageDestinationCreateWithURL((__bridge CFURLRef)url,
+                                                                        (__bridge CFStringRef)UTTypePNG.identifier,
+                                                                        1, NULL);
     CGImageDestinationAddImage(destination, image, NULL);
     CGImageDestinationFinalize(destination);
     
