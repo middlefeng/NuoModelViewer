@@ -52,12 +52,24 @@
 
 - (void)setFunctionConstantBool:(BOOL)value at:(NSUInteger)index
 {
-    // invalidate a cached pipeline state
-    //
-    _pipeline = nil;
-    _function = nil;
+    assert(_pipeline == nil);
     
     [_functionConstants setConstantValue:&value type:MTLDataTypeBool atIndex:index];
+}
+
+
+- (void)makePipeline
+{
+    assert(_pipeline == nil);
+    
+    NSError* error = nil;
+    id<MTLFunction> function = [self pipelineFunction];
+    
+    MTLComputePipelineDescriptor* descriptor = [MTLComputePipelineDescriptor new];
+    descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
+    descriptor.computeFunction = function;
+    _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
+    assert(error == nil);
 }
 
 
@@ -65,14 +77,7 @@
 {
     if (!_pipeline)
     {
-        NSError* error = nil;
-        id<MTLFunction> function = [self pipelineFunction];
-        
-        MTLComputePipelineDescriptor* descriptor = [MTLComputePipelineDescriptor new];
-        descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
-        descriptor.computeFunction = function;
-        _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
-        assert(error == nil);
+        [self makePipeline];
     }
     
     NuoComputeEncoder* encoder = [commandBuffer computeEncoderWithName:_name];
