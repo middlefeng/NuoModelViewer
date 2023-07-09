@@ -32,6 +32,8 @@
     
     NSString* _functionName;
     MTLFunctionConstantValues* _functionConstants;
+    NSMutableArray<NSString*>* _intersectionFuncs;
+    id<MTLIntersectionFunctionTable> _intersectionFuncTable;
 }
 
 
@@ -44,6 +46,7 @@
         _device = device;
         _functionName = function;
         _functionConstants = [MTLFunctionConstantValues new];
+        _intersectionFuncs = [NSMutableArray new];
     }
     
     return self;
@@ -58,18 +61,48 @@
 }
 
 
+- (void)addIntersectionFunction:(NSString*)intersectFunction
+{
+    [_intersectionFuncs addObject:intersectFunction];
+}
+
+
 - (void)makePipeline
 {
     assert(_pipeline == nil);
     
     NSError* error = nil;
     id<MTLFunction> function = [self pipelineFunction];
+    MTLLinkedFunctions* linkedFunctions = nil;
+           
+    auto intersectionFuncs = [self linkedFunctions];
+    if (intersectionFuncs.count)
+    {
+        linkedFunctions = [MTLLinkedFunctions new];
+        linkedFunctions.functions = intersectionFuncs;
+    }
     
     MTLComputePipelineDescriptor* descriptor = [MTLComputePipelineDescriptor new];
     descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
     descriptor.computeFunction = function;
-    _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
+    descriptor.linkedFunctions = linkedFunctions;
+    _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor options:0
+                                                    reflection:nil error:&error];
     assert(error == nil);
+    
+    if (_intersectionFuncs.count)
+    {
+        auto desc = [[MTLIntersectionFunctionTableDescriptor alloc] init];
+        desc.functionCount = _intersectionFuncs.count;
+        
+        _intersectionFuncTable = [_pipeline newIntersectionFunctionTableWithDescriptor:desc];
+    }
+    
+    for (uint index = 0; index < intersectionFuncs.count; ++index)
+    {
+        id <MTLFunctionHandle> handle = [_pipeline functionHandleWithFunction:intersectionFuncs[index]];
+        [_intersectionFuncTable setFunction:handle atIndex:index];
+    }
 }
 
 
@@ -88,6 +121,18 @@
 
 
 
+- (void)setIntersectionResource:(id<MTLBuffer>)resource atIndex:(uint)index
+{
+    if (!_pipeline)
+    {
+        [self makePipeline];
+    }
+    
+    [_intersectionFuncTable setBuffer:resource offset:0 atIndex:index];
+}
+
+
+
 - (id<MTLFunction>)pipelineFunction
 {
     if (!_function)
@@ -101,6 +146,23 @@
     }
     
     return _function;
+}
+
+
+- (NSArray<id<MTLFunction>>*)linkedFunctions
+{
+    NSMutableArray* result = [NSMutableArray new];
+    id<MTLLibrary> library = [NuoShaderLibrary defaultLibraryWithDevice:_device].library;
+    
+    for (NSString* functionName in _intersectionFuncs)
+    {
+        id<MTLFunction> function = [library newFunctionWithName:functionName];
+        assert(function != nil);
+        
+        [result addObject:function];
+    }
+
+    return result;
 }
 
 
