@@ -50,24 +50,29 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     
     if (self)
     {
-        _intersector = [[MPSRayIntersector alloc] initWithDevice:commandQueue.device];
-        _intersector.rayDataType = MPSRayDataTypeOriginMaskDirectionMaxDistance;
-        _intersector.rayStride = kRayBufferStride;
-        _intersector.rayMaskOptions = MPSRayMaskOptionPrimitive;
+        _useMPS = NO;
         
-        _accelerateStructure = [[MPSTriangleAccelerationStructure alloc] initWithDevice:commandQueue.device];
-        _accelerateStructure.usage = MPSAccelerationStructureUsageRefit;
+        if (_useMPS)
+        {
+            _intersector = [[MPSRayIntersector alloc] initWithDevice:commandQueue.device];
+            _intersector.rayDataType = MPSRayDataTypeOriginMaskDirectionMaxDistance;
+            _intersector.rayStride = kRayBufferStride;
+            _intersector.rayMaskOptions = MPSRayMaskOptionPrimitive;
+            
+            _accelerateStructure = [[MPSTriangleAccelerationStructure alloc] initWithDevice:commandQueue.device];
+            _accelerateStructure.usage = MPSAccelerationStructureUsageRefit;
+        }
+        else
+        {
+            _mtlIntersector = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
+                                                            withFunction:@"ray_intersect"];
+            [_mtlIntersector addIntersectionFunction:@"intersection_mask_detect"];
+        }
         
         _primaryRayEmitter = [[NuoPrimaryRayEmitter alloc] initWithCommandQueue:commandQueue];
         _primaryRayBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:commandQueue];
         
-        _mtlIntersector = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                        withFunction:@"ray_intersect"];
-        [_mtlIntersector addIntersectionFunction:@"intersection_mask_detect"];
-        
         _commandQueue = commandQueue;
-        
-        _useMPS = NO;
     }
     
     return self;
@@ -162,8 +167,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
         
         [_accelerateStructure rebuild];
     }
-    
-    if (!_useMPS)
+    else
     {
         [_mtlIntersector setIntersectionResource:_maskBuffer atIndex:0];
         
