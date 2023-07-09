@@ -77,7 +77,7 @@ kernel void ray_intersect(uint2 tid [[thread_position_in_grid]],
 
 
 /**
- *  an intersection table need multiple binding points:
+ *  an intersection function need multiple binding points:
  *
  *    at initialization:
  *    - attach to a compute pipeline as "linked functions" when the compute pipeline is created
