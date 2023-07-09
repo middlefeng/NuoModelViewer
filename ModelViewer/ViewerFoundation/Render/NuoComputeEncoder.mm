@@ -200,6 +200,7 @@
     _parameterState.SetState(index, kNuoParameter_CB);
     
     [_encoder setBuffer:buffer offset:offset atIndex:index];
+    [_encoder useResource:buffer usage:MTLResourceUsageRead | MTLResourceUsageWrite];
 }
 
 
@@ -211,6 +212,15 @@
     
     for (NuoArgumentUsage* usage in buffer.argumentsUsage)
         [_encoder useResource:usage.argument usage:usage.usage];
+}
+
+
+- (void)setAccelerateStruct:(id<MTLAccelerationStructure>)acStruct AtIndex:(uint)index
+{
+    _parameterState.SetState(index, kNuoParameter_CA);
+    
+    [_encoder setAccelerationStructure:acStruct atBufferIndex:index];
+    [_encoder useResource:acStruct usage:MTLResourceUsageRead];
 }
 
 

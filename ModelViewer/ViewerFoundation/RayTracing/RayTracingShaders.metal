@@ -33,7 +33,7 @@ inline bool same_hemisphere(float3 w, float3 wp);
 
 
 
-static RayBuffer primary_ray(matrix44 viewTrans, float3 endPoint)
+RayBuffer primary_ray(matrix44 viewTrans, float3 endPoint)
 {
     RayBuffer ray;
     

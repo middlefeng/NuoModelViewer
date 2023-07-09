@@ -36,6 +36,11 @@ extern const uint kRayIntersectionStride;
 @property (nonatomic, readonly) id<MTLBuffer> maskBuffer;
 @property (nonatomic, readonly) NSArray* diffuseTextures;
 
+/**
+ *  use MPS intersector (obsoleting), or the Metal ray-tracing pipeline
+ */
+@property (nonatomic) BOOL useMPS;
+
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
 

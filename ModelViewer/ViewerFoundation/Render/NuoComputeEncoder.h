@@ -52,6 +52,7 @@
 - (void)setSamplerState:(id<MTLSamplerState>)sampler atIndex:(uint)index;
 - (void)setBuffer:(id<MTLBuffer>)buffer offset:(uint)offset atIndex:(uint)index;
 - (void)setArgumentBuffer:(NuoArgumentBuffer*)buffer;
+- (void)setAccelerateStruct:(id<MTLAccelerationStructure>)acStruct AtIndex:(uint)index;
 
 - (void)dispatch;
 
