@@ -16,19 +16,21 @@ using namespace metal;
 
 
 typedef metal::raytracing::primitive_acceleration_structure accelerated_struct;
+typedef raytracing::intersection_function_table<raytracing::triangle_data> function_table;
 
 
 kernel void ray_intersect(uint2 tid [[thread_position_in_grid]],
                           device NuoRayVolumeUniform& rayUniform [[buffer(0)]],
                           device RayBuffer* rays [[buffer(1)]],
                           device Intersection* intersections,
-                          accelerated_struct accelerationStructure)
+                          accelerated_struct accelerationStructure,
+                          function_table functionTable)
 {
     if (!(tid.x < rayUniform.wViewPort && tid.y < rayUniform.hViewPort))
         return;
     
     unsigned int rayIdx = tid.y * rayUniform.wViewPort + tid.x;
-    device RayBuffer& bufferRay = rays[rayIdx];
+    thread RayBuffer bufferRay = rays[rayIdx];
     
     // convert the RayBuffer item into Metal pipeline type
     metal::raytracing::ray ray;
@@ -44,7 +46,7 @@ kernel void ray_intersect(uint2 tid [[thread_position_in_grid]],
     i.accept_any_intersection(false);
     i.assume_geometry_type(raytracing::geometry_type::triangle);
     
-    intersection = i.intersect(ray, accelerationStructure);
+    intersection = i.intersect(ray, accelerationStructure, functionTable, bufferRay);
     
     // convert the Metal pipeline intersection back into the one that is
     // compatible with MPS
@@ -53,7 +55,7 @@ kernel void ray_intersect(uint2 tid [[thread_position_in_grid]],
     
     // the rest of the renderer code assume the barycetric coord x and y bound to v0 and v1, which
     // was the same as regulated by the MPS implementation. the new ray tracing APIs mandates that
-    // x and y bound to v1 and v2, which effectively makes them as y and z to the rest of thecode
+    // x and y bound to v1 and v2, which effectively makes them as y and z to the rest of the code
     //
     // see section 2.17.4 of Metal shader 3 spec
     // https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf
@@ -71,3 +73,28 @@ kernel void ray_intersect(uint2 tid [[thread_position_in_grid]],
         bufferIntersection.distance = intersection.distance;
 }
 
+
+
+
+/**
+ *  an intersection table need multiple binding points:
+ *
+ *    at initialization:
+ *    - attach to a compute pipeline as "linked functions" when the compute pipeline is created
+ *    - attach to an intersection table
+ *    - buffer parameters bound as resource when the intersection table is created
+ *
+ *    at per-frame:
+ *    - set to the compute encoder as a buffer parameter
+ *    - in shader, set to the intersector
+ */
+[[intersection(triangle, raytracing::triangle_data)]]
+bool intersection_mask_detect(uint primitiveIndex [[primitive_id]],
+                              uint geometryIndex [[geometry_id]],
+                              float2 barycentricCoords [[barycentric_coord]],
+                              ray_data RayBuffer& ray [[payload]],
+                              device uint* mask [[buffer(0)]])
+{
+    const unsigned int primitiveMask = mask[primitiveIndex];
+    return primitiveMask & ray.mask;
+}

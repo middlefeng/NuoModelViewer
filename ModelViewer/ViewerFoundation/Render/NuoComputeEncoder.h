@@ -24,7 +24,7 @@
 
 
 @property (nonatomic, strong) NSString* name;
-
+@property (nonatomic, readonly) id<MTLIntersectionFunctionTable> intersectionFuncTable;
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withFunction:(NSString*)function;
 
@@ -32,6 +32,8 @@
 - (NuoComputeEncoder*)encoderWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;
 - (id<MTLArgumentEncoder>)argumentEncoder:(NSUInteger)index;
 - (void)setFunctionConstantBool:(BOOL)value at:(NSUInteger)index;
+- (void)addIntersectionFunction:(NSString*)intersectFunction;
+- (void)setIntersectionResource:(id<MTLBuffer>)resource atIndex:(uint)index;
 
 
 @end
@@ -52,7 +54,8 @@
 - (void)setSamplerState:(id<MTLSamplerState>)sampler atIndex:(uint)index;
 - (void)setBuffer:(id<MTLBuffer>)buffer offset:(uint)offset atIndex:(uint)index;
 - (void)setArgumentBuffer:(NuoArgumentBuffer*)buffer;
-- (void)setAccelerateStruct:(id<MTLAccelerationStructure>)acStruct AtIndex:(uint)index;
+- (void)setAccelerateStruct:(id<MTLAccelerationStructure>)acStruct atIndex:(uint)index;
+- (void)setIntersectionTable:(id<MTLIntersectionFunctionTable>)table atIndex:(uint)index;
 
 - (void)dispatch;
 

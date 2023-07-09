@@ -27,6 +27,7 @@ typedef std::unordered_map<unsigned int, bool> NuoParameterUsage;
  *  B: buffer
  *  S: sampler
  *  A: acceleration struct
+ *  I: intersection table
  */
 enum NuoParameterSection
 {
@@ -39,7 +40,6 @@ enum NuoParameterSection
     kNuoParameter_CB,
     kNuoParameter_CT,
     kNuoParameter_CS,
-    kNuoParameter_CA,
     kNuoParameter_Size
 };
 

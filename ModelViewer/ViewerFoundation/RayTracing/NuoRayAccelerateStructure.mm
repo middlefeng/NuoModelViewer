@@ -63,6 +63,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
         
         _mtlIntersector = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
                                                         withFunction:@"ray_intersect"];
+        [_mtlIntersector addIntersectionFunction:@"intersection_mask_detect"];
         
         _commandQueue = commandQueue;
         
@@ -164,6 +165,8 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     
     if (!_useMPS)
     {
+        [_mtlIntersector setIntersectionResource:_maskBuffer atIndex:0];
+        
         _mtlGeometryDesc = [MTLAccelerationStructureTriangleGeometryDescriptor descriptor];
         _mtlGeometryDesc.vertexStride = sizeof(NuoVectorFloat3::_typeTrait::_vectorType);
         _mtlGeometryDesc.vertexBuffer = _vertexBuffer;
@@ -197,9 +200,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
                                                        toBuffer:compactedSizeBuffer
                                                          offset:0];
         [commandEncoder endEncoding];
-        
         [commandBuffer commit];
-        [commandBuffer waitUntilCompleted];
     }
     
 }
@@ -230,6 +231,8 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     }
     else
     {
+        [_mtlIntersector setIntersectionResource:_maskBuffer atIndex:0];
+        
         auto commandEncoder = [commandBuffer.commandBuffer accelerationStructureCommandEncoder];
         
         _mtlGeometryDesc.vertexStride = sizeof(NuoVectorFloat3::_typeTrait::_vectorType);
@@ -368,7 +371,8 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
         [computeEncoder setBuffer:rayUniforms offset:0 atIndex:i];
         [computeEncoder setBuffer:rayBuffer.buffer offset:0 atIndex:++i];
         [computeEncoder setBuffer:intersection offset:0 atIndex:++i];
-        [computeEncoder setAccelerateStruct:_mtlAccelerateStructure AtIndex:++i];
+        [computeEncoder setAccelerateStruct:_mtlAccelerateStructure atIndex:++i];
+        [computeEncoder setIntersectionTable:_mtlIntersector.intersectionFuncTable atIndex:++i];
         
         [computeEncoder setDataSize:rayBuffer.dimension];
         [computeEncoder dispatch];

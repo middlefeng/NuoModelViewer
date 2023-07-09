@@ -37,6 +37,9 @@
 }
 
 
+@synthesize intersectionFuncTable = _intersectionFuncTable;
+
+
 - (instancetype)initWithDevice:(id<MTLDevice>)device withFunction:(NSString*)function
 {
     self = [super init];
@@ -53,9 +56,17 @@
 }
 
 
+- (void)reset
+{
+    _pipeline = nil;
+    _intersectionFuncTable = nil;
+    _function = nil;
+}
+
+
 - (void)setFunctionConstantBool:(BOOL)value at:(NSUInteger)index
 {
-    assert(_pipeline == nil);
+    [self reset];
     
     [_functionConstants setConstantValue:&value type:MTLDataTypeBool atIndex:index];
 }
@@ -63,6 +74,8 @@
 
 - (void)addIntersectionFunction:(NSString*)intersectFunction
 {
+    [self reset];
+    
     [_intersectionFuncs addObject:intersectFunction];
 }
 
@@ -86,8 +99,8 @@
     descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
     descriptor.computeFunction = function;
     descriptor.linkedFunctions = linkedFunctions;
-    _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor options:0
-                                                    reflection:nil error:&error];
+    _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor
+                                                       options:0 reflection:nil error:&error];
     assert(error == nil);
     
     if (_intersectionFuncs.count)
@@ -282,12 +295,20 @@
 }
 
 
-- (void)setAccelerateStruct:(id<MTLAccelerationStructure>)acStruct AtIndex:(uint)index
+- (void)setAccelerateStruct:(id<MTLAccelerationStructure>)acStruct atIndex:(uint)index
 {
-    _parameterState.SetState(index, kNuoParameter_CA);
+    _parameterState.SetState(index, kNuoParameter_CB);
     
     [_encoder setAccelerationStructure:acStruct atBufferIndex:index];
     [_encoder useResource:acStruct usage:MTLResourceUsageRead];
+}
+
+
+- (void)setIntersectionTable:(id<MTLIntersectionFunctionTable>)table atIndex:(uint)index
+{
+    _parameterState.SetState(index, kNuoParameter_CB);
+    
+    [_encoder setIntersectionFunctionTable:table atBufferIndex:index];
 }
 
 
