@@ -49,7 +49,7 @@
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"texture_project"];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:shaderName];
-    pipelineDescriptor.sampleCount = self.sampleCount;
+    pipelineDescriptor.rasterSampleCount = self.sampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = pixelFormat;
     
     if (mode != kBlend_None)

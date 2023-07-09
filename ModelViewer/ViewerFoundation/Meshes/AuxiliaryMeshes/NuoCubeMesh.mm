@@ -141,7 +141,7 @@ static uint16_t kIndices[] =
     MTLRenderPipelineDescriptor *pipelineDescriptor = [MTLRenderPipelineDescriptor new];
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"vertex_cube"];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"fragment_cube"];
-    pipelineDescriptor.sampleCount = self.sampleCount;
+    pipelineDescriptor.rasterSampleCount = self.sampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = pixelFormat;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     

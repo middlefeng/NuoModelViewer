@@ -437,7 +437,7 @@
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmnFunc
                                                         constantValues:funcConstant
                                                                  error:nil];
-    pipelineDescriptor.sampleCount = _sampleCount;
+    pipelineDescriptor.rasterSampleCount = _sampleCount;
     pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
@@ -501,7 +501,7 @@
     MTLRenderPipelineDescriptor *screenSpacePipelineDescriptor = [MTLRenderPipelineDescriptor new];
     screenSpacePipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShader];
     screenSpacePipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmentShader constantValues:constants error:nil];
-    screenSpacePipelineDescriptor.sampleCount = _sampleCount;
+    screenSpacePipelineDescriptor.rasterSampleCount = _sampleCount;
     
     // blending is turned OFF for all attachments, see comments to "FragementScreenSpace"
     //
@@ -530,7 +530,7 @@
     MTLRenderPipelineDescriptor *shadowPipelineDescriptor = [MTLRenderPipelineDescriptor new];
     shadowPipelineDescriptor.vertexFunction = [library newFunctionWithName:vertexShadowShader];
     shadowPipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"depth_simple"];
-    shadowPipelineDescriptor.sampleCount = 1 /*kSampleCount*/;
+    shadowPipelineDescriptor.rasterSampleCount = 1 /*kSampleCount*/;
     shadowPipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatR32Float;
     shadowPipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
