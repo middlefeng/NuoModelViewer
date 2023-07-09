@@ -433,7 +433,7 @@ MouseDragMode;
 - (void)animationLoad
 {
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
-    openPanel.allowedFileTypes = @[@"anm"];
+    openPanel.allowedContentTypes = @[[UTType typeWithFilenameExtension:@"anm"]];
     
     __weak ModelRenderer* renderer = _modelRender;
     __weak ModelOperationPanel* panel = _modelPanel;
@@ -1137,7 +1137,9 @@ MouseDragMode;
 - (IBAction)openFile:(id)sender
 {
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
-    openPanel.allowedFileTypes = @[@"obj", @"scn", @"zip"];
+    openPanel.allowedContentTypes = @[[UTType typeWithFilenameExtension:@"obj"],
+                                      [UTType typeWithFilenameExtension:@"scn"],
+                                      UTTypeZIP];
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
             {
@@ -1172,7 +1174,7 @@ MouseDragMode;
 - (IBAction)loadCube:(id)sender
 {
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
-    openPanel.allowedFileTypes = @[@"jpg", @"png"];
+    openPanel.allowedContentTypes = @[UTTypeJPEG, UTTypePNG];
     
     __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
     __weak ModelView* selfWeak = self;
@@ -1201,7 +1203,7 @@ MouseDragMode;
 - (IBAction)loadBackdrop:(id)sender
 {
     NSOpenPanel* openPanel = [NSOpenPanel openPanel];
-    openPanel.allowedFileTypes = @[@"jpg", @"png"];
+    openPanel.allowedContentTypes = @[UTTypeJPEG, UTTypePNG];
     
     [openPanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
              {
@@ -1226,7 +1228,7 @@ MouseDragMode;
     NSSavePanel* savePanel = [NSSavePanel savePanel];
     [savePanel setNameFieldStringValue:defaultName];
     [savePanel setCanSelectHiddenExtension:YES];
-    [savePanel setAllowedFileTypes:@[@"scn"]];
+    [savePanel setAllowedContentTypes:@[[UTType typeWithFilenameExtension:@"scn"]]];
     
     __weak ModelRenderer* renderer = _modelRender;
     
@@ -1269,7 +1271,7 @@ MouseDragMode;
     NSSavePanel* savePanel = [NSSavePanel savePanel];
     [savePanel setNameFieldStringValue:defaultName];
     [savePanel setCanSelectHiddenExtension:YES];
-    [savePanel setAllowedFileTypes:@[@"png"]];
+    [savePanel setAllowedContentTypes:@[UTTypePNG]];
     
     __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
     
@@ -1311,7 +1313,7 @@ MouseDragMode;
     NSSavePanel* savePanel = [NSSavePanel savePanel];
     [savePanel setNameFieldStringValue:defaultName];
     [savePanel setCanSelectHiddenExtension:YES];
-    [savePanel setAllowedFileTypes:@[@"png"]];
+    [savePanel setAllowedContentTypes:@[UTTypePNG]];
     
     __weak id<MTLCommandQueue> commandQueue = self.commandQueue;
     __weak ModelRenderer* modelRenderer = _modelRender;
