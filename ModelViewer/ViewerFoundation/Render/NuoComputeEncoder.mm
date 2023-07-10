@@ -2,8 +2,9 @@
 //  NuoComputeEncoder.m
 //  ModelViewer
 //
-//  Created by middleware on 7/8/18.
-//  Copyright © 2018 middleware. All rights reserved.
+//  Created by Dong on 7/8/18.
+//  Updated on 7/9/23.
+//  Copyright © 2023. All rights reserved.
 //
 
 #import "NuoComputeEncoder.h"

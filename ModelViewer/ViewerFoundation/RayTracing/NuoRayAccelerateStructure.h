@@ -2,8 +2,9 @@
 //  NuoRayTracingAccelerateStructure.h
 //  ModelViewer
 //
-//  Created by middleware on 6/16/18.
-//  Copyright © 2018 middleware. All rights reserved.
+//  Created by Dong on 6/16/18.
+//  Update on 7/9/23.
+//  Copyright © 2023 Dong Feng. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
