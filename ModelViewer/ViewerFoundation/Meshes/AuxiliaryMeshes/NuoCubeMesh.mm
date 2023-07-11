@@ -92,7 +92,8 @@ static uint16_t kIndices[] =
         _cubeMatrixBuffer = [[NuoBufferSwapChain alloc] initWithDevice:device
                                                         WithBufferSize:sizeof(NuoUniforms)
                                                            withOptions:MTLResourceStorageModeManaged
-                                                         withChainSize:kInFlightBufferCount];
+                                                         withChainSize:kInFlightBufferCount
+                                                              withName:@"Cube Transform"];
             
         self.sampleCount = 1;
     }

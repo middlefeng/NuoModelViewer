@@ -82,7 +82,8 @@
         _lightCastBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
                                                         WithBufferSize:sizeof(NuoLightVertexUniforms)
                                                            withOptions:MTLResourceStorageModeManaged
-                                                         withChainSize:kInFlightBufferCount];
+                                                         withChainSize:kInFlightBufferCount
+                                                              withName:@"Light"];
         
         _sceneRoot = sceneRoot;
         

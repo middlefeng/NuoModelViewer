@@ -239,11 +239,13 @@ static const uint32_t kRayBounce = 4;
         _rayTraceUniform = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                        WithBufferSize:sizeof(NuoRayTracingUniforms)
                                                           withOptions:MTLResourceStorageModeManaged
-                                                        withChainSize:kInFlightBufferCount];
+                                                        withChainSize:kInFlightBufferCount
+                                                             withName:@"Ray Tracing Uniform"];
         _randomBuffers = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                      WithBufferSize:_rng->BytesSize()
                                                         withOptions:MTLResourceStorageModeManaged
-                                                      withChainSize:kInFlightBufferCount];
+                                                      withChainSize:kInFlightBufferCount
+                                                           withName:@"Ray Random"];
         
         // no indirect specular for the hybrid rendering
         //

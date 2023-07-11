@@ -62,7 +62,8 @@
         _backdropTransformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                                 WithBufferSize:sizeof(NuoUniforms)
                                                                    withOptions:MTLResourceStorageModeManaged
-                                                                 withChainSize:kInFlightBufferCount];
+                                                                 withChainSize:kInFlightBufferCount
+                                                                      withName:@"Backdrop Transform"];
         
         _scale = 1.0;
         _translation = CGPointMake(0, 0);

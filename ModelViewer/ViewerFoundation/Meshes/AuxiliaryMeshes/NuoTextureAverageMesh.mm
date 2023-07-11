@@ -46,7 +46,8 @@
         _texCountBuffer = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                       WithBufferSize:sizeof(uint32_t)
                                                          withOptions:MTLResourceStorageModeManaged
-                                                       withChainSize:kInFlightBufferCount];
+                                                       withChainSize:kInFlightBufferCount
+                                                            withName:@"Texture Average"];
         _textureCount = 0;
     }
     
@@ -204,7 +205,8 @@
         _texCountBuffer = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                       WithBufferSize:sizeof(uint32_t)
                                                          withOptions:MTLResourceStorageModeManaged
-                                                       withChainSize:kInFlightBufferCount];
+                                                       withChainSize:kInFlightBufferCount
+                                                            withName:@"Texture Accumulate"];
         
         _textureCount = 0;
     }

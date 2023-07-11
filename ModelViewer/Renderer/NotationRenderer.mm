@@ -96,12 +96,14 @@ static NuoLightUniforms kLightUniform;
         _lightBuffer = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                    WithBufferSize:sizeof(NuoLightUniforms)
                                                       withOptions:MTLResourceStorageModeManaged
-                                                    withChainSize:kInFlightBufferCount];
+                                                    withChainSize:kInFlightBufferCount
+                                                         withName:@"Notation Light"];
         
         _transforms = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                   WithBufferSize:sizeof(NuoUniforms)
                                                      withOptions:MTLResourceStorageModeManaged
-                                                   withChainSize:kInFlightBufferCount];
+                                                   withChainSize:kInFlightBufferCount
+                                                        withName:@"Notation Transforms"];
     }
     
     return self;

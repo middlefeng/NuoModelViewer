@@ -36,17 +36,20 @@
         _transUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:device
                                                            WithBufferSize:sizeof(NuoUniforms)
                                                               withOptions:MTLResourceStorageModeManaged
-                                                            withChainSize:kInFlightBufferCount];
+                                                            withChainSize:kInFlightBufferCount
+                                                                 withName:@"Scene Transform"];
         
         _lightingUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:device
                                                               WithBufferSize:sizeof(NuoLightUniforms)
                                                                  withOptions:MTLResourceStorageModeManaged
-                                                               withChainSize:kInFlightBufferCount];
+                                                               withChainSize:kInFlightBufferCount
+                                                                    withName:@"Scene Light"];
         
         _lightCastBuffers = [[NuoBufferSwapChain alloc] initWithDevice:device
                                                         WithBufferSize:sizeof(NuoLightVertexUniforms)
                                                            withOptions:MTLResourceStorageModeManaged
-                                                         withChainSize:kInFlightBufferCount];
+                                                         withChainSize:kInFlightBufferCount
+                                                              withName:@"Scene Light Cast"];
         
         NuoModelCharacterUniforms modelCharacter;
         modelCharacter.opacity = 1.0f;

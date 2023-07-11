@@ -48,11 +48,13 @@
         _uniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:_device
                                                       WithBufferSize:sizeof(NuoRayVolumeUniform)
                                                          withOptions:MTLResourceStorageModeManaged
-                                                       withChainSize:kInFlightBufferCount];
+                                                       withChainSize:kInFlightBufferCount
+                                                            withName:@"Ray Emit Transform"];
         _randomBuffers = [[NuoBufferSwapChain alloc] initWithDevice:_device
                                                      WithBufferSize:_rng->BytesSize()
                                                         withOptions:MTLResourceStorageModeManaged
-                                                      withChainSize:kInFlightBufferCount];
+                                                      withChainSize:kInFlightBufferCount
+                                                           withName:@"Ray Emit Random"];
         
         [self setupPipeline];
     }

@@ -39,7 +39,8 @@
 - (instancetype)initWithDevice:(id<MTLDevice>)device
                 WithBufferSize:(size_t)size
                    withOptions:(MTLResourceOptions)options
-                 withChainSize:(uint)chainSize;
+                 withChainSize:(uint)chainSize
+                      withName:(NSString*)name;
 
 
 - (void)updateBufferWithInFlight:(id<NuoRenderInFlight>)inFlight

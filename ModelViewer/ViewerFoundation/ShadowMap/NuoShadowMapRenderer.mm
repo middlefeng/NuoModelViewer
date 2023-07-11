@@ -62,7 +62,8 @@
     _transUniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:self.commandQueue.device
                                                        WithBufferSize:sizeof(NuoUniforms)
                                                           withOptions:MTLResourceStorageModeManaged
-                                                        withChainSize:kInFlightBufferCount];
+                                                        withChainSize:kInFlightBufferCount
+                                                             withName:@"Shadow Transform"];
 }
 
 

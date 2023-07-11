@@ -36,6 +36,7 @@
                 WithBufferSize:(size_t)size
                    withOptions:(MTLResourceOptions)options
                  withChainSize:(uint)chainSize
+                      withName:(NSString*)name
 {
     self = [super init];
     
@@ -43,7 +44,10 @@
     {
         id<MTLBuffer> buffers[chainSize];
         for (uint i = 0; i < chainSize; ++i)
+        {
             buffers[i] = [device newBufferWithLength:size options:options];
+            buffers[i].label = [NSString stringWithFormat:@"%@ - %d", name, i];
+        }
         
         _buffers = [[NSArray alloc] initWithObjects:buffers count:chainSize];
         _options = options;

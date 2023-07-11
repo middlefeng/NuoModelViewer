@@ -216,6 +216,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     {
         _maskBuffer = [_commandQueue.device newBufferWithLength:maskBufferSize
                                                       options:MTLResourceStorageModeManaged];
+        _maskBuffer.label = @"Mask";
     }
     
     memcpy(_maskBuffer.contents, &mask[0], maskBufferSize);

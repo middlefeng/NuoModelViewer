@@ -98,11 +98,13 @@ enum kModelRayTracingTargets
         _rayTraceUniform = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                        WithBufferSize:sizeof(NuoRayTracingUniforms)
                                                           withOptions:MTLResourceStorageModeManaged
-                                                        withChainSize:kInFlightBufferCount];
+                                                        withChainSize:kInFlightBufferCount
+                                                             withName:@"Ray Tracing Uniform"];
         _randomBuffers = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                      WithBufferSize:_rng->BytesSize()
                                                         withOptions:MTLResourceStorageModeManaged
-                                                      withChainSize:kInFlightBufferCount];
+                                                      withChainSize:kInFlightBufferCount
+                                                           withName:@"Ray Tracing Random"];
         
         _rayTracingResult = [NuoIlluminationTarget new];
         

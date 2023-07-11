@@ -92,7 +92,8 @@
         _transformSwapChain = [[NuoBufferSwapChain alloc] initWithDevice:device
                                                           WithBufferSize:sizeof(NuoMeshUniforms)
                                                              withOptions:MTLResourceStorageModeManaged
-                                                           withChainSize:kInFlightBufferCount];
+                                                           withChainSize:kInFlightBufferCount
+                                                                withName:@"Mesh Transform"];
         
         _transformPoise = NuoMatrixFloat44Identity;
         _transformTranslate = NuoMatrixFloat44Identity;
