@@ -50,8 +50,13 @@ static RayBuffer primary_ray(matrix44 viewTrans, float3 endPoint)
 uint surface_mask(uint rayIdx, device RayStructureUniform& structUniform)
 {
     device Intersection & intersection = structUniform.intersections[rayIdx];
-    unsigned int triangleIndex = intersection.primitiveIndex;
-    return structUniform.masks[triangleIndex];
+    if (intersection.distance >= 0)
+    {
+        unsigned int triangleIndex = intersection.primitiveIndex;
+        return structUniform.masks[triangleIndex];
+    }
+    
+    return 0;
 }
 
 
