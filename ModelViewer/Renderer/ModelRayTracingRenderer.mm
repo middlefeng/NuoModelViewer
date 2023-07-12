@@ -27,8 +27,8 @@
 
 
 
-static const uint32_t kRandomBufferSize = 256;
 static const uint32_t kRayBounce = 4;
+static const uint32_t kRandomBufferSize = 256 * (kRayBounce + 1);
 
 
 enum kModelRayTracingTargets
