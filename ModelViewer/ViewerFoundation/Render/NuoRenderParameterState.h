@@ -24,7 +24,7 @@ typedef std::unordered_map<unsigned int, bool> NuoParameterUsage;
  *  C: compute shader
  *
  *  T: texture
- *  B: buffer
+ *  B: buffer (also used as acceleration structure, function table)
  *  S: sampler
  */
 enum NuoParameterSection

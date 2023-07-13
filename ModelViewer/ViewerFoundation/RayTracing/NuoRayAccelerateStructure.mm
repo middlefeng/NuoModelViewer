@@ -2,8 +2,9 @@
 //  NuoRayTracingAccelerateStructure.m
 //  ModelViewer
 //
-//  Created by middleware on 6/16/18.
-//  Copyright © 2018 middleware. All rights reserved.
+//  Created by Dong on 6/16/18.
+//  Updated on 7/9/23.
+//  Copyright © 2023 Dong Feng. All rights reserved.
 //
 
 #import "NuoRayAccelerateStructure.h"
@@ -13,6 +14,7 @@
 #import "NuoPrimaryRayEmitter.h"
 #import "NuoMeshSceneRoot.h"
 #import "NuoCommandBuffer.h"
+#import "NuoComputeEncoder.h"
 
 #include "NuoRayTracingUniform.h"
 
@@ -35,6 +37,10 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     MPSRayIntersector* _intersector;
     MPSTriangleAccelerationStructure* _accelerateStructure;
     
+    id<MTLAccelerationStructure> _mtlAccelerateStructure;
+    MTLAccelerationStructureTriangleGeometryDescriptor* _mtlGeometryDesc;
+    NuoComputePipeline* _mtlIntersector;
+    
     NuoPrimaryRayEmitter* _primaryRayEmitter;
 }
 
@@ -45,13 +51,24 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     
     if (self)
     {
-        _intersector = [[MPSRayIntersector alloc] initWithDevice:commandQueue.device];
-        _intersector.rayDataType = MPSRayDataTypeOriginMaskDirectionMaxDistance;
-        _intersector.rayStride = kRayBufferStride;
-        _intersector.rayMaskOptions = MPSRayMaskOptionPrimitive;
+        _useMPS = NO;
         
-        _accelerateStructure = [[MPSTriangleAccelerationStructure alloc] initWithDevice:commandQueue.device];
-        _accelerateStructure.usage = MPSAccelerationStructureUsageRefit;
+        if (_useMPS)
+        {
+            _intersector = [[MPSRayIntersector alloc] initWithDevice:commandQueue.device];
+            _intersector.rayDataType = MPSRayDataTypeOriginMaskDirectionMaxDistance;
+            _intersector.rayStride = kRayBufferStride;
+            _intersector.rayMaskOptions = MPSRayMaskOptionPrimitive;
+            
+            _accelerateStructure = [[MPSTriangleAccelerationStructure alloc] initWithDevice:commandQueue.device];
+            _accelerateStructure.usage = MPSAccelerationStructureUsageRefit;
+        }
+        else
+        {
+            _mtlIntersector = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
+                                                            withFunction:@"ray_intersect"];
+            [_mtlIntersector addIntersectionFunction:@"intersection_mask_detect"];
+        }
         
         _primaryRayEmitter = [[NuoPrimaryRayEmitter alloc] initWithCommandQueue:commandQueue];
         _primaryRayBuffer = [[NuoRayBuffer alloc] initWithCommandQueue:commandQueue];
@@ -133,16 +150,64 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     [self setMaskBuffer:root];
     
     [encoder endEncoding];
-    [commandBuffer commit];
-    [commandBuffer waitUntilCompleted];
     
-    _accelerateStructure.vertexBuffer = _vertexBuffer;
-    _accelerateStructure.indexType = MPSDataTypeUInt32;
-    _accelerateStructure.indexBuffer = _indexBuffer;
-    _accelerateStructure.triangleCount = triangleCount;
-    _accelerateStructure.maskBuffer = _maskBuffer;
+    if (_useMPS)
+    {
+        [commandBuffer commit];
+        [commandBuffer waitUntilCompleted];
+        
+        // MPS acceleration struct constructed in CPU, following all GPU
+        // tasks completed
+        
+        _accelerateStructure.vertexStride = sizeof(NuoVectorFloat3::_typeTrait::_vectorType);
+        _accelerateStructure.vertexBuffer = _vertexBuffer;
+        _accelerateStructure.indexType = MPSDataTypeUInt32;
+        _accelerateStructure.indexBuffer = _indexBuffer;
+        _accelerateStructure.triangleCount = triangleCount;
+        _accelerateStructure.maskBuffer = _maskBuffer;
+        
+        [_accelerateStructure rebuild];
+    }
+    else
+    {
+        [_mtlIntersector setIntersectionResource:_maskBuffer atIndex:0];
+        
+        _mtlGeometryDesc = [MTLAccelerationStructureTriangleGeometryDescriptor descriptor];
+        _mtlGeometryDesc.vertexStride = sizeof(NuoVectorFloat3::_typeTrait::_vectorType);
+        _mtlGeometryDesc.vertexBuffer = _vertexBuffer;
+        _mtlGeometryDesc.indexType = MTLIndexTypeUInt32;
+        _mtlGeometryDesc.indexBuffer = _indexBuffer;
+        _mtlGeometryDesc.triangleCount = triangleCount;
+        
+        _mtlGeometryDesc.intersectionFunctionTableOffset = 0;
+        
+        auto accelDesc = [MTLPrimitiveAccelerationStructureDescriptor descriptor];
+        accelDesc.geometryDescriptors = @[ _mtlGeometryDesc ];
+        accelDesc.usage = MTLAccelerationStructureUsageRefit;
+        
+        id<MTLDevice> device = _commandQueue.device;
+        auto accelSizes = [device accelerationStructureSizesWithDescriptor:accelDesc];
+        _mtlAccelerateStructure =
+            [device newAccelerationStructureWithSize:accelSizes.accelerationStructureSize];
+        
+        id<MTLBuffer> scratchBuffer = [device newBufferWithLength:accelSizes.buildScratchBufferSize
+                                                          options:MTLResourceStorageModePrivate];
+        
+        auto commandEncoder = [commandBuffer accelerationStructureCommandEncoder];
+        id<MTLBuffer> compactedSizeBuffer = [device newBufferWithLength:sizeof(uint32_t) options:MTLResourceStorageModeShared];
+        
+        [commandEncoder buildAccelerationStructure:_mtlAccelerateStructure
+                                        descriptor:accelDesc
+                                     scratchBuffer:scratchBuffer
+                               scratchBufferOffset:0];
+        
+        [commandEncoder writeCompactedAccelerationStructureSize:_mtlAccelerateStructure
+                                                       toBuffer:compactedSizeBuffer
+                                                         offset:0];
+        [commandEncoder endEncoding];
+        [commandBuffer commit];
+    }
     
-    [_accelerateStructure rebuild];
 }
 
 
@@ -164,7 +229,38 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     [encoder endEncoding];
     
     [self setMaskBuffer:root];
-    [_accelerateStructure encodeRefitToCommandBuffer:commandBuffer.commandBuffer];
+    
+    if (_useMPS)
+    {
+        [_accelerateStructure encodeRefitToCommandBuffer:commandBuffer.commandBuffer];
+    }
+    else
+    {
+        [_mtlIntersector setIntersectionResource:_maskBuffer atIndex:0];
+        
+        auto commandEncoder = [commandBuffer.commandBuffer accelerationStructureCommandEncoder];
+        
+        _mtlGeometryDesc.vertexStride = sizeof(NuoVectorFloat3::_typeTrait::_vectorType);
+        _mtlGeometryDesc.vertexBuffer = _vertexBuffer;
+        _mtlGeometryDesc.indexBuffer = _indexBuffer;
+        
+        auto accelDesc = [MTLPrimitiveAccelerationStructureDescriptor descriptor];
+        accelDesc.geometryDescriptors = @[ _mtlGeometryDesc ];
+        accelDesc.usage = MTLAccelerationStructureUsageRefit;
+        
+        auto device = commandBuffer.commandBuffer.device;
+        auto accelSizes = [device accelerationStructureSizesWithDescriptor:accelDesc];
+        
+        id<MTLBuffer> refitScratch = [device newBufferWithLength:accelSizes.refitScratchBufferSize
+                                                         options:MTLResourceStorageModePrivate];
+        [commandEncoder refitAccelerationStructure:_mtlAccelerateStructure
+                                        descriptor:accelDesc
+                                       destination:nil
+                                     scratchBuffer:refitScratch
+                               scratchBufferOffset:0];
+
+        [commandEncoder endEncoding];
+    }
 }
 
 
@@ -247,7 +343,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 - (void)primaryRayIntersect:(NuoCommandBuffer*)commandBuffer
            withIntersection:(id<MTLBuffer>)intersection
 {
-    if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt)
+    if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt || !_useMPS)
     {
         [self rayIntersect:commandBuffer
                   withRays:_primaryRayBuffer withIntersection:intersection];
@@ -258,7 +354,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 - (void)rayIntersect:(NuoCommandBuffer*)commandBuffer
             withRays:(NuoRayBuffer*)rayBuffer withIntersection:(id<MTLBuffer>)intersection
 {
-    if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt)
+    if (_accelerateStructure.status == MPSAccelerationStructureStatusBuilt && _useMPS)
     {
         [_intersector setIntersectionDataType:MPSIntersectionDataTypeDistancePrimitiveIndexCoordinates];
         [_intersector encodeIntersectionToCommandBuffer:commandBuffer.commandBuffer
@@ -269,6 +365,23 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
                                intersectionBufferOffset:0
                                                rayCount:rayBuffer.rayCount
                                   accelerationStructure:_accelerateStructure];
+    }
+    
+    if (!_useMPS)
+    {
+        NuoComputeEncoder* computeEncoder = [_mtlIntersector encoderWithCommandBuffer:commandBuffer];
+        
+        id<MTLBuffer> rayUniforms = [self uniformBuffer:commandBuffer];
+        
+        uint i = 0;
+        [computeEncoder setBuffer:rayUniforms offset:0 atIndex:i];
+        [computeEncoder setBuffer:rayBuffer.buffer offset:0 atIndex:++i];
+        [computeEncoder setBuffer:intersection offset:0 atIndex:++i];
+        [computeEncoder setAccelerateStruct:_mtlAccelerateStructure atIndex:++i];
+        [computeEncoder setIntersectionTable:_mtlIntersector.intersectionFuncTable atIndex:++i];
+        
+        [computeEncoder setDataSize:rayBuffer.dimension];
+        [computeEncoder dispatch];
     }
 }
 

@@ -2,8 +2,9 @@
 //  NuoComputeEncoder.m
 //  ModelViewer
 //
-//  Created by middleware on 7/8/18.
-//  Copyright © 2018 middleware. All rights reserved.
+//  Created by Dong on 7/8/18.
+//  Updated on 7/9/23.
+//  Copyright © 2023. All rights reserved.
 //
 
 #import "NuoComputeEncoder.h"
@@ -32,7 +33,12 @@
     
     NSString* _functionName;
     MTLFunctionConstantValues* _functionConstants;
+    NSMutableArray<NSString*>* _intersectionFuncs;
+    id<MTLIntersectionFunctionTable> _intersectionFuncTable;
 }
+
+
+@synthesize intersectionFuncTable = _intersectionFuncTable;
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withFunction:(NSString*)function
@@ -44,20 +50,73 @@
         _device = device;
         _functionName = function;
         _functionConstants = [MTLFunctionConstantValues new];
+        _intersectionFuncs = [NSMutableArray new];
     }
     
     return self;
 }
 
 
+- (void)reset
+{
+    _pipeline = nil;
+    _intersectionFuncTable = nil;
+    _function = nil;
+}
+
+
 - (void)setFunctionConstantBool:(BOOL)value at:(NSUInteger)index
 {
-    // invalidate a cached pipeline state
-    //
-    _pipeline = nil;
-    _function = nil;
+    [self reset];
     
     [_functionConstants setConstantValue:&value type:MTLDataTypeBool atIndex:index];
+}
+
+
+- (void)addIntersectionFunction:(NSString*)intersectFunction
+{
+    [self reset];
+    
+    [_intersectionFuncs addObject:intersectFunction];
+}
+
+
+- (void)makePipeline
+{
+    assert(_pipeline == nil);
+    
+    NSError* error = nil;
+    id<MTLFunction> function = [self pipelineFunction];
+    MTLLinkedFunctions* linkedFunctions = nil;
+           
+    auto intersectionFuncs = [self linkedFunctions];
+    if (intersectionFuncs.count)
+    {
+        linkedFunctions = [MTLLinkedFunctions new];
+        linkedFunctions.functions = intersectionFuncs;
+    }
+    
+    MTLComputePipelineDescriptor* descriptor = [MTLComputePipelineDescriptor new];
+    descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
+    descriptor.computeFunction = function;
+    descriptor.linkedFunctions = linkedFunctions;
+    _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor
+                                                       options:0 reflection:nil error:&error];
+    assert(error == nil);
+    
+    if (_intersectionFuncs.count)
+    {
+        auto desc = [[MTLIntersectionFunctionTableDescriptor alloc] init];
+        desc.functionCount = _intersectionFuncs.count;
+        
+        _intersectionFuncTable = [_pipeline newIntersectionFunctionTableWithDescriptor:desc];
+    }
+    
+    for (uint index = 0; index < intersectionFuncs.count; ++index)
+    {
+        id <MTLFunctionHandle> handle = [_pipeline functionHandleWithFunction:intersectionFuncs[index]];
+        [_intersectionFuncTable setFunction:handle atIndex:index];
+    }
 }
 
 
@@ -65,20 +124,25 @@
 {
     if (!_pipeline)
     {
-        NSError* error = nil;
-        id<MTLFunction> function = [self pipelineFunction];
-        
-        MTLComputePipelineDescriptor* descriptor = [MTLComputePipelineDescriptor new];
-        descriptor.threadGroupSizeIsMultipleOfThreadExecutionWidth = YES;
-        descriptor.computeFunction = function;
-        _pipeline = [_device newComputePipelineStateWithDescriptor:descriptor options:0 reflection:nil error:&error];
-        assert(error == nil);
+        [self makePipeline];
     }
     
     NuoComputeEncoder* encoder = [commandBuffer computeEncoderWithName:_name];
     [encoder setComputePipelineState:_pipeline];
     
     return encoder;
+}
+
+
+
+- (void)setIntersectionResource:(id<MTLBuffer>)resource atIndex:(uint)index
+{
+    if (!_pipeline)
+    {
+        [self makePipeline];
+    }
+    
+    [_intersectionFuncTable setBuffer:resource offset:0 atIndex:index];
 }
 
 
@@ -96,6 +160,23 @@
     }
     
     return _function;
+}
+
+
+- (NSArray<id<MTLFunction>>*)linkedFunctions
+{
+    NSMutableArray* result = [NSMutableArray new];
+    id<MTLLibrary> library = [NuoShaderLibrary defaultLibraryWithDevice:_device].library;
+    
+    for (NSString* functionName in _intersectionFuncs)
+    {
+        id<MTLFunction> function = [library newFunctionWithName:functionName];
+        assert(function != nil);
+        
+        [result addObject:function];
+    }
+
+    return result;
 }
 
 
@@ -200,6 +281,7 @@
     _parameterState.SetState(index, kNuoParameter_CB);
     
     [_encoder setBuffer:buffer offset:offset atIndex:index];
+    [_encoder useResource:buffer usage:MTLResourceUsageRead | MTLResourceUsageWrite];
 }
 
 
@@ -211,6 +293,23 @@
     
     for (NuoArgumentUsage* usage in buffer.argumentsUsage)
         [_encoder useResource:usage.argument usage:usage.usage];
+}
+
+
+- (void)setAccelerateStruct:(id<MTLAccelerationStructure>)acStruct atIndex:(uint)index
+{
+    _parameterState.SetState(index, kNuoParameter_CB);
+    
+    [_encoder setAccelerationStructure:acStruct atBufferIndex:index];
+    [_encoder useResource:acStruct usage:MTLResourceUsageRead];
+}
+
+
+- (void)setIntersectionTable:(id<MTLIntersectionFunctionTable>)table atIndex:(uint)index
+{
+    _parameterState.SetState(index, kNuoParameter_CB);
+    
+    [_encoder setIntersectionFunctionTable:table atBufferIndex:index];
 }
 
 

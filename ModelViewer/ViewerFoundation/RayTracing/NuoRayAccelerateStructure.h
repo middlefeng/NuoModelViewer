@@ -2,8 +2,9 @@
 //  NuoRayTracingAccelerateStructure.h
 //  ModelViewer
 //
-//  Created by middleware on 6/16/18.
-//  Copyright © 2018 middleware. All rights reserved.
+//  Created by Dong on 6/16/18.
+//  Update on 7/9/23.
+//  Copyright © 2023 Dong Feng. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -35,6 +36,11 @@ extern const uint kRayIntersectionStride;
 @property (nonatomic, readonly) id<MTLBuffer> materialBuffer;
 @property (nonatomic, readonly) id<MTLBuffer> maskBuffer;
 @property (nonatomic, readonly) NSArray* diffuseTextures;
+
+/**
+ *  use MPS intersector (obsoleting), or the Metal ray-tracing pipeline
+ */
+@property (nonatomic) BOOL useMPS;
 
 
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;

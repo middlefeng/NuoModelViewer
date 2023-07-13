@@ -2,8 +2,8 @@
 //  NuoRayTracingShaders.metal
 //  ModelViewer
 //
-//  Created by middleware on 6/11/18.
-//  Copyright © 2018 middleware. All rights reserved.
+//  Created by Dong Feng on 6/11/18.
+//  Copyright © 2018 Dong Feng. All rights reserved.
 //
 
 #include <metal_stdlib>
