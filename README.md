@@ -9,7 +9,7 @@ This project consists of:
 ## Supported GPUs
 
 * Apple Silicon GPU is supposed to be the only GPU working on macOS in the future.
-  * M1 Max (tested).
+  * M1 Max.
 
 ⚠️❗The whole Intel Mac product line has been terminated. AMD eGPU support is obsoleted.
 > * Intel HD serious GPUs are **not** supported. (Built-in integrated GPU in most models of Mac.)
@@ -25,6 +25,8 @@ This project consists of:
 
 ## Latest Update
 
+* Apple Silicon and macOS 13.3 adaptive.
+  * Replace the Performance Shader Intersector with Metal Ray Tracing shader.
 * Specular lighting on a Fresnel surface.
 * Multiple-importance sampling.
 * Slider with adjustable scale.
