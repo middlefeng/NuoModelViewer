@@ -360,10 +360,8 @@ enum kModelRayTracingTargets
         // this must happen after [_intersectionPipeline encoderWithCommandBuffer ...], or the
         // creation of an argument encoder fails
         //
-        id<MTLArgumentEncoder> encoder = [_intersectionPipeline argumentEncoder:1];
-        
-        target = [NuoArgumentBuffer new];
-        [target encodeWith:encoder forIndex:1];
+        target = [[NuoArgumentBuffer alloc] initWithName:@"Inspect Target"];
+        [target encodeWith:_intersectionPipeline forIndex:1];
         [target setTexture:accumlator.renderTarget.targetTexture
                        for:(MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite) atIndex:0];
         

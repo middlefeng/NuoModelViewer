@@ -7,7 +7,7 @@
 //
 
 #import "NuoArgumentBuffer.h"
-
+#import "NuoComputeEncoder.h"
 
 
 
@@ -16,11 +16,13 @@
     id<MTLBuffer> _buffer;
     id<MTLArgumentEncoder> _encoder;
     NSMutableArray<NuoArgumentUsage*>* _usages;
+    
+    NSString* _name;
 }
 
 
 
-- (instancetype)init
+- (instancetype)initWithName:(NSString*)name
 {
     self = [super init];
     
@@ -28,6 +30,8 @@
     {
         _usages = [NSMutableArray new];
         _index = -1;
+        
+        _name = name;
     }
     
     return self;
@@ -46,12 +50,15 @@
 }
 
 
-- (void)encodeWith:(id<MTLArgumentEncoder>)encoder forIndex:(int)index
+- (void)encodeWith:(NuoComputePipeline*)pipeline forIndex:(int)index;
 {
     // should be encoded for only once
     assert(_index == -1);
     
+    id<MTLArgumentEncoder> encoder = [pipeline argumentEncoder:index];
+    
     _buffer = [encoder.device newBufferWithLength:encoder.encodedLength options:0];
+    _buffer.label = _name;
     
     [encoder setArgumentBuffer:_buffer offset:0];
     _encoder = encoder;
