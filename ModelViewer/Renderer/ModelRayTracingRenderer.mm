@@ -253,6 +253,7 @@ enum kModelRayTracingTargets
         // generate rays for the two light sources, from virtual objects
         //
         [self runRayTraceCompute:_pimraryVirtualLighting withCommandBuffer:commandBuffer
+             withMaterialTexture:YES
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowRaysBuffer.buffer]];
     }
@@ -270,6 +271,7 @@ enum kModelRayTracingTargets
         // generate rays for the two light sources, from translucent objects
         //
         [self runRayTraceCompute:_primaryAndIncidentRaysPipeline withCommandBuffer:commandBuffer
+             withMaterialTexture:YES
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowRaysBuffer.buffer,
                                    _lightRayByScatterBuffer.buffer,
@@ -303,6 +305,7 @@ enum kModelRayTracingTargets
             [_primaryRayVisibility visibilityTest:commandBuffer];
             
             [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
+                 withMaterialTexture:YES
                        withParameter:@[rayTraceUniform, randomBuffer,
                                        _shadowRaysBuffer.buffer,
                                        _lightRayByScatterBuffer.buffer,
@@ -371,6 +374,7 @@ enum kModelRayTracingTargets
     
     [self runRayTraceCompute:_intersectionPipeline
                  withEncoder:encoder withTargets:target
+         withMaterialTexture:NO
                withParameter:@[rayTraceUniform] withExitantRay:nil
             withIntersection:self.intersectionBuffer];
     

@@ -26,6 +26,7 @@
 @property (assign) uint64_t rayUniform;
 @property (assign) uint64_t rayBuffer;
 @property (assign) uint64_t intersectionBuffer;
+@property (assign) uint64_t argumentIndex;
 
 @end
 
@@ -39,6 +40,7 @@
     newKey.rayUniform = _rayUniform;
     newKey.rayBuffer = _rayBuffer;
     newKey.intersectionBuffer = _intersectionBuffer;
+    newKey.argumentIndex = _argumentIndex;
     
     return newKey;
 }
@@ -50,7 +52,8 @@
     return _pipeline == otherKey.pipeline &&
            _rayUniform == otherKey.rayUniform &&
            _rayBuffer == otherKey.rayBuffer &&
-           _intersectionBuffer == otherKey.intersectionBuffer;
+           _intersectionBuffer == otherKey.intersectionBuffer &&
+           _argumentIndex == otherKey.argumentIndex;
 }
 
 
@@ -73,6 +76,7 @@
     id<MTLSamplerState> _sampleState;
     NSMutableDictionary<NuoArgumentBufferKey*, NuoArgumentBuffer*>* _rayStructUniform;
     NSMutableDictionary<NuoArgumentBufferKey*, NuoArgumentBuffer*>* _targetsUniform;
+    NSMutableDictionary<NuoArgumentBufferKey*, NuoArgumentBuffer*>* _textureBuffer;
 }
 
 
@@ -189,6 +193,7 @@
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
                withEncoder:(NuoComputeEncoder*)computeEncoder
                withTargets:(NuoArgumentBuffer*)targets
+       withMaterialTexture:(BOOL)needMaterialTexture
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
             withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection
@@ -215,11 +220,10 @@
             [computeEncoder setBuffer:param offset:0 atIndex:++i];
     }
     
-    uint targetIndex = 0;
-    for (id<MTLTexture> diffuseTexture in _rayStructure.diffuseTextures)
+    if (needMaterialTexture)
     {
-        [computeEncoder setTexture:diffuseTexture atIndex:targetIndex];
-        targetIndex += 1;
+        NuoArgumentBuffer* texturesArgument = [self materialTextureBuffer:pipeline forIndex:++i];
+        [computeEncoder setArgumentBuffer:texturesArgument];
     }
     
     [computeEncoder setSamplerState:_sampleState atIndex:0];
@@ -231,6 +235,7 @@
 
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+       withMaterialTexture:(BOOL)needMaterialTexture
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
             withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection
@@ -241,26 +246,32 @@
     NuoComputeEncoder* encoder = [pipeline encoderWithCommandBuffer:commandBuffer];
     
     [self runRayTraceCompute:pipeline withEncoder:encoder
-                 withTargets:[self targetsUniform:pipeline] withParameter:paramterBuffers
+                 withTargets:[self targetsUniform:pipeline]
+         withMaterialTexture:needMaterialTexture
+               withParameter:paramterBuffers
               withExitantRay:exitantRay withIntersection:intersection];
 }
 
 
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+       withMaterialTexture:(BOOL)needMaterialTexture
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
           withIntersection:(id<MTLBuffer>)intersection
 {
     [self runRayTraceCompute:pipeline withCommandBuffer:commandBuffer
-               withParameter:paramterBuffers withExitantRay:nil withIntersection:intersection];
+         withMaterialTexture:needMaterialTexture withParameter:paramterBuffers
+              withExitantRay:nil withIntersection:intersection];
 }
 
 
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+       withMaterialTexture:(BOOL)needMaterialTexture
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
 {
     [self runRayTraceCompute:pipeline withCommandBuffer:commandBuffer
+         withMaterialTexture:needMaterialTexture
                withParameter:paramterBuffers withIntersection:self.intersectionBuffer];
 }
 
@@ -275,6 +286,7 @@
     if ([self primaryRayIntersect:commandBuffer])
     {
         [self runRayTraceCompute:/* some shade pipeline */ nil withCommandBuffer:commandBuffer
+             withMaterialTexture:NO
                    withParameter:nil withExitantRay:nil withIntersection:nil];
     }
     /*************************************************************/
@@ -312,6 +324,7 @@
 - (void)rayStructUpdated
 {
     _rayStructUniform = [NSMutableDictionary new];
+    _textureBuffer = [NSMutableDictionary new];
 }
 
 
@@ -346,6 +359,31 @@
     [buffer setBuffer:intersection for:MTLResourceUsageRead atIndex:++i];
     
     [_rayStructUniform setObject:buffer forKey:key];
+    
+    return buffer;
+}
+
+
+- (NuoArgumentBuffer*)materialTextureBuffer:(NuoComputePipeline*)pipeline forIndex:(uint)index
+{
+    NuoArgumentBufferKey* key = [NuoArgumentBufferKey new];
+    key.pipeline = (uint64_t)pipeline;
+    key.argumentIndex = index;
+    
+    NuoArgumentBuffer* buffer = [_textureBuffer objectForKey:key];
+    
+    if (buffer)
+        return buffer;
+    
+    NSArray<id<MTLTexture>>* textures = _rayStructure.diffuseTextures;
+    buffer = [[NuoArgumentBuffer alloc] initWithName:@"Material Texture"];
+    
+    [buffer encodeWith:pipeline forIndex:index withSize:(uint)textures.count];
+    for (uint i = 0; i < textures.count; ++i)
+    {
+        [buffer encodeItem:i];
+        [buffer setTexture:textures[i] for:MTLResourceUsageRead atIndex:0];
+    }
     
     return buffer;
 }

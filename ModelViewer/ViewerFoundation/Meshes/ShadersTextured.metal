@@ -36,7 +36,7 @@ vertex PositionSimple vertex_simple_textured(device const Vertex *vertices [[buf
 }
 
 
-#pragma mark -- SCreen Space Shaders --
+#pragma mark -- Screen Space Shaders --
 
 
 vertex VertexScreenSpace vertex_screen_space_textured(device const Vertex *vertices [[buffer(0)]],

@@ -72,6 +72,7 @@
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
                withEncoder:(NuoComputeEncoder*)encoder
                withTargets:(NuoArgumentBuffer*)targets
+       withMaterialTexture:(BOOL)needMaterialTexture
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
             withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection;
@@ -79,17 +80,20 @@
 
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+       withMaterialTexture:(BOOL)needMaterialTexture
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
             withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection;
 
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+       withMaterialTexture:(BOOL)needMaterialTexture
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
           withIntersection:(id<MTLBuffer>)intersection;
 
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
+       withMaterialTexture:(BOOL)needMaterialTexture
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers;
 
 
