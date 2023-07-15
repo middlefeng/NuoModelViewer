@@ -16,6 +16,7 @@
     id<MTLBuffer> _buffer;
     id<MTLArgumentEncoder> _encoder;
     NSMutableArray<NuoArgumentUsage*>* _usages;
+    unsigned long _bufferItemLength;
     
     NSString* _name;
 }
@@ -30,6 +31,7 @@
     {
         _usages = [NSMutableArray new];
         _index = -1;
+        _bufferItemLength = 0;
         
         _name = name;
     }
@@ -50,17 +52,17 @@
 }
 
 
-- (void)encodeWith:(NuoComputePipeline*)pipeline forIndex:(int)index;
+- (void)encodeWith:(NuoComputePipeline*)pipeline forIndex:(int)index withSize:(uint)size
 {
     // should be encoded for only once
     assert(_index == -1);
     
     id<MTLArgumentEncoder> encoder = [pipeline argumentEncoder:index];
     
-    _buffer = [encoder.device newBufferWithLength:encoder.encodedLength options:0];
+    _bufferItemLength = encoder.encodedLength;
+    _buffer = [encoder.device newBufferWithLength:_bufferItemLength * size options:0];
     _buffer.label = _name;
     
-    [encoder setArgumentBuffer:_buffer offset:0];
     _encoder = encoder;
     _index = index;
 }
@@ -97,6 +99,11 @@
 }
 
 
+
+- (void)encodeItem:(uint)index
+{
+    [_encoder setArgumentBuffer:_buffer offset:index];
+}
 
 @end
 

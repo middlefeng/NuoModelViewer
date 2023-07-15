@@ -30,10 +30,16 @@
 - (id<MTLBuffer>)buffer;
 - (NSArray<NuoArgumentUsage*>*)argumentsUsage;
 
-- (void)encodeWith:(NuoComputePipeline*)pipeline forIndex:(int)index;
+- (void)encodeWith:(NuoComputePipeline*)pipeline forIndex:(int)index withSize:(uint)size;
 - (void)setBuffer:(id<MTLBuffer>)buffer for:(MTLResourceUsage)usage atIndex:(uint)index;
 - (void)setTexture:(id<MTLTexture>)texture for:(MTLResourceUsage)usage atIndex:(uint)index;
 - (void)setInt:(uint32_t)value atIndex:(uint)index;
+
+/**
+ *  specify which item in an array typed argument buffer the subsequent functions will
+ *  encode onto
+ */
+- (void)encodeItem:(uint)index;
 
 @end
 

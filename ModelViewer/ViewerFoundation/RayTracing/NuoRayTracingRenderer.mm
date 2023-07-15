@@ -336,7 +336,8 @@
     buffer = [[NuoArgumentBuffer alloc] initWithName:@"Ray Struct"];
     
     uint i = 0;
-    [buffer encodeWith:pipeline forIndex:0];
+    [buffer encodeWith:pipeline forIndex:0 withSize:1];
+    [buffer encodeItem:0];
     [buffer setBuffer:uniform for:MTLResourceUsageRead atIndex:i];
     [buffer setBuffer:[_rayStructure indexBuffer] for:MTLResourceUsageRead atIndex:++i];
     [buffer setBuffer:[_rayStructure maskBuffer] for:MTLResourceUsageRead atIndex:++i];
@@ -365,7 +366,8 @@
         return buffer;
     
     buffer = [[NuoArgumentBuffer alloc] initWithName:@"Ray Target"];
-    [buffer encodeWith:pipeline forIndex:1];
+    [buffer encodeWith:pipeline forIndex:1 withSize:1];
+    [buffer encodeItem:0];
     
     uint i = 0;
     for (NuoTargetAccumulator* accumulator in _accumulators)
