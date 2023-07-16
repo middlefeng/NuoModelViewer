@@ -3,7 +3,8 @@
 //  ModelViewer
 //
 //  Created by Dong on 7/10/19.
-//  Copyright © 2019 middleware. All rights reserved.
+//  Updated on 7/15/23.
+//  Copyright © 2023 Dong Feng. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -38,6 +39,9 @@
 /**
  *  specify which item in an array typed argument buffer the subsequent functions will
  *  encode onto
+ *
+ *  figured by Dong, and confirmed by
+ *  https://stackoverflow.com/questions/68171243/how-to-bind-a-variable-number-of-textures-to-metal-shader
  */
 - (void)encodeItem:(uint)index;
 

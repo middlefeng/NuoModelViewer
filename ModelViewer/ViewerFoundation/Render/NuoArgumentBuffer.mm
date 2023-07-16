@@ -102,7 +102,7 @@
 
 - (void)encodeItem:(uint)index
 {
-    [_encoder setArgumentBuffer:_buffer offset:index];
+    [_encoder setArgumentBuffer:_buffer offset:index * _bufferItemLength];
 }
 
 @end
