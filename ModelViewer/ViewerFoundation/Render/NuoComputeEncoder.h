@@ -11,6 +11,8 @@
 
 #import "NuoRenderInFlight.h"
 
+#include <vector>
+
 
 
 @class NuoComputeEncoder;
@@ -26,7 +28,21 @@
 @property (nonatomic, strong) NSString* name;
 @property (nonatomic, readonly) id<MTLIntersectionFunctionTable> intersectionFuncTable;
 
-- (instancetype)initWithDevice:(id<MTLDevice>)device withFunction:(NSString*)function;
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+                  withFunction:(NSString*)function;
+
+
+/**
+ *   binds
+ *      there is no easy way to reflect on the *function* to see if it needs an argument
+ *      buffer at a certain index. but the craetion of an argument encode need this
+ *      information. so this vector argument explicitly ask for the information.
+ *      the information has to be match with the *function*
+ */
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+                  withFunction:(NSString*)function
+              withArgumentBind:(const std::vector<int>&)binds;
 
 
 - (NuoComputeEncoder*)encoderWithCommandBuffer:(NuoCommandBuffer*)commandBuffer;

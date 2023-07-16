@@ -193,7 +193,6 @@
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
                withEncoder:(NuoComputeEncoder*)computeEncoder
                withTargets:(NuoArgumentBuffer*)targets
-       withMaterialTexture:(BOOL)needMaterialTexture
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
             withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection
@@ -220,11 +219,9 @@
             [computeEncoder setBuffer:param offset:0 atIndex:++i];
     }
     
-    if (needMaterialTexture)
-    {
-        NuoArgumentBuffer* texturesArgument = [self materialTextureBuffer:pipeline forIndex:++i];
+    NuoArgumentBuffer* texturesArgument = [self materialTextureBuffer:pipeline forIndex:++i];
+    if (texturesArgument)
         [computeEncoder setArgumentBuffer:texturesArgument];
-    }
     
     [computeEncoder setSamplerState:_sampleState atIndex:0];
     [computeEncoder setDataSize:_drawableSize];
@@ -235,7 +232,6 @@
 
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
-       withMaterialTexture:(BOOL)needMaterialTexture
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
             withExitantRay:(id<MTLBuffer>)exitantRay
           withIntersection:(id<MTLBuffer>)intersection
@@ -247,7 +243,6 @@
     
     [self runRayTraceCompute:pipeline withEncoder:encoder
                  withTargets:[self targetsUniform:pipeline]
-         withMaterialTexture:needMaterialTexture
                withParameter:paramterBuffers
               withExitantRay:exitantRay withIntersection:intersection];
 }
@@ -255,23 +250,20 @@
 
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
-       withMaterialTexture:(BOOL)needMaterialTexture
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
           withIntersection:(id<MTLBuffer>)intersection
 {
     [self runRayTraceCompute:pipeline withCommandBuffer:commandBuffer
-         withMaterialTexture:needMaterialTexture withParameter:paramterBuffers
+               withParameter:paramterBuffers
               withExitantRay:nil withIntersection:intersection];
 }
 
 
 - (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
          withCommandBuffer:(NuoCommandBuffer*)commandBuffer
-       withMaterialTexture:(BOOL)needMaterialTexture
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
 {
     [self runRayTraceCompute:pipeline withCommandBuffer:commandBuffer
-         withMaterialTexture:needMaterialTexture
                withParameter:paramterBuffers withIntersection:self.intersectionBuffer];
 }
 
@@ -286,7 +278,6 @@
     if ([self primaryRayIntersect:commandBuffer])
     {
         [self runRayTraceCompute:/* some shade pipeline */ nil withCommandBuffer:commandBuffer
-             withMaterialTexture:NO
                    withParameter:nil withExitantRay:nil withIntersection:nil];
     }
     /*************************************************************/

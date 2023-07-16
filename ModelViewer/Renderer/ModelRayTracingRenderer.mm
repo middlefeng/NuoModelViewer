@@ -82,12 +82,15 @@ enum kModelRayTracingTargets
     if (self)
     {
         _primaryAndIncidentRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                                        withFunction:@"primary_ray_process"];
+                                                                        withFunction:@"primary_ray_process"
+                                                                    withArgumentBind:{0, 1, 7}];
         _pimraryVirtualLighting = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                                withFunction:@"primary_ray_virtual"];
+                                                                withFunction:@"primary_ray_virtual"
+                                                            withArgumentBind:{0, 1, 5}];
         
         _rayShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                          withFunction:@"incident_ray_process"];
+                                                          withFunction:@"incident_ray_process"
+                                                      withArgumentBind:{0, 1, 9}];
         
         
         _primaryAndIncidentRaysPipeline.name = @"Primary/Incident Ray Process";
@@ -253,7 +256,6 @@ enum kModelRayTracingTargets
         // generate rays for the two light sources, from virtual objects
         //
         [self runRayTraceCompute:_pimraryVirtualLighting withCommandBuffer:commandBuffer
-             withMaterialTexture:YES
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowRaysBuffer.buffer]];
     }
@@ -271,7 +273,6 @@ enum kModelRayTracingTargets
         // generate rays for the two light sources, from translucent objects
         //
         [self runRayTraceCompute:_primaryAndIncidentRaysPipeline withCommandBuffer:commandBuffer
-             withMaterialTexture:YES
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowRaysBuffer.buffer,
                                    _lightRayByScatterBuffer.buffer,
@@ -305,7 +306,6 @@ enum kModelRayTracingTargets
             [_primaryRayVisibility visibilityTest:commandBuffer];
             
             [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
-                 withMaterialTexture:YES
                        withParameter:@[rayTraceUniform, randomBuffer,
                                        _shadowRaysBuffer.buffer,
                                        _lightRayByScatterBuffer.buffer,
@@ -340,7 +340,8 @@ enum kModelRayTracingTargets
     if (!_intersectionPipeline)
     {
         _intersectionPipeline = [[NuoComputePipeline alloc] initWithDevice:device
-                                                              withFunction:@"intersection_visualize"];
+                                                              withFunction:@"intersection_visualize"
+                                                          withArgumentBind:{0, 1}];
     }
     
     NuoTargetAccumulator* accumlator = [_inspectAccumulators objectForKey:name];
@@ -374,7 +375,6 @@ enum kModelRayTracingTargets
     
     [self runRayTraceCompute:_intersectionPipeline
                  withEncoder:encoder withTargets:target
-         withMaterialTexture:NO
                withParameter:@[rayTraceUniform] withExitantRay:nil
             withIntersection:self.intersectionBuffer];
     

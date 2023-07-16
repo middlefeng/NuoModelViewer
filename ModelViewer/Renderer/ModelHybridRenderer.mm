@@ -70,7 +70,8 @@ static const uint32_t kRandomBufferSize = 256 * (kRayBounce + 1);
     if (self)
     {
         _shadowShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                             withFunction:@"shadow_contribute"];
+                                                             withFunction:@"shadow_contribute"
+                                                         withArgumentBind:{0, 1}];
         _differentialPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
                                                               withFunction:@"shadow_illuminate"];
         
@@ -155,7 +156,6 @@ static const uint32_t kRandomBufferSize = 256 * (kRayBounce + 1);
                                  withIntersection:_shadowIntersection];
         
         [self runRayTraceCompute:_shadowShadePipeline withCommandBuffer:commandBuffer
-             withMaterialTexture:NO
                    withParameter:@[_shadeIndex[i]]
                   withExitantRay:_shadowRays[i].buffer
                 withIntersection:_shadowIntersection];
@@ -225,15 +225,18 @@ static const uint32_t kRandomBufferSize = 256 * (kRayBounce + 1);
     if (self)
     {
         _primaryRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                               withFunction:@"primary_ray_process_hybrid"];
+                                                               withFunction:@"primary_ray_process_hybrid"
+                                                            withArgumentBind:{0, 1, 6}];
         _primaryRaysPipeline.name = @"Primary Ray Process";
         
         _primaryAndIncidentRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                                        withFunction:@"primary_and_incident_ray_process"];
+                                                                        withFunction:@"primary_and_incident_ray_process"
+                                                                    withArgumentBind:{0, 1, 7}];
         _primaryAndIncidentRaysPipeline.name = @"Primary/Incident Ray Process";
         
         _rayShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                          withFunction:@"incident_ray_process_hybrid"];
+                                                          withFunction:@"incident_ray_process_hybrid"
+                                                      withArgumentBind:{0, 1, 4}];
         _rayShadePipeline.name = @"Incident Ray Shading";
         
         _rng = std::make_shared<NuoRayTracingRandom>(kRandomBufferSize, kRayBounce, 1);
@@ -361,7 +364,6 @@ static const uint32_t kRandomBufferSize = 256 * (kRayBounce + 1);
         // generate rays for the two light sources, from opaque objects
         //
         [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
-             withMaterialTexture:YES
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowPerLight[0].shadowRays[kNuoRayIndex_OnOpaque].buffer,
                                    _shadowPerLight[1].shadowRays[kNuoRayIndex_OnOpaque].buffer]];
@@ -374,7 +376,6 @@ static const uint32_t kRandomBufferSize = 256 * (kRayBounce + 1);
         // generate rays for the two light sources, from opaque objects
         //
         [self runRayTraceCompute:_primaryRaysPipeline withCommandBuffer:commandBuffer
-             withMaterialTexture:YES
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowPerLight[0].shadowRays[kNuoRayIndex_OnVirtual].buffer,
                                    _shadowPerLight[1].shadowRays[kNuoRayIndex_OnVirtual].buffer]];
@@ -387,7 +388,6 @@ static const uint32_t kRandomBufferSize = 256 * (kRayBounce + 1);
         // generate rays for the two light sources, from translucent objects
         //
         [self runRayTraceCompute:_primaryAndIncidentRaysPipeline withCommandBuffer:commandBuffer
-             withMaterialTexture:YES
                    withParameter:@[rayTraceUniform, randomBuffer,
                                    _shadowPerLight[0].shadowRays[kNuoRayIndex_OnTranslucent].buffer,
                                    _shadowPerLight[1].shadowRays[kNuoRayIndex_OnTranslucent].buffer,
@@ -398,7 +398,6 @@ static const uint32_t kRandomBufferSize = 256 * (kRayBounce + 1);
             [self rayIntersect:commandBuffer withRays:_incidentRaysBuffer withIntersection:self.intersectionBuffer];
             
             [self runRayTraceCompute:_rayShadePipeline withCommandBuffer:commandBuffer
-                 withMaterialTexture:YES
                        withParameter:@[rayTraceUniform, randomBuffer]
                       withExitantRay:_incidentRaysBuffer.buffer
                     withIntersection:self.intersectionBuffer];

@@ -35,8 +35,10 @@
     if (self)
     {
         _commandQueue = commandQueue;
-        _pipelineInit = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"ray_visibility_init"];
-        _pipeline = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"ray_visibility"];
+        _pipelineInit = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"ray_visibility_init"
+                                                  withArgumentBind:{0}];
+        _pipeline = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"ray_visibility"
+                                              withArgumentBind:{0}];
         _pipelineInit.name = @"Ray Visibilit Intialization";
         _pipeline.name = @"Ray Visibility";
     }
@@ -79,7 +81,7 @@
     
     [_rayTracer runRayTraceCompute:_pipelineInit
                        withEncoder:[_pipelineInit encoderWithCommandBuffer:commandBuffer]
-                       withTargets:nil withMaterialTexture:NO
+                       withTargets:nil
                      withParameter:@[_tracingUniform, _spawnRays.buffer, _visibilities]
                     withExitantRay:_paths.buffer withIntersection:intersectBuffer];
 }
@@ -91,8 +93,7 @@
     
     [_rayTracer runRayTraceCompute:_pipeline
                        withEncoder:[_pipeline encoderWithCommandBuffer:commandBuffer]
-                       withTargets:nil withMaterialTexture:NO
-                     withParameter:@[_tracingUniform, _visibilities]
+                       withTargets:nil withParameter:@[_tracingUniform, _visibilities]
                     withExitantRay:_spawnRays.buffer
                   withIntersection:_spawnIntersectionBuffer];
 }

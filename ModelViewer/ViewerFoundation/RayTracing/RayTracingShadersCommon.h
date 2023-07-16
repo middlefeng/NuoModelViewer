@@ -111,7 +111,7 @@ struct PathSample
 
 struct MaterialTextures
 {
-    metal::texture2d<float> diffuseTexture [[id(0)]];
+    metal::texture2d<float, metal::access::sample> diffuseTexture [[id(0)]];
 };
 
 
@@ -190,7 +190,7 @@ inline float3 interpolate_color(device NuoRayTracingMaterial *materials,
     int textureIndex = materials[*(index + 0)].diffuseTex;
     if (textureIndex >= 0)
     {
-        metal::texture2d<float> texture = diffuseTex[textureIndex].diffuseTexture;
+        metal::texture2d<float, metal::access::sample> texture = diffuseTex[textureIndex].diffuseTexture;
         
         float2 texCoord0 = materials[*(index + 0)].texCoord.xy;
         float2 texCoord1 = materials[*(index + 1)].texCoord.xy;

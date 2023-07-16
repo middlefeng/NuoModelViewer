@@ -29,6 +29,7 @@
 {
     id<MTLComputePipelineState> _pipeline;
     id<MTLFunction> _function;
+    std::vector<int> _validBinds;
     __weak id<MTLDevice> _device;
     
     NSString* _functionName;
@@ -41,7 +42,17 @@
 @synthesize intersectionFuncTable = _intersectionFuncTable;
 
 
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+                  withFunction:(NSString*)function
+{
+    return [self initWithDevice:device withFunction:function
+               withArgumentBind:std::vector<int>()]; 
+}
+
+
 - (instancetype)initWithDevice:(id<MTLDevice>)device withFunction:(NSString*)function
+              withArgumentBind:(const std::vector<int>&)binds
 {
     self = [super init];
     
@@ -50,6 +61,7 @@
         _device = device;
         _functionName = function;
         _functionConstants = [MTLFunctionConstantValues new];
+        _validBinds = binds;
         _intersectionFuncs = [NSMutableArray new];
     }
     
@@ -182,6 +194,10 @@
 
 - (id<MTLArgumentEncoder>)argumentEncoder:(NSUInteger)index
 {
+    auto pos = std::find(_validBinds.begin(), _validBinds.end(), index);
+    if (pos == _validBinds.end())
+        return nil;
+    
     return [_function newArgumentEncoderWithBufferIndex:index];
 }
 
