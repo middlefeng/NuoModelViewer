@@ -18,11 +18,17 @@
 
 @interface NuoComputeEncoder()
 
-- (void)setComputePipelineState:(id<MTLComputePipelineState>)pipeline;
+- (void)setComputePipelineState:(NuoComputePipeline*)pipeline;
 
 @end
 
 
+
+@interface NuoComputePipeline()
+
+@property (nonatomic, readonly) id<MTLComputePipelineState> mtlPipeline;
+
+@end
 
 
 @implementation NuoComputePipeline
@@ -40,6 +46,7 @@
 
 
 @synthesize intersectionFuncTable = _intersectionFuncTable;
+@synthesize mtlPipeline = _pipeline;
 
 
 
@@ -140,7 +147,7 @@
     }
     
     NuoComputeEncoder* encoder = [commandBuffer computeEncoderWithName:_name];
-    [encoder setComputePipelineState:_pipeline];
+    [encoder setComputePipelineState:self];
     
     return encoder;
 }
@@ -211,9 +218,13 @@
 {
     id<MTLComputeCommandEncoder> _encoder;
     NuoRenderPassParameterState _parameterState;
+    __weak NuoComputePipeline* _pipeline;
     
     uint _inFlight;
 }
+
+
+@synthesize pipeline = _pipeline;
 
 
 /**
@@ -253,9 +264,10 @@
 
 
 
-- (void)setComputePipelineState:(id<MTLComputePipelineState>)pipeline
+- (void)setComputePipelineState:(NuoComputePipeline*)pipeline
 {
-    [_encoder setComputePipelineState:pipeline];
+    _pipeline = pipeline;
+    [_encoder setComputePipelineState:pipeline.mtlPipeline];
 }
 
 

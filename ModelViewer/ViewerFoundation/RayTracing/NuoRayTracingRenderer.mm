@@ -190,8 +190,7 @@
 }
 
 
-- (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
-               withEncoder:(NuoComputeEncoder*)computeEncoder
+- (void)runRayTraceCompute:(NuoComputeEncoder*)computeEncoder
                withTargets:(NuoArgumentBuffer*)targets
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
             withExitantRay:(id<MTLBuffer>)exitantRay
@@ -201,8 +200,7 @@
     
     uint i = 0;
 
-    NuoArgumentBuffer* argumentBuffer = [self raystructUniform:pipeline
-                                                  withInFlight:computeEncoder
+    NuoArgumentBuffer* argumentBuffer = [self raystructUniform:computeEncoder
                                                 withExitantRay:effectiveRay
                                               withIntersection:intersection];
     [computeEncoder setArgumentBuffer:argumentBuffer];
@@ -219,7 +217,7 @@
             [computeEncoder setBuffer:param offset:0 atIndex:++i];
     }
     
-    NuoArgumentBuffer* texturesArgument = [self materialTextureBuffer:pipeline forIndex:++i];
+    NuoArgumentBuffer* texturesArgument = [self materialTextureBuffer:computeEncoder forIndex:++i];
     if (texturesArgument)
         [computeEncoder setArgumentBuffer:texturesArgument];
     
@@ -241,8 +239,8 @@
     //
     NuoComputeEncoder* encoder = [pipeline encoderWithCommandBuffer:commandBuffer];
     
-    [self runRayTraceCompute:pipeline withEncoder:encoder
-                 withTargets:[self targetsUniform:pipeline]
+    [self runRayTraceCompute:encoder
+                 withTargets:[self targetsUniform:encoder]
                withParameter:paramterBuffers
               withExitantRay:exitantRay withIntersection:intersection];
 }
@@ -320,16 +318,15 @@
 
 
 
-- (NuoArgumentBuffer*)raystructUniform:(NuoComputePipeline*)pipeline
-                          withInFlight:(id<NuoRenderInFlight>)inFlight
+- (NuoArgumentBuffer*)raystructUniform:(NuoComputeEncoder*)encoder
                         withExitantRay:(id<MTLBuffer>)exitantRay
                       withIntersection:(id<MTLBuffer>)intersection
 {
-    id<MTLBuffer> uniform = [_rayStructure uniformBuffer:inFlight];
+    id<MTLBuffer> uniform = [_rayStructure uniformBuffer:encoder];
     
     NuoArgumentBufferKey* key = [NuoArgumentBufferKey new];
     key.rayUniform = (uint64_t)uniform;
-    key.pipeline = (uint64_t)pipeline;
+    key.pipeline = (uint64_t)(encoder.pipeline);
     key.rayBuffer = (uint64_t)exitantRay;
     
     NuoArgumentBuffer* buffer = [_rayStructUniform objectForKey:key];
@@ -340,7 +337,7 @@
     buffer = [[NuoArgumentBuffer alloc] initWithName:@"Ray Struct"];
     
     uint i = 0;
-    [buffer encodeWith:pipeline forIndex:0 withSize:1];
+    [buffer encodeWith:encoder forIndex:0 withSize:1];
     [buffer encodeItem:0];
     [buffer setBuffer:uniform for:MTLResourceUsageRead atIndex:i];
     [buffer setBuffer:[_rayStructure indexBuffer] for:MTLResourceUsageRead atIndex:++i];
@@ -355,10 +352,10 @@
 }
 
 
-- (NuoArgumentBuffer*)materialTextureBuffer:(NuoComputePipeline*)pipeline forIndex:(uint)index
+- (NuoArgumentBuffer*)materialTextureBuffer:(NuoComputeEncoder*)encoder forIndex:(uint)index
 {
     NuoArgumentBufferKey* key = [NuoArgumentBufferKey new];
-    key.pipeline = (uint64_t)pipeline;
+    key.pipeline = (uint64_t)(encoder.pipeline);
     key.argumentIndex = index;
     
     NuoArgumentBuffer* buffer = [_textureBuffer objectForKey:key];
@@ -369,7 +366,7 @@
     NSArray<id<MTLTexture>>* textures = _rayStructure.diffuseTextures;
     buffer = [[NuoArgumentBuffer alloc] initWithName:@"Material Texture"];
     
-    [buffer encodeWith:pipeline forIndex:index withSize:(uint)textures.count];
+    [buffer encodeWith:encoder forIndex:index withSize:(uint)textures.count];
     for (uint i = 0; i < textures.count; ++i)
     {
         [buffer encodeItem:i];
@@ -384,10 +381,10 @@
  *  encode an argument buffer for each pipline. resue the existing argument buffer
  *  for a pipeline if one has been encoded.
  */
-- (NuoArgumentBuffer*)targetsUniform:(NuoComputePipeline*)pipeline
+- (NuoArgumentBuffer*)targetsUniform:(NuoComputeEncoder*)encoder
 {
     NuoArgumentBufferKey* key = [NuoArgumentBufferKey new];
-    key.pipeline = (uint64_t)pipeline;
+    key.pipeline = (uint64_t)(encoder.pipeline);
     
     NuoArgumentBuffer* buffer = [_targetsUniform objectForKey:key];
     
@@ -395,7 +392,7 @@
         return buffer;
     
     buffer = [[NuoArgumentBuffer alloc] initWithName:@"Ray Target"];
-    [buffer encodeWith:pipeline forIndex:1 withSize:1];
+    [buffer encodeWith:encoder forIndex:1 withSize:1];
     [buffer encodeItem:0];
     
     uint i = 0;

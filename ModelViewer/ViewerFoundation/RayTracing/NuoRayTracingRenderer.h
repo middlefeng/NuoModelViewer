@@ -69,8 +69,7 @@
  *  allow the argument buffer, as the third parameter, to be created in the same encoding
  *  process as that strated by the same encoder
  */
-- (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
-               withEncoder:(NuoComputeEncoder*)encoder
+- (void)runRayTraceCompute:(NuoComputeEncoder*)encoder
                withTargets:(NuoArgumentBuffer*)targets
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
             withExitantRay:(id<MTLBuffer>)exitantRay

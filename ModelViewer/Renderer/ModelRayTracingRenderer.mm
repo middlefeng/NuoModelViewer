@@ -365,7 +365,7 @@ enum kModelRayTracingTargets
         // creation of an argument encoder fails
         //
         target = [[NuoArgumentBuffer alloc] initWithName:@"Inspect Target"];
-        [target encodeWith:_intersectionPipeline forIndex:1 withSize:1];
+        [target encodeWith:encoder forIndex:1 withSize:1];
         [target encodeItem:0];
         [target setTexture:accumlator.renderTarget.targetTexture
                        for:(MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite) atIndex:0];
@@ -373,8 +373,7 @@ enum kModelRayTracingTargets
         [_inspectTargets setObject:target forKey:name];
     }
     
-    [self runRayTraceCompute:_intersectionPipeline
-                 withEncoder:encoder withTargets:target
+    [self runRayTraceCompute:encoder withTargets:target
                withParameter:@[rayTraceUniform] withExitantRay:nil
             withIntersection:self.intersectionBuffer];
     

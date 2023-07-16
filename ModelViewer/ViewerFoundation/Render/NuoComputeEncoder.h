@@ -60,6 +60,7 @@
 
 
 @property (nonatomic, assign) CGSize dataSize;
+@property (nonatomic, readonly, weak) NuoComputePipeline* pipeline;
 
 
 - (void)pushParameterState:(NSString*)name;

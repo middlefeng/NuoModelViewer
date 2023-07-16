@@ -52,12 +52,12 @@
 }
 
 
-- (void)encodeWith:(NuoComputePipeline*)pipeline forIndex:(int)index withSize:(uint)size
+- (void)encodeWith:(NuoComputeEncoder*)computeEncoder forIndex:(int)index withSize:(uint)size
 {
     // should be encoded for only once
     assert(_index == -1);
     
-    id<MTLArgumentEncoder> encoder = [pipeline argumentEncoder:index];
+    id<MTLArgumentEncoder> encoder = [computeEncoder.pipeline argumentEncoder:index];
     
     _bufferItemLength = encoder.encodedLength;
     _buffer = [encoder.device newBufferWithLength:_bufferItemLength * size options:0];
