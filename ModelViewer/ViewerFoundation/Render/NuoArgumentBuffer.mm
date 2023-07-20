@@ -3,7 +3,8 @@
 //  ModelViewer
 //
 //  Created by Dong on 7/10/19.
-//  Copyright © 2019 middleware. All rights reserved.
+//  Updated by Dong on 7/19/23
+//  Copyright © 2023 Dong Feng. All rights reserved.
 //
 
 #import "NuoArgumentBuffer.h"
@@ -58,7 +59,7 @@
     assert(_index == -1);
     assert(_buffer == nil);
     
-    id<MTLArgumentEncoder> encoder = [computeEncoder.pipeline argumentEncoder:index];
+    id<MTLArgumentEncoder> encoder = [computeEncoder argumentEncoder:index];
     if (!encoder)
         return;
     
@@ -105,6 +106,8 @@
 
 - (void)encodeItem:(uint)index
 {
+    assert(_buffer != nil);
+    
     [_encoder setArgumentBuffer:_buffer offset:index * _bufferItemLength];
 }
 

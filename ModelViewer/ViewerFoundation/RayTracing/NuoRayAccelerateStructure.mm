@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by Dong on 6/16/18.
-//  Updated on 7/9/23.
+//  Updated on 7/19/23.
 //  Copyright © 2023 Dong Feng. All rights reserved.
 //
 
@@ -66,8 +66,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
         else
         {
             _mtlIntersector = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                            withFunction:@"ray_intersect"
-                                                        withArgumentBind:{0}];
+                                                            withFunction:@"ray_intersect"];
             [_mtlIntersector addIntersectionFunction:@"intersection_mask_detect"];
         }
         
