@@ -56,8 +56,11 @@
 {
     // should be encoded for only once
     assert(_index == -1);
+    assert(_buffer == nil);
     
     id<MTLArgumentEncoder> encoder = [computeEncoder.pipeline argumentEncoder:index];
+    if (!encoder)
+        return;
     
     _bufferItemLength = encoder.encodedLength;
     _buffer = [encoder.device newBufferWithLength:_bufferItemLength * size options:0];

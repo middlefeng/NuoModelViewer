@@ -367,6 +367,9 @@
     buffer = [[NuoArgumentBuffer alloc] initWithName:@"Material Texture"];
     
     [buffer encodeWith:encoder forIndex:index withSize:(uint)textures.count];
+    if (!buffer.buffer)
+        return nil;
+        
     for (uint i = 0; i < textures.count; ++i)
     {
         [buffer encodeItem:i];
