@@ -376,6 +376,8 @@
         [buffer setTexture:textures[i] for:MTLResourceUsageRead atIndex:0];
     }
     
+    [_textureBuffer setObject:buffer forKey:key];
+    
     return buffer;
 }
 
