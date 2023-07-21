@@ -67,6 +67,7 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
         {
             _mtlIntersector = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
                                                             withFunction:@"ray_intersect"];
+            _mtlIntersector.name = @"Ray Intersector";
             [_mtlIntersector addIntersectionFunction:@"intersection_mask_detect"];
         }
         
