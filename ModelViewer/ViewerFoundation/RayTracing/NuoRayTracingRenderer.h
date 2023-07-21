@@ -2,8 +2,9 @@
 //  NuoRayTracingRenderer.h
 //  ModelViewer
 //
-//  Created by middleware on 6/11/18.
-//  Copyright © 2018 middleware. All rights reserved.
+//  Created by Dong on 6/11/18.
+//  Updated by Dong on 7/19/23
+//  Copyright © 2023 Dong Feng. All rights reserved.
 //
 
 #import "NuoRenderPipelinePass.h"
@@ -69,8 +70,7 @@
  *  allow the argument buffer, as the third parameter, to be created in the same encoding
  *  process as that strated by the same encoder
  */
-- (void)runRayTraceCompute:(NuoComputePipeline*)pipeline
-               withEncoder:(NuoComputeEncoder*)encoder
+- (void)runRayTraceCompute:(NuoComputeEncoder*)encoder
                withTargets:(NuoArgumentBuffer*)targets
              withParameter:(NSArray<id<MTLBuffer>>*)paramterBuffers
             withExitantRay:(id<MTLBuffer>)exitantRay

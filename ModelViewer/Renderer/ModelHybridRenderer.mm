@@ -1,9 +1,10 @@
 //
-//  ModelRayTracingRenderer.m
+//  ModeHybridRenderer.mm
 //  ModelViewer
 //
-//  Created by middleware on 8/3/19.
-//  Copyright © 2020 middleware. All rights reserved.
+//  Created by Dong on 8/3/19.
+//  Updated by Dong on 7/20/23.
+//  Copyright © 2023 Dong FEng. All rights reserved.
 //
 
 #import "ModelHybridRenderer.h"
@@ -70,7 +71,8 @@ static const uint32_t kRandomBufferSize = 256 * (kRayBounce + 1);
     if (self)
     {
         _shadowShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                             withFunction:@"shadow_contribute"];
+                                                             withFunction:@"shadow_contribute"
+                                                         withArgumentBind:{0, 1}];
         _differentialPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
                                                               withFunction:@"shadow_illuminate"];
         
@@ -224,15 +226,18 @@ static const uint32_t kRandomBufferSize = 256 * (kRayBounce + 1);
     if (self)
     {
         _primaryRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                               withFunction:@"primary_ray_process_hybrid"];
+                                                               withFunction:@"primary_ray_process_hybrid"
+                                                            withArgumentBind:{0, 1, 6}];
         _primaryRaysPipeline.name = @"Primary Ray Process";
         
         _primaryAndIncidentRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                                        withFunction:@"primary_and_incident_ray_process"];
+                                                                        withFunction:@"primary_and_incident_ray_process"
+                                                                    withArgumentBind:{0, 1, 7}];
         _primaryAndIncidentRaysPipeline.name = @"Primary/Incident Ray Process";
         
         _rayShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                          withFunction:@"incident_ray_process_hybrid"];
+                                                          withFunction:@"incident_ray_process_hybrid"
+                                                      withArgumentBind:{0, 1, 4}];
         _rayShadePipeline.name = @"Incident Ray Shading";
         
         _rng = std::make_shared<NuoRayTracingRandom>(kRandomBufferSize, kRayBounce, 1);

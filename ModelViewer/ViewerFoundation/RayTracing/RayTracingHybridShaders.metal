@@ -35,7 +35,7 @@ static void self_illumination(uint2 tid,
                               constant NuoRayTracingUniforms& tracingUniforms,
                               device RayBuffer* incidentRays,
                               device NuoRayTracingRandomUnit* random,
-                              array<texture2d<float>, kTextureBindingsCap> diffuseTex,
+                              device MaterialTextures* diffuseTex,
                               sampler samplr);
 
 
@@ -47,7 +47,7 @@ kernel void primary_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
                                        device NuoRayTracingRandomUnit* random,
                                        device RayBuffer* shadowRays0,
                                        device RayBuffer* shadowRays1,
-                                       array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(0)]],
+                                       device MaterialTextures* diffuseTex,
                                        sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
@@ -93,7 +93,7 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
                                              device RayBuffer* shadowRays0,
                                              device RayBuffer* shadowRays1,
                                              device RayBuffer* incidentRaysBuffer,
-                                             array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(0)]],
+                                             device MaterialTextures* textures,
                                              sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
@@ -117,12 +117,12 @@ kernel void primary_and_incident_ray_process(uint2 tid [[thread_position_in_grid
         device RayBuffer* shadowRay = &shadowRays[i][rayIdx];
         shadow_ray_emit_infinite_area(cameraRay, intersection, structUniform, tracingUniforms,
                                       i, i + 1, /* sample on the i-th light source */
-                                      r, shadowRay, diffuseTex, samplr);
+                                      r, shadowRay, textures, samplr);
     }
     
     self_illumination(tid, structUniform, targets,
                       tracingUniforms, incidentRaysBuffer,
-                      random, diffuseTex, samplr);
+                      random, textures, samplr);
 }
 
 
@@ -132,7 +132,7 @@ kernel void incident_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
                                         device IlluminateTargets& targets,
                                         constant NuoRayTracingUniforms& tracingUniforms,
                                         device NuoRayTracingRandomUnit* random,
-                                        array<texture2d<float>, kTextureBindingsCap> diffuseTex [[texture(0)]],
+                                        device MaterialTextures* textures,
                                         sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
@@ -143,7 +143,7 @@ kernel void incident_ray_process_hybrid(uint2 tid [[thread_position_in_grid]],
     self_illumination(tid, structUniform, targets,
                       tracingUniforms, structUniform.exitantRays /* incident rays are the
                                                                     exitant rays of the next path */,
-                      random, diffuseTex, samplr);
+                      random, textures, samplr);
 }
 
 
@@ -298,7 +298,7 @@ void self_illumination(uint2 tid,
                        constant NuoRayTracingUniforms& tracingUniforms,
                        device RayBuffer* incidentRays,
                        device NuoRayTracingRandomUnit* random,
-                       array<texture2d<float>, kTextureBindingsCap> diffuseTex,
+                       device MaterialTextures* textures,
                        sampler samplr)
 {
     constant NuoRayTracingGlobalIlluminationParam& globalIllum = tracingUniforms.globalIllum;
@@ -321,7 +321,7 @@ void self_illumination(uint2 tid,
         
         unsigned int triangleIndex = intersection.primitiveIndex;
         device uint* vertexIndex = index + triangleIndex * 3;
-        float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
+        float3 color = interpolate_color(materials, textures, index, intersection, samplr);
         
         int illuminate = materials[*(vertexIndex)].shinessDisolveIllum.z;
         if (illuminate == 0)
@@ -352,7 +352,7 @@ void self_illumination(uint2 tid,
         else
         {
             device NuoRayTracingRandomUnit& randomVars = random[(tid.y % 16) * 16 + (tid.x % 16) + 256 * ray.bounce];
-            NuoRayTracingMaterial material = interpolate_full_material(materials, diffuseTex,
+            NuoRayTracingMaterial material = interpolate_full_material(materials, textures,
                                                                        tracingUniforms.globalIllum.specularMaterialAdjust / 3.0,
                                                                        index, intersection, samplr);
             

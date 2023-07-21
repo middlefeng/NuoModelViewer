@@ -3,7 +3,7 @@
 //  ModelViewer
 //
 //  Created by Dong on 7/8/18.
-//  Updated on 7/9/23.
+//  Updated by Dong on 7/19/23.
 //  Copyright © 2023. All rights reserved.
 //
 
@@ -18,11 +18,21 @@
 
 @interface NuoComputeEncoder()
 
-- (void)setComputePipelineState:(id<MTLComputePipelineState>)pipeline;
+- (void)setComputePipelineState:(NuoComputePipeline*)pipeline;
 
 @end
 
 
+
+@interface NuoComputePipeline()
+
+@property (nonatomic, readonly) id<MTLComputePipelineState> mtlPipeline;
+
+
+@property (nonatomic, assign) std::vector<int> validBinds;
+- (id<MTLArgumentEncoder>)argumentEncoder:(NSUInteger)index;
+
+@end
 
 
 @implementation NuoComputePipeline
@@ -39,9 +49,20 @@
 
 
 @synthesize intersectionFuncTable = _intersectionFuncTable;
+@synthesize mtlPipeline = _pipeline;
+
+
+
+- (instancetype)initWithDevice:(id<MTLDevice>)device
+                  withFunction:(NSString*)function
+{
+    return [self initWithDevice:device withFunction:function
+               withArgumentBind:std::vector<int>()]; 
+}
 
 
 - (instancetype)initWithDevice:(id<MTLDevice>)device withFunction:(NSString*)function
+              withArgumentBind:(const std::vector<int>&)binds
 {
     self = [super init];
     
@@ -50,6 +71,7 @@
         _device = device;
         _functionName = function;
         _functionConstants = [MTLFunctionConstantValues new];
+        _validBinds = binds;
         _intersectionFuncs = [NSMutableArray new];
     }
     
@@ -128,7 +150,7 @@
     }
     
     NuoComputeEncoder* encoder = [commandBuffer computeEncoderWithName:_name];
-    [encoder setComputePipelineState:_pipeline];
+    [encoder setComputePipelineState:self];
     
     return encoder;
 }
@@ -195,9 +217,14 @@
 {
     id<MTLComputeCommandEncoder> _encoder;
     NuoRenderPassParameterState _parameterState;
+    std::vector<int> _validBinds;
+    __weak NuoComputePipeline* _pipeline;
     
     uint _inFlight;
 }
+
+
+@synthesize pipeline = _pipeline;
 
 
 /**
@@ -237,9 +264,12 @@
 
 
 
-- (void)setComputePipelineState:(id<MTLComputePipelineState>)pipeline
+- (void)setComputePipelineState:(NuoComputePipeline*)pipeline
 {
-    [_encoder setComputePipelineState:pipeline];
+    _pipeline = pipeline;
+    _validBinds = _pipeline.validBinds;
+    
+    [_encoder setComputePipelineState:pipeline.mtlPipeline];
 }
 
 
@@ -289,10 +319,25 @@
 {
     _parameterState.SetState(buffer.index, kNuoParameter_CB);
     
+    auto pos = std::find(_validBinds.begin(), _validBinds.end(), buffer.index);
+    assert(pos != _validBinds.end());
+    
+    _validBinds.erase(pos);
+    
     [_encoder setBuffer:buffer.buffer offset:0 atIndex:buffer.index];
     
     for (NuoArgumentUsage* usage in buffer.argumentsUsage)
         [_encoder useResource:usage.argument usage:usage.usage];
+}
+
+
+- (id<MTLArgumentEncoder>)argumentEncoder:(NSUInteger)index
+{
+    auto pos = std::find(_validBinds.begin(), _validBinds.end(), index);
+    if (pos == _validBinds.end())
+        return nil;
+    
+    return [_pipeline argumentEncoder:index];
 }
 
 
@@ -315,6 +360,8 @@
 
 - (void)dispatch
 {
+    assert(_validBinds.size() == 0);
+    
     const float w = _dataSize.width;
     const float h = _dataSize.height;
     MTLSize threads = MTLSizeMake(8, 8, 1);

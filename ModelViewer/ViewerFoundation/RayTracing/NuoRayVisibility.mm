@@ -35,8 +35,12 @@
     if (self)
     {
         _commandQueue = commandQueue;
-        _pipelineInit = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"ray_visibility_init"];
-        _pipeline = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"ray_visibility"];
+        _pipelineInit = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"ray_visibility_init"
+                                                  withArgumentBind:{0}];
+        _pipeline = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"ray_visibility"
+                                              withArgumentBind:{0}];
+        _pipelineInit.name = @"Ray Visibilit Intialization";
+        _pipeline.name = @"Ray Visibility";
     }
     
     return self;
@@ -75,9 +79,9 @@
         intersectBuffer = _rayTracer.intersectionBuffer;
     }
     
-    [_rayTracer runRayTraceCompute:_pipelineInit
-                       withEncoder:[_pipelineInit encoderWithCommandBuffer:commandBuffer]
-                       withTargets:nil withParameter:@[_tracingUniform, _spawnRays.buffer, _visibilities]
+    [_rayTracer runRayTraceCompute:[_pipelineInit encoderWithCommandBuffer:commandBuffer]
+                       withTargets:nil
+                     withParameter:@[_tracingUniform, _spawnRays.buffer, _visibilities]
                     withExitantRay:_paths.buffer withIntersection:intersectBuffer];
 }
 
@@ -86,8 +90,7 @@
 {
     [_rayTracer rayIntersect:commandBuffer withRays:_spawnRays withIntersection:_spawnIntersectionBuffer];
     
-    [_rayTracer runRayTraceCompute:_pipeline
-                       withEncoder:[_pipeline encoderWithCommandBuffer:commandBuffer]
+    [_rayTracer runRayTraceCompute:[_pipeline encoderWithCommandBuffer:commandBuffer]
                        withTargets:nil withParameter:@[_tracingUniform, _visibilities]
                     withExitantRay:_spawnRays.buffer
                   withIntersection:_spawnIntersectionBuffer];

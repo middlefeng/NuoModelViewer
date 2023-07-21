@@ -28,7 +28,7 @@
 		2C30DDD22142F69400A68533 /* NuoInspectableMaster.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C30DDD12142F69400A68533 /* NuoInspectableMaster.m */; };
 		2C30DDD52143200900A68533 /* NuoInspectWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C30DDD42143200900A68533 /* NuoInspectWindow.m */; };
 		2C3167AB227C99540079F5E3 /* NuoRenderPassEncoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C3167AA227C99540079F5E3 /* NuoRenderPassEncoder.mm */; };
-		2C3167B2227CD7AE0079F5E3 /* NuoCommandBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C3167B1227CD7AE0079F5E3 /* NuoCommandBuffer.m */; };
+		2C3167B2227CD7AE0079F5E3 /* NuoCommandBuffer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C3167B1227CD7AE0079F5E3 /* NuoCommandBuffer.mm */; };
 		2C3876A620DD97D40064ECC5 /* ModelRayTracingRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 2C3876A520DD97D40064ECC5 /* ModelRayTracingRenderer.mm */; };
 		2C3D9A9C1D7DF5C3002C1226 /* NuoModelTextured.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9A1D7DF5C3002C1226 /* NuoModelTextured.cpp */; };
 		2C3D9AA11D7E344F002C1226 /* NuoTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C3D9A9F1D7E344F002C1226 /* NuoTypes.cpp */; };
@@ -241,7 +241,7 @@
 		2C3167A9227C99540079F5E3 /* NuoRenderPassEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoRenderPassEncoder.h; sourceTree = "<group>"; };
 		2C3167AA227C99540079F5E3 /* NuoRenderPassEncoder.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoRenderPassEncoder.mm; sourceTree = "<group>"; };
 		2C3167B0227CD7AE0079F5E3 /* NuoCommandBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoCommandBuffer.h; sourceTree = "<group>"; };
-		2C3167B1227CD7AE0079F5E3 /* NuoCommandBuffer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NuoCommandBuffer.m; sourceTree = "<group>"; };
+		2C3167B1227CD7AE0079F5E3 /* NuoCommandBuffer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoCommandBuffer.mm; sourceTree = "<group>"; };
 		2C3622F92094E12200CB45CE /* NuoMesh_Extension.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoMesh_Extension.h; sourceTree = "<group>"; };
 		2C3876A420DD97D40064ECC5 /* ModelRayTracingRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelRayTracingRenderer.h; sourceTree = "<group>"; };
 		2C3876A520DD97D40064ECC5 /* ModelRayTracingRenderer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ModelRayTracingRenderer.mm; sourceTree = "<group>"; };
@@ -497,7 +497,7 @@
 				2CA55FA81DD21D2A0000AD21 /* NuoRenderPass.m */,
 				2CABF1A0227E374D0075FF3D /* NuoRenderInFlight.h */,
 				2C3167B0227CD7AE0079F5E3 /* NuoCommandBuffer.h */,
-				2C3167B1227CD7AE0079F5E3 /* NuoCommandBuffer.m */,
+				2C3167B1227CD7AE0079F5E3 /* NuoCommandBuffer.mm */,
 				2C8B80FB1E2EDB01001746FE /* NuoRenderPipelinePass.h */,
 				2C8B80FC1E2EDB01001746FE /* NuoRenderPipelinePass.mm */,
 				2C9777581F7EC8B60031F188 /* NuoMeshSceneRenderPass.h */,
@@ -1037,7 +1037,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2C3167B2227CD7AE0079F5E3 /* NuoCommandBuffer.m in Sources */,
+				2C3167B2227CD7AE0079F5E3 /* NuoCommandBuffer.mm in Sources */,
 				988B676D1E43F2BD00EA1453 /* NuoMeshAnimation.mm in Sources */,
 				2CCF5B712397123500E5E777 /* NuoScheduler.mm in Sources */,
 				2CE2CA221D804EC5005509EE /* NuoMeshTextured.mm in Sources */,
@@ -1293,7 +1293,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				HEADER_SEARCH_PATHS = (
@@ -1315,7 +1315,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CODE_SIGN_IDENTITY = "";
 				COMBINE_HIDPI_IMAGES = YES;
 				HEADER_SEARCH_PATHS = (

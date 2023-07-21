@@ -136,7 +136,7 @@ void ambient_with_no_block(uint2 tid,
                            device Intersection& intersection,
                            device NuoRayTracingRandomUnit& randomVars,
                            texture2d<float, access::read_write> target,
-                           array<texture2d<float>, kTextureBindingsCap> diffuseTex,
+                           device MaterialTextures* diffuseTex,
                            sampler samplr)
 {
     constant NuoRayTracingGlobalIlluminationParam& globalIllum = tracingUniforms.globalIllum;
@@ -198,7 +198,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                    uint lightSourceStart, uint lightSourceEnd,
                                    device NuoRayTracingRandomUnit& randoms,
                                    device RayBuffer* shadowRay,
-                                   metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                                   device MaterialTextures* diffuseTex,
                                    metal::sampler samplr)
 {
     device NuoRayTracingMaterial* materials = structUniform.materials;

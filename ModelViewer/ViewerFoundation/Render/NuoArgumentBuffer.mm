@@ -3,7 +3,8 @@
 //  ModelViewer
 //
 //  Created by Dong on 7/10/19.
-//  Copyright © 2019 middleware. All rights reserved.
+//  Updated by Dong on 7/19/23
+//  Copyright © 2023 Dong Feng. All rights reserved.
 //
 
 #import "NuoArgumentBuffer.h"
@@ -16,6 +17,7 @@
     id<MTLBuffer> _buffer;
     id<MTLArgumentEncoder> _encoder;
     NSMutableArray<NuoArgumentUsage*>* _usages;
+    unsigned long _bufferItemLength;
     
     NSString* _name;
 }
@@ -30,6 +32,7 @@
     {
         _usages = [NSMutableArray new];
         _index = -1;
+        _bufferItemLength = 0;
         
         _name = name;
     }
@@ -50,17 +53,20 @@
 }
 
 
-- (void)encodeWith:(NuoComputePipeline*)pipeline forIndex:(int)index;
+- (void)encodeWith:(NuoComputeEncoder*)computeEncoder forIndex:(int)index withSize:(uint)size
 {
     // should be encoded for only once
     assert(_index == -1);
+    assert(_buffer == nil);
     
-    id<MTLArgumentEncoder> encoder = [pipeline argumentEncoder:index];
+    id<MTLArgumentEncoder> encoder = [computeEncoder argumentEncoder:index];
+    if (!encoder)
+        return;
     
-    _buffer = [encoder.device newBufferWithLength:encoder.encodedLength options:0];
+    _bufferItemLength = encoder.encodedLength;
+    _buffer = [encoder.device newBufferWithLength:_bufferItemLength * size options:0];
     _buffer.label = _name;
     
-    [encoder setArgumentBuffer:_buffer offset:0];
     _encoder = encoder;
     _index = index;
 }
@@ -97,6 +103,13 @@
 }
 
 
+
+- (void)encodeItem:(uint)index
+{
+    assert(_buffer != nil);
+    
+    [_encoder setArgumentBuffer:_buffer offset:index * _bufferItemLength];
+}
 
 @end
 

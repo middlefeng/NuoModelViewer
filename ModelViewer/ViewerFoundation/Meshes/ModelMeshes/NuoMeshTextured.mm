@@ -203,10 +203,6 @@ static CIContext* sCIContext = nil;
     }
     
     buffers->Union(oneBuffer);
-    
-    // no handling to the array exceeding preset number of shader
-    // argument bindings
-    assert(buffers->_textureMap.size() < kTextureBindingsCap);
 }
 
 

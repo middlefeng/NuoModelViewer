@@ -109,6 +109,13 @@ struct PathSample
 
 
 
+struct MaterialTextures
+{
+    metal::texture2d<float, metal::access::sample> diffuseTexture [[id(0)]];
+};
+
+
+
 
 
 
@@ -161,7 +168,7 @@ inline NuoRayTracingMaterial interpolate_material(device NuoRayTracingMaterial *
 
 
 inline float3 interpolate_color(device NuoRayTracingMaterial *materials,
-                                metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                                device MaterialTextures* diffuseTex,
                                 device uint* index, Intersection intersection,
                                 metal::sampler samplr)
 {
@@ -183,7 +190,7 @@ inline float3 interpolate_color(device NuoRayTracingMaterial *materials,
     int textureIndex = materials[*(index + 0)].diffuseTex;
     if (textureIndex >= 0)
     {
-        metal::texture2d<float> texture = diffuseTex[textureIndex];
+        metal::texture2d<float, metal::access::sample> texture = diffuseTex[textureIndex].diffuseTexture;
         
         float2 texCoord0 = materials[*(index + 0)].texCoord.xy;
         float2 texCoord1 = materials[*(index + 1)].texCoord.xy;
@@ -200,12 +207,12 @@ inline float3 interpolate_color(device NuoRayTracingMaterial *materials,
 
 
 inline NuoRayTracingMaterial interpolate_full_material(device NuoRayTracingMaterial *materials,
-                                                       metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                                                       device MaterialTextures* textures,
                                                        float specularAdjust,
                                                        device uint* index, Intersection intersection,
                                                        metal::sampler samplr)
 {
-    float3 color = interpolate_color(materials, diffuseTex, index, intersection, samplr);
+    float3 color = interpolate_color(materials, textures, index, intersection, samplr);
     
     NuoRayTracingMaterial material = interpolate_material(materials, index, intersection);
     material.diffuseColor = color;
@@ -348,7 +355,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                    uint lightSourceStart, uint lightSourceEnd,
                                    device NuoRayTracingRandomUnit& randoms,
                                    device RayBuffer* shadowRays,
-                                   metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                                   device MaterialTextures* diffuseTex,
                                    metal::sampler samplr);
 
 
@@ -359,7 +366,7 @@ void ambient_with_no_block(uint2 tid,
                            device Intersection& intersection,
                            device NuoRayTracingRandomUnit& randomVars,
                            metal::texture2d<float, metal::access::read_write> target,
-                           metal::array<metal::texture2d<float>, kTextureBindingsCap> diffuseTex,
+                           device MaterialTextures* diffuseTex,
                            metal::sampler samplr);
 
 

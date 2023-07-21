@@ -2,8 +2,9 @@
 //  ModelRayTracingRenderer.m
 //  ModelViewer
 //
-//  Created by middleware on 6/22/18.
-//  Copyright © 2020 middleware. All rights reserved.
+//  Created by Dong on 6/22/18.
+//  Updated by Dong on 7/20/23.
+//  Copyright © 2023 Dong Feng. All rights reserved.
 //
 
 #import "ModelRayTracingRenderer.h"
@@ -82,12 +83,15 @@ enum kModelRayTracingTargets
     if (self)
     {
         _primaryAndIncidentRaysPipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                                        withFunction:@"primary_ray_process"];
+                                                                        withFunction:@"primary_ray_process"
+                                                                    withArgumentBind:{0, 1, 7}];
         _pimraryVirtualLighting = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                                withFunction:@"primary_ray_virtual"];
+                                                                withFunction:@"primary_ray_virtual"
+                                                            withArgumentBind:{0, 1, 5}];
         
         _rayShadePipeline = [[NuoComputePipeline alloc] initWithDevice:commandQueue.device
-                                                          withFunction:@"incident_ray_process"];
+                                                          withFunction:@"incident_ray_process"
+                                                      withArgumentBind:{0, 1, 9}];
         
         
         _primaryAndIncidentRaysPipeline.name = @"Primary/Incident Ray Process";
@@ -337,7 +341,8 @@ enum kModelRayTracingTargets
     if (!_intersectionPipeline)
     {
         _intersectionPipeline = [[NuoComputePipeline alloc] initWithDevice:device
-                                                              withFunction:@"intersection_visualize"];
+                                                              withFunction:@"intersection_visualize"
+                                                          withArgumentBind:{0, 1}];
     }
     
     NuoTargetAccumulator* accumlator = [_inspectAccumulators objectForKey:name];
@@ -361,15 +366,15 @@ enum kModelRayTracingTargets
         // creation of an argument encoder fails
         //
         target = [[NuoArgumentBuffer alloc] initWithName:@"Inspect Target"];
-        [target encodeWith:_intersectionPipeline forIndex:1];
+        [target encodeWith:encoder forIndex:1 withSize:1];
+        [target encodeItem:0];
         [target setTexture:accumlator.renderTarget.targetTexture
                        for:(MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite) atIndex:0];
         
         [_inspectTargets setObject:target forKey:name];
     }
     
-    [self runRayTraceCompute:_intersectionPipeline
-                 withEncoder:encoder withTargets:target
+    [self runRayTraceCompute:encoder withTargets:target
                withParameter:@[rayTraceUniform] withExitantRay:nil
             withIntersection:self.intersectionBuffer];
     
