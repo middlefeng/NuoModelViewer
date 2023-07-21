@@ -2,8 +2,9 @@
 //  NuoRayTracingRenderer.h
 //  ModelViewer
 //
-//  Created by middleware on 6/11/18.
-//  Copyright © 2018 middleware. All rights reserved.
+//  Created by Dong on 6/11/18.
+//  Updated by Dong on 7/19/23
+//  Copyright © 2023 Dong Feng. All rights reserved.
 //
 
 #import "NuoRenderPipelinePass.h"

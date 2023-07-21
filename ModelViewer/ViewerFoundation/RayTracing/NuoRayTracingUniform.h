@@ -117,10 +117,6 @@ typedef struct
 NuoRayVolumeUniform;
 
 
-#define kTextureBindingsCap 18
-
-
-
 typedef struct
 {
     vector2 uv;                    // two-dimension random

@@ -1,9 +1,10 @@
 //
-//  ModelRayTracingRenderer.m
+//  ModeHybridRenderer.mm
 //  ModelViewer
 //
-//  Created by middleware on 8/3/19.
-//  Copyright © 2020 middleware. All rights reserved.
+//  Created by Dong on 8/3/19.
+//  Updated by Dong on 7/20/23.
+//  Copyright © 2023 Dong FEng. All rights reserved.
 //
 
 #import "ModelHybridRenderer.h"

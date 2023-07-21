@@ -2,8 +2,9 @@
 //  ModelRayTracingRenderer.m
 //  ModelViewer
 //
-//  Created by middleware on 6/22/18.
-//  Copyright © 2020 middleware. All rights reserved.
+//  Created by Dong on 6/22/18.
+//  Updated by Dong on 7/20/23.
+//  Copyright © 2023 Dong Feng. All rights reserved.
 //
 
 #import "ModelRayTracingRenderer.h"
