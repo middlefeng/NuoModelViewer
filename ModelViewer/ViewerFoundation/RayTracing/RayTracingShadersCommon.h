@@ -109,7 +109,7 @@ struct PathSample
 
 
 
-struct MaterialTextures
+struct TextureArray
 {
     metal::texture2d<float, metal::access::sample> diffuseTexture [[id(0)]];
 };
@@ -168,7 +168,7 @@ inline NuoRayTracingMaterial interpolate_material(device NuoRayTracingMaterial *
 
 
 inline float3 interpolate_color(device NuoRayTracingMaterial *materials,
-                                device MaterialTextures* diffuseTex,
+                                device TextureArray* diffuseTex,
                                 device uint* index, Intersection intersection,
                                 metal::sampler samplr)
 {
@@ -207,7 +207,7 @@ inline float3 interpolate_color(device NuoRayTracingMaterial *materials,
 
 
 inline NuoRayTracingMaterial interpolate_full_material(device NuoRayTracingMaterial *materials,
-                                                       device MaterialTextures* textures,
+                                                       device TextureArray* textures,
                                                        float specularAdjust,
                                                        device uint* index, Intersection intersection,
                                                        metal::sampler samplr)
@@ -355,7 +355,7 @@ void shadow_ray_emit_infinite_area(thread const RayBuffer& ray,
                                    uint lightSourceStart, uint lightSourceEnd,
                                    device NuoRayTracingRandomUnit& randoms,
                                    device RayBuffer* shadowRays,
-                                   device MaterialTextures* diffuseTex,
+                                   device TextureArray* diffuseTex,
                                    metal::sampler samplr);
 
 
@@ -366,7 +366,7 @@ void ambient_with_no_block(uint2 tid,
                            device Intersection& intersection,
                            device NuoRayTracingRandomUnit& randomVars,
                            metal::texture2d<float, metal::access::read_write> target,
-                           device MaterialTextures* diffuseTex,
+                           device TextureArray* diffuseTex,
                            metal::sampler samplr);
 
 

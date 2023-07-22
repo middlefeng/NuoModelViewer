@@ -40,7 +40,7 @@ static void self_illumination(uint2 tid,
                               device RayBuffer* incidentRays,
                               device NuoRayTracingRandomUnit* random,
                               device RayTracingTargets& targets,
-                              device MaterialTextures* diffuseTex,
+                              device TextureArray* diffuseTex,
                               sampler samplr);
 
 static void lightingTracingWrite(uint2 tid, float3 value,
@@ -172,7 +172,7 @@ kernel void primary_ray_virtual(uint2 tid [[thread_position_in_grid]],
                                 constant NuoRayTracingUniforms& tracingUniforms,
                                 device NuoRayTracingRandomUnit* random,
                                 device RayBuffer* shadowRayMain,
-                                device MaterialTextures* diffuseTex,
+                                device TextureArray* diffuseTex,
                                 sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
@@ -217,7 +217,7 @@ kernel void primary_ray_process(uint2 tid [[thread_position_in_grid]],
                                 device RayBuffer* shadowRayMain,
                                 device RayBuffer* lightByScatter,
                                 device RayBuffer* incidentRaysBuffer,
-                                device MaterialTextures* diffuseTex,
+                                device TextureArray* diffuseTex,
                                 sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
@@ -246,7 +246,7 @@ kernel void incident_ray_process(uint2 tid [[thread_position_in_grid]],
                                  device float3* primaryVisibility,
                                  device float3* shadowVisibility,
                                  device float3* lightByScatterVisibility,
-                                 device MaterialTextures* diffuseTex,
+                                 device TextureArray* diffuseTex,
                                  sampler samplr [[sampler(0)]])
 {
     constant NuoRayVolumeUniform& uniforms = structUniform.rayUniform;
@@ -358,7 +358,7 @@ void self_illumination(uint2 tid,
                        device RayBuffer* incidentRays,
                        device NuoRayTracingRandomUnit* random,
                        device RayTracingTargets& targets,
-                       device MaterialTextures* diffuseTex,
+                       device TextureArray* diffuseTex,
                        sampler samplr)
 {
     constant NuoRayTracingGlobalIlluminationParam& globalIllum = tracingUniforms.globalIllum;

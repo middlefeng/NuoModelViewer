@@ -358,7 +358,6 @@ enum kModelRayTracingTargets
     [accumlator clearRenderTargetWithCommandBuffer:commandBuffer];
     
     NuoComputeEncoder* encoder = [_intersectionPipeline encoderWithCommandBuffer:commandBuffer];
-    
     NuoArgumentBuffer* target = [_inspectTargets objectForKey:name];
     if (!target)
     {
