@@ -110,12 +110,12 @@
     
     float labelWidth = 75;
     float labelSpace = 2;
-    float entryHeight = 18;
-    float lineSpace = 6;
+    float entryHeight = 26;
+    float lineSpace = 0;
     
     CGRect labelFrame;
     labelFrame.size = CGSizeMake(labelWidth, entryHeight);
-    labelFrame.origin = CGPointMake(0, (entryHeight + lineSpace) * 3 + 5);
+    labelFrame.origin = CGPointMake(0, (entryHeight + lineSpace) * 3 + 2);
     
     [_lightIrradianceLabel setFrame:labelFrame];
     

@@ -205,6 +205,23 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
         [commandEncoder writeCompactedAccelerationStructureSize:_mtlAccelerateStructure
                                                        toBuffer:compactedSizeBuffer
                                                          offset:0];
+        
+        [commandEncoder endEncoding];
+        [commandBuffer commit];
+        [commandBuffer waitUntilCompleted];
+        
+        uint32_t compactedSize = *(uint32_t *)compactedSizeBuffer.contents;
+
+        id <MTLAccelerationStructure> compactedAccelerationStructure =
+            [device newAccelerationStructureWithSize:compactedSize];
+        
+        commandBuffer = [_commandQueue commandBuffer];
+        commandEncoder = [commandBuffer accelerationStructureCommandEncoder];
+        [commandEncoder copyAndCompactAccelerationStructure:_mtlAccelerateStructure
+                                    toAccelerationStructure:compactedAccelerationStructure];
+        
+        _mtlAccelerateStructure = compactedAccelerationStructure;
+        
         [commandEncoder endEncoding];
         [commandBuffer commit];
     }

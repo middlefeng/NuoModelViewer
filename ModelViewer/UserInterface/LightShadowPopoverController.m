@@ -52,7 +52,9 @@
     
     CGRect sliderFrame = labelFrame;
     sliderFrame.origin.x += label.frame.size.width + kFieldSpace;
+    sliderFrame.origin.y -= 5;
     sliderFrame.size.width = viewSize.width - label.frame.size.width - kFieldSpace * 2;
+    sliderFrame.size.height = 26;
     _occulderSlider.frame = sliderFrame;
 }
 

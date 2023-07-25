@@ -17,6 +17,11 @@
 #import "RayTracingOptionsPopover.h"
 
 
+
+
+static float kSliderHeight = 26.0;
+
+
 @interface ModelOperationPanel() < NSTableViewDataSource, NSTableViewDelegate, NuoPopoverSheetDelegate >
 
 
@@ -161,7 +166,7 @@
     
     CGRect docViewFrame = CGRectMake(0, 0, 0, 0);
     docViewFrame.size = rootViewFrame.size;
-    docViewFrame.size.height += 336.0;
+    docViewFrame.size.height += 346;
     
     rootScroll.frame = rootViewFrame;
     scrollDocumentView.frame = docViewFrame;
@@ -194,10 +199,11 @@
     [labelBackgroundColor setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelBackgroundColor];
     
-    rowCoord += 0.9;
+    rowCoord += 1.1;
     
     NSSlider* backgroundColor = [NSSlider new];
-    [backgroundColor setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6 inView:scrollDocumentView]];
+    auto frame1 = [self sliderLocationAtRow:rowCoord withLeading:6 inView:scrollDocumentView];
+    [backgroundColor setFrame:frame1];
     [backgroundColor setMaxValue:1.0];
     [backgroundColor setMinValue:0.0];
     [backgroundColor setFloatValue:_backgroundColor];
@@ -206,7 +212,7 @@
     [scrollDocumentView addSubview:backgroundColor];
     _backgroundColorSlider = backgroundColor;
     
-    rowCoord += 1.2;
+    rowCoord += 0.8;
     
     NSButton* checkMaterial = [self createSwitchButtonWithLabel:@"Basic Material"
                                                       withFrame:[self buttonLoactionAtRow:rowCoord
@@ -258,10 +264,10 @@
     [labelFOV setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelFOV];
     
-    rowCoord += 0.7;
+    rowCoord += 1.0;
     
     NSSlider* fieldOfView = [NSSlider new];
-    [fieldOfView setFrame:[self buttonLoactionAtRow:rowCoord withLeading:6 inView:scrollDocumentView]];
+    [fieldOfView setFrame:[self sliderLocationAtRow:rowCoord withLeading:6 inView:scrollDocumentView]];
     [fieldOfView setMaxValue:_fieldOfViewRadian];
     [fieldOfView setMinValue:1e-6];
     [fieldOfView setTarget:self];
@@ -269,17 +275,17 @@
     [scrollDocumentView addSubview:fieldOfView];
     _fieldOfView = fieldOfView;
     
-    rowCoord += 0.8;
+    rowCoord += 0.7;
     
     NSTextField* labelambientDensity = [self createLabel:@"Ambient Density:"
                                             withAligment:NSTextAlignmentLeft];
     [labelambientDensity setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
     [scrollDocumentView addSubview:labelambientDensity];
     
-    rowCoord += 0.8;
+    rowCoord += 1.1;
     
     NSSlider* ambientDensity = [NSSlider new];
-    CGRect ambientDensityFrame = [self buttonLoactionAtRow:rowCoord withLeading:6 inView:scrollDocumentView];
+    CGRect ambientDensityFrame = [self sliderLocationAtRow:rowCoord withLeading:6 inView:scrollDocumentView];
     ambientDensityFrame.size.width -= 27;
     [ambientDensity setFrame:ambientDensityFrame];
     [ambientDensity setMaxValue:2.0];
@@ -292,7 +298,7 @@
     popoverFrame = ambientDensity.frame;
     popoverFrame.size = CGSizeMake(30, 30);
     popoverFrame.origin.x = ambientDensity.frame.origin.x + ambientDensity.frame.size.width + 2;
-    popoverFrame.origin.y -= ((popoverFrame.size.height - labelambientDensity.frame.size.height) / 2.0);
+    popoverFrame.origin.y -= ((popoverFrame.size.height - ambientDensity.frame.size.height) / 2.0);
     NuoPopoverSheet* ambientPopover = [[NuoPopoverSheet alloc] initWithParent:scrollDocumentView];
     ambientPopover.sheetDelegate = self;
     [ambientPopover setFrame:popoverFrame];
@@ -472,14 +478,16 @@
     
     // ray tracing illumination stregth
     
-    rowCoord += 1.1;
+    rowCoord += 1.3;
     
     NSTextField* illumStregthLabel = [self createLabel:@"Illumination:" withAligment:NSTextAlignmentLeft];
-    [illumStregthLabel setFrame:[self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView]];
+    CGRect labelFrame = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    [illumStregthLabel setFrame:labelFrame];
     [scrollDocumentView addSubview:illumStregthLabel];
     
+    rowCoord += 0.2;
     NSSlider* illumination = [NSSlider new];
-    CGRect frame = [self buttonLoactionAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
+    CGRect frame = [self sliderLocationAtRow:rowCoord withLeading:0 inView:scrollDocumentView];
     frame.origin.x += 80;
     frame.size.width -= 80;
     [illumination setFrame:frame];
@@ -548,8 +556,8 @@
     [animationProgressSlider setAction:@selector(animationUpdate:)];
     
     NSRect animationProgressRect = animationRect;
-    animationProgressRect.size.height = 18;
-    animationProgressRect.origin.y -= 9.0 + animationProgressRect.size.height;
+    animationProgressRect.size.height = 25;
+    animationProgressRect.origin.y -= 5.0 + animationProgressRect.size.height;
     [animationProgressSlider setFrame:animationProgressRect];
     [scrollDocumentView addSubview:animationProgressSlider];
     _animationSlider = animationProgressSlider;
@@ -855,6 +863,15 @@
     
     NSRect result = NSMakeRect(overhead + leading, originalY,
                                parentWidth - overhead * 2.0 - leading * 2.0, buttonHeight);
+    return result;
+}
+
+
+- (NSRect)sliderLocationAtRow:(float)row withLeading:(float)leading inView:(NSView*)view
+{
+    NSRect result = [self buttonLoactionAtRow:row withLeading:leading inView:view];
+    result.size.height = kSliderHeight;
+    
     return result;
 }
 
