@@ -140,8 +140,16 @@
 {
     [super setDrawableSize:drawableSize];
     
-    if (!CGSizeEqualToSize(_drawableSize, drawableSize))
-        _targetsUniform = [NSMutableDictionary new];
+    if (CGSizeEqualToSize(_drawableSize, drawableSize))
+    {
+        return;
+    }
+    
+    // clear argument buffer caches which refer to some buffers that are owned by the renderer
+    // (i.e. weak references from the caches)
+    //
+    _targetsUniform = [NSMutableDictionary new];
+    _rayStructUniform = [NSMutableDictionary new];
     
     for (NuoTargetAccumulator* accumulator in _accumulators)
         [accumulator setDrawableSize:drawableSize];
