@@ -336,36 +336,62 @@ handleTransparency:
     MTLRegion region = MTLRegionMake2D(0, 0, w, h);
     [texture getBytes:buffer bytesPerRow:bytesPerRow fromRegion:region mipmapLevel:0];
     
-    [self saveBytes:buffer ofSize:CGSizeMake(w, h) toImage:path];
+    [self saveBytes:buffer ofSize:CGSizeMake(w, h) toImage:path inFormat:kCIFormatRGBA8];
 }
 
 
 
-- (void)saveBytes:(void*)bytes ofSize:(CGSize)sizeOfBuffer toImage:(NSString*)path
+- (void)saveBytes:(void*)bytes ofSize:(CGSize)sizeOfBuffer toImage:(NSString*)path inFormat:(CIFormat)format
 {
+    size_t bytesPerPixel = 4;
+    
+    if (format == kCIFormatRGBA8)
+    {
+        bytesPerPixel = 4;
+    }
+    
     size_t w = sizeOfBuffer.width;
     size_t h = sizeOfBuffer.height;
-    size_t bytesPerRow = 4 * w;
+    size_t bytesPerRow = bytesPerPixel * w;
     size_t size = bytesPerRow * h;
     
-    CGDataProviderRef dataProvider = CGDataProviderCreateWithData(bytes, bytes, size,
-                                                                  NuoDataProviderReleaseDataCallback);
-    NSURL* url = [[NSURL alloc] initFileURLWithPath:path];
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGImageRef image = CGImageCreate(w, h, 8, 8 * 4, bytesPerRow, colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big,
-                                     dataProvider, NULL, false, kCGRenderingIntentDefault);
+    // use core image, deprecate the old core graphics I/O based code
+    const bool kUseCoreImage = true;
     
-    CGImageDestinationRef destination = CGImageDestinationCreateWithURL((__bridge CFURLRef)url,
-                                                                        (__bridge CFStringRef)UTTypePNG.identifier,
-                                                                        1, NULL);
-    CGImageDestinationAddImage(destination, image, NULL);
-    CGImageDestinationFinalize(destination);
-    
-    CGColorSpaceRelease(colorSpace);
-    CGImageRelease(image);
-    CFRelease(destination);
-    
-    CGDataProviderRelease(dataProvider);
+    if (kUseCoreImage)
+    {
+        CIImage* image = [CIImage imageWithBitmapData:[NSData dataWithBytesNoCopy:bytes length:size freeWhenDone:YES]
+                                          bytesPerRow:bytesPerRow
+                                                 size:sizeOfBuffer
+                                               format:kCIFormatRGBA8
+                                           colorSpace:CGColorSpaceCreateWithName(kCGColorSpaceSRGB)];
+        
+        CIContext *context = [CIContext contextWithOptions:nil];
+        [context writePNGRepresentationOfImage:image toURL:[NSURL fileURLWithPath:path] format:kCIFormatRGBA8
+                                    colorSpace:CGColorSpaceCreateWithName(kCGColorSpaceSRGB) options:@{} error:nil];
+    }
+    else
+    {
+        CGDataProviderRef dataProvider = CGDataProviderCreateWithData(bytes, bytes, size,
+                                                                      NuoDataProviderReleaseDataCallback);
+        NSURL* url = [[NSURL alloc] initFileURLWithPath:path];
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+        CGImageRef image = CGImageCreate(w, h, 8, 8 * bytesPerPixel, bytesPerRow, colorSpace,
+                                         kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big,
+                                         dataProvider, NULL, false, kCGRenderingIntentDefault);
+        
+        CGImageDestinationRef destination = CGImageDestinationCreateWithURL((__bridge CFURLRef)url,
+                                                                            (__bridge CFStringRef)UTTypePNG.identifier,
+                                                                            1, NULL);
+        CGImageDestinationAddImage(destination, image, NULL);
+        CGImageDestinationFinalize(destination);
+        
+        CGColorSpaceRelease(colorSpace);
+        CGImageRelease(image);
+        CFRelease(destination);
+        
+        CGDataProviderRelease(dataProvider);
+    }
 }
 
 
