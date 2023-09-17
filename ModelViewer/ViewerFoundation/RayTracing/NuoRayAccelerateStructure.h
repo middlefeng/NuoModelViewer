@@ -43,7 +43,7 @@ extern const uint kRayIntersectionStride;
 @property (nonatomic) BOOL useMPS;
 
 
-- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue;
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue useMPS:(BOOL)useMPS;
 
 - (void)setRoot:(NuoMeshSceneRoot*)root;
 - (void)setRoot:(NuoMeshSceneRoot*)root withCommandBuffer:(NuoCommandBuffer*)commandBuffer;

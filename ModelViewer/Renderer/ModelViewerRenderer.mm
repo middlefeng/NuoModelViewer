@@ -34,6 +34,8 @@
 #import "NuoCheckboardMesh.h"
 #import "NuoInspectableMaster.h"
 
+#import "ModelConfiguration.h"
+
 
 @implementation ModelRenderer
 {
@@ -63,8 +65,11 @@
         
         _modelState = [[ModelState alloc] initWithCommandQueue:commandQueue];
         
+        ModelConfiguration* configuration = ModelConfiguration::GetConfiguration();
+        
         _sceneParameters = [[ModelSceneParameters alloc] initWithDevice:commandQueue.device];
-        _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue];
+        _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue
+                                                                           useMPS:configuration->UseMPSIntersector()];
     }
 
     return self;

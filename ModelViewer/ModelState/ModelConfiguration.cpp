@@ -26,24 +26,48 @@ ModelConfiguration* ModelConfiguration::GetConfiguration()
     if (!_sModelConfiguration)
     {
         _sModelConfiguration = new ModelConfiguration;
-    }
-    
-    const char* path = pathForOptionConfigureFile();
-    
-    struct stat buffer;
-    bool fileExists = (stat(path, &buffer) == 0);
-    if (!fileExists)
-    {
-        FILE *file = fopen(path, "w");
-        assert(file != nullptr);
         
-        fclose(file);
+        const char* path = pathForOptionConfigureFile();
+        
+        struct stat buffer;
+        bool fileExists = (stat(path, &buffer) == 0);
+        if (!fileExists)
+        {
+            FILE *file = fopen(path, "w");
+            assert(file != nullptr);
+            
+            fclose(file);
+        }
+        
+        _sModelConfiguration->_lua = std::make_shared<NuoLua>();
+        _sModelConfiguration->_lua->LoadFile(path);
     }
-    
-    _sModelConfiguration->_lua = std::make_shared<NuoLua>();
-    _sModelConfiguration->_lua->LoadFile(pathForOptionConfigureFile());
     
     return _sModelConfiguration;
+}
+
+
+bool ModelConfiguration::UseMPSIntersector()
+{
+    if (_lua->IsNil(-1))
+    {
+        return false;
+    }
+    
+    const bool useMPS = _lua->GetFieldAsBool("MPSIntersector", -1);
+    return useMPS;
+}
+
+
+bool ModelConfiguration::UseImageIO()
+{
+    if (_lua->IsNil(-1))
+    {
+        return true;
+    }
+    
+    const bool imageIO = _lua->GetFieldAsBool("ImageIOSave", -1);
+    return imageIO;
 }
 
 

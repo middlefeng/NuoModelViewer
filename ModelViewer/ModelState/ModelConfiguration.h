@@ -23,5 +23,8 @@ public:
         
     static ModelConfiguration* GetConfiguration();
     
+    bool UseMPSIntersector();
+    bool UseImageIO();
+    
 };
 
