@@ -6,6 +6,8 @@
 //  Copyright © 2019 middleware. All rights reserved.
 //
 
+#include <cassert>
+
 #include "NuoRenderParameterState.h"
 
 
