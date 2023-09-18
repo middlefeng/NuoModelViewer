@@ -319,11 +319,43 @@ handleTransparency:
 
 
 
+- (size_t)bytesPerPixel:(MTLPixelFormat)pixelFormat
+{
+    switch (pixelFormat)
+    {
+        case MTLPixelFormatRGBA8Unorm:
+            return 4;
+        case MTLPixelFormatRGBA16Float:
+            return 8;
+        default:
+            assert("Not support");
+            return 4;
+    }
+}
+
+
+
+- (CIFormat)ciFormat:(MTLPixelFormat)pixelFormat
+{
+    switch (pixelFormat)
+    {
+        case MTLPixelFormatRGBA8Unorm:
+            return kCIFormatRGBA8;
+        case MTLPixelFormatRGBA16Float:
+            return kCIFormatRGBAh;
+        default:
+            assert("Not support");
+            return kCIFormatRGBA8;
+    }
+}
+
+
+
 - (void)saveTexture:(id<MTLTexture>)texture toImage:(NSString*)path
 {
     size_t w = [texture width];
     size_t h = [texture height];
-    size_t bytesPerRow = 4 * w;
+    size_t bytesPerRow = [self bytesPerPixel:texture.pixelFormat] * w;
     size_t sizeOfBuffer = bytesPerRow * h;
     
     // support RGBA for now
@@ -336,20 +368,14 @@ handleTransparency:
     MTLRegion region = MTLRegionMake2D(0, 0, w, h);
     [texture getBytes:buffer bytesPerRow:bytesPerRow fromRegion:region mipmapLevel:0];
     
-    [self saveBytes:buffer ofSize:CGSizeMake(w, h) toImage:path inFormat:kCIFormatRGBA8];
+    [self saveBytes:buffer ofSize:CGSizeMake(w, h) toImage:path inFormat:texture.pixelFormat];
 }
 
 
 
-- (void)saveBytes:(void*)bytes ofSize:(CGSize)sizeOfBuffer toImage:(NSString*)path inFormat:(CIFormat)format
+- (void)saveBytes:(void*)bytes ofSize:(CGSize)sizeOfBuffer toImage:(NSString*)path inFormat:(MTLPixelFormat)format
 {
-    size_t bytesPerPixel = 4;
-    
-    if (format == kCIFormatRGBA8)
-    {
-        bytesPerPixel = 4;
-    }
-    
+    size_t bytesPerPixel = [self bytesPerPixel:format];
     size_t w = sizeOfBuffer.width;
     size_t h = sizeOfBuffer.height;
     size_t bytesPerRow = bytesPerPixel * w;
@@ -364,7 +390,7 @@ handleTransparency:
                                            colorSpace:CGColorSpaceCreateWithName(kCGColorSpaceSRGB)];
         
         CIContext *context = [CIContext contextWithOptions:nil];
-        [context writePNGRepresentationOfImage:image toURL:[NSURL fileURLWithPath:path] format:kCIFormatRGBA8
+        [context writePNGRepresentationOfImage:image toURL:[NSURL fileURLWithPath:path] format:[self ciFormat:format]
                                     colorSpace:CGColorSpaceCreateWithName(kCGColorSpaceSRGB) options:@{} error:nil];
     }
     else
