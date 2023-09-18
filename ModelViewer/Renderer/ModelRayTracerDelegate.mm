@@ -50,7 +50,7 @@
         self.commandQueue = commandQueue;
         
         _illuminationRenderer = [[ModelRayTracingBlendRenderer alloc] initWithCommandQueue:commandQueue
-                                                                           withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                           withPixelFormat:MTLPixelFormatRGBA16Float
                                                                            withSampleCount:1];
         
         _rayTracingRenderer = [[ModelRayTracingRenderer alloc] initWithCommandQueue:commandQueue];

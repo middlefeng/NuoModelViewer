@@ -228,7 +228,7 @@
     
     _accumulatedMesh = [[NuoTextureMesh alloc] initWithCommandQueue:_commandQueue];
     _accumulatedMesh.sampleCount = 1;
-    [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_None];
+    [_accumulatedMesh makePipelineAndSampler:MTLPixelFormatRGBA16Float withBlendMode:kBlend_None];
     
     _pipelineState = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"compute_texutre_average"];
     _pipelineStateCopy = [[NuoComputePipeline alloc] initWithDevice:_commandQueue.device withFunction:@"compute_texture_copy"];

@@ -141,7 +141,7 @@
                                                                      error:nil];
     }
     
-    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
+    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
     
     // blending is ON, except for the selection indicator mode
@@ -336,7 +336,7 @@
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     pipelineDescriptor.rasterSampleCount = self.sampleCount;
     
-    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
+    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
     
     // blending is ON, except for the selection indicator mode

@@ -49,7 +49,7 @@ static NuoLightUniforms kLightUniform;
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
 {
     self = [super initWithCommandQueue:commandQueue
-                       withPixelFormat:MTLPixelFormatBGRA8Unorm
+                       withPixelFormat:MTLPixelFormatRGBA16Float
                        withSampleCount:kSampleCount];
     
     if (self)

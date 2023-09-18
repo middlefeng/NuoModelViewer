@@ -76,7 +76,7 @@
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:fragmnFunc
                                                         constantValues:funcConstant error:nil];
     pipelineDescriptor.rasterSampleCount = self.sampleCount;
-    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
+    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];

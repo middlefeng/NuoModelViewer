@@ -137,7 +137,7 @@ static CIContext* sCIContext = nil;
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     pipelineDescriptor.rasterSampleCount = self.sampleCount;
     
-    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
+    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
     MTLRenderPipelineColorAttachmentDescriptor* colorAttachment = pipelineDescriptor.colorAttachments[0];
     if ([self hasTransparency])
         [self applyTransmissionBlending:colorAttachment];

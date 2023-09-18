@@ -98,6 +98,7 @@ static NuoTextureBase* sInstance;
                                                                                                      width:imageSize.width
                                                                                                     height:imageSize.height
                                                                                                  mipmapped:mipmapped];
+        
         id<MTLTexture> texture = [_commandQueue.device newTextureWithDescriptor:textureDescriptor];
         
         MTLRegion region = MTLRegionMake2D(0, 0, imageSize.width, imageSize.height);
@@ -216,7 +217,7 @@ handleTransparency:
     // Create a suitable bitmap context for extracting the bits of the image
     const NSUInteger width = CGImageGetWidth(imageRef);
     const NSUInteger height = CGImageGetHeight(imageRef);
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     uint8_t *rawData = (uint8_t *)calloc(height * width * 4, sizeof(uint8_t));
     const NSUInteger bytesPerPixel = 4;
     const NSUInteger bytesPerRow = bytesPerPixel * width;

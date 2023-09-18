@@ -101,7 +101,9 @@ static const size_t kFrameDurationMeasureCount = 20;
     _commandQueue = [self.metalLayer.device newCommandQueue];
     
     [self setWantsLayer:YES];
-    self.metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+    self.metalLayer.pixelFormat = MTLPixelFormatRGBA16Float;
+    self.metalLayer.wantsExtendedDynamicRangeContent = true;
+    self.metalLayer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedDisplayP3);
     
     gettimeofday(&_lastFrameBegin, NULL);
     memset(_frameDurations, 0, sizeof(_frameDurations));

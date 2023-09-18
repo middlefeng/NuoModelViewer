@@ -104,7 +104,7 @@
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"backdrop_project"];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:@"backdrop_texutre"];
     pipelineDescriptor.rasterSampleCount = 1;     // backdrop blends with no other fragments on one pixel
-    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
+    pipelineDescriptor.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA16Float;
     
     pipelineDescriptor.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float;
     

@@ -52,11 +52,11 @@
         NuoInspectable* inspectable = [inspectMaster setInspector:self forName:_name];
         
         _renderPass = [[NuoInspectPass alloc] initWithCommandQueue:_inspectView.commandQueue
-                                                   withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                   withPixelFormat:MTLPixelFormatRGBA16Float
                                                        withProcess:inspectable.inspectingMean];
         
         NuoRenderPassTarget* renderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:_inspectView.commandQueue
-                                                                              withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                              withPixelFormat:MTLPixelFormatRGBA16Float
                                                                               withSampleCount:1];
         renderTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
         renderTarget.manageTargetTexture = NO;
