@@ -319,11 +319,43 @@ handleTransparency:
 
 
 
+- (size_t)bytesPerPixel:(MTLPixelFormat)pixelFormat
+{
+    switch (pixelFormat)
+    {
+        case MTLPixelFormatRGBA8Unorm:
+            return 4;
+        case MTLPixelFormatRGBA16Float:
+            return 8;
+        default:
+            assert("Not support");
+            return 4;
+    }
+}
+
+
+
+- (CIFormat)ciFormat:(MTLPixelFormat)pixelFormat
+{
+    switch (pixelFormat)
+    {
+        case MTLPixelFormatRGBA8Unorm:
+            return kCIFormatRGBA8;
+        case MTLPixelFormatRGBA16Float:
+            return kCIFormatRGBAh;
+        default:
+            assert("Not support");
+            return kCIFormatRGBA8;
+    }
+}
+
+
+
 - (void)saveTexture:(id<MTLTexture>)texture toImage:(NSString*)path
 {
     size_t w = [texture width];
     size_t h = [texture height];
-    size_t bytesPerRow = 4 * w;
+    size_t bytesPerRow = [self bytesPerPixel:texture.pixelFormat] * w;
     size_t sizeOfBuffer = bytesPerRow * h;
     
     // support RGBA for now
@@ -336,36 +368,53 @@ handleTransparency:
     MTLRegion region = MTLRegionMake2D(0, 0, w, h);
     [texture getBytes:buffer bytesPerRow:bytesPerRow fromRegion:region mipmapLevel:0];
     
-    [self saveBytes:buffer ofSize:CGSizeMake(w, h) toImage:path];
+    [self saveBytes:buffer ofSize:CGSizeMake(w, h) toImage:path inFormat:texture.pixelFormat];
 }
 
 
 
-- (void)saveBytes:(void*)bytes ofSize:(CGSize)sizeOfBuffer toImage:(NSString*)path
+- (void)saveBytes:(void*)bytes ofSize:(CGSize)sizeOfBuffer toImage:(NSString*)path inFormat:(MTLPixelFormat)format
 {
+    size_t bytesPerPixel = [self bytesPerPixel:format];
     size_t w = sizeOfBuffer.width;
     size_t h = sizeOfBuffer.height;
-    size_t bytesPerRow = 4 * w;
+    size_t bytesPerRow = bytesPerPixel * w;
     size_t size = bytesPerRow * h;
     
-    CGDataProviderRef dataProvider = CGDataProviderCreateWithData(bytes, bytes, size,
-                                                                  NuoDataProviderReleaseDataCallback);
-    NSURL* url = [[NSURL alloc] initFileURLWithPath:path];
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGImageRef image = CGImageCreate(w, h, 8, 8 * 4, bytesPerRow, colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big,
-                                     dataProvider, NULL, false, kCGRenderingIntentDefault);
-    
-    CGImageDestinationRef destination = CGImageDestinationCreateWithURL((__bridge CFURLRef)url,
-                                                                        (__bridge CFStringRef)UTTypePNG.identifier,
-                                                                        1, NULL);
-    CGImageDestinationAddImage(destination, image, NULL);
-    CGImageDestinationFinalize(destination);
-    
-    CGColorSpaceRelease(colorSpace);
-    CGImageRelease(image);
-    CFRelease(destination);
-    
-    CGDataProviderRelease(dataProvider);
+    if (!_useImageIO)
+    {
+        CIImage* image = [CIImage imageWithBitmapData:[NSData dataWithBytesNoCopy:bytes length:size freeWhenDone:YES]
+                                          bytesPerRow:bytesPerRow
+                                                 size:sizeOfBuffer
+                                               format:kCIFormatRGBA8
+                                           colorSpace:CGColorSpaceCreateWithName(kCGColorSpaceSRGB)];
+        
+        CIContext *context = [CIContext contextWithOptions:nil];
+        [context writePNGRepresentationOfImage:image toURL:[NSURL fileURLWithPath:path] format:[self ciFormat:format]
+                                    colorSpace:CGColorSpaceCreateWithName(kCGColorSpaceSRGB) options:@{} error:nil];
+    }
+    else
+    {
+        CGDataProviderRef dataProvider = CGDataProviderCreateWithData(bytes, bytes, size,
+                                                                      NuoDataProviderReleaseDataCallback);
+        NSURL* url = [[NSURL alloc] initFileURLWithPath:path];
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+        CGImageRef image = CGImageCreate(w, h, 8, 8 * bytesPerPixel, bytesPerRow, colorSpace,
+                                         kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big,
+                                         dataProvider, NULL, false, kCGRenderingIntentDefault);
+        
+        CGImageDestinationRef destination = CGImageDestinationCreateWithURL((__bridge CFURLRef)url,
+                                                                            (__bridge CFStringRef)UTTypePNG.identifier,
+                                                                            1, NULL);
+        CGImageDestinationAddImage(destination, image, NULL);
+        CGImageDestinationFinalize(destination);
+        
+        CGColorSpaceRelease(colorSpace);
+        CGImageRelease(image);
+        CFRelease(destination);
+        
+        CGDataProviderRelease(dataProvider);
+    }
 }
 
 

@@ -13,6 +13,7 @@
 
 static char* pathForDocumentBuffer = 0;
 static char* pathForConfigureFileBuffer = 0;
+static char* pathForOptionConfigureFileBuffer = 0;
 
 
 const char* pathForDocument(void)
@@ -55,6 +56,24 @@ const char* pathForConfigureFile(void)
     strcpy(pathForConfigureFileBuffer, path.UTF8String);
     
     return pathForConfigureFileBuffer;
+}
+
+
+const char* pathForOptionConfigureFile(void)
+{
+    if (pathForOptionConfigureFileBuffer)
+        return pathForOptionConfigureFileBuffer;
+    
+    const char* pathCh = pathForDocument();
+    NSString* path = [NSString stringWithFormat:@"%s/%s", pathCh, "optionConfiguration.cfg"];
+    
+    size_t size = path.length;
+    pathForOptionConfigureFileBuffer = malloc(size + 1);
+    pathForOptionConfigureFileBuffer[size] = 0;
+    
+    strcpy(pathForOptionConfigureFileBuffer, path.UTF8String);
+    
+    return pathForOptionConfigureFileBuffer;
 }
 
 

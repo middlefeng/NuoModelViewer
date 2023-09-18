@@ -45,13 +45,13 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
 }
 
 
-- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+- (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue useMPS:(BOOL)useMPS
 {
     self = [super init];
     
     if (self)
     {
-        _useMPS = NO;
+        _useMPS = useMPS;
         
         if (_useMPS)
         {
