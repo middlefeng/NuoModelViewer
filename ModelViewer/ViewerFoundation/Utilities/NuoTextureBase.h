@@ -38,6 +38,7 @@ enum NuoTextureCubeFace
 
 @interface NuoTextureBase : NSObject
 
+@property (nonatomic) BOOL useImageIO;
 
 + (NuoTextureBase*)getInstance:(id<MTLCommandQueue>)commandQueue;
 

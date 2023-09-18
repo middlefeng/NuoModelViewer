@@ -10,6 +10,7 @@
 #import "ModelView.h"
 
 #import "ModelViewConfiguration.h"
+#import "ModelConfiguration.h"
 #import "ModelComponentPanels.h"
 #import "ModelOperationPanel.h"
 #import "LightOperationPanel.h"
@@ -1293,10 +1294,15 @@ MouseDragMode;
                                                                               withScene:renders];
                  NSString* path = savePanel.URL.path;
                  
+                 ModelConfiguration configuration;
+                 const bool useImageIOSave = configuration.UseImageIO();
+                 
                  [offscreen renderWithCommandQueue:commandQueue
                                     withCompletion:^(id<MTLTexture> result)
                                         {
                                             NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
+                                            
+                                            [textureBase setUseImageIO:useImageIOSave];
                                             [textureBase saveTexture:result toImage:path];
                                         }];
              }

@@ -65,11 +65,11 @@
         
         _modelState = [[ModelState alloc] initWithCommandQueue:commandQueue];
         
-        ModelConfiguration* configuration = ModelConfiguration::GetConfiguration();
+        ModelConfiguration configuration;
         
         _sceneParameters = [[ModelSceneParameters alloc] initWithDevice:commandQueue.device];
         _rayAccelerator = [[NuoRayAccelerateStructure alloc] initWithCommandQueue:commandQueue
-                                                                           useMPS:configuration->UseMPSIntersector()];
+                                                                           useMPS:configuration.UseMPSIntersector()];
     }
 
     return self;

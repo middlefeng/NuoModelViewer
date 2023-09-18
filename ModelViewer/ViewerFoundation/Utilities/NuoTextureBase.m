@@ -355,10 +355,7 @@ handleTransparency:
     size_t bytesPerRow = bytesPerPixel * w;
     size_t size = bytesPerRow * h;
     
-    // use core image, deprecate the old core graphics I/O based code
-    const bool kUseCoreImage = true;
-    
-    if (kUseCoreImage)
+    if (!_useImageIO)
     {
         CIImage* image = [CIImage imageWithBitmapData:[NSData dataWithBytesNoCopy:bytes length:size freeWhenDone:YES]
                                           bytesPerRow:bytesPerRow

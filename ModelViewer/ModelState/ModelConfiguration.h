@@ -21,7 +21,7 @@ class ModelConfiguration
     
 public:
         
-    static ModelConfiguration* GetConfiguration();
+    ModelConfiguration();
     
     bool UseMPSIntersector();
     bool UseImageIO();

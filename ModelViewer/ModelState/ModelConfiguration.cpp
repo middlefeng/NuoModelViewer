@@ -18,32 +18,22 @@
 #include "NuoDirectoryUtils.h"
 
 
-static ModelConfiguration* _sModelConfiguration = nullptr;
-
-
-ModelConfiguration* ModelConfiguration::GetConfiguration()
+ModelConfiguration::ModelConfiguration()
 {
-    if (!_sModelConfiguration)
+    const char* path = pathForOptionConfigureFile();
+        
+    struct stat buffer;
+    bool fileExists = (stat(path, &buffer) == 0);
+    if (!fileExists)
     {
-        _sModelConfiguration = new ModelConfiguration;
+        FILE *file = fopen(path, "w");
+        assert(file != nullptr);
         
-        const char* path = pathForOptionConfigureFile();
-        
-        struct stat buffer;
-        bool fileExists = (stat(path, &buffer) == 0);
-        if (!fileExists)
-        {
-            FILE *file = fopen(path, "w");
-            assert(file != nullptr);
-            
-            fclose(file);
-        }
-        
-        _sModelConfiguration->_lua = std::make_shared<NuoLua>();
-        _sModelConfiguration->_lua->LoadFile(path);
+        fclose(file);
     }
-    
-    return _sModelConfiguration;
+        
+    _lua = std::make_shared<NuoLua>();
+    _lua->LoadFile(path);
 }
 
 
