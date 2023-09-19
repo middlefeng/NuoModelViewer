@@ -24,8 +24,6 @@
                            NSWindowStyleMaskClosable |
                            NSWindowStyleMaskMiniaturizable |
                            NSWindowStyleMaskResizable];
-        
-        [self setColorSpace:[NSColorSpace displayP3ColorSpace]];
     }
     
     return self;
