@@ -18,6 +18,7 @@
 @property (nonatomic) NSInteger preferredFramesPerSecond;
 
 @property (nonatomic) MTLPixelFormat colorPixelFormat;
+@property (nonatomic) BOOL overRangeDisplay;
 
 @property (nonatomic) BOOL measureFrameRate;
 @property (nonatomic, readonly) float frameRate;

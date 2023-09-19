@@ -273,6 +273,8 @@ MouseDragMode;
     NSString* currentDevice = _configuration.deviceName;
     NSString* deviceSelected = _modelPanel.deviceSelected;
     
+    [self setOverRangeDisplay:_modelPanel.overRangeDisplay];
+    
     if (deviceSelected && currentDevice && ![currentDevice isEqualToString:deviceSelected])
     {
         [_configuration setDeviceName:deviceSelected];
