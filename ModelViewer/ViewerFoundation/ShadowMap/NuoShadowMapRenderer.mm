@@ -44,7 +44,7 @@
     if (self)
     {
         self.renderTarget = [[NuoShadowMapTarget alloc] initWithCommandQueue:commandQueue
-                                                             withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                             withPixelFormat:MTLPixelFormatRGBA16Float
                                                              withSampleCount:1];
         self.commandQueue = commandQueue;
         

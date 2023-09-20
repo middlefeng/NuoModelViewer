@@ -63,7 +63,7 @@
         _shadowMapRenderer[1] = [[NuoShadowMapRenderer alloc] initWithCommandQueue:commandQueue withName:@"Shadow 1"];
         
         _immediateTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                             withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                             withPixelFormat:MTLPixelFormatRGBA16Float
                                                              withSampleCount:kSampleCount];
         _immediateTarget.name = @"immediate";
         _immediateTarget.manageTargetTexture = YES;
@@ -73,7 +73,7 @@
                                                            withSceneParameter:sceneParam];
         
         _illuminationRenderer = [[ModelHybridBlendRenderer alloc] initWithCommandQueue:commandQueue
-                                                                       withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                       withPixelFormat:MTLPixelFormatRGBA16Float
                                                                        withSampleCount:1];
         
         _rayTracingRenderer = [[ModelHybridRenderer alloc] initWithCommandQueue:commandQueue];

@@ -28,7 +28,7 @@
 - (instancetype)initWithCommandQueue:(id<MTLCommandQueue>)commandQueue withSampleCount:(uint)sampleCount
 {
     self = [super initWithCommandQueue:commandQueue
-                       withPixelFormat:MTLPixelFormatBGRA8Unorm
+                       withPixelFormat:MTLPixelFormatRGBA16Float
                        withSampleCount:sampleCount];
     if (self)
     {

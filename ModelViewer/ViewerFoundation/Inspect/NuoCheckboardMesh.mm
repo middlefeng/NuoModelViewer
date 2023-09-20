@@ -18,7 +18,7 @@
     if (self)
     {
         [self setSampleCount:1];
-        [self makePipelineAndSampler:MTLPixelFormatBGRA8Unorm
+        [self makePipelineAndSampler:MTLPixelFormatRGBA16Float
                  withFragementShader:@"fragment_checker" withBlendMode:kBlend_None];
     }
     

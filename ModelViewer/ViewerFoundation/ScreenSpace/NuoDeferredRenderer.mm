@@ -36,7 +36,7 @@
         
         _screenMesh = [[NuoScreenSpaceMesh alloc] initWithCommandQueue:commandQueue];
         _screenMesh.sampleCount = 1;
-        [_screenMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm
+        [_screenMesh makePipelineAndSampler:MTLPixelFormatRGBA16Float
                         withFragementShader:@"fragement_deferred"
                               withBlendMode:kBlend_Alpha];
         

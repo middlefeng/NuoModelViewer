@@ -58,6 +58,7 @@ static float kSliderHeight = 26.0;
 @property (nonatomic, strong) NuoPopoverSheet* rayTracingPopover;
 
 @property (nonatomic, strong) NSPopUpButton* deviceList;
+@property (nonatomic, strong) NSButton* checkOverRangeDisplay;
 
 @end
 
@@ -166,7 +167,7 @@ static float kSliderHeight = 26.0;
     
     CGRect docViewFrame = CGRectMake(0, 0, 0, 0);
     docViewFrame.size = rootViewFrame.size;
-    docViewFrame.size.height += 346;
+    docViewFrame.size.height += 365;
     
     rootScroll.frame = rootViewFrame;
     scrollDocumentView.frame = docViewFrame;
@@ -562,7 +563,19 @@ static float kSliderHeight = 26.0;
     [scrollDocumentView addSubview:animationProgressSlider];
     _animationSlider = animationProgressSlider;
     
-    rowCoord += 5.4;
+    rowCoord += 5.2;
+    
+    // HDR display
+    
+    NSButton* hdrDisplay = [self createSwitchButtonWithLabel:@"HDR Display"
+                                                   withFrame:[self buttonLoactionAtRow:rowCoord
+                                                                           withLeading:0 inView:scrollDocumentView]
+                                                withSelector:@selector(showOverRangeDisplayChanged:)];
+    [scrollDocumentView addSubview:hdrDisplay];
+    
+    _checkOverRangeDisplay = hdrDisplay;
+    
+    rowCoord += 1.0;
     
     // device select
     
@@ -737,6 +750,14 @@ static float kSliderHeight = 26.0;
         default:
             break;
     }
+    
+    [_optionUpdateDelegate modelOptionUpdate:0];
+}
+
+
+- (void)showOverRangeDisplayChanged:(id)sender
+{
+    _overRangeDisplay = [_checkOverRangeDisplay state] == NSControlStateValueOn;
     
     [_optionUpdateDelegate modelOptionUpdate:0];
 }

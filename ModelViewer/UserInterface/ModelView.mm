@@ -273,6 +273,8 @@ MouseDragMode;
     NSString* currentDevice = _configuration.deviceName;
     NSString* deviceSelected = _modelPanel.deviceSelected;
     
+    [self setOverRangeDisplay:_modelPanel.overRangeDisplay];
+    
     if (deviceSelected && currentDevice && ![currentDevice isEqualToString:deviceSelected])
     {
         [_configuration setDeviceName:deviceSelected];
@@ -353,7 +355,7 @@ MouseDragMode;
     if (selected && selected.count && !_modelSelectionRenderer)
     {
         _modelSelectionRenderer = [[ModelSelectionRenderer alloc] initWithCommandQueue:self.commandQueue
-                                                                       withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                       withPixelFormat:MTLPixelFormatRGBA16Float
                                                                        withSampleCount:kSampleCount];
         _modelSelectionRenderer.modelState = _modelRender.modelState;
         _modelSelectionRenderer.paramsProvider = _modelRender.sceneParameters;
@@ -609,7 +611,7 @@ MouseDragMode;
     [renders addObject:_modelRender];
     
     NuoRenderPassTarget* modelRenderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
-                                                                               withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                               withPixelFormat:MTLPixelFormatRGBA16Float
                                                                                withSampleCount:1];
     float grayScale = _modelPanel.backgroundColor;
     modelRenderTarget.clearColor = MTLClearColorMake(grayScale, grayScale, grayScale, 1);
@@ -653,7 +655,7 @@ MouseDragMode;
         _modelDissectRenderer.dissectScene = [_modelRender cloneSceneFor:_modelPanel.meshMode];
         
         NuoRenderPassTarget* modelDissectTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
-                                                                                    withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                                    withPixelFormat:MTLPixelFormatRGBA16Float
                                                                                     withSampleCount:kSampleCount];
         modelDissectTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         modelDissectTarget.manageTargetTexture = YES;
@@ -671,7 +673,7 @@ MouseDragMode;
         [renders addObject:_motionBlurRenderer];
         
         NuoRenderPassTarget* motionBlurTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
-                                                                                  withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                                  withPixelFormat:MTLPixelFormatRGBA16Float
                                                                                   withSampleCount:1];
         motionBlurTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
         motionBlurTarget.manageTargetTexture = YES;
@@ -695,7 +697,7 @@ MouseDragMode;
         [renders addObject:_modelSelectionRenderer];
         
         NuoRenderPassTarget* selectionTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
-                                                                                 withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                                 withPixelFormat:MTLPixelFormatRGBA16Float
                                                                                  withSampleCount:kSampleCount];
         
         selectionTarget.clearColor = MTLClearColorMake(0, 0, 0, 0);
@@ -715,7 +717,7 @@ MouseDragMode;
         [renders addObject:_notationRenderer];
         
         NuoRenderPassTarget* notationRenderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
-                                                                                      withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                                                      withPixelFormat:MTLPixelFormatRGBA16Float
                                                                                       withSampleCount:kSampleCount];
         notationRenderTarget.clearColor = MTLClearColorMake(0.95, 0.95, 0.95, 1);
         notationRenderTarget.manageTargetTexture = NO;
@@ -949,7 +951,6 @@ MouseDragMode;
         NSString* path = url.path;
         if ([path hasSuffix:@".obj"] || [path hasSuffix:@".jpg"] || [path hasSuffix:@".png"])
         {
-            NSLog(@"Enterred.");
             return NSDragOperationCopy;
         }
         else if ([path hasSuffix:@".zip"] && [_modelRender.modelState isValidPack:path])
@@ -1191,7 +1192,7 @@ MouseDragMode;
                      NuoTextureBase* base = [NuoTextureBase getInstance:commandQueue];
                      cubeMesh.cubeTexture = [base textureCubeWithImageNamed:path];
 
-                     [cubeMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm];
+                     [cubeMesh makePipelineAndSampler:MTLPixelFormatRGBA16Float];
                  
                      [renderer setCubeMesh:cubeMesh];
                      [selfWeak render];

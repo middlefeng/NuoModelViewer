@@ -38,7 +38,7 @@
 {
 
     _dissectRenderTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:self.commandQueue
-                                                             withPixelFormat:MTLPixelFormatBGRA8Unorm
+                                                             withPixelFormat:MTLPixelFormatRGBA16Float
                                                              withSampleCount:kSampleCount];
 
     _dissectRenderTarget.name = @"Dissect";
@@ -55,7 +55,7 @@
     [_dissectRenderTarget setDrawableSize:drawableSize];
     
     [_textureMesh setAuxiliaryTexture:_dissectRenderTarget.targetTexture];
-    [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_None];
+    [_textureMesh makePipelineAndSampler:MTLPixelFormatRGBA16Float withBlendMode:kBlend_None];
 }
 
 
@@ -73,7 +73,7 @@
     
     [_textureMesh setSampleCount:_sampleCount];
     [_textureMesh setAuxiliaryTexture:_dissectRenderTarget.targetTexture];
-    [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_None];
+    [_textureMesh makePipelineAndSampler:MTLPixelFormatRGBA16Float withBlendMode:kBlend_None];
 }
 
 

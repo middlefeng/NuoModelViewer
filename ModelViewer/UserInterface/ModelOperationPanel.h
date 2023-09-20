@@ -30,6 +30,7 @@
 /**
  *  user-adjustable properties
  */
+@property (nonatomic, assign) BOOL overRangeDisplay;
 @property (nonatomic, strong) NSString* deviceSelected;
 @property (nonatomic, assign) TransformMode transformMode;
 @property (nonatomic, weak) ModelState* modelState;

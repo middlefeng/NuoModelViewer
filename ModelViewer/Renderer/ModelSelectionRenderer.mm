@@ -52,7 +52,7 @@
         _depthTarget.storeDepth = YES;
         
         _textureMesh = [[NuoTextureMesh alloc] initWithCommandQueue:self.commandQueue];
-        [_textureMesh makePipelineAndSampler:MTLPixelFormatBGRA8Unorm withBlendMode:kBlend_Alpha];
+        [_textureMesh makePipelineAndSampler:MTLPixelFormatRGBA16Float withBlendMode:kBlend_Alpha];
         
         _enabled = YES;
     }

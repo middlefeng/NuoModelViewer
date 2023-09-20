@@ -44,6 +44,8 @@ static const size_t kFrameDurationMeasureCount = 20;
 }
 
 
+@dynamic overRangeDisplay;
+
 
 - (CALayer*)makeBackingLayer
 {
@@ -101,7 +103,9 @@ static const size_t kFrameDurationMeasureCount = 20;
     _commandQueue = [self.metalLayer.device newCommandQueue];
     
     [self setWantsLayer:YES];
-    self.metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+    self.metalLayer.pixelFormat = MTLPixelFormatRGBA16Float;
+    self.metalLayer.wantsExtendedDynamicRangeContent = false;
+    self.metalLayer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedDisplayP3);
     
     gettimeofday(&_lastFrameBegin, NULL);
     memset(_frameDurations, 0, sizeof(_frameDurations));
@@ -169,6 +173,19 @@ static const size_t kFrameDurationMeasureCount = 20;
 {
     return self.metalLayer.pixelFormat;
 }
+
+
+- (void)setOverRangeDisplay:(BOOL)overRangeDisplay
+{
+    self.metalLayer.wantsExtendedDynamicRangeContent = overRangeDisplay;
+}
+
+
+- (BOOL)isOverRangeDisplay
+{
+    return self.metalLayer.wantsExtendedDynamicRangeContent;
+}
+
 
 
 - (void)setRenderPasses:(NSArray<NuoRenderPass *> *)renderPasses
