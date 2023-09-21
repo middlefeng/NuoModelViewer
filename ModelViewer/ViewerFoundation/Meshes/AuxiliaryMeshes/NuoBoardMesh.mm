@@ -10,7 +10,8 @@
 #import "NuoMesh_Extension.h"
 
 #import "NuoMeshBounds.h"
-#include "NuoModelBoard.h"
+#import "NuoModelBoard.h"
+#import "NuoConfiguration.h"
 
 
 
@@ -136,55 +137,55 @@
 }
 
 
-- (NSColor*)diffuse
+- (NuoColor*)diffuse
 {
     NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
     
     assert(boardModel != nullptr);
     
     const NuoVectorFloat3& colorVec = boardModel->GetDiffuse();
-    NSColor* color = [NSColor colorWithRed:colorVec.x() green:colorVec.y() blue:colorVec.z() alpha:1.0];
+    NuoColor* color = [NuoColor colorWithRed:colorVec.x() green:colorVec.y() blue:colorVec.z() alpha:1.0];
     
     return color;
 }
 
 
-- (void)setDiffuse:(NSColor*)diffuse
+- (void)setDiffuse:(NuoColor*)diffuse
 {
     NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
     
     assert(boardModel != nullptr);
     
-    NuoVectorFloat3 colorVec(diffuse.redComponent,
-                             diffuse.greenComponent,
-                             diffuse.blueComponent);
+    CGFloat r, g, b;
+    [diffuse getRed:&r green:&g blue:&b alpha:nil];
+    NuoVectorFloat3 colorVec(r, g, b);
     
     boardModel->SetDiffuse(colorVec);
 }
 
 
-- (NSColor*)specular
+- (NuoColor*)specular
 {
     NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
     
     assert(boardModel != nullptr);
     
     const NuoVectorFloat3& colorVec = boardModel->GetSpecular();
-    NSColor* color = [NSColor colorWithRed:colorVec.x() green:colorVec.y() blue:colorVec.z() alpha:1.0];
+    NuoColor* color = [NuoColor colorWithRed:colorVec.x() green:colorVec.y() blue:colorVec.z() alpha:1.0];
     
     return color;
 }
 
 
-- (void)setSpecular:(NSColor*)specular
+- (void)setSpecular:(NuoColor*)specular
 {
     NuoModelBoard* boardModel = dynamic_cast<NuoModelBoard*>(self.rawModel.get());
     
     assert(boardModel != nullptr);
     
-    NuoVectorFloat3 colorVec(specular.redComponent,
-                             specular.greenComponent,
-                             specular.blueComponent);
+    CGFloat r, g, b;
+    [specular getRed:&r green:&g blue:&b alpha:nil];
+    NuoVectorFloat3 colorVec(r, g, b);
     
     boardModel->SetSpecular(colorVec);
 }

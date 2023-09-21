@@ -330,12 +330,14 @@ const uint kRayIntersectionStride = sizeof(MPSIntersectionDistancePrimitiveIndex
     if (!_maskBuffer)
     {
         _maskBuffer = [_commandQueue.device newBufferWithLength:maskBufferSize
-                                                      options:MTLResourceStorageModeManaged];
+                                                      options:NuoManagedResourceOption];
         _maskBuffer.label = @"Mask";
     }
     
     memcpy(_maskBuffer.contents, &mask[0], maskBufferSize);
+#if !TARGET_OS_IPHONE
     [_maskBuffer didModifyRange:NSMakeRange(0, maskBufferSize)];
+#endif
 }
 
 

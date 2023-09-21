@@ -77,9 +77,11 @@
 
 - (void)synchronizeResource:(id<MTLResource>)resource
 {
+#if !TARGET_OS_IPHONE
     id<MTLBlitCommandEncoder> encoder = [_commandBuffer blitCommandEncoder];
     [encoder synchronizeResource:resource];
     [encoder endEncoding];
+#endif
 }
 
 

@@ -14,6 +14,7 @@
 #import "NuoBufferSwapChain.h"
 
 #include "NuoTypes.h"
+#include "NuoConfiguration.h"
 #include "NuoMathVector.h"
 
 
@@ -91,7 +92,7 @@ static uint16_t kIndices[] =
         id<MTLDevice> device = commandQueue.device;
         _cubeMatrixBuffer = [[NuoBufferSwapChain alloc] initWithDevice:device
                                                         WithBufferSize:sizeof(NuoUniforms)
-                                                           withOptions:MTLResourceStorageModeManaged
+                                                           withOptions:NuoManagedResourceOption
                                                          withChainSize:kInFlightBufferCount
                                                               withName:@"Cube Transform"];
             

@@ -64,8 +64,10 @@
     id<MTLBuffer> buffer = _buffers[[inFlight inFlight]];
     memcpy(buffer.contents, content, _contentSize);
     
+#if !TARGET_OS_IPHONE
     if (_options != MTLResourceStorageModeShared)
         [buffer didModifyRange:NSMakeRange(0, _contentSize)];
+#endif
 }
 
 

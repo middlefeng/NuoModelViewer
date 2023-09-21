@@ -6,6 +6,8 @@
 //  Copyright © 2017 middleware. All rights reserved.
 //
 
+#import "NuoConfiguration.h"
+
 #import "NuoMeshCompound.h"
 #import "NuoMeshBounds.h"
 #import "NuoMesh_Extension.h"
