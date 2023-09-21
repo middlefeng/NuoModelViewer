@@ -6,9 +6,9 @@
 //  Copyright © 2017 middleware. All rights reserved.
 //
 
-#import <Cocoa/Cocoa.h>
 
 #include "NuoMeshRotation.h"
+#include "NuoConfiguration.h"
 
 
 @class NuoMesh;

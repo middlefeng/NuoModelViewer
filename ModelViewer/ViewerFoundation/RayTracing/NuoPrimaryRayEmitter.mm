@@ -17,6 +17,7 @@
 #include "NuoRayTracingRandom.h"
 
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
+#import "NuoConfiguration.h"
 
 
 @interface NuoPrimaryRayEmitter()
@@ -48,12 +49,12 @@
         
         _uniformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:_device
                                                       WithBufferSize:sizeof(NuoRayVolumeUniform)
-                                                         withOptions:MTLResourceStorageModeManaged
+                                                         withOptions:NuoManagedResourceOption
                                                        withChainSize:kInFlightBufferCount
                                                             withName:@"Ray Emit Transform"];
         _randomBuffers = [[NuoBufferSwapChain alloc] initWithDevice:_device
                                                      WithBufferSize:_rng->BytesSize()
-                                                        withOptions:MTLResourceStorageModeManaged
+                                                        withOptions:NuoManagedResourceOption
                                                       withChainSize:kInFlightBufferCount
                                                            withName:@"Ray Emit Random"];
         
@@ -79,7 +80,10 @@
     
     _rng->SetBuffer(buffer.contents);
     _rng->UpdateBuffer();
+    
+#if !TARGET_OS_IPHONE
     [buffer didModifyRange:NSMakeRange(0, _rng->BytesSize())];
+#endif
 }
 
 

@@ -9,6 +9,7 @@
 
 #import "NuoRenderPipelinePass.h"
 #import "NuoMesh.h"
+#import "NuoConfiguration.h"
 
 
 

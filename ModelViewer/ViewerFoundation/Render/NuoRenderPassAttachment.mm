@@ -9,6 +9,8 @@
 #import "NuoRenderPassAttachment.h"
 #import "NuoRenderPassTarget.h"
 
+#import "NuoConfiguration.h"
+
 
 
 @implementation NuoRenderPassAttachment
@@ -46,7 +48,7 @@
         
         desc.sampleCount = 1;
         desc.textureType = MTLTextureType2D;
-        desc.resourceOptions = _sharedTexture ? MTLResourceStorageModeManaged : MTLResourceStorageModePrivate;
+        desc.resourceOptions = _sharedTexture ? NuoManagedResourceOption : MTLResourceStorageModePrivate;
         desc.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
         if (_needWrite)
             desc.usage |= MTLTextureUsageShaderWrite;

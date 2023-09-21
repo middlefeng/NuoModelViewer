@@ -16,6 +16,7 @@
 #import "NuoCommandBuffer.h"
 #import "NuoComputeEncoder.h"
 
+#include "NuoConfiguration.h"
 #include "NuoRayTracingUniform.h"
 
 

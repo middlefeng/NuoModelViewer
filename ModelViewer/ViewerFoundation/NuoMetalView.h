@@ -1,13 +1,20 @@
-#import <Cocoa/Cocoa.h>
+//
+//  NuoMetalView.h
+//  ModelViewer
+//
+//  Copyright © 2023 Dong Feng. All rights reserved.
+//
+
 #import <Metal/Metal.h>
-#import <Quartz/Quartz.h>
+#import "NuoConfiguration.h"
+
 
 @class NuoRenderPass;
 @class NuoRenderPipeline;
 
 
 
-@interface NuoMetalView : NSView
+@interface NuoMetalView : NuoBaseView
 
 /**
  *  The passes of the view's rendering, responsible for maintain the model/scene state,

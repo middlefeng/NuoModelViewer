@@ -12,6 +12,7 @@
 #import "NuoShaderLibrary.h"
 #import "NuoArgumentBuffer.h"
 
+#include "NuoConfiguration.h"
 #include "NuoRenderParameterState.h"
 
 

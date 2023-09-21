@@ -6,9 +6,9 @@
 
 #include "NuoModelBase.h"
 #include "NuoTypes.h"
+#include "NuoConfiguration.h"
 #include "NuoMaterial.h"
 
-#import <Cocoa/Cocoa.h>
 #import "NuoMeshTextured.h"
 #import "NuoMeshTexMatieraled.h"
 #import "NuoMeshUniform.h"
@@ -91,7 +91,7 @@
         
         _transformSwapChain = [[NuoBufferSwapChain alloc] initWithDevice:device
                                                           WithBufferSize:sizeof(NuoMeshUniforms)
-                                                             withOptions:MTLResourceStorageModeManaged
+                                                             withOptions:NuoManagedResourceOption
                                                            withChainSize:kInFlightBufferCount
                                                                 withName:@"Mesh Transform"];
         

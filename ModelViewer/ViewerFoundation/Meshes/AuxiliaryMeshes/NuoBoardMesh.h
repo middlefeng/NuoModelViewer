@@ -7,15 +7,15 @@
 //
 
 #import "NuoMesh.h"
-#import <AppKit/AppKit.h>
+#import "NuoConfiguration.h"
 
 
 @interface NuoBoardMesh : NuoMesh
 
 @property (assign, readonly) const NuoVectorFloat3& dimensions;
 @property (assign, nonatomic) BOOL shadowOverlayOnly;
-@property (strong, nonatomic) NSColor* diffuse;
-@property (strong, nonatomic) NSColor* specular;
+@property (strong, nonatomic) NuoColor* diffuse;
+@property (strong, nonatomic) NuoColor* specular;
 @property (assign, nonatomic) float specularPower;
 
 - (MTLRenderPipelineDescriptor*)makePipelineStateDescriptor;

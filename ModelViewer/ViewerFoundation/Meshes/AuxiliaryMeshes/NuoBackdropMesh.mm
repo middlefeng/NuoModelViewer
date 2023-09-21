@@ -12,7 +12,7 @@
 #import "NuoBufferSwapChain.h"
 
 #include "NuoTypes.h"
-
+#include "NuoConfiguration.h"
 
 
 
@@ -61,7 +61,7 @@
         _backdropTex = backdrop;
         _backdropTransformBuffers = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                                 WithBufferSize:sizeof(NuoUniforms)
-                                                                   withOptions:MTLResourceStorageModeManaged
+                                                                   withOptions:NuoManagedResourceOption
                                                                  withChainSize:kInFlightBufferCount
                                                                       withName:@"Backdrop Transform"];
         

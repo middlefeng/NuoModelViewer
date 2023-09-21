@@ -20,6 +20,7 @@
 #import "NuoBufferSwapChain.h"
 
 #include "NuoTypes.h"
+#include "NuoConfiguration.h"
 
 
 
@@ -45,7 +46,7 @@
     {
         _texCountBuffer = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                       WithBufferSize:sizeof(uint32_t)
-                                                         withOptions:MTLResourceStorageModeManaged
+                                                         withOptions:NuoManagedResourceOption
                                                        withChainSize:kInFlightBufferCount
                                                             withName:@"Texture Average"];
         _textureCount = 0;
@@ -204,7 +205,7 @@
         _commandQueue = commandQueue;
         _texCountBuffer = [[NuoBufferSwapChain alloc] initWithDevice:commandQueue.device
                                                       WithBufferSize:sizeof(uint32_t)
-                                                         withOptions:MTLResourceStorageModeManaged
+                                                         withOptions:NuoManagedResourceOption
                                                        withChainSize:kInFlightBufferCount
                                                             withName:@"Texture Accumulate"];
         

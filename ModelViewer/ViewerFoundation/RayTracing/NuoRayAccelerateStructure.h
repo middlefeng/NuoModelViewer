@@ -10,6 +10,7 @@
 #import <Foundation/Foundation.h>
 #import <Metal/Metal.h>
 
+#include "NuoConfiguration.h"
 #include "NuoMathVector.h"
 
 

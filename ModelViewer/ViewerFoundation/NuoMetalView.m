@@ -58,6 +58,24 @@ static const size_t kFrameDurationMeasureCount = 20;
     return layer;
 }
 
+
+#if TARGET_OS_IPHONE
+- (void)setWantsLayer:(BOOL)wants
+{
+}
+#endif
+
+
+- (CGFloat)scaleFactor
+{
+#if TARGET_OS_IPHONE
+    return [UIScreen mainScreen].scale;
+#else
+    return [[NSScreen mainScreen] backingScaleFactor];
+#endif
+}
+
+
 - (void)awakeFromNib
 {
     [self setWantsLayer:YES];
@@ -67,6 +85,8 @@ static const size_t kFrameDurationMeasureCount = 20;
     
     [self commonInit];
     [self updateDrawableSize];
+    
+    [super awakeFromNib];
 }
 
 - (CGSize)drawableSize
@@ -120,7 +140,7 @@ static const size_t kFrameDurationMeasureCount = 20;
 
 
 
-- (void)resizeSubviewsWithOldSize:(NSSize)oldSize
+- (void)resizeSubviewsWithOldSize:(CGSize)oldSize
 {
     [self viewResizing];
 }
@@ -145,7 +165,7 @@ static const size_t kFrameDurationMeasureCount = 20;
 - (void)updateDrawableSize
 {
     // During the first layout pass, we will not be in a view hierarchy, so we guess our scale
-    CGFloat scale = [[NSScreen mainScreen] backingScaleFactor];
+    CGFloat scale = [self scaleFactor];
     CGSize drawableSize = self.bounds.size;
     
     // Since drawable size is in pixels, we need to multiply by the scale to move from points to pixels
@@ -158,11 +178,14 @@ static const size_t kFrameDurationMeasureCount = 20;
     [self render];
 }
 
+
+#if !TARGET_OS_IPHONE
 - (void)viewDidEndLiveResize
 {
     [super viewDidEndLiveResize];
     [self updateDrawableSize];
 }
+#endif
 
 - (void)setColorPixelFormat:(MTLPixelFormat)colorPixelFormat
 {

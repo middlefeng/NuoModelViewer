@@ -89,7 +89,7 @@ static NuoTextureBase* sInstance;
         
         BOOL hasTransparency = NO;
         
-        NSSize imageSize = image.extent.size;
+        CGSize imageSize = image.extent.size;
         const NSUInteger bytesPerPixel = 4;
         const NSUInteger bytesPerRow = bytesPerPixel * imageSize.width;
         uint8_t *imageData = [self dataForImage:image hasTransparent:&hasTransparency];

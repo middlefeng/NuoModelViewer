@@ -9,6 +9,7 @@
 #import "NuoRayBuffer.h"
 #import "NuoComputeEncoder.h"
 #import "NuoRayTracingUniform.h"
+#import "NuoConfiguration.h"
 
 
 
