@@ -47,9 +47,19 @@ static const size_t kFrameDurationMeasureCount = 20;
 @dynamic overRangeDisplay;
 
 
+/* NSView specific */
+
 - (CALayer*)makeBackingLayer
 {
     return [CAMetalLayer new];
+}
+
+
+/* UIView specific */
+
++ (Class)layerClass
+{
+    return [CAMetalLayer class];
 }
 
 - (CAMetalLayer *)metalLayer
@@ -62,6 +72,7 @@ static const size_t kFrameDurationMeasureCount = 20;
 #if TARGET_OS_IPHONE
 - (void)setWantsLayer:(BOOL)wants
 {
+    // no-op for iOS
 }
 #endif
 
@@ -174,8 +185,11 @@ static const size_t kFrameDurationMeasureCount = 20;
 
     self.metalLayer.drawableSize = drawableSize;
     
-    [self.renderPipeline setDrawableSize:drawableSize];
-    [self render];
+    if (_displaySemaphore)
+    {
+        [self.renderPipeline setDrawableSize:drawableSize];
+        [self render];
+    }
 }
 
 
