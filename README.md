@@ -26,6 +26,7 @@ This project consists of:
 ## Latest Update
 
 * Apple Silicon and macOS 13.3 adaptive.
+  * High dynamic range display.
   * Replace the Performance Shader Intersector with Metal Ray Tracing shader.
 * Specular lighting on a Fresnel surface.
 * Multiple-importance sampling.
