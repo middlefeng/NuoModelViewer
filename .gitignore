@@ -1,4 +1,5 @@
 ModelViewer.xcodeproj/xcuserdata/*
+ModelViewer/ViewerFoundation/Scripting/**/xcuserdata
 ModelViewer.xcodeproj/project.xcworkspace/xcuserdata/*
 ModelViewer-Metal-Old.xcodeproj/xcuserdata/*
 ModelViewer-Metal-Old.xcodeproj/project.xcworkspace/xcuserdata/*

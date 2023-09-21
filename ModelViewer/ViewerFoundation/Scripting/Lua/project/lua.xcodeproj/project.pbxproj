@@ -364,7 +364,6 @@
 				2C317128157CEAAD00F12776 /* lzio.h */,
 			);
 			name = "lua-core";
-			path = lua;
 			sourceTree = "<group>";
 		};
 		2C31712C157CEB2700F12776 /* lib-o */ = {
