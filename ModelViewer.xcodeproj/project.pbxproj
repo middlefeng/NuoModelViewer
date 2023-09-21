@@ -443,6 +443,7 @@
 		2CFDD1ED20D5B59F00F2E218 /* NuoRayAccelerateStructure.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NuoRayAccelerateStructure.h; sourceTree = "<group>"; };
 		2CFDD1EE20D5B59F00F2E218 /* NuoRayAccelerateStructure.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = NuoRayAccelerateStructure.mm; sourceTree = "<group>"; };
 		5540D1E22A5914D2009956E4 /* RayTracingPipeline.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = RayTracingPipeline.metal; sourceTree = "<group>"; };
+		55559FDF2ABC8FCF0010F992 /* NuoConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NuoConfiguration.h; sourceTree = "<group>"; };
 		55F4D9122AB7A22800C0C0FC /* ModelConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelConfiguration.h; sourceTree = "<group>"; };
 		55F4D9172AB7A22800C0C0FC /* ModelConfiguration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ModelConfiguration.cpp; sourceTree = "<group>"; };
 		983C2E181F86D60200D8E689 /* ModelOperationTexturePopover.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelOperationTexturePopover.h; sourceTree = "<group>"; };
@@ -772,6 +773,7 @@
 		2C840D0B1D7001A5000D2956 /* ViewerFoundation */ = {
 			isa = PBXGroup;
 			children = (
+				55559FDF2ABC8FCF0010F992 /* NuoConfiguration.h */,
 				2C840D0C1D7001C2000D2956 /* NuoMetalView.h */,
 				2C840D0D1D7001C2000D2956 /* NuoMetalView.m */,
 				2CCF9C751E5B4F77006EF8C4 /* NuoOffscreenView.h */,
