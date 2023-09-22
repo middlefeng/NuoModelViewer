@@ -1286,6 +1286,9 @@ MouseDragMode;
                                            blue:_modelPanel.backgroundColor
                                           alpha:1.0];
     
+    MTLPixelFormat pixelFormat = _modelPanel.overRangeDisplay ? MTLPixelFormatRGBA16Float :
+                                                                MTLPixelFormatRGBA8Unorm;
+    
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
              if (result == NSModalResponseOK)
@@ -1298,7 +1301,9 @@ MouseDragMode;
                  ModelConfiguration configuration;
                  const bool useImageIOSave = configuration.UseImageIO();
                  
+                 
                  [offscreen renderWithCommandQueue:commandQueue
+                                   withPixelFormat:pixelFormat
                                     withCompletion:^(id<MTLTexture> result)
                                         {
                                             NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
@@ -1330,6 +1335,9 @@ MouseDragMode;
     
     NSArray* renders = [self exportRenders];
     
+    MTLPixelFormat pixelFormat = _modelPanel.overRangeDisplay ? MTLPixelFormatRGBA16Float :
+                                                                MTLPixelFormatRGBA8Unorm;
+    
     [savePanel beginSheetModalForWindow:self.window completionHandler:^(NSInteger result)
          {
              if (result == NSModalResponseOK)
@@ -1347,6 +1355,7 @@ MouseDragMode;
                  modelRenderer.mainModelMesh.enabled = NO;
                  
                  [offscreen renderWithCommandQueue:self.commandQueue
+                                   withPixelFormat:pixelFormat
                                     withCompletion:^(id<MTLTexture> result)
                                       {
                                           NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
@@ -1357,6 +1366,7 @@ MouseDragMode;
                  modelRenderer.backdropMesh.enabled = NO;
                  
                  [offscreen renderWithCommandQueue:self.commandQueue
+                                   withPixelFormat:pixelFormat
                                     withCompletion:^(id<MTLTexture> result)
                                       {
                                           NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];

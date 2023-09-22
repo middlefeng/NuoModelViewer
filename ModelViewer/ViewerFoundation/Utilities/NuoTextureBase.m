@@ -26,6 +26,12 @@ static void NuoDataProviderReleaseDataCallback(void * info, const void *  data, 
 
 
 
+struct NuoTextureSaveInfo
+{
+    size_t width;
+    size_t height;
+    size_t bytesPerPixel;
+};
 
 
 
@@ -98,6 +104,7 @@ static NuoTextureBase* sInstance;
                                                                                                      width:imageSize.width
                                                                                                     height:imageSize.height
                                                                                                  mipmapped:mipmapped];
+        
         id<MTLTexture> texture = [_commandQueue.device newTextureWithDescriptor:textureDescriptor];
         
         MTLRegion region = MTLRegionMake2D(0, 0, imageSize.width, imageSize.height);
@@ -216,7 +223,7 @@ handleTransparency:
     // Create a suitable bitmap context for extracting the bits of the image
     const NSUInteger width = CGImageGetWidth(imageRef);
     const NSUInteger height = CGImageGetHeight(imageRef);
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
     uint8_t *rawData = (uint8_t *)calloc(height * width * 4, sizeof(uint8_t));
     const NSUInteger bytesPerPixel = 4;
     const NSUInteger bytesPerRow = bytesPerPixel * width;
@@ -328,7 +335,7 @@ handleTransparency:
         case MTLPixelFormatRGBA16Float:
             return 8;
         default:
-            assert("Not support");
+            assert(false);
             return 4;
     }
 }
@@ -344,8 +351,40 @@ handleTransparency:
         case MTLPixelFormatRGBA16Float:
             return kCIFormatRGBAh;
         default:
-            assert("Not support");
+            assert(false);
             return kCIFormatRGBA8;
+    }
+}
+
+
+
+- (CGColorSpaceRef)imageColorSpace:(MTLPixelFormat)pixelFormat
+{
+    switch (pixelFormat)
+    {
+        case MTLPixelFormatRGBA8Unorm:
+            return CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+        case MTLPixelFormatRGBA16Float:
+            return CGColorSpaceCreateWithName(kCGColorSpaceExtendedDisplayP3);
+        default:
+            assert(false);
+            return CGColorSpaceCreateDeviceRGB();
+    }
+}
+
+
+
+- (CGColorSpaceRef)exportColorSpace:(MTLPixelFormat)pixelFormat
+{
+    switch (pixelFormat)
+    {
+        case MTLPixelFormatRGBA8Unorm:
+            return CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+        case MTLPixelFormatRGBA16Float:
+            return CGColorSpaceCreateWithName(kCGColorSpaceITUR_2100_PQ);
+        default:
+            assert(false);
+            return CGColorSpaceCreateDeviceRGB();
     }
 }
 
@@ -357,10 +396,6 @@ handleTransparency:
     size_t h = [texture height];
     size_t bytesPerRow = [self bytesPerPixel:texture.pixelFormat] * w;
     size_t sizeOfBuffer = bytesPerRow * h;
-    
-    // support RGBA for now
-    //
-    assert([texture pixelFormat] == MTLPixelFormatRGBA8Unorm);
     
     void* buffer = malloc(sizeOfBuffer);
     assert(buffer);
@@ -381,17 +416,26 @@ handleTransparency:
     size_t bytesPerRow = bytesPerPixel * w;
     size_t size = bytesPerRow * h;
     
+    CIFormat ciFormat = [self ciFormat:format];
+    CGColorSpaceRef imageColorSpace = [self imageColorSpace:format];
+    CGColorSpaceRef exportColorSpace = [self exportColorSpace:format];
+    
     if (!_useImageIO)
     {
         CIImage* image = [CIImage imageWithBitmapData:[NSData dataWithBytesNoCopy:bytes length:size freeWhenDone:YES]
                                           bytesPerRow:bytesPerRow
-                                                 size:sizeOfBuffer
-                                               format:kCIFormatRGBA8
-                                           colorSpace:CGColorSpaceCreateWithName(kCGColorSpaceSRGB)];
+                                                 size:CGSizeMake(w, h)
+                                               format:ciFormat
+                                           colorSpace:imageColorSpace];
         
         CIContext *context = [CIContext contextWithOptions:nil];
-        [context writePNGRepresentationOfImage:image toURL:[NSURL fileURLWithPath:path] format:[self ciFormat:format]
-                                    colorSpace:CGColorSpaceCreateWithName(kCGColorSpaceSRGB) options:@{} error:nil];
+        
+        NSString* hiefPath = [NSString stringWithFormat:@"%@.hief", path];
+        [context writeHEIF10RepresentationOfImage:image toURL:[NSURL fileURLWithPath:hiefPath] colorSpace:exportColorSpace
+                                          options:@{} error:nil];
+        
+        [context writePNGRepresentationOfImage:image toURL:[NSURL fileURLWithPath:path] format:ciFormat
+                                    colorSpace:exportColorSpace options:@{} error:nil];
     }
     else
     {

@@ -29,6 +29,7 @@
                      withScene:(NSArray<NuoRenderPass*>*) renderPasses;
 
 - (void)renderWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+               withPixelFormat:(MTLPixelFormat)pixelFormat
                 withCompletion:(void (^)(id<MTLTexture>))completionBlock;
 
 @end

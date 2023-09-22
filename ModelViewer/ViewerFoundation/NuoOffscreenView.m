@@ -64,6 +64,7 @@
 
 
 - (void)renderWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+               withPixelFormat:(MTLPixelFormat)pixelFormat
                 withCompletion:(void (^)(id<MTLTexture>))completionBlock;
 {
     NuoCommandBuffer* commandBuffer = [[NuoCommandBuffer alloc] initWithCommandQueue:commandQueue
@@ -92,7 +93,7 @@
     // sharely managed by GPU and CPU, export to RGBA (since PNG need it)
     //
     NuoRenderPassTarget* exportTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                          withPixelFormat:MTLPixelFormatRGBA8Unorm
+                                                                          withPixelFormat:pixelFormat
                                                                           withSampleCount:1];
     exportTarget.manageTargetTexture = YES;
     exportTarget.sharedTargetTexture = YES;
