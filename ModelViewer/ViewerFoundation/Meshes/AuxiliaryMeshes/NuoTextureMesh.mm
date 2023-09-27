@@ -40,6 +40,9 @@ struct TextureMixFragment
 {
     NSString* shaderName = _auxiliaryTexture ? @"fragment_texture_mix" :
                                                @"fragment_texture";
+    
+    if (blendMode == kBlend_AlphaOverflow)
+        shaderName = @"fragment_alpha_overflow";
      
     [self makePipelineAndSampler:pixelFormat withFragementShader:shaderName
                    withBlendMode:blendMode];

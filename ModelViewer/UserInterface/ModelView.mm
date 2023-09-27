@@ -1304,6 +1304,7 @@ MouseDragMode;
                  
                  [offscreen renderWithCommandQueue:commandQueue
                                    withPixelFormat:pixelFormat
+                                  forAlphaOverflow:NO
                                     withCompletion:^(id<MTLTexture> result)
                                         {
                                             NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
@@ -1354,11 +1355,16 @@ MouseDragMode;
                  
                  modelRenderer.mainModelMesh.enabled = NO;
                  
+                 ModelConfiguration configuration;
+                 const bool useImageIOSave = configuration.UseImageIO();
+                 
                  [offscreen renderWithCommandQueue:self.commandQueue
                                    withPixelFormat:pixelFormat
+                                  forAlphaOverflow:NO
                                     withCompletion:^(id<MTLTexture> result)
                                       {
                                           NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
+                                          [textureBase setUseImageIO:useImageIOSave];
                                           [textureBase saveTexture:result toImage:pathBackground];
                                       }];
                  
@@ -1367,10 +1373,25 @@ MouseDragMode;
                  
                  [offscreen renderWithCommandQueue:self.commandQueue
                                    withPixelFormat:pixelFormat
+                                  forAlphaOverflow:NO
                                     withCompletion:^(id<MTLTexture> result)
                                       {
                                           NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
+                                          [textureBase setUseImageIO:useImageIOSave];
                                           [textureBase saveTexture:result toImage:path];
+                                      }];
+                 
+                 NSString* pathAlphaAdd = [path stringByDeletingPathExtension];
+                 pathAlphaAdd = [pathAlphaAdd stringByAppendingString:@"-add.png"];
+                 
+                 [offscreen renderWithCommandQueue:self.commandQueue
+                                   withPixelFormat:pixelFormat
+                                  forAlphaOverflow:YES
+                                    withCompletion:^(id<MTLTexture> result)
+                                      {
+                                          NuoTextureBase* textureBase = [NuoTextureBase getInstance:commandQueue];
+                                          [textureBase setUseImageIO:useImageIOSave];
+                                          [textureBase saveTexture:result toImage:pathAlphaAdd];
                                       }];
                  
                  modelRenderer.backdropMesh.enabled = YES;

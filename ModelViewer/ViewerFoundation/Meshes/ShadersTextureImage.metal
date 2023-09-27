@@ -92,6 +92,36 @@ fragment float4 fragment_texture(PositionTextureSimple vert [[stage_in]],
 }
 
 
+fragment float4 fragment_alpha_overflow(PositionTextureSimple vert [[stage_in]],
+                                        texture2d<float> texture [[texture(0)]],
+                                        sampler samplr [[sampler(0)]])
+{
+    float4 color = texture.sample(samplr, vert.texCoord);
+    
+    if (color.a < 1e-6)
+    {
+        // divided by zero compensation
+        
+        return float4(color.rgb, 1.0);
+    }
+    else
+    {
+        // overflow quotation compensation
+        
+        float3 color3 = color.rgb / color.a;
+        if (color3.r > 1.0 || color3.g > 1.0 || color3.b > 1.0)
+        {
+            color3 = (color3 - float3(1.0)) * color.a;
+            return float4(color3, 1.0);
+        }
+    }
+    
+    // no compensation
+    
+    return float4(0, 0, 0, 1);
+}
+
+
 fragment float4 fragment_texture_mix(PositionTextureSimple vert [[stage_in]],
                                      texture2d<float> texture1 [[texture(0)]],
                                      texture2d<float> texture2 [[texture(1)]],

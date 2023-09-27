@@ -429,11 +429,6 @@ handleTransparency:
                                            colorSpace:imageColorSpace];
         
         CIContext *context = [CIContext contextWithOptions:nil];
-        
-        NSString* hiefPath = [NSString stringWithFormat:@"%@.hief", path];
-        [context writeHEIF10RepresentationOfImage:image toURL:[NSURL fileURLWithPath:hiefPath] colorSpace:exportColorSpace
-                                          options:@{} error:nil];
-        
         [context writePNGRepresentationOfImage:image toURL:[NSURL fileURLWithPath:path] format:ciFormat
                                     colorSpace:exportColorSpace options:@{} error:nil];
     }

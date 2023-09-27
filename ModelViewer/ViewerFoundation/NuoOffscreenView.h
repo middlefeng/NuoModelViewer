@@ -28,8 +28,13 @@
                 withClearColor:(NSColor*)clearColor
                      withScene:(NSArray<NuoRenderPass*>*) renderPasses;
 
+/**
+ *   param: alphaOverflow: see kBlend_AlphaOverflow
+ */
+
 - (void)renderWithCommandQueue:(id<MTLCommandQueue>)commandQueue
                withPixelFormat:(MTLPixelFormat)pixelFormat
+              forAlphaOverflow:(BOOL)alphaOverflow
                 withCompletion:(void (^)(id<MTLTexture>))completionBlock;
 
 @end

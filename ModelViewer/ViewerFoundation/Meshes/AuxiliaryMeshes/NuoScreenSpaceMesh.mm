@@ -50,24 +50,28 @@
     pipelineDescriptor.vertexFunction = [library newFunctionWithName:@"texture_project"];
     pipelineDescriptor.fragmentFunction = [library newFunctionWithName:shaderName];
     pipelineDescriptor.rasterSampleCount = self.sampleCount;
-    pipelineDescriptor.colorAttachments[0].pixelFormat = pixelFormat;
     
-    if (mode != kBlend_None)
+    auto* colorAttachment = pipelineDescriptor.colorAttachments[0];
+    
+    colorAttachment.pixelFormat = pixelFormat;
+    
+    if (mode != kBlend_None &&
+        mode != kBlend_AlphaOverflow) // shader implemented mode, turn off pipeline blending
     {
-        pipelineDescriptor.colorAttachments[0].blendingEnabled = YES;
-        pipelineDescriptor.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
-        pipelineDescriptor.colorAttachments[0].alphaBlendOperation = MTLBlendOperationAdd;
-        pipelineDescriptor.colorAttachments[0].sourceRGBBlendFactor = MTLBlendFactorOne;    // the shader returns pre-multiplied color
+        colorAttachment.blendingEnabled = YES;
+        colorAttachment.rgbBlendOperation = MTLBlendOperationAdd;
+        colorAttachment.alphaBlendOperation = MTLBlendOperationAdd;
+        colorAttachment.sourceRGBBlendFactor = MTLBlendFactorOne;    // the shader returns pre-multiplied color
         
         if (mode == kBlend_Alpha)
         {
-            pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
-            pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+            colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+            colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
         }
         else
         {
-            pipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorOne;
-            pipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
+            colorAttachment.destinationRGBBlendFactor = MTLBlendFactorOne;
+            colorAttachment.destinationAlphaBlendFactor = MTLBlendFactorOneMinusSourceAlpha;
         }
     }
     
