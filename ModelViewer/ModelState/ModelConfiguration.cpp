@@ -53,7 +53,7 @@ bool ModelConfiguration::UseImageIO()
 {
     if (_lua->IsNil(-1))
     {
-        return true;
+        return false;
     }
     
     const bool imageIO = _lua->GetFieldAsBool("ImageIOSave", -1);
