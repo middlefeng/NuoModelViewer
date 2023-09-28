@@ -10,6 +10,8 @@
 
 #include "NuoRenderParameterState.h"
 
+#include <cassert>
+
 
 
 NuoRenderPassParameterUsage::NuoRenderPassParameterUsage(const std::string& name)

@@ -47,7 +47,7 @@
         [self setWantsLayer:YES];
         
         _lightIrradianceLabel = [self createLabel:@"Irradiance:"];
-        _lightIrradianceSlider = [self createSliderMax:3.0 min:0.0];
+        _lightIrradianceSlider = [self createSliderMax:6.0 min:0.0];
         
         _lightSpecularLabel = [self createLabel:@"Specular:"];
         _lightSpecularSlider = [self createSliderMax:3.0 min:0.0];

@@ -12,6 +12,7 @@
 #import "NuoRenderPassTarget.h"
 #import "NuoRenderPipeline.h"
 #import "NuoRenderPipelinePass.h"
+#import "NuoAlphaAddPass.h"
 #import "NuoCommandBuffer.h"
 
 
@@ -64,6 +65,8 @@
 
 
 - (void)renderWithCommandQueue:(id<MTLCommandQueue>)commandQueue
+               withPixelFormat:(MTLPixelFormat)pixelFormat
+              forAlphaOverflow:(BOOL)alphaOverflow
                 withCompletion:(void (^)(id<MTLTexture>))completionBlock;
 {
     NuoCommandBuffer* commandBuffer = [[NuoCommandBuffer alloc] initWithCommandQueue:commandQueue
@@ -92,7 +95,7 @@
     // sharely managed by GPU and CPU, export to RGBA (since PNG need it)
     //
     NuoRenderPassTarget* exportTarget = [[NuoRenderPassTarget alloc] initWithCommandQueue:commandQueue
-                                                                          withPixelFormat:MTLPixelFormatRGBA8Unorm
+                                                                          withPixelFormat:pixelFormat
                                                                           withSampleCount:1];
     exportTarget.manageTargetTexture = YES;
     exportTarget.sharedTargetTexture = YES;
@@ -101,10 +104,23 @@
     
     _sceneTarget = sceneTarget;
     
-    // final pass to convert the result to RGBA
-    NuoRenderPipelinePass* finalPass = [[NuoRenderPipelinePass alloc] initWithCommandQueue:commandQueue
-                                                                           withPixelFormat:exportTarget.targetPixelFormat
-                                                                           withSampleCount:1 /* no MSAA for mere conversion */];
+    // final pass: 1. convert the result to the desired bit depth
+    //             2. generate overflow layer (add/linear-dodge)
+    
+    NuoRenderPipelinePass* finalPass = nil;
+    if (alphaOverflow)
+    {
+        finalPass =  [[NuoAlphaOverflowPass alloc] initWithCommandQueue:commandQueue
+                                                        withPixelFormat:exportTarget.targetPixelFormat
+                                                        withSampleCount:1 /* no MSAA for mere conversion */];
+    }
+    else
+    {
+        finalPass = [[NuoRenderPipelinePass alloc] initWithCommandQueue:commandQueue
+                                                        withPixelFormat:exportTarget.targetPixelFormat
+                                                        withSampleCount:1 /* no MSAA for mere conversion */];
+    }
+    
     NuoRenderPassTarget* displayTarget = [lastScenePass renderTarget];
     CGSize displaySize = [displayTarget drawableSize];
     
