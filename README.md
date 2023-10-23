@@ -144,51 +144,53 @@ This project consists of:
 
 ## TODO
 
-* <del>Order-independent transparency.</del>
-* Bump (displacement) texture.
-* Support PBRT format.
-* <del>Normal texture.</del>
-* <del>Direction of lgiht source.</del>
-* <del>Intensity of light source.</del>
-* <del>Mutilple light sources.</del>
-* <del>Selectable list of object.</del>
-* <del>Surface smooth.</del>
+* 🔲 Camera model.
+  * 🔲 Depth of field. Lens blur.
+* 🕒 Order-independent transparency.
+* 🔲 Bump (displacement) texture.
+* 🕒 Support PBRT format.
+* ✅ Normal texture.</del>
+* ✅ Direction of lgiht source.
+* ✅ Intensity of light source.
+* ✅ Mutilple light sources.
+* ✅ Selectable list of object.
+* ✅ Surface smooth.
 * Shadow
-  * <del>Shadow to model</del>
-  * <del>Shadow to ground.</del>
-  * <del>PCSS.</del>
-    * <del>Basic PCSS.</del>
-    * <del>Adjustable occluder search range.</del>
-    * <del>More adjustable bias.</del>
-  * <del>Transparency (strength) of shadow overlay.</del> (Achieved by ambient)
+  * ✅ Shadow to model.
+  * ✅ Shadow to ground.
+  * PCSS.
+    * ✅ Basic PCSS.
+    * ✅ Adjustable occluder search range.
+    * ✅ More adjustable bias.
+  * ✅ Transparency (strength) of shadow overlay. (Achieved by ambient)
   * Linear shadow map (more plausible PCSS, VSM).
   * Adaptive shadow map resolution/region.
-* <del>Per light-source, per-surface shadow properties (bias, soft edge).</del>
-* <del>Cull mode.</del>
+* ✅ Per light-source, per-surface shadow properties (bias, soft edge).
+* ✅ Cull mode.
 * Surrounding.
-  * <del>Cubmap skybox.</del>
+  * ✅ Cubemap skybox.
   * Water (for ship model).
-* <del>Motion blur (especially for rotating parts like rotor).</del>
+* ✅ Motion blur (especially for rotating parts like rotor).
 * Detailed properties panel for indiviudal model parts.
-  * <del>Smooth options (everywhere, texture discontinuiation only, etc).</del>
-  * <del>Material opacity adjustment.
+  * ✅ Smooth options (everywhere, texture discontinuiation only, etc).
+  * ✅ Material opacity adjustment.
   * Material adjustment (specular, colors, etc).
   * List of board objects.
-  * <del>Self illumination.</del>
+  * ✅ Self illumination.
 * Ray tracing
-  * <del>Faster buffer construction.</del>
-  * <del>Ground reflection.</del>
-  * <del>Specular term in direct lighting shadow, and in global illumniation.</del>
-  * <del>Light source surface sampling.</del>
-  * <del>Shadow ray visibility.</del>
+  * 🕒 Faster buffer construction.
+  * ✅ Ground reflection.
+  * ✅ Specular term in direct lighting shadow, and in global illumniation.
+  * 🕒 Light source surface sampling.
+  * ✅ Shadow ray visibility.
   * Multiple importance sampling. Unified reflection model.
-  * Normal map.
+  * 🔲 Normal map.
   * Specular map.
-  * Translucent map.
-* <del>BRDF mode.</del>
-* <del>Ambient occlusion.</del>
+  * 🔲 Translucent map.
+* ✅ BRDF mode.
+* ✅ Ambient occlusion.
 * Model visualization
-  * <del>PCSS steps visualization.<del>
+  * ✅ PCSS steps visualization.
   * Triangle mesh
   * Normal/tangent visualization
   
